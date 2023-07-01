@@ -1,0 +1,265 @@
+/* 定义全局遍历变量 */
+
+// 间距与字体
+$spaces: 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 28, 30, 32, 36, 40, 46, 50, 60, 80, 100, 120;
+
+// 字体从粗细
+$weights: 100, 200, 300, 400, 500, 600, 700;
+
+// 颜色
+$colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c12f38;
+
+/* **************************** 颜色 *****************************/
+@each $i in $colors {
+  // ---- 字体色 ----
+  .color-#{$i} {
+    color: #{"#" + $i};
+  }
+
+  .bg-#{$i} {
+    background-color: #{"#" + $i};
+  }
+
+  // ---- 边框颜色 ----
+  .border-#{$i} {
+    border: 1px solid #{"#" + $i};
+  }
+  .border-b-#{$i} {
+    border-bottom: 1px solid #{"#" + $i};
+  }
+  .border-t-#{$i} {
+    border-top: 1px solid #{"#" + $i};
+  }
+}
+
+/* **************************** 粗细 *****************************/
+
+@each $i in $weights {
+  .fw-#{$i} {
+    font-weight: #{$i};
+  }
+}
+
+@each $i in $spaces {
+  /* **************************** 字体 *****************************/
+
+  .fz-#{$i} {
+    font-size: #{$i}px;
+  }
+
+  /* **************************** margin间距 *****************************/
+
+  .m-#{$i} {
+    margin: #{$i}px;
+  }
+  .mt-#{$i} {
+    margin-top: #{$i}px;
+  }
+  .mr-#{$i} {
+    margin-right: #{$i}px;
+  }
+  .ml-#{$i} {
+    margin-left: #{$i}px;
+  }
+  .mb-#{$i} {
+    margin-bottom: #{$i}px;
+  }
+
+  /* **************************** padding间距 *****************************/
+
+  .p-#{$i} {
+    padding: #{$i}px;
+  }
+  .pt-#{$i} {
+    padding-top: #{$i}px;
+  }
+  .pr-#{$i} {
+    padding-right: #{$i}px;
+  }
+  .pl-#{$i} {
+    padding-left: #{$i}px;
+  }
+  .pb-#{$i} {
+    padding-bottom: #{$i}px;
+  }
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.flex-2 {
+  flex: 2;
+}
+
+.flex-3 {
+  flex: 3;
+}
+
+.flex-4 {
+  flex: 4;
+}
+
+.flex-5 {
+  flex: 5;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-shrink {
+  /* flex布局 避免空间不足挤压自身 */
+  flex-shrink: 0;
+}
+
+.just-start {
+  justify-content: flex-start;
+}
+
+.just-center {
+  justify-content: center;
+}
+
+.just-between {
+  justify-content: space-between;
+}
+
+.just-end {
+  justify-content: flex-end;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
+.align-self-end {
+  align-self: flex-end;
+}
+
+.ui-p-r {
+  position: relative;
+}
+
+.ui-p-a {
+  position: absolute;
+}
+
+.ui-ovy-a {
+  overflow-y: auto;
+}
+
+.ui-ovx-a {
+  overflow-x: auto;
+}
+
+.ui-ov-h {
+  overflow: hidden;
+}
+
+.ui-w-100 {
+  width: 100%;
+}
+
+.ui-h-100 {
+  height: 100%;
+}
+
+.ui-vw-100 {
+  width: 100vw;
+}
+
+.ui-vh-100 {
+  height: 100vh;
+}
+
+.ui-va-m {
+  vertical-align: middle;
+}
+
+.ui-ta-c {
+  text-align: center;
+}
+
+.ui-ta-r {
+  text-align: right;
+}
+
+.ui-ta-l {
+  text-align: left;
+}
+
+.ui-d-b {
+  display: block;
+}
+
+.ui-d-ib {
+  display: inline-block;
+}
+
+.box-border {
+  box-sizing: border-box;
+}
+
+.text-ellipsis-3 {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ellipsis-col {
+  display: -webkit-box;
+  overflow: hidden;
+  text-align: justify;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+}
+
+.ellipsis-col2 {
+  -webkit-line-clamp: 2;
+}
+
+.no-select {
+  user-select: none;
+}
+
+.no-wrap {
+  white-space: nowrap;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+pre {
+  word-wrap: break-word;
+
+  // 兼容多个浏览器
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  white-space: normal;
+}
