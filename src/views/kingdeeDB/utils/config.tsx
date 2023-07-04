@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-06-29 16:49:53
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-07-01 16:53:45
+ * @Last Modified time: 2023-07-04 17:18:42
  */
 
 import type { FormRules } from "element-plus";
@@ -31,6 +31,7 @@ export const getColumns = (orgOptions: Array<OptionsType>): TableColumnList[] =>
   { label: "数据库简称", prop: "accountName", sortable: true, minWidth: 160 },
   { label: "IP地址", prop: "ipAddress", sortable: true, minWidth: 160 },
   { label: "连接数据库名", prop: "linkDbName", sortable: true, minWidth: 160 },
+  { label: "端口", prop: "linkPort", sortable: true, minWidth: 160 },
   {
     label: "连接类型",
     prop: "dbType",
@@ -40,7 +41,6 @@ export const getColumns = (orgOptions: Array<OptionsType>): TableColumnList[] =>
   },
   { label: "用户名", prop: "username", sortable: true, minWidth: 160 },
   { label: "密码", prop: "password", sortable: true, minWidth: 160 },
-  { label: "昵称", prop: "nick", sortable: true, minWidth: 160 },
   {
     label: "状态",
     prop: "accountStatus",
@@ -55,7 +55,7 @@ export const getColumns = (orgOptions: Array<OptionsType>): TableColumnList[] =>
     minWidth: 160,
     cellRenderer: ({ row }) => {
       const item = orgOptions.find((item) => item.value === row.orgId);
-      return <span>{item ? item.label : "-"}</span>;
+      return <span>{item ? item.label : ""}</span>;
     }
   },
   { label: "创建时间", prop: "createTime", sortable: true, minWidth: 160 },
@@ -63,7 +63,7 @@ export const getColumns = (orgOptions: Array<OptionsType>): TableColumnList[] =>
   { label: "操作", fixed: "right", width: 140, slot: "operation" }
 ];
 
-const GridSpan = 8; // 24格列网格, 每个表单项占8格
+const GridSpan = 12; // 24格列网格, 每个表单项占8格
 
 // 表单编辑配置
 export const formConfigs = (type: "add" | "edit", orgOptions: Array<OptionsType>): TableColumnList[] => {
@@ -77,6 +77,7 @@ export const formConfigs = (type: "add" | "edit", orgOptions: Array<OptionsType>
     ...idItem,
     { label: "数据库简称", prop: "accountName", span: GridSpan },
     { label: "连接数据库名", prop: "linkDbName", span: GridSpan },
+    { label: "端口", prop: "linkPort", span: GridSpan },
     { label: "IP地址", prop: "ipAddress", span: GridSpan },
     {
       label: "连接类型",
@@ -89,7 +90,6 @@ export const formConfigs = (type: "add" | "edit", orgOptions: Array<OptionsType>
     },
     { label: "用户名", prop: "username", span: GridSpan },
     { label: "密码", prop: "password", span: GridSpan },
-    { label: "昵称", prop: "nick", span: GridSpan },
     {
       label: "状态",
       prop: "accountStatus",

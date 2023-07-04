@@ -2,19 +2,24 @@
  * @Author: lixiuhai
  * @Date: 2023-06-29 16:49:46
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-07-01 16:57:26
+ * @Last Modified time: 2023-07-04 17:09:07
  */
 
 import type { FormRules } from "element-plus";
 import { OrganizationItemType } from "@/api/orgList";
 import dayjs from "dayjs";
 import { reactive } from "vue";
+import regExp from "@/utils/regExp";
 
 /** 表单规则校验(注释的为不做校验) */
 export const formRules = reactive<FormRules>({
   id: [{ required: true, message: "组织ID为必填项", trigger: "blur" }],
   orgName: [{ required: true, message: "组织名称为必填项", trigger: "blur" }],
   shortName: [{ required: true, message: "组织简称为必填项", trigger: "blur" }],
+  tel: [
+    { required: false, message: "组织简称为必填项", trigger: "blur" },
+    { message: "手机号格式不正确", trigger: "blur", pattern: regExp.phone }
+  ],
   status: [{ required: true, message: "状态为必选项", trigger: "blur" }],
   kingdeeEnable: [{ required: true, message: "是否启用金蝶为必选项", trigger: "blur" }],
   qywxEnable: [{ required: true, message: "是否启用企业微信为必选项", trigger: "blur" }],
@@ -166,15 +171,15 @@ export const getColumns = (filtersList: Array<OrganizationItemType>): TableColum
   { label: "企业微信ID", prop: "corpId", sortable: true, minWidth: 160 },
   { label: "WorkComplaintDetailUrl", prop: "qywxWorkComplaintDetailurl", sortable: true, minWidth: 210 },
   /** ============ 企业微信应用设置 ============ */
-  { label: "扫码登录AgentID", prop: "PCloginAgentId", sortable: true, minWidth: 160 },
-  { label: "扫码登录Secret", prop: "PCloginSecret", sortable: true, minWidth: 160 },
+  { label: "扫码登录AgentID", prop: "pcLoginAgengId", sortable: true, minWidth: 160 },
+  { label: "扫码登录Secret", prop: "pcLoginSecret", sortable: true, minWidth: 160 },
   { label: "工作台AgentId", prop: "workbenchAgentID", sortable: true, minWidth: 160 },
   { label: "工作台Secret", prop: "workbenchSecret", sortable: true, minWidth: 160 },
   { label: "汇报AgentId", prop: "reportAgentId", sortable: true, minWidth: 160 },
   { label: "汇报Secret", prop: "reportSecret", sortable: true, minWidth: 160 },
   { label: "通讯录Secret", prop: "contactsSecret", sortable: true, minWidth: 160 },
   { label: "CCTemplateId", prop: "qywxCCTemplateId", sortable: true, minWidth: 280 },
-  { label: "审批AgentId", prop: "approvalAgentid", sortable: true, minWidth: 160 },
+  { label: "审批AgentId", prop: "approvalAgentId", sortable: true, minWidth: 160 },
   { label: "审批Secret", prop: "approvalSecret", sortable: true, minWidth: 160 },
   { label: "审批Token", prop: "approvalToken", sortable: true, minWidth: 160 },
   { label: "审批EncodingAESKey", prop: "approvalEncodingAESKey", sortable: true, minWidth: 200 },
@@ -264,15 +269,15 @@ export const formConfigs = (type: "add" | "edit"): TableColumnList[] => {
     { label: "WorkComplaintDetailUrl", prop: "qywxWorkComplaintDetailurl", span: GridSpan },
     /** ===================== PC端企业微信应用设置 ========================= */
     { label: "企业微信应用设置", hide: true /** 配置标题使用 */ },
-    { label: "扫码登录AgentID", prop: "PCloginAgentId", span: GridSpan },
-    { label: "扫码登录Secret", prop: "PCloginSecret", span: GridSpan },
+    { label: "扫码登录AgentID", prop: "pcLoginAgengId", span: GridSpan },
+    { label: "扫码登录Secret", prop: "pcLoginSecret", span: GridSpan },
     { label: "工作台AgentId", prop: "workbenchAgentID", span: GridSpan },
     { label: "工作台Secret", prop: "workbenchSecret", span: GridSpan },
     { label: "汇报AgentId", prop: "reportAgentId", span: GridSpan },
     { label: "汇报Secret", prop: "reportSecret", span: GridSpan },
     { label: "通讯录Secret", prop: "contactsSecret", span: GridSpan },
     { label: "CCTemplateId", prop: "qywxCCTemplateId", span: GridSpan },
-    { label: "审批AgentId", prop: "approvalAgentid", span: GridSpan },
+    { label: "审批AgentId", prop: "approvalAgentId", span: GridSpan },
     { label: "审批Secret", prop: "approvalSecret", span: GridSpan },
     { label: "审批Token", prop: "approvalToken", span: GridSpan },
     { label: "审批EncodingAESKey", prop: "approvalEncodingAESKey", span: GridSpan },

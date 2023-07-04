@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-06-30 16:30:09
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-07-01 16:59:57
+ * @Last Modified time: 2023-07-04 17:26:03
  */
 import Axios, { AxiosInstance, AxiosRequestConfig, CustomParamsSerializer } from "axios";
 import { PureHttpError, PureHttpRequestConfig, PureHttpResponse, RequestMethods } from "./types.d";

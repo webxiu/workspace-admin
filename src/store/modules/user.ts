@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-06-30 14:05:46
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-06-30 18:16:35
+ * @Last Modified time: 2023-07-04 17:03:54
  */
 import { LoginInfoType, getLoginInfo, removeCookie, removeLoginInfo, setLoginInfo } from "@/utils/storage";
 import { logoutLogin, queryUserInfo } from "@/api/user";
@@ -47,8 +47,7 @@ export const useUserStore = defineStore({
     /** 前端登出 */
     async logOut() {
       try {
-        const res = await logoutLogin();
-        if (res.status !== 200) throw res.message;
+        await logoutLogin();
         ElMessage.error({ message: "登录已失效, 请重新登录", duration: 3000 });
       } catch (error) {
         ElMessage.error({ message: error, duration: 3000 });

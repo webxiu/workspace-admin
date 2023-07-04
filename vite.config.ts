@@ -62,7 +62,6 @@ export default ({ command, mode }: ConfigEnv): UserConfigExport => {
       sourcemap: false,
       // 消除打包大小超过500kb警告
       chunkSizeWarningLimit: 4000,
-      outDir: "D:/nginx-1.22.1/deogra-workspace-admin",
       rollupOptions: {
         input: {
           index: pathResolve("index.html")

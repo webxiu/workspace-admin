@@ -32,10 +32,10 @@ defineExpose({ getRef });
         <el-col :span="item.span">
           <TitleCate v-if="item.hide" :name="item.label" />
           <el-form-item v-else :label="item.label" :prop="item.prop">
-            <el-select v-if="item.options" v-model="newFormInline[item.prop]" :disabled="item.disabled" placeholder="请输入" :style="{ minWidth: '100px' }">
+            <el-select v-if="item.options" v-model="newFormInline[item.prop]" :disabled="item.disabled" placeholder="请选择" :style="{ width: '100%', minWidth: '100px' }">
               <el-option v-for="cell in item.options" :key="cell.value" :label="cell.label" :value="cell.value" />
             </el-select>
-            <el-input v-else v-model="newFormInline[item.prop]" :disabled="item.disabled" clearable placeholder="请选择" :style="{ minWidth: '100px' }" />
+            <el-input v-else v-model="newFormInline[item.prop]" :disabled="item.disabled" clearable placeholder="请输入" :style="{ width: '100%', minWidth: '100px' }" />
           </el-form-item>
         </el-col>
       </template>

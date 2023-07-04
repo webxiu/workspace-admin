@@ -28,7 +28,6 @@ const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
     ElMessage.error("Logo必须为JPG、PNG、BMP或GIF格式!");
     return false;
   }
-
   if (rawFile.size / 1024 / 1024 > 2) {
     ElMessage.error("Logo图片大小不能超过2MB！");
     return false;
