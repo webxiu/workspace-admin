@@ -4,7 +4,7 @@
  * @Last Modified by: lixiuhai
  * @Last Modified time: 2023-07-04 17:03:54
  */
-import { LoginInfoType, getLoginInfo, removeCookie, removeLoginInfo, setLoginInfo } from "@/utils/storage";
+import { LoginInfoType, getLoginInfo, setCookie, removeCookie, removeLoginInfo, setLoginInfo } from "@/utils/storage";
 import { logoutLogin, queryUserInfo } from "@/api/user";
 import { resetRouter, router } from "@/router";
 
@@ -32,8 +32,9 @@ export const useUserStore = defineStore({
       this.roles = roles;
     },
     /** 设置用户信息 */
-    async setUserInfo() {
+    async setUserInfo(token) {
       return new Promise<LoginInfoType>((resolve, reject) => {
+        setCookie(token);
         queryUserInfo()
           .then((res) => {
             if (res.data) {

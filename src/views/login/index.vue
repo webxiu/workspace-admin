@@ -68,7 +68,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
         .then((res) => {
           if (res.status !== 200) throw res.message;
           // 存储用户信息
-          useUserStoreHook().setUserInfo();
+          useUserStoreHook().setUserInfo(res.data);
           // 获取后端路由
           initRouter().then(() => {
             router.push(getTopMenu(true).path);
