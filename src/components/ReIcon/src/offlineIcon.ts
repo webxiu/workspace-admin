@@ -2,6 +2,7 @@ import Histogram from "@iconify-icons/ep/histogram";
 import HomeFilled from "@iconify-icons/ep/home-filled";
 import InformationLine from "@iconify-icons/ri/information-line";
 import Lollipop from "@iconify-icons/ep/lollipop";
+import Promotion from "@iconify-icons/ep/promotion";
 import { addIcon } from "@iconify/vue/dist/offline";
 
 // / import Card from "@iconify-icons/ri/bank-card-line";
@@ -33,3 +34,4 @@ addIcon("homeFilled", HomeFilled);
 addIcon("informationLine", InformationLine);
 addIcon("lollipop", Lollipop);
 addIcon("Histogram", Histogram);
+addIcon("Promotion", Promotion);
