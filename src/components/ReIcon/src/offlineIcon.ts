@@ -1,3 +1,4 @@
+import Edit from "@iconify-icons/ep/edit";
 import Histogram from "@iconify-icons/ep/histogram";
 import HomeFilled from "@iconify-icons/ep/home-filled";
 import InformationLine from "@iconify-icons/ri/information-line";
@@ -7,8 +8,7 @@ import { addIcon } from "@iconify/vue/dist/offline";
 
 // / import Card from "@iconify-icons/ri/bank-card-line";
 // import CheckboxCircleLine from "@iconify-icons/ri/checkbox-circle-line";
-// import Dept from "@iconify-icons/ri/git-branch-line";
-// import Edit from "@iconify-icons/ep/edit";
+// import Dept from "@iconify-icons/ri/git-branch-line"
 // import FlUser from "@iconify-icons/ri/admin-line";
 // import Guide from "@iconify-icons/ep/guide";
 // import InformationLine from "@iconify-icons/ri/information-line";
@@ -35,3 +35,4 @@ addIcon("informationLine", InformationLine);
 addIcon("lollipop", Lollipop);
 addIcon("Histogram", Histogram);
 addIcon("Promotion", Promotion);
+addIcon("Edit", Edit);

@@ -1,5 +1,5 @@
 import { useEpThemeStoreHook } from "@/store/modules/epTheme";
-import { defineComponent, ref, computed, type PropType, nextTick } from "vue";
+import { defineComponent, ref, computed, type PropType, nextTick, watch } from "vue";
 import { delay, cloneDeep, isBoolean, isFunction, getKeyList } from "@pureadmin/utils";
 
 import Sortable from "sortablejs";
@@ -13,7 +13,7 @@ const props = {
   /** 头部最左边的标题 */
   title: {
     type: String,
-    default: "列表"
+    default: ""
   },
   /** 对于树形表格，如果想启用展开和折叠功能，传入当前表格的ref即可 */
   tableRef: {
@@ -21,8 +21,13 @@ const props = {
   },
   /** 需要展示的列 */
   columns: {
-    type: Array as PropType<TableColumnList[]>,
+    type: Array as PropType<TableColumnList>,
     default: () => []
+  },
+  /** 是否显示刷新和设置图标 */
+  showIcon: {
+    type: Boolean,
+    default: true
   }
 };
 
@@ -37,10 +42,21 @@ export default defineComponent({
     const loading = ref(false);
     const checkAll = ref(true);
     const isIndeterminate = ref(false);
-    const filterColumns = cloneDeep(props?.columns).filter((column) => (isBoolean(column?.hide) ? !column.hide : !(isFunction(column?.hide) && column?.hide())));
-    let checkColumnList = getKeyList(cloneDeep(props?.columns), "label");
-    const checkedColumns = ref(getKeyList(cloneDeep(filterColumns), "label"));
-    const dynamicColumns = ref(cloneDeep(props?.columns));
+    const filterColumns = ref(cloneDeep(props?.columns).filter((column) => (isBoolean(column?.hide) ? !column.hide : !(isFunction(column?.hide) && column?.hide()))));
+    const checkColumnList = ref(getKeyList(cloneDeep(props?.columns), "label"));
+    const checkedColumns = ref(getKeyList(cloneDeep(filterColumns.value), "label"));
+    const dynamicColumns = ref<Array<Record<any, any>>>(cloneDeep(props?.columns));
+
+    watch(
+      props,
+      (newProps) => {
+        filterColumns.value = cloneDeep(newProps?.columns).filter((column) => (isBoolean(column?.hide) ? !column.hide : !(isFunction(column?.hide) && column?.hide())));
+        checkColumnList.value = getKeyList(cloneDeep(newProps?.columns), "label");
+        checkedColumns.value = getKeyList(cloneDeep(filterColumns.value), "label");
+        dynamicColumns.value = newProps.columns;
+      },
+      { deep: true }
+    );
 
     const getDropdownItemStyle = computed(() => {
       return (s) => {
@@ -80,15 +96,15 @@ export default defineComponent({
     }
 
     function handleCheckAllChange(val: boolean) {
-      checkedColumns.value = val ? checkColumnList : [];
+      checkedColumns.value = val ? checkColumnList.value : [];
       isIndeterminate.value = false;
       dynamicColumns.value.map((column) => (val ? (column.hide = false) : (column.hide = true)));
     }
 
     function handleCheckedColumnsChange(value: string[]) {
       const checkedCount = value.length;
-      checkAll.value = checkedCount === checkColumnList.length;
-      isIndeterminate.value = checkedCount > 0 && checkedCount < checkColumnList.length;
+      checkAll.value = checkedCount === checkColumnList.value.length;
+      isIndeterminate.value = checkedCount > 0 && checkedCount < checkColumnList.value.length;
     }
 
     function handleCheckColumnListChange(val: boolean, label: string) {
@@ -98,10 +114,10 @@ export default defineComponent({
     async function onReset() {
       checkAll.value = true;
       isIndeterminate.value = false;
-      dynamicColumns.value = cloneDeep(props?.columns);
-      checkColumnList = [];
-      checkColumnList = await getKeyList(cloneDeep(props?.columns), "label");
-      checkedColumns.value = getKeyList(cloneDeep(filterColumns), "label");
+      dynamicColumns.value = cloneDeep(dynamicColumns.value);
+      checkColumnList.value = [];
+      checkColumnList.value = await getKeyList(cloneDeep(dynamicColumns.value), "label");
+      checkedColumns.value = getKeyList(cloneDeep(filterColumns.value), "label");
     }
 
     const dropdown = {
@@ -160,67 +176,69 @@ export default defineComponent({
 
     return () => (
       <>
-        <div {...attrs} class="w-[99/100] mt-2 px-2 pb-2 bg-bg_color">
-          <div class="flex justify-between w-full h-[60px] p-4">
+        <div {...attrs} class="ui-w-100 px-2 bg-bg_color pt-2">
+          <div class="flex justify-between w-full pb-2" style={{ display: slots?.title || props.showIcon ? "inline-flex" : "none" }}>
             {slots?.title ? slots.title() : <p class="font-bold truncate">{props.title}</p>}
-            <div class="flex items-center justify-around">
-              {slots?.buttons ? <div class="flex mr-4">{slots.buttons()}</div> : null}
-              {props.tableRef?.size ? (
-                <>
-                  <el-tooltip effect="dark" content={isExpandAll.value ? "折叠" : "展开"} placement="top">
-                    <ExpandIcon
-                      class={["w-[16px]", iconClass.value]}
-                      style={{
-                        transform: isExpandAll.value ? "none" : "rotate(-90deg)"
-                      }}
-                      onClick={() => onExpand()}
-                    />
-                  </el-tooltip>
-                  <el-divider direction="vertical" />
-                </>
-              ) : null}
-              <el-tooltip effect="dark" content="刷新" placement="top">
-                <RefreshIcon class={["w-[16px]", iconClass.value, loading.value ? "animate-spin" : ""]} onClick={() => onReFresh()} />
-              </el-tooltip>
-              <el-divider direction="vertical" />
-              <el-tooltip effect="dark" content="密度" placement="top">
-                <el-dropdown v-slots={dropdown} trigger="click">
-                  <CollapseIcon class={["w-[16px]", iconClass.value]} />
-                </el-dropdown>
-              </el-tooltip>
-              <el-divider direction="vertical" />
+            {props.showIcon ? (
+              <div class="flex items-center justify-around flex-1">
+                {slots?.buttons ? <div class="flex mr-4 flex-1 just-end">{slots.buttons()}</div> : null}
+                {props.tableRef?.size ? (
+                  <>
+                    <el-tooltip effect="dark" content={isExpandAll.value ? "折叠" : "展开"} placement="top">
+                      <ExpandIcon
+                        class={["w-[16px]", iconClass.value]}
+                        style={{
+                          transform: isExpandAll.value ? "none" : "rotate(-90deg)"
+                        }}
+                        onClick={() => onExpand()}
+                      />
+                    </el-tooltip>
+                    <el-divider direction="vertical" />
+                  </>
+                ) : null}
+                <el-tooltip effect="dark" content="刷新" placement="top">
+                  <RefreshIcon class={["w-[16px]", iconClass.value, loading.value ? "animate-spin" : ""]} onClick={() => onReFresh()} />
+                </el-tooltip>
+                <el-divider direction="vertical" />
+                <el-tooltip effect="dark" content="密度" placement="top">
+                  <el-dropdown v-slots={dropdown} trigger="click">
+                    <CollapseIcon class={["w-[16px]", iconClass.value]} />
+                  </el-dropdown>
+                </el-tooltip>
+                <el-divider direction="vertical" />
 
-              <el-popover v-slots={reference} placement="bottom-start" popper-style={{ padding: 0 }} width="200" trigger="click">
-                <div class={[topClass.value]}>
-                  <el-checkbox class="!-mr-1" label="列展示" v-model={checkAll.value} indeterminate={isIndeterminate.value} onChange={(value) => handleCheckAllChange(value)} />
-                  <el-button type="primary" link onClick={() => onReset()}>
-                    重置
-                  </el-button>
-                </div>
+                <el-popover v-slots={reference} placement="bottom-start" popper-style={{ padding: 0 }} width="160" trigger="click">
+                  <div class={[topClass.value]}>
+                    <el-checkbox class="!-mr-1" label="列展示" v-model={checkAll.value} indeterminate={isIndeterminate.value} onChange={(value) => handleCheckAllChange(value)} />
+                    <el-button type="primary" link onClick={() => onReset()}>
+                      重置
+                    </el-button>
+                  </div>
 
-                <div class="pt-[6px] pl-[11px]" style={{ maxHeight: "420px", overflowY: "auto" }}>
-                  <el-checkbox-group v-model={checkedColumns.value} onChange={(value) => handleCheckedColumnsChange(value)}>
-                    <el-space direction="vertical" alignment="flex-start" size={0}>
-                      {checkColumnList.map((item) => {
-                        return (
-                          <div class="flex items-center">
-                            <DragIcon
-                              class={["drag-btn w-[16px] mr-2", isFixedColumn(item) ? "!cursor-no-drop" : "!cursor-grab"]}
-                              onMouseenter={(event: { preventDefault: () => void }) => rowDrop(event)}
-                            />
-                            <el-checkbox key={item} label={item} onChange={(value) => handleCheckColumnListChange(value, item)}>
-                              <span title={item} class="inline-block w-[120px] truncate hover:text-text_color_primary">
-                                {item}
-                              </span>
-                            </el-checkbox>
-                          </div>
-                        );
-                      })}
-                    </el-space>
-                  </el-checkbox-group>
-                </div>
-              </el-popover>
-            </div>
+                  <div class="pt-[6px] pl-[11px]">
+                    <el-checkbox-group v-model={checkedColumns.value} onChange={(value) => handleCheckedColumnsChange(value)}>
+                      <el-space direction="vertical" alignment="flex-start" size={0}>
+                        {checkColumnList.value.map((item) => {
+                          return (
+                            <div class="flex items-center">
+                              <DragIcon
+                                class={["drag-btn w-[16px] mr-2", isFixedColumn(item) ? "!cursor-no-drop" : "!cursor-grab"]}
+                                onMouseenter={(event: { preventDefault: () => void }) => rowDrop(event)}
+                              />
+                              <el-checkbox key={item} label={item} onChange={(value) => handleCheckColumnListChange(value, item)}>
+                                <span title={item} class="inline-block w-[120px] truncate hover:text-text_color_primary">
+                                  {item}
+                                </span>
+                              </el-checkbox>
+                            </div>
+                          );
+                        })}
+                      </el-space>
+                    </el-checkbox-group>
+                  </div>
+                </el-popover>
+              </div>
+            ) : null}
 
             <el-tooltip
               popper-options={{
