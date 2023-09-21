@@ -15,6 +15,8 @@ import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import BlendedSearch, { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import ButtonList, { LoadingType, ButtonItemType } from "@/components/ButtonList/index.vue";
+const baseApi = import.meta.env.VITE_BASE_API;
+import { message } from "@/utils/message";
 
 //默认搜索值
 const defaultValue = ref({
@@ -25,8 +27,23 @@ const defaultValue = ref({
 const tableRef = ref<HTMLDivElement>();
 const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
 
-const { formData, maxHeight, loading, columns, dataList, pagination, onSearch, exportExcel, openDialog, handleDelete, handleSizeChange, onCurrentChange, handleCurrentChange, handleSelectionChange } =
-  useTable();
+const {
+  formData,
+  maxHeight,
+  loading,
+  columns,
+  dataList,
+  pagination,
+  onSearch,
+  onExport,
+  openDialog,
+  openWorkFlow,
+  handleDelete,
+  handleSizeChange,
+  onCurrentChange,
+  handleCurrentChange,
+  handleSelectionChange
+} = useTable();
 
 const searchOptions: SearchOptionType[] = [
   { label: "ID", value: "id" },
@@ -64,14 +81,47 @@ const clickHandler = ({ text }) => {
   })();
 };
 
+// 上传过滤
+const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
+  loadingStatus.value = { text: "导入Excel", loading: true };
+  if (!["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"].includes(rawFile.type)) {
+    message("文件必须为xls或xlsx格式!", { type: "warning" });
+    return false;
+  }
+  if (rawFile.size / 1024 / 1024 > 5) {
+    message("文件大小不能超过5MB！", { type: "warning" });
+    return false;
+  }
+  return true;
+};
+// 上传成功回调
+function onUploadSuccess(response) {
+  loadingStatus.value = { text: "导入Excel", loading: false };
+  message("导入成功");
+}
+// 上传失败回调
+function onUploadError(error) {
+  loadingStatus.value = { text: "导入Excel", loading: false };
+  message("导入失败", { type: "error" });
+}
+
 const buttonList = ref<ButtonItemType[]>([
-  { clickHandler: clickHandler, type: "primary", text: "添加" },
-  { clickHandler: clickHandler, type: "default", text: "编辑" },
-  { clickHandler: clickHandler, type: "success", text: "删除" },
-  { clickHandler: clickHandler, type: "primary", text: "批量删除" },
-  { clickHandler: clickHandler, type: "danger", text: "导出" },
-  { clickHandler: clickHandler, type: "primary", text: "打印" },
-  { clickHandler: clickHandler, type: "primary", text: "提交" }
+  { clickHandler: openWorkFlow, type: "primary", text: "流程图" },
+  { clickHandler: clickHandler, type: "default", text: "编辑(-)" },
+  { clickHandler: clickHandler, type: "success", text: "删除(-)" },
+  { clickHandler: clickHandler, type: "primary", text: "打印(-)" },
+  {
+    clickHandler: clickHandler,
+    type: "danger",
+    text: "上传",
+    uploadProp: {
+      accept: ".xls,.xlsx",
+      action: `${baseApi}/oa/hr/attendanceSummary/uploadExcel`,
+      onSuccess: onUploadSuccess,
+      onError: onUploadError,
+      beforeUpload: beforeAvatarUpload
+    }
+  }
 ]);
 
 const handleTagSearch = (values) => {
@@ -89,7 +139,7 @@ const handleTagSearch = (values) => {
       </template>
       <template #buttons>
         <ButtonList :buttonList="buttonList" :loadingStatus="loadingStatus" />
-        <el-button type="primary" @click="exportExcel" class="float-right">导出</el-button>
+        <el-button type="primary" @click="onExport" class="float-right">导出</el-button>
         <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog('add')">添加数据</el-button>
       </template>
       <template v-slot="{ size, dynamicColumns }">

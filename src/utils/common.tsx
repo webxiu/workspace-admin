@@ -2,16 +2,18 @@
  * @Author: lixiuhai
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-08-24 13:53:32
+ * @Last Modified time: 2023-09-21 10:43:38
  */
 
 import { Ref, nextTick, ref } from "vue";
 import { columnDrop, rowDrop } from "@/hooks";
+import { utils, writeFile } from "xlsx";
 
 import Expand from "@iconify-icons/ep/expand";
 import IconifyIconOffline from "@/components/ReIcon/src/iconifyIconOffline";
 import PriceTag from "@iconify-icons/ep/price-tag";
 import { clone } from "@pureadmin/utils";
+import { http } from "@/utils/http";
 
 /** 表格配置类型说明 */
 export interface ColumnOptionType {
@@ -86,18 +88,6 @@ export const setColomn = (options: ColumnOptionType) => {
   return clone([...selections, ...indexItem, ...columnList, ...optItem]);
 };
 
-/** 打印 */
-export const printContent = () => {
-  const pWindow = window.open("", "_blank");
-  pWindow.focus();
-  const pDocument = pWindow.document;
-  pDocument.open();
-  pDocument.write("<h1>2111111</h1>");
-  pDocument.close();
-  pWindow.print();
-  pWindow.close();
-};
-
 /** 递归删除对象内的空值 */
 export const delEmptyQueryNodes = (obj = {}) => {
   Object.keys(obj).forEach((key) => {
@@ -135,4 +125,89 @@ export const throttle = (fn: Function, delay = 300) => {
       prev = Date.now();
     }
   };
+};
+
+/** 打印 */
+export const printContent = () => {
+  const pWindow = window.open("", "_blank");
+  pWindow.focus();
+  const pDocument = pWindow.document;
+  pDocument.open();
+  pDocument.write("<h1>2111111</h1>");
+  pDocument.close();
+  pWindow.print();
+  pWindow.close();
+};
+
+/**
+ * 请求接口导出(下载)
+ * @param url 下载地址
+ * @param fileName 文件名(可带后缀)
+ */
+export const downloadFile = (url: string, fileName: string) => {
+  // 给文件名添加时间戳, 判断文件名是否存在后缀名
+  // fileName待后缀名就使用fileName后缀, 否则获取url文件后缀
+  const urlSuffix = url.split(".")[1] ?? "txt";
+  const names = fileName.split(".");
+  const name = names[0] ?? fileName;
+  const suffix = names[1] || urlSuffix;
+
+  http
+    .get<object, Blob>(url, { responseType: "blob" })
+    .then((res: any) => {
+      const blob = new Blob([res]);
+      const fileName = `${name}_${Date.now()}.${suffix}`;
+      onDownload(blob, fileName);
+    })
+    .catch(console.error);
+};
+
+// 下载文件
+export const onDownload = (blob: Blob, fileName: string) => {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
+
+export interface DownloadDataType {
+  /** 导出的数据 */
+  dataList: any[];
+  /** 表格配置列 */
+  columns: TableColumnList[];
+  /** 文件名 */
+  fileName: string;
+}
+
+/**
+ * 纯表格数据导出
+ * @param options 导出选项: 支持导出多表, 传入数组即可
+ */
+export const downloadDataToExcel = (options: DownloadDataType | DownloadDataType[]) => {
+  const exportOptions = Array.isArray(options) ? options : [options];
+  const fileName = exportOptions[0].fileName;
+  const workBook = utils.book_new();
+
+  exportOptions.forEach((option, idx) => {
+    const res: string[][] = option.dataList.map((item, index) => {
+      const arr = [];
+      option.columns.forEach((column) => {
+        const prop = typeof column.prop === "function" ? column.columnKey : column.prop;
+        const cell = column.type === "index" ? index + 1 : !["expand", "selection"].includes(column.type) || column.slot !== "operation" ? item[prop] : undefined;
+        if (cell !== undefined) arr.push(cell);
+      });
+      return arr;
+    });
+    const titleList: string[] = [];
+    option.columns.forEach((column) => {
+      if (!["expand", "selection"].includes(column.type) && column.slot !== "operation") {
+        titleList.push(column.label);
+      }
+    });
+    res.unshift(titleList);
+    const workSheet = utils.aoa_to_sheet(res);
+    utils.book_append_sheet(workBook, workSheet, option.fileName || `Sheet${idx + 1}`);
+  });
+  writeFile(workBook, `${fileName}_${Date.now()}.xlsx`);
 };

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, onBeforeUnmount, PropType, watch } from "vue";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { debounce } from "@/utils/common";
-
+import type { UploadProps, UploadUserFile } from "element-plus";
 export type LoadingType = { loading: boolean; text: string };
 
 export interface ButtonItemType {
@@ -16,6 +16,8 @@ export interface ButtonItemType {
   round?: boolean;
   type?: any;
   size?: any;
+  /** 配置此属性则显示为上传按钮, 默认为普通按钮 */
+  uploadProp?: Partial<UploadProps>;
   /** 必传项 */
   text: string;
   /** 必传项 */
@@ -107,25 +109,46 @@ const calcBackList = computed<ButtonItemType[]>(() => {
 <template>
   <div class="ui-w-100 mr-3">
     <div class="wrapper-btn" ref="parentBox">
-      <el-button
-        v-bind="$attrs"
-        :loading="item.loading"
-        :disabled="item.disabled"
-        :dark="item.dark"
-        :icon="item.icon || null"
-        :style="{ width: item.width }"
-        :color="item.color"
-        :auto-insert-space="item['auto-insert-space']"
-        :circle="item.circle"
-        :round="item.round"
-        :size="item.size"
-        @click="item.clickHandler(item)"
-        :key="index"
-        :type="item.type"
-        v-for="(item, index) in calcFrontList"
-      >
-        {{ item.text }}
-      </el-button>
+      <template v-for="(item, index) in calcFrontList" :key="index">
+        <!-- 处理是上传按钮包裹el-upload -->
+        <el-upload v-if="item.uploadProp" :show-file-list="false" style="margin: 0 12px" v-bind="item.uploadProp">
+          <el-button
+            v-bind="$attrs"
+            :loading="item.loading"
+            :disabled="item.disabled"
+            :dark="item.dark"
+            :icon="item.icon || null"
+            :style="{ width: item.width }"
+            :color="item.color"
+            :auto-insert-space="item['auto-insert-space']"
+            :circle="item.circle"
+            :round="item.round"
+            :size="item.size"
+            @click="item.clickHandler(item)"
+            :type="item.type"
+          >
+            {{ item.text }}
+          </el-button>
+        </el-upload>
+        <el-button
+          v-else
+          v-bind="$attrs"
+          :loading="item.loading"
+          :disabled="item.disabled"
+          :dark="item.dark"
+          :icon="item.icon || null"
+          :style="{ width: item.width }"
+          :color="item.color"
+          :auto-insert-space="item['auto-insert-space']"
+          :circle="item.circle"
+          :round="item.round"
+          :size="item.size"
+          @click="item.clickHandler(item)"
+          :type="item.type"
+        >
+          {{ item.text }}
+        </el-button>
+      </template>
 
       <el-dropdown trigger="click" style="margin-left: 10px" v-show="calcBackList.length" :teleported="false">
         <el-button type="primary" ref="moreBtnRef" v-bind="$attrs">
@@ -133,9 +156,17 @@ const calcBackList = computed<ButtonItemType[]>(() => {
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" :key="idx" @click="el.clickHandler(el)" v-for="(el, idx) in calcBackList">
-              {{ el.text }}
-            </el-dropdown-item>
+            <template v-for="(el, idx) in calcBackList" :key="idx">
+              <!-- 处理是上传按钮包裹el-upload -->
+              <el-upload v-if="el.uploadProp" :show-file-list="false" v-bind="el.uploadProp">
+                <el-dropdown-item :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler(el)">
+                  {{ el.text }}
+                </el-dropdown-item>
+              </el-upload>
+              <el-dropdown-item v-else :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler(el)">
+                {{ el.text }}
+              </el-dropdown-item>
+            </template>
           </el-dropdown-menu>
         </template>
       </el-dropdown>

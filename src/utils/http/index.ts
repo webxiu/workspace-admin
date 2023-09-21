@@ -2,8 +2,9 @@
  * @Author: lixiuhai
  * @Date: 2023-06-30 16:30:09
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-07-04 17:26:03
+ * @Last Modified time: 2023-09-21 10:37:58
  */
+
 import Axios, { AxiosInstance, AxiosRequestConfig, CustomParamsSerializer } from "axios";
 import { PureHttpError, PureHttpRequestConfig, PureHttpResponse, RequestMethods } from "./types.d";
 import { formatToken, getToken } from "@/utils/auth";
@@ -124,7 +125,11 @@ class PureHttp {
       },
       (error: PureHttpError) => {
         const $error = error;
-        if ($error.isCancelRequest) {
+        const data = error.response.data as any;
+        if ([500].includes(data.status)) {
+          ElMessage({ message: data.error || "获取失败", type: "error" });
+        }
+        if ($error?.isCancelRequest) {
           $error.isCancelRequest = Axios.isCancel($error);
         }
         // 关闭进度条动画

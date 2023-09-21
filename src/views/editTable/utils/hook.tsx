@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-07-06 14:21:11
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-08-24 15:20:26
+ * @Last Modified time: 2023-09-21 11:01:39
  */
 
 import editForm from "../form.vue";
@@ -15,8 +15,8 @@ import { message } from "@/utils/message";
 
 import { type PaginationProps } from "@pureadmin/table";
 import { testList, addTest, updateTest, deleteTest, TestItemType } from "@/api/editTable";
-import { utils, writeFile } from "xlsx";
-import { setColomn } from "@/utils/common";
+import { setColomn, downloadDataToExcel } from "@/utils/common";
+import Bpmn from "../component/Bpmn.vue";
 
 export type RowHandleType = "add" | "edit";
 export type TableDataItemType = TestItemType;
@@ -87,12 +87,16 @@ export function useTable() {
     ];
     // 2.下拉框编辑
     const editSelectRenderer = ({ row, column, index, options }) => {
-      const bgColor = { 0: "#009688", 1: "#00f", 2: "#0a0", 3: "#f0f" };
-      const stateStyle = { color: "#fff", borderRadius: "4px" };
-      const fieldProp = column["property"];
+      const StatusObj = {
+        0: { name: "待处理", color: "#909399" },
+        1: { name: "进行中", color: "#e6a23c" },
+        2: { name: "已处理", color: "#409eff" },
+        3: { name: "已完成", color: "#67c23a" },
+        4: { name: "已失败", color: "#DC143C" }
+      };
+      const fieldProp = column["property"]; // 获取属性字段
       const isCell = editIndex.value === index && fieldProp === editField.value;
-      const style = { ...stateStyle, background: bgColor[`${row.state}`] };
-      const stateObj = { 0: "待处理", 1: "进行中", 2: "已处理", 3: "已完成" };
+      const stateStyle = { background: StatusObj[row[fieldProp]].color, height: "24px", lineHeight: "24px", color: "#fff", borderRadius: "4px" };
       return (
         <>
           <el-select
@@ -108,8 +112,8 @@ export function useTable() {
               <el-option key={item.value} label={item.label} value={item.value} />
             ))}
           </el-select>
-          <span v-show={!isCell} onClick={() => onClick(fieldProp, index, row[fieldProp])} class="ui-w-100 ui-d-ib" style={{ height: "24px", ...style }}>
-            {stateObj[row.state]}
+          <span v-show={!isCell} onClick={() => onClick(fieldProp, index, row[fieldProp])} class="ui-w-100 ui-d-ib" style={stateStyle}>
+            {StatusObj[row[fieldProp]].name}
           </span>
         </>
       );
@@ -176,24 +180,14 @@ export function useTable() {
     console.log("单选", row?.id);
   }
 
-  const exportExcel = () => {
-    const res = dataList.value.map((item) => {
-      const arr = [];
-      columns.value.forEach((column) => {
-        arr.push(item[column.prop as string]);
-      });
-      return arr;
-    });
-    const titleList = [];
-    columns.value.forEach((column) => {
-      titleList.push(column.label);
-    });
-    res.unshift(titleList);
-    const workSheet = utils.aoa_to_sheet(res);
-    const workBook = utils.book_new();
-    utils.book_append_sheet(workBook, workSheet, "数据报表");
-    writeFile(workBook, "表格数据.xlsx");
-    message("导出成功", { type: "success" });
+  const onExport = () => {
+    downloadDataToExcel([
+      {
+        dataList: dataList.value,
+        columns: columns.value,
+        fileName: "表格数据"
+      }
+    ]);
   };
 
   const resetForm = (formEl) => {
@@ -273,6 +267,48 @@ export function useTable() {
       });
   }
 
+  /** 流程图 */
+  const openWorkFlow = ({ text }) => {
+    addDialog({
+      title: "部署流程设计文件",
+      props: { dataMsg: { dataMsg: 666 } },
+      width: "640px",
+      draggable: true,
+      fullscreen: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(Bpmn, { ref: formRef }),
+      beforeSure: (done, { options }) => {
+        const FormRef = formRef.value.getRef();
+        if (!FormRef) return message("请保存模型", { type: "error" });
+        console.log("FormRef", FormRef);
+        ElMessageBox.confirm("确认提交吗", "系统提示", {
+          type: "warning",
+          draggable: true,
+          cancelButtonText: "取消",
+          confirmButtonText: "确定",
+          dangerouslyUseHTMLString: true
+        })
+          .then(() => {
+            const fd = new FormData();
+            const fileName = `${FormRef.name}.xml`;
+            const xmlFile = new File([FormRef.data], fileName, { type: "text/xml" });
+            fd.append("files", xmlFile);
+            fd.append("deployName", FormRef.name);
+
+            // deployFlow(fd).then((res) => {
+            //   if (res.data) {
+            //     message("部署成功");
+            //   } else {
+            //     message("部署失败", { type: "error" });
+            //   }
+            // });
+          })
+          .catch(console.log);
+      }
+    });
+  };
+
   return {
     formData,
     maxHeight,
@@ -280,11 +316,12 @@ export function useTable() {
     columns,
     dataList,
     pagination,
-    exportExcel,
     onSearch,
     resetForm,
     openDialog,
     handleDelete,
+    onExport,
+    openWorkFlow,
     handleSizeChange,
     onCurrentChange,
     handleCurrentChange,
