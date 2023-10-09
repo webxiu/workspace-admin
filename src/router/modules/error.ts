@@ -2,7 +2,7 @@ export default {
   path: "/error",
   redirect: "/error/403",
   meta: {
-    icon: "informationLine",
+    icon: "InformationLine",
     title: "异常页面",
     showLink: false,
     rank: 9

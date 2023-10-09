@@ -7,7 +7,7 @@ export default {
   redirect: "/organization",
   component: Layout,
   meta: {
-    icon: "homeFilled",
+    icon: "HomeFilled",
     title: "组织机构列表",
     rank: 0
   },

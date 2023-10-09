@@ -1,4 +1,5 @@
 import type { IconifyIcon } from "@iconify/vue";
+
 const { VITE_HIDE_HOME } = import.meta.env;
 
 export const routerArrays: Array<RouteConfigs> =
@@ -8,7 +9,7 @@ export const routerArrays: Array<RouteConfigs> =
           path: "/organization",
           meta: {
             title: "组织机构列表",
-            icon: "homeFilled"
+            icon: "HomeFilled"
           }
         }
       ]

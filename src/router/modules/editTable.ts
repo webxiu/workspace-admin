@@ -5,13 +5,19 @@ export default {
   name: "EditTable",
   component: Layout,
   redirect: "/editTable/list",
-  meta: { title: "编辑表格", icon: "Edit", rank: 1566 },
+  meta: { title: "编辑表格", icon: "CheckboxCircleLine", rank: 1566 },
   children: [
     {
       path: "/editTable/list",
       name: "EditTableList",
       component: () => import("@/views/editTable/index.vue"),
       meta: { title: "编辑表格", icon: "Edit" }
+    },
+    {
+      path: "/calendar",
+      name: "Calendar",
+      component: () => import("@/views/calendar/index.vue"),
+      meta: { title: "日历", icon: "Card" }
     }
   ]
 } as RouteConfigsTable;

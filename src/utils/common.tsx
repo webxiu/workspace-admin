@@ -104,10 +104,10 @@ export const delEmptyQueryNodes = (obj = {}) => {
  * @param wait 等待时间
  */
 export const debounce = (fn: Function, wait = 300) => {
-  let timeout: number;
-  return () => {
+  let timeout: NodeJS.Timeout;
+  return (...arg) => {
     if (timeout !== null) clearTimeout(timeout);
-    timeout = setTimeout(fn, wait);
+    timeout = setTimeout(fn.bind(null, ...arg), wait);
   };
 };
 
