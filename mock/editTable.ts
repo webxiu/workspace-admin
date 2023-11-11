@@ -3,6 +3,7 @@
 import Mock, { Random } from "mockjs";
 
 import { MockMethod } from "vite-plugin-mock";
+import { v4 as uuidv4 } from "uuid";
 
 const mockData = (children = []) => {
   return Mock.mock({
@@ -30,7 +31,8 @@ const mockData = (children = []) => {
     borth: Random.datetime("yyyy-MM-dd HH:mm:ss"), // 获取年月日 时分秒
     imgUrl: Random.image("200x200", "#ff6600", "#0000ff", "很好看的图片"), // 图片url
     createTime: "@datetime",
-    updateTime: "@datetime"
+    updateTime: "@datetime",
+    uuid: uuidv4()
     // children: children
   });
 };

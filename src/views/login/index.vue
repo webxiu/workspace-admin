@@ -37,7 +37,7 @@ const { title } = useNav();
 const ruleForm = reactive({
   userName: "admin",
   password: "admin",
-  orgDomain: "app.deogra.com"
+  orgDomain: "app.domain.com"
 });
 
 /** 登录校验 */

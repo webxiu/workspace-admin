@@ -6,7 +6,7 @@
  */ -->
 <script setup lang="ts">
 import { ref } from "vue";
-import { useRole } from "./utils/hook";
+import { useConfig } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useEleHeight } from "@/hooks/common";
@@ -15,7 +15,7 @@ import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import BlendedSearch, { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
-const { formData, loading, columns, dataList, pagination, onSearch, openDialog, handleDelete, handleSizeChange, handleCurrentChange, handleSelectionChange } = useRole();
+const { tableRef, formData, loading, columns, dataList, pagination, onSearch, openDialog, handleDelete, handleSizeChange, onRowClick, handleCurrentChange, handleSelectionChange } = useConfig();
 
 const searchOptions: SearchOptionType[] = [
   /** ID */
@@ -62,6 +62,7 @@ const handleTagSearch = (val) => {
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
           border
+          ref="tableRef"
           v-if="maxHeight"
           :height="maxHeight"
           :max-height="maxHeight"
@@ -73,11 +74,7 @@ const handleTagSearch = (val) => {
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="pagination"
-          :paginationSmall="size === 'small' ? true : false"
-          :header-cell-style="{
-            background: 'var(--el-table-row-hover-bg-color)',
-            color: 'var(--el-text-color-primary)'
-          }"
+          :paginationSmall="size === 'small'"
           @selection-change="handleSelectionChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"

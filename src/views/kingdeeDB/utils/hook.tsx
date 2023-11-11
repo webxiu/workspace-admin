@@ -1,4 +1,4 @@
-import editForm from "../form.vue";
+import EditForm from "@/components/EditForm/index.vue";
 import { kingdeeDBList, addKingdeeDB, updateKingdeeDB, deleteKingdeeDB } from "@/api/kingdeeDB";
 import { ElMessageBox, ElMessage } from "element-plus";
 import { addDialog } from "@/components/ReDialog";
@@ -7,9 +7,11 @@ import { type PaginationProps } from "@pureadmin/table";
 import { reactive, ref, h, onMounted } from "vue";
 import { getColumns, formConfigs, OptionsType } from "./config";
 import { organizationList } from "@/api/orgList";
+import { setColomn } from "@/utils/common";
 
-export function useRole() {
+export function useConfig() {
   const formRef = ref();
+  const tableRef = ref();
   const formData = ref();
   const loading = ref(true);
   const columns = ref<TableColumnList[]>([]);
@@ -23,24 +25,33 @@ export function useRole() {
   });
 
   onMounted(() => {
-    getOrgList();
+    getColumnConfig();
+    getOrgOptions();
   });
 
-  // 分页相关
-  function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+  /** 获取组织列表 */
+  async function getOrgOptions() {
+    try {
+      const res = await organizationList({});
+      const optionList = res.data?.map(({ id, orgName }) => ({ value: id, label: orgName }));
+      orgOptionList.value = optionList;
+    } catch (error) {
+      orgOptionList.value = [];
+      ElMessage.error(error.toString() || "组织列表获取失败");
+    }
   }
 
-  function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
-  }
+  const getColumnConfig = () => {
+    const columnData = getColumns(orgOptionList);
+    columns.value = setColomn({ columnData, showOpt: true, showSelection: true, operateWidth: 140 });
+  };
 
-  function handleSelectionChange(val) {
-    console.log("handleSelectionChange", val);
-  }
-
-  /** 获取金蝶数据库列表 */
+  /** 搜索 */
   async function onSearch() {
+    getTableList();
+  }
+  /** 获取金蝶数据库列表 */
+  async function getTableList() {
     try {
       loading.value = true;
       const res = await kingdeeDBList(formData.value);
@@ -56,23 +67,10 @@ export function useRole() {
     }
   }
 
-  /** 获取组织列表 */
-  async function getOrgList() {
-    try {
-      const res = await organizationList({});
-      const optionList = res.data?.map(({ id, orgName }) => ({ value: id, label: orgName }));
-      orgOptionList.value = optionList;
-      columns.value = getColumns(optionList);
-    } catch (error) {
-      columns.value = getColumns([]);
-      ElMessage.error(error.toString() || "组织列表获取失败");
-    }
-  }
-
   const resetForm = (formEl) => {
     if (!formEl) return;
     formEl.resetFields();
-    onSearch();
+    getTableList();
   };
 
   // 添加、编辑弹窗
@@ -103,7 +101,7 @@ export function useRole() {
         draggable: true,
         fullscreenIcon: true,
         closeOnClickModal: false,
-        contentRenderer: () => h(editForm, { ref: formRef }),
+        contentRenderer: () => h(EditForm, { ref: formRef }),
         beforeSure: (done, { options }) => {
           const FormRef = formRef.value.getRef();
           const curData = options.props.formInline as KingdeeDBItemType;
@@ -119,7 +117,7 @@ export function useRole() {
                 .then(() => {
                   onAddOrganization(type, title, curData, () => {
                     done(); // 关闭弹框
-                    onSearch(); // 刷新表格数据
+                    getTableList(); // 刷新表格数据
                   });
                 })
                 .catch(() => {});
@@ -153,7 +151,7 @@ export function useRole() {
       .then((res) => {
         if (res.status !== 200) throw res.message;
         ElMessage.success(`删除成功`);
-        onSearch();
+        getTableList();
       })
       .catch((err) => {
         ElMessage.error(`删除失败`);
@@ -161,7 +159,27 @@ export function useRole() {
       });
   }
 
+  // 分页相关
+  function handleSizeChange(limit: number) {
+    formData.value.limit = limit;
+    getTableList();
+  }
+
+  function handleCurrentChange(page: number) {
+    formData.value.page = page;
+    getTableList();
+  }
+
+  function handleSelectionChange(rows: KingdeeDBItemType[]) {
+    console.log("多选", rows);
+  }
+
+  const onRowClick = (row: KingdeeDBItemType) => {
+    tableRef.value?.getTableRef().toggleRowSelection(row);
+  };
+
   return {
+    tableRef,
     formData,
     loading,
     columns,
@@ -170,6 +188,7 @@ export function useRole() {
     onSearch,
     resetForm,
     openDialog,
+    onRowClick,
     handleDelete,
     handleSizeChange,
     handleCurrentChange,

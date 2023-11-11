@@ -5,7 +5,7 @@
  * @Last Modified time: 2023-09-21 11:01:39
  */
 
-import editForm from "../form.vue";
+import EditForm from "@/components/EditForm/index.vue";
 import { useEleHeight } from "@/hooks";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h, withModifiers, Ref } from "vue";
@@ -15,7 +15,7 @@ import { message } from "@/utils/message";
 
 import { type PaginationProps } from "@pureadmin/table";
 import { testList, addTest, updateTest, deleteTest, TestItemType } from "@/api/editTable";
-import { setColomn, downloadDataToExcel } from "@/utils/common";
+import { setColomn, downloadDataToExcel, getTableCellEdit } from "@/utils/common";
 import Bpmn from "../component/Bpmn.vue";
 
 export type RowHandleType = "add" | "edit";
@@ -42,89 +42,38 @@ export function useTable() {
   });
 
   const getColumnConfig = (dataList: Ref<TableDataItemType[]>) => {
-    const editIndex = ref<number>(-1);
-    const editValue = ref<string>("");
-    const editField = ref<string>("");
-
-    const onBlur = (prop, index, row) => {
-      editIndex.value = -1;
-      dataList.value[index][prop] = editValue.value;
-      // 提交请求
-      onEditCell(prop, editValue.value, row);
-    };
-    const onClick = (prop, index, value) => {
-      editField.value = prop;
-      editIndex.value = index;
-      editValue.value = value;
-    };
-
-    // 1.输入框编辑
-    const editCellRenderer = ({ row, column, index }) => {
-      const fieldProp = column["property"];
-      const isCell = editIndex.value === index && fieldProp === editField.value;
-      return (
-        <>
-          <el-input
-            size="small"
-            v-show={isCell}
-            v-model={editValue.value}
-            onBlur={() => onBlur(fieldProp, index, row)}
-            onKeyup={(e) => e.code === "Enter" && onClick(fieldProp, index, row[fieldProp])}
-          />
-          <span v-show={!isCell} onClick={() => onClick(fieldProp, index, row[fieldProp])} class="ui-w-100 ui-d-ib" style={{ height: "24px" }}>
-            {row[fieldProp]}
-          </span>
-        </>
-      );
-    };
-
-    // 下拉框列表
+    const { editCellRenderer, editSelectRenderer } = getTableCellEdit(dataList, (data) => {
+      const { prop, index, value, row } = data;
+      dataList.value[index][prop] = value;
+      console.log("data", data);
+      if (prop === "position") {
+        // 编辑成功后 对顺序字段进行排序处理
+        dataList.value[index][prop] = value;
+        moveTableRow(dataList, dataList.value[index]);
+        return;
+      }
+    });
     const options = [
       { label: "待处理", value: 0 },
       { label: "进行中", value: 1 },
       { label: "已处理", value: 2 },
       { label: "已完成", value: 3 }
     ];
-    // 2.下拉框编辑
-    const editSelectRenderer = ({ row, column, index, options }) => {
-      const StatusObj = {
-        0: { name: "待处理", color: "#909399" },
-        1: { name: "进行中", color: "#e6a23c" },
-        2: { name: "已处理", color: "#409eff" },
-        3: { name: "已完成", color: "#67c23a" },
-        4: { name: "已失败", color: "#DC143C" }
-      };
-      const fieldProp = column["property"]; // 获取属性字段
-      const isCell = editIndex.value === index && fieldProp === editField.value;
-      const stateStyle = { background: StatusObj[row[fieldProp]].color, height: "24px", lineHeight: "24px", color: "#fff", borderRadius: "4px" };
-      return (
-        <>
-          <el-select
-            size="small"
-            v-show={isCell}
-            v-model={editValue.value}
-            class="ui-w-100"
-            placeholder="请选择"
-            onBlur={() => onBlur(fieldProp, index, row)}
-            onChange={(value) => onClick(fieldProp, index, value)}
-          >
-            {options?.map((item) => (
-              <el-option key={item.value} label={item.label} value={item.value} />
-            ))}
-          </el-select>
-          <span v-show={!isCell} onClick={() => onClick(fieldProp, index, row[fieldProp])} class="ui-w-100 ui-d-ib" style={stateStyle}>
-            {StatusObj[row[fieldProp]].name}
-          </span>
-        </>
-      );
+    const colorMap = {
+      0: "#909399",
+      1: "#e6a23c",
+      2: "#409eff",
+      3: "#67c23a",
+      4: "#DC143C"
     };
 
     const columnData: TableColumnList[] = [
+      { label: "排序", prop: "position", width: 55, align: "center", cellRenderer: (data) => editCellRenderer(data, true) },
       { label: "选择", prop: "title" },
-      { label: "组织ID", prop: "id" },
-      { label: "用户名(可编辑)", prop: "username", cellRenderer: ({ row, column, index }) => editCellRenderer({ row, column, index }) },
-      { label: "年龄(可编辑)", prop: "age", cellRenderer: ({ row, column, index }) => editCellRenderer({ row, column, index }) },
-      { label: "状态(下拉编辑)", prop: "state", cellRenderer: ({ row, column, index }) => editSelectRenderer({ row, column, index, options }) },
+      { label: "组织ID", prop: "id", minWidth: 180 },
+      { label: "用户名(可编辑)", prop: "username", cellRenderer: (data) => editCellRenderer(data, true) },
+      { label: "年龄(可编辑)", prop: "age", cellRenderer: (data) => editCellRenderer(data, true) },
+      { label: "状态(下拉编辑)", prop: "state", cellRenderer: (data) => editSelectRenderer(data, options, true, { background: colorMap[data.row[data.column["property"]]] }) },
       { label: "color", prop: "color" },
       { label: "desc", prop: "desc" },
       { label: "title", prop: "title" },
@@ -134,7 +83,7 @@ export function useTable() {
       { label: "创建时间", prop: "createTime" },
       { label: "更新时间", prop: "updateTime" }
     ];
-    columns.value = setColomn({ columnData, showOpt: true });
+    columns.value = setColomn({ columnData, showOpt: true, showRadio: true, indexColumn: false });
   };
 
   onMounted(() => {
@@ -146,7 +95,7 @@ export function useTable() {
     try {
       loading.value = true;
       const res = await testList(formData);
-      const data = res.data;
+      const data = res.data.map((item, index) => ({ position: index + 1, ...item }));
       dataList.value = data;
       getColumnConfig(dataList);
       pagination.total = data.length;
@@ -162,22 +111,6 @@ export function useTable() {
   // 编辑单元格
   function onEditCell(prop, value, row) {
     console.log("编辑字段:", prop, "\n提交的值:", value, "\n行数据:", row);
-  }
-
-  // 分页相关
-  function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
-  }
-
-  function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
-  }
-
-  function handleSelectionChange(rows: TableDataItemType[]) {
-    console.log("多选", JSON.parse(JSON.stringify(rows)));
-  }
-  function onCurrentChange(row: TableDataItemType) {
-    console.log("单选", row?.id);
   }
 
   const onExport = () => {
@@ -215,7 +148,7 @@ export function useTable() {
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
+      contentRenderer: () => h(EditForm, { ref: formRef }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as TestItemType;
@@ -307,6 +240,36 @@ export function useTable() {
           .catch(console.log);
       }
     });
+  };
+
+  // 分页相关
+  function handleSizeChange(val: number) {
+    console.log(`${val} items per page`);
+  }
+
+  function handleCurrentChange(val: number) {
+    console.log(`current page: ${val}`);
+  }
+
+  function handleSelectionChange(rows: TableDataItemType[]) {
+    console.log("多选", JSON.parse(JSON.stringify(rows)));
+  }
+  function onCurrentChange(row: TableDataItemType) {
+    console.log("单选", row?.id);
+  }
+
+  const moveTableRow = (dataList, row, type?) => {
+    let seq = Number(row.position);
+    if (type) {
+      const direction = type === "up" ? -1 : 1;
+      seq += direction;
+    }
+    const len = dataList.value.length;
+    const newArr = dataList.value.filter(({ uuid }) => uuid !== row.uuid);
+    const pos = seq >= len ? len - 1 : seq <= 0 ? 0 : seq - 1;
+    newArr.splice(pos, 0, row);
+    newArr.forEach((item, index) => (item.position = index + 1));
+    dataList.value = newArr;
   };
 
   return {
