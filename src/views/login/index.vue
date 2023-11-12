@@ -7,7 +7,7 @@ import { ElMessage, FormInstance, FormRules } from "element-plus";
 import { useLayout } from "@/layout/hooks/useLayout";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
-import { bg, avatar, illustration } from "./utils/static";
+import { bg, logo, illustration } from "./utils/static";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { ref, reactive, toRaw, onMounted, onBeforeUnmount } from "vue";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
@@ -66,7 +66,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
       const password = md5(ruleForm.password).substr(8, 16).toUpperCase();
       login({ userName: ruleForm.userName, password, orgDomain: ruleForm.orgDomain })
         .then((res) => {
-          if (res.status !== 200) throw res.message;
+          if (res.code !== 200) throw res.message;
           // 存储用户信息
           useUserStoreHook().setUserInfo(res.data);
           // 获取后端路由
@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
       </div>
       <div class="login-box">
         <div class="login-form">
-          <avatar class="avatar" />
+          <img :src="logo" class="avatar" />
           <Motion>
             <h2 class="outline-none">{{ title }}</h2>
           </Motion>

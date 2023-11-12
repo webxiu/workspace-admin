@@ -162,8 +162,8 @@ export default [
         },
         {
           id: "f9bffdb8833e744e99ccb1ed49055db4",
-          orgName: "东莞敬孚塑胶科技有限公司",
-          shortName: "敬孚塑胶",
+          orgName: "东莞朝九晚六科技有限公司",
+          shortName: "朝九晚六",
           orgCode: "",
           logo: "/file/019F602DB32842F5BB3A8BFA812690BF.png",
           orgAddress: "广东东莞",
@@ -379,8 +379,8 @@ export default [
         },
         {
           id: "f9bffdb8833e744e99ccb1ed49055db4",
-          orgName: "东莞敬孚塑胶科技有限公司",
-          shortName: "敬孚塑胶",
+          orgName: "东莞朝九晚六科技有限公司",
+          shortName: "朝九晚六",
           orgCode: "",
           logo: "/file/019F602DB32842F5BB3A8BFA812690BF.png",
           orgAddress: "广东东莞",
