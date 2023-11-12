@@ -44,11 +44,10 @@ export function useTable() {
   const getColumnConfig = (dataList: Ref<TableDataItemType[]>) => {
     const { editCellRenderer, editSelectRenderer } = getTableCellEdit(dataList, (data) => {
       const { prop, index, value, row } = data;
-      dataList.value[index][prop] = value;
-      console.log("完成回调:", JSON.parse(JSON.stringify(data)));
       if (prop === "position") {
-        // 编辑成功后 对顺序字段进行排序处理
         dataList.value[index][prop] = value;
+        onEditCell(prop, value, row);
+        // 编辑成功后 对顺序字段进行排序处理 
         moveTableRow(dataList, dataList.value[index]);
         return;
       }
@@ -86,17 +85,12 @@ export function useTable() {
     columns.value = setColomn({ columnData, showOpt: true, showRadio: true, indexColumn: false });
   };
 
-  onMounted(() => {
-    onSearch();
-  });
-
   /** 获取列表 */
   async function onSearch() {
     try {
       loading.value = true;
       const res = await testList(formData);
       const data = res.data.map((item, index) => ({ position: index + 1, ...item }));
-      console.log('data', data)
       dataList.value = data;
       getColumnConfig(dataList);
       pagination.total = data.length;
@@ -111,7 +105,7 @@ export function useTable() {
 
   // 编辑单元格
   function onEditCell(prop, value, row) {
-    console.log("编辑字段:", prop, "\n提交的值:", value, "\n行数据:", row);
+    console.log("编辑字段:", prop, "提交的值:", value, "\n行数据:", row);
   }
 
   const onExport = () => {
