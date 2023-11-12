@@ -44,8 +44,8 @@ export function useTable() {
   const getColumnConfig = (dataList: Ref<TableDataItemType[]>) => {
     const { editCellRenderer, editSelectRenderer } = getTableCellEdit(dataList, (data) => {
       const { prop, index, value, row } = data;
+      dataList.value[index][prop] = value;
       if (prop === "position") {
-        dataList.value[index][prop] = value;
         onEditCell(prop, value, row);
         // 编辑成功后 对顺序字段进行排序处理 
         moveTableRow(dataList, dataList.value[index]);

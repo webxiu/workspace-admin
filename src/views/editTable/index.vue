@@ -17,6 +17,7 @@ import BlendedSearch, { SearchOptionType } from "@/components/BlendedSearch/inde
 import ButtonList, { LoadingType, ButtonItemType } from "@/components/ButtonList/index.vue";
 const baseApi = import.meta.env.VITE_BASE_API;
 import { message } from "@/utils/message";
+import { UploadProps } from "element-plus";
 
 //默认搜索值
 const defaultValue = ref({

@@ -7,7 +7,7 @@ export default {
   component: Layout,
   meta: {
     icon: "Histogram",
-    title: "金蝶数据库配置",
+    title: "数据库配置",
     rank: 1
   },
   children: [
@@ -16,7 +16,7 @@ export default {
       name: "kingdeeDBList",
       component: () => import("@/views/kingdeeDB/index.vue"),
       meta: {
-        title: "金蝶数据库列表"
+        title: "数据库列表"
       }
     }
   ]
