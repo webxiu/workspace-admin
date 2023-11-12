@@ -13,48 +13,21 @@ import { useEleHeight } from "@/hooks/common";
 import Delete from "@iconify-icons/ep/delete";
 import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
-import BlendedSearch, { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import BlendedSearch from "@/components/BlendedSearch/index.vue";
 
-const { tableRef, formData, loading, columns, dataList, pagination, onSearch, openDialog, handleDelete, handleSizeChange, onRowClick, handleCurrentChange, handleSelectionChange } = useConfig();
-
-const searchOptions: SearchOptionType[] = [
-  /** ID */
-  { label: "ID", value: "id" },
-  /** 数据库简称 */
-  { label: "数据库简称", value: "accountName" },
-  /** IP地址 */
-  { label: "IP地址", value: "ipAddress" },
-  /** 连接数据库名称 */
-  { label: "连接数据库名称", value: "linkDbName" },
-  /** 连接类型 */
-  { label: "连接类型", value: "dbType" },
-  /** 用户名 */
-  { label: "用户名", value: "username" },
-  /** 密码 */
-  { label: "密码", value: "password" },
-  /** 昵称 */
-  { label: "昵称", value: "nick" },
-  /** 状态 */
-  { label: "状态", value: "accountStatus" },
-  /** 组织ID */
-  { label: "组织ID", value: "orgId" }
-];
+const { tableRef, formData, loading, columns, dataList, pagination, searchOptions, onSearch, openDialog, handleDelete, handleSizeChange, onRowClick, handleCurrentChange, handleSelectionChange } =
+  useConfig();
 
 const defaultValue = ref({}); //默认搜索值
 const boxRef = ref<HTMLDivElement>();
 const maxHeight = useEleHeight(".app-main .el-scrollbar", 60 + 64 + 48);
-
-const handleTagSearch = (val) => {
-  formData.value = val.value;
-  onSearch();
-};
 </script>
 
 <template>
   <div class="main ui-h-100" ref="boxRef">
     <PureTableBar title="列表" v-if="columns.length" :columns="columns" @refresh="onSearch">
       <template #title>
-        <BlendedSearch class="action-search" @tagSearch="handleTagSearch" :options="searchOptions" placeholder="请输入数据库简称" searchField="accountName" :default="defaultValue" />
+        <BlendedSearch class="action-search" @tagSearch="onSearch" :options="searchOptions" placeholder="请输入数据库简称" searchField="accountName" :default="defaultValue" />
       </template>
       <template #buttons>
         <el-button type="primary" :icon="useRenderIcon(AddFill)" @click="openDialog('add')">添加组织</el-button>

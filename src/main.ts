@@ -19,6 +19,7 @@ import { getServerConfig } from "./config";
 import { injectResponsiveStorage } from "@/utils/responsive";
 import router from "./router";
 import { setupStore } from "@/store";
+import "../mock";
 
 // import { useEcharts } from "@/plugins/echarts";
 

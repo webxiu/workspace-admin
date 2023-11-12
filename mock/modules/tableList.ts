@@ -2,14 +2,15 @@
 
 import Mock from "mockjs";
 import { MockMethod } from "vite-plugin-mock";
+import { responseReturn } from "../index";
 
 export default [
   {
     url: "/config/org",
     method: "get",
     response: () => {
-      const list = Array.from(new Array(20)).map(() => {
-        return Mock.mock({
+      const result = Mock.mock({
+        "list|20": {
           id: "@id",
           orgName: "@first",
           shortName: "@increment",
@@ -58,12 +59,10 @@ export default [
           pcQywxWorkSecret: "@cname()",
           createTime: "@datetime",
           updateTime: "@datetime"
-        });
+        }
       });
-      return {
-        success: true,
-        data: { list: list, total: 2, pageSize: 10, currentPage: 1 }
-      };
+      const data = { ...result, total: 2, pageSize: 10, currentPage: 1 };
+      return responseReturn(data);
     }
   },
   {
@@ -122,10 +121,8 @@ export default [
           updateTime: "@datetime"
         });
       });
-      return {
-        success: true,
-        data: { list: list, total: 2, pageSize: 10, currentPage: 1 }
-      };
+      const data = { list: list, total: 2, pageSize: 10, currentPage: 1 };
+      return responseReturn(data);
     }
   }
 ] as MockMethod[];

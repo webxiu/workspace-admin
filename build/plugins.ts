@@ -34,19 +34,19 @@ export function getPluginsList(command: string, VITE_CDN: boolean, VITE_COMPRESS
     svgLoader(),
     // ElementPlus({}),
     // mock支持
-    viteMockServe({
-      mockPath: "mock",
-      localEnabled: command === "serve",
-      prodEnabled: command !== "serve" && prodMock,
-      injectCode:
-        command === "build"
-          ? ""
-          : `
-          import { setupProdMockServer } from './mockProdServer';
-          setupProdMockServer();
-        `,
-      logger: false
-    }),
+    // viteMockServe({
+    //   mockPath: "mock",
+    //   localEnabled: command === "serve",
+    //   prodEnabled: command !== "serve" && prodMock,
+    //   injectCode:
+    //     command === "build"
+    //       ? ""
+    //       : `
+    //       import { setupProdMockServer } from './mockProdServer';
+    //       setupProdMockServer();
+    //     `,
+    //   logger: false
+    // }),
     // 打包分析
     lifecycle === "report" ? visualizer({ open: true, brotliSize: true, filename: "report.html" }) : null
   ];

@@ -111,11 +111,11 @@ class PureHttp {
         }
 
         // ================ 状态码判断 start ================
-        if (data.status === 200) {
+        if (data.code === 200) {
           return response.data;
-        } else if ([401, 504, 509].includes(data.status)) {
+        } else if ([401, 504, 509].includes(data.code)) {
           useUserStoreHook().logOut();
-        } else if (data.status === 403) {
+        } else if (data.code === 403) {
           ElMessage({ message: "请求未授权", type: "error" });
         } else {
           ElMessage({ message: data.message, duration: 3000 });

@@ -45,7 +45,7 @@ export function useTable() {
     const { editCellRenderer, editSelectRenderer } = getTableCellEdit(dataList, (data) => {
       const { prop, index, value, row } = data;
       dataList.value[index][prop] = value;
-      console.log("data", data);
+      console.log("完成回调:", JSON.parse(JSON.stringify(data)));
       if (prop === "position") {
         // 编辑成功后 对顺序字段进行排序处理
         dataList.value[index][prop] = value;
@@ -69,17 +69,17 @@ export function useTable() {
 
     const columnData: TableColumnList[] = [
       { label: "排序", prop: "position", width: 55, align: "center", cellRenderer: (data) => editCellRenderer(data, true) },
-      { label: "选择", prop: "title" },
+      { label: "星级", prop: "star" },
       { label: "组织ID", prop: "id", minWidth: 180 },
       { label: "用户名(可编辑)", prop: "username", cellRenderer: (data) => editCellRenderer(data, true) },
       { label: "年龄(可编辑)", prop: "age", cellRenderer: (data) => editCellRenderer(data, true) },
       { label: "状态(下拉编辑)", prop: "state", cellRenderer: (data) => editSelectRenderer(data, options, true, { background: colorMap[data.row[data.column["property"]]] }) },
-      { label: "color", prop: "color" },
-      { label: "desc", prop: "desc" },
-      { label: "title", prop: "title" },
-      { label: "money", prop: "money" },
-      { label: "word", prop: "word" },
-      { label: "borth", prop: "borth" },
+      { label: "颜色", prop: "color" },
+      { label: "描述", prop: "desc" },
+      { label: "标题", prop: "title" },
+      { label: "金额", prop: "money" },
+      { label: "词语", prop: "word" },
+      { label: "日期", prop: "borth" },
       { label: "创建时间", prop: "createTime" },
       { label: "更新时间", prop: "updateTime" }
     ];
@@ -96,6 +96,7 @@ export function useTable() {
       loading.value = true;
       const res = await testList(formData);
       const data = res.data.map((item, index) => ({ position: index + 1, ...item }));
+      console.log('data', data)
       dataList.value = data;
       getColumnConfig(dataList);
       pagination.total = data.length;
@@ -167,7 +168,7 @@ export function useTable() {
                   onSearch(); // 刷新表格数据
                 });
               })
-              .catch(() => {});
+              .catch(() => { });
           }
         });
       }
@@ -179,7 +180,7 @@ export function useTable() {
     const API = { add: addTest, edit: updateTest };
     API[type](data)
       .then((res) => {
-        if (res.status !== 200) throw res.message;
+        if (res.code !== 200) throw res.message;
         callback();
         message(`${title}成功`, { type: "success" });
       })

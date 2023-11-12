@@ -24,7 +24,7 @@ nextTick(() => {
 <template>
   <div v-loading="usePermissionStoreHook().wholeMenus.length === 0" class="horizontal-header">
     <div class="horizontal-header-left" @click="backTopMenu">
-      <img src="/logo.svg" alt="logo" />
+      <img src="/logo.png" alt="logo" />
       <span>{{ title }}</span>
     </div>
     <el-menu router ref="menuRef" mode="horizontal" class="horizontal-header-menu" :default-active="defaultActive">

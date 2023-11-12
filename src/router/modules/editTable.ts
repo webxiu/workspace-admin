@@ -5,7 +5,7 @@ export default {
   name: "EditTable",
   component: Layout,
   redirect: "/editTable/list",
-  meta: { title: "编辑表格", icon: "CheckboxCircleLine", rank: 1566 },
+  meta: { title: "常用模块", icon: "CheckboxCircleLine", rank: 1566 },
   children: [
     {
       path: "/editTable/list",

@@ -250,7 +250,7 @@ export function useConfig() {
                   getTableList(); // 刷新表格数据
                 });
               })
-              .catch(() => {});
+              .catch(() => { });
           }
         });
       }
@@ -262,7 +262,7 @@ export function useConfig() {
     const API = { add: addOrganization, edit: updateOrganization };
     API[type](data)
       .then((res) => {
-        if (res.status !== 200) throw res.message;
+        if (res.code !== 200) throw res.message;
         callback();
         ElMessage.success(`${title}成功`);
       })
@@ -276,7 +276,7 @@ export function useConfig() {
   function handleDelete(row: OrganizationItemType) {
     deleteOrganization({ id: row.id })
       .then((res) => {
-        if (res.status !== 200) throw res.message;
+        if (res.code !== 200) throw res.message;
         ElMessage.success(`删除成功`);
         getTableList();
       })

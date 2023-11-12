@@ -54,7 +54,7 @@ export function usePassword() {
               dangerouslyUseHTMLString: true
             })
               .then(() => onSubmitPassword(curData, () => done()))
-              .catch(() => {});
+              .catch(() => { });
           }
         });
       }
@@ -67,7 +67,7 @@ export function usePassword() {
     const newPassword = md5(data.newPassword.trim()).substr(8, 16).toUpperCase();
     updatePassword({ id: data.id, oldPassword, newPassword })
       .then((res) => {
-        if (res.status !== 200) throw res.message;
+        if (res.code !== 200) throw res.message;
         callback();
         ElMessage.success("密码修改成功");
       })

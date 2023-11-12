@@ -42,7 +42,7 @@ declare global {
    */
   interface BaseResponseType<T> {
     data: T;
-    status: number;
+    code: number;
     message: string;
     timestamp: number;
   }

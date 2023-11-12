@@ -30,7 +30,7 @@ export interface KingdeeDBItemType {
 /**========================= 数据库列表 =========================*/
 // 数据库列表
 export const kingdeeDBList = (params) => {
-  return http.request<KingdeeDBItemType[]>("post", "/config/kingdee", { data: params });
+  return http.request<KingdeeDBItemType[]>("post", "/config/kingdee/list", { data: params });
 };
 // 增加数据库
 export const addKingdeeDB = (data) => {

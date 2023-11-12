@@ -8,12 +8,12 @@ import { reactive, ref, h, onMounted } from "vue";
 import { getColumns, formConfigs, OptionsType } from "./config";
 import { organizationList } from "@/api/orgList";
 import { setColomn } from "@/utils/common";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 export function useConfig() {
   const formRef = ref();
   const tableRef = ref();
-  const formData = ref();
-  const loading = ref(true);
+  const loading = ref(false);
   const columns = ref<TableColumnList[]>([]);
   const orgOptionList = ref<OptionsType[]>([]);
   const dataList = ref<KingdeeDBItemType[]>([]);
@@ -23,22 +23,47 @@ export function useConfig() {
     currentPage: 1,
     background: true
   });
+  const formData = reactive({ accountName: '' });
+
+  const searchOptions: SearchOptionType[] = [
+    /** ID */
+    { label: "ID", value: "id" },
+    /** 数据库简称 */
+    { label: "数据库简称", value: "accountName" },
+    /** IP地址 */
+    { label: "IP地址", value: "ipAddress" },
+    /** 连接数据库名称 */
+    { label: "连接数据库名称", value: "linkDbName" },
+    /** 连接类型 */
+    { label: "连接类型", value: "dbType" },
+    /** 用户名 */
+    { label: "用户名", value: "username" },
+    /** 密码 */
+    { label: "密码", value: "password" },
+    /** 昵称 */
+    { label: "昵称", value: "nick" },
+    /** 状态 */
+    { label: "状态", value: "accountStatus" },
+    /** 组织ID */
+    { label: "组织ID", value: "orgId" }
+  ];
 
   onMounted(() => {
     getColumnConfig();
     getOrgOptions();
+    getTableList();
   });
 
   /** 获取组织列表 */
   async function getOrgOptions() {
-    try {
-      const res = await organizationList({});
+    organizationList({}).then(res => {
       const optionList = res.data?.map(({ id, orgName }) => ({ value: id, label: orgName }));
       orgOptionList.value = optionList;
-    } catch (error) {
+    }).catch((error) => {
       orgOptionList.value = [];
       ElMessage.error(error.toString() || "组织列表获取失败");
-    }
+    })
+
   }
 
   const getColumnConfig = () => {
@@ -47,24 +72,26 @@ export function useConfig() {
   };
 
   /** 搜索 */
-  async function onSearch() {
+  function onSearch(val) {
+    formData.accountName = val.accountName;
     getTableList();
   }
   /** 获取金蝶数据库列表 */
-  async function getTableList() {
-    try {
-      loading.value = true;
-      const res = await kingdeeDBList(formData.value);
+  function getTableList() {
+    loading.value = false;
+    kingdeeDBList(formData).then(res => {
       const data = res.data;
       dataList.value = data;
       pagination.total = data.length;
       pagination.pageSize = 100;
       pagination.currentPage = 1;
       loading.value = false;
-    } catch (error) {
+    }).catch((error) => {
+      loading.value = false;
       ElMessage.error(error.toString() || "列表获取失败");
       console.log("error:", error);
-    }
+    })
+
   }
 
   const resetForm = (formEl) => {
@@ -120,7 +147,7 @@ export function useConfig() {
                     getTableList(); // 刷新表格数据
                   });
                 })
-                .catch(() => {});
+                .catch(() => { });
             }
           });
         }
@@ -135,7 +162,7 @@ export function useConfig() {
     const API = { add: addKingdeeDB, edit: updateKingdeeDB };
     API[type](data)
       .then((res) => {
-        if (res.status !== 200) throw res.message;
+        if (res.code !== 200) throw res.message;
         callback();
         ElMessage.success(`${title}成功`);
       })
@@ -149,7 +176,7 @@ export function useConfig() {
   function handleDelete(row: KingdeeDBItemType) {
     deleteKingdeeDB({ id: row.id })
       .then((res) => {
-        if (res.status !== 200) throw res.message;
+        if (res.code !== 200) throw res.message;
         ElMessage.success(`删除成功`);
         getTableList();
       })
@@ -185,6 +212,7 @@ export function useConfig() {
     columns,
     dataList,
     pagination,
+    searchOptions,
     onSearch,
     resetForm,
     openDialog,
