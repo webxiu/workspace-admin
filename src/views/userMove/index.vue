@@ -116,4 +116,9 @@ const onSelectChange = (value) => {
     margin-bottom: 12px;
   }
 }
+
+:deep(.user-move .el-image) {
+  width: 60px;
+  height: 60px;
+}
 </style>
