@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-07-06 14:21:11
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-11-13 11:46:20
+ * @Last Modified time: 2023-11-13 15:19:50
  */
 
 import EditForm from "@/components/EditForm/index.vue";
@@ -126,11 +126,10 @@ export function useTable() {
       { label: "创建时间", prop: "createTime" },
       { label: "更新时间", prop: "updateTime" }
     ];
-    columns.value = setColomn({ columnData, showOpt: true, showRadio: true, showSelection: true, indexColumn: false });
+    columns.value = setColomn({ columnData, showOpt: true, showSelection: true, indexColumn: false });
   };
 
   const onSearch = (values) => {
-    console.log("提交搜索:", values);
     formData.name = values;
     getTableList();
   };

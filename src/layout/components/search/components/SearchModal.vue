@@ -4,11 +4,12 @@ import { useRouter } from "vue-router";
 import SearchResult from "./SearchResult.vue";
 import SearchFooter from "./SearchFooter.vue";
 import { useNav } from "@/layout/hooks/useNav";
-import { ref, computed, shallowRef } from "vue";
+import { ref, computed, shallowRef, watch } from "vue";
 import { cloneDeep, isAllEmpty } from "@pureadmin/utils";
 import { useDebounceFn, onKeyStroke } from "@vueuse/core";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import Search from "@iconify-icons/ri/search-line";
+import { flatTree } from "@/utils/tree";
 
 interface Props {
   /** 弹窗显隐 */
@@ -46,18 +47,11 @@ const show = computed({
   }
 });
 
-/** 将菜单树形结构扁平化为一维数组，用于菜单查询 */
-function flatTree(arr) {
-  const res = [];
-  function deep(arr) {
-    arr.forEach((item) => {
-      res.push(item);
-      item.children && deep(item.children);
-    });
+watch(show, (val) => {
+  if (val) {
+    resultOptions.value = flatTree(menusData.value);
   }
-  deep(arr);
-  return res;
-}
+});
 
 /** 查询 */
 function search() {

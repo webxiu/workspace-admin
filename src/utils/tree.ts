@@ -169,3 +169,16 @@ export const handleTree = (data: any[], id?: string, parentId?: string, children
   }
   return tree;
 };
+
+/** 将菜单树形结构扁平化为一维数组，用于菜单查询 */
+export function flatTree(arr) {
+  const res = [];
+  function deep(arr) {
+    arr.forEach((item) => {
+      res.push(item);
+      if (item.children) deep(item.children);
+    });
+  }
+  deep(arr);
+  return res;
+}
