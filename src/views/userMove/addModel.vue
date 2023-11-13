@@ -8,9 +8,9 @@
 <script setup lang="ts">
 import { ref, reactive } from "vue";
 import { ElTable } from "element-plus";
-import { formRules } from "./utils/config";
 import { UserMoveItemType } from "@/api/userMove";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import type { FormRules } from "element-plus";
 
 interface FormProps {
   formInline: Partial<{ newOrgId: string; userIds: number[] }>;
@@ -29,6 +29,12 @@ const props = withDefaults(defineProps<FormProps>(), {
 const ruleFormRef = ref();
 const newFormInline = reactive(props.formInline);
 const filterOption = ref(props.userRows);
+
+/** 表单规则校验 */
+const formRules = reactive<FormRules>({
+  userIds: [{ required: true, message: "请选择员工", trigger: "blur" }],
+  newOrgId: [{ required: true, message: "请选择组织", trigger: "blur" }]
+});
 
 function onChange(values: number[]) {
   newFormInline.userIds = values;

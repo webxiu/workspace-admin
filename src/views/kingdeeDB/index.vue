@@ -48,6 +48,7 @@ const maxHeight = useEleHeight(".app-main .el-scrollbar", 60 + 64 + 48);
           :columns="dynamicColumns"
           :pagination="pagination"
           :paginationSmall="size === 'small'"
+          @row-click="onRowClick"
           @selection-change="handleSelectionChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"

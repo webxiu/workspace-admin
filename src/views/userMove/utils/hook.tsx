@@ -2,10 +2,9 @@
  * @Author: lixiuhai
  * @Date: 2023-06-29 16:50:23
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-07-22 08:30:53
+ * @Last Modified time: 2023-11-13 09:53:11
  */
-import editForm from "../form.vue";
-import { getColumns } from "./config";
+import AddModel from "../addModel.vue";
 import { message } from "@/utils/message";
 import { useEleHeight } from "@/hooks/common";
 import { organizationList } from "@/api/orgList";
@@ -15,15 +14,16 @@ import { ElMessageBox, ElMessage } from "element-plus";
 import { type PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { userMoveList, sendUserMove, UserMoveItemType, UserMoveRequestType, UserMoveRequestQueryType } from "@/api/userMove";
+import { setColomn } from "@/utils/common";
 
 export function useRole() {
   const formRef = ref();
-  const moveTableRef = ref();
+  const tableRef = ref();
   const loading = ref<boolean>(true);
   const orgOptions = ref<SearchOptionType[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<UserMoveItemType[]>([]);
-  const rows = ref<UserMoveItemType[]>([]);
+  const rowsData = ref<UserMoveItemType[]>([]);
   const maxHeight = useEleHeight(".app-main .el-scrollbar", 64 + 60 + 64);
 
   const formData = reactive<UserMoveRequestQueryType>({
@@ -42,8 +42,24 @@ export function useRole() {
   });
 
   onMounted(() => {
-    getOrgList();
+    getOptions();
+    getColumnConfig();
   });
+
+  const getColumnConfig = () => {
+    const columnData: TableColumnList[] = [
+      { label: "员工工号", prop: "userCode" },
+      { label: "员工姓名", prop: "userName" },
+      { label: "部门编号", prop: "deptId" },
+      { label: "部门", prop: "deptName" },
+      { label: "员工头像", prop: "avatar", cellRenderer: ({ row, column }) => <el-image src={row[column["property"]]} /> },
+      { label: "员工状态", prop: "userState" },
+      { label: "移动电话", prop: "mobile" },
+      { label: "企业微信ID", prop: "wxOpenid" },
+      { label: "创建时间", prop: "createdate" }
+    ];
+    columns.value = setColomn({ columnData, dataList, isDragRow: true, isDragColumn: true, dragSelector: ".user-move", showOpt: true, showSelection: true, operateWidth: 80 });
+  };
 
   /** 获取列表 */
   async function onSearch() {
@@ -51,6 +67,7 @@ export function useRole() {
       loading.value = true;
       const res = await userMoveList(formData);
       const data = res.data;
+      console.log("data", data);
       dataList.value = data.records;
       formData.page = data.current;
       formData.limit = data.size;
@@ -58,16 +75,14 @@ export function useRole() {
       pagination.pageSize = data.size;
       pagination.currentPage = data.current;
       loading.value = false;
-      columns.value = getColumns(dataList, formData);
     } catch (error) {
       loading.value = false;
       console.log("error:", error);
-      columns.value = getColumns(ref([]), formData);
     }
   }
 
   /** 获取列表 */
-  async function getOrgList() {
+  async function getOptions() {
     organizationList({})
       .then((res) => {
         const data = res.data;
@@ -98,16 +113,20 @@ export function useRole() {
     onSearch();
   }
 
-  function handleSelectionChange(values: UserMoveItemType[]) {
-    rows.value = values;
+  function handleSelectionChange(rows: UserMoveItemType[]) {
+    rowsData.value = rows;
   }
+
+  const onRowClick = (row: UserMoveItemType) => {
+    tableRef.value?.getTableRef().toggleRowSelection(row);
+  };
 
   // 批量迁移
   const onBatchMoveHandle = () => {
-    if (rows.value.length === 0) {
+    if (rowsData.value.length === 0) {
       return message("请选择员工", { type: "error" });
     }
-    openDialog(rows.value);
+    openDialog(rowsData.value);
   };
   // 单个迁移
   const onMoveHandle = (row: UserMoveItemType) => {
@@ -122,14 +141,14 @@ export function useRole() {
       props: {
         formInline: { newOrgId: "", userIds: userId },
         userRows: rows,
-        tableRef: moveTableRef.value.getTableRef(),
+        tableRef: tableRef.value.getTableRef(),
         orgOptions: orgOptions.value.filter((item) => item.value !== formData.orgId)
       },
       width: "460px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
+      contentRenderer: () => h(AddModel, { ref: formRef }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as UserMoveRequestType;
@@ -165,15 +184,16 @@ export function useRole() {
   };
 
   return {
-    moveTableRef,
+    tableRef,
     formData,
     orgOptions,
     loading,
     columns,
     dataList,
     pagination,
-    onSearch,
     maxHeight,
+    onSearch,
+    onRowClick,
     onMoveHandle,
     onBatchMoveHandle,
     resetForm,

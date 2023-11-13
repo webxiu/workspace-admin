@@ -13,7 +13,7 @@ import Promotion from "@iconify-icons/ep/promotion";
 import Search from "@iconify-icons/ep/search";
 
 const {
-  moveTableRef,
+  tableRef,
   formData,
   orgOptions,
   loading,
@@ -22,6 +22,7 @@ const {
   pagination,
   maxHeight,
   onSearch,
+  onRowClick,
   onMoveHandle,
   onBatchMoveHandle,
   handleSizeChange,
@@ -62,7 +63,7 @@ const onSelectChange = (value) => {
       </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
-          ref="moveTableRef"
+          ref="tableRef"
           class="user-move"
           border
           row-key="id"
@@ -76,11 +77,8 @@ const onSelectChange = (value) => {
           :data="dataList"
           :columns="dynamicColumns"
           :pagination="pagination"
-          :header-cell-style="{
-            background: 'var(--el-table-row-hover-bg-color)',
-            color: 'var(--el-text-color-primary)'
-          }"
-          :paginationSmall="size === 'small' ? true : false"
+          :paginationSmall="size === 'small'"
+          @row-click="onRowClick"
           @selection-change="handleSelectionChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"

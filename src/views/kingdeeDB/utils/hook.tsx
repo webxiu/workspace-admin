@@ -23,7 +23,7 @@ export function useConfig() {
     currentPage: 1,
     background: true
   });
-  const formData = reactive({ accountName: '' });
+  const formData = reactive({ accountName: "", limit: 20, page: 1 });
 
   const searchOptions: SearchOptionType[] = [
     /** ID */
@@ -56,14 +56,15 @@ export function useConfig() {
 
   /** 获取组织列表 */
   async function getOrgOptions() {
-    organizationList({}).then(res => {
-      const optionList = res.data?.map(({ id, orgName }) => ({ value: id, label: orgName }));
-      orgOptionList.value = optionList;
-    }).catch((error) => {
-      orgOptionList.value = [];
-      ElMessage.error(error.toString() || "组织列表获取失败");
-    })
-
+    organizationList({})
+      .then((res) => {
+        const optionList = res.data?.map(({ id, orgName }) => ({ value: id, label: orgName }));
+        orgOptionList.value = optionList;
+      })
+      .catch((error) => {
+        orgOptionList.value = [];
+        ElMessage.error(error.toString() || "组织列表获取失败");
+      });
   }
 
   const getColumnConfig = () => {
@@ -79,19 +80,20 @@ export function useConfig() {
   /** 获取金蝶数据库列表 */
   function getTableList() {
     loading.value = false;
-    kingdeeDBList(formData).then(res => {
-      const data = res.data;
-      dataList.value = data;
-      pagination.total = data.length;
-      pagination.pageSize = 100;
-      pagination.currentPage = 1;
-      loading.value = false;
-    }).catch((error) => {
-      loading.value = false;
-      ElMessage.error(error.toString() || "列表获取失败");
-      console.log("error:", error);
-    })
-
+    kingdeeDBList(formData)
+      .then((res) => {
+        const data = res.data;
+        dataList.value = data;
+        pagination.total = data.length;
+        pagination.pageSize = 100;
+        pagination.currentPage = 1;
+        loading.value = false;
+      })
+      .catch((error) => {
+        loading.value = false;
+        ElMessage.error(error.toString() || "列表获取失败");
+        console.log("error:", error);
+      });
   }
 
   const resetForm = (formEl) => {
@@ -147,7 +149,7 @@ export function useConfig() {
                     getTableList(); // 刷新表格数据
                   });
                 })
-                .catch(() => { });
+                .catch(() => {});
             }
           });
         }
@@ -188,12 +190,12 @@ export function useConfig() {
 
   // 分页相关
   function handleSizeChange(limit: number) {
-    formData.value.limit = limit;
+    formData.limit = limit;
     getTableList();
   }
 
   function handleCurrentChange(page: number) {
-    formData.value.page = page;
+    formData.page = page;
     getTableList();
   }
 
