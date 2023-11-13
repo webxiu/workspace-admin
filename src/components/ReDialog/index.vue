@@ -75,7 +75,7 @@ function handleClose(options: DialogOptions, index: number, args = { command: "c
   >
     <!-- header -->
     <template v-if="options?.fullscreenIcon || options?.headerRenderer" #header="{ close, titleId, titleClass }">
-      <div v-if="options?.fullscreenIcon" class="flex items-center justify-between">
+      <div v-if="options?.fullscreenIcon" class="flex items-center justify-between" style="padding-right: 20px">
         <span :id="titleId" :class="titleClass">{{ options?.title }}</span>
         <i v-if="!options?.fullscreen" :class="fullscreenClass" @click="fullscreen = !fullscreen">
           <IconifyIconOffline class="pure-dialog-svg" :icon="options?.fullscreen ? ExitFullscreen : fullscreen ? ExitFullscreen : Fullscreen" />

@@ -69,7 +69,7 @@ export function useConfig() {
 
   const getColumnConfig = () => {
     const columnData = getColumns(orgOptionList);
-    columns.value = setColomn({ columnData, showOpt: true, showSelection: true, operateWidth: 140 });
+    columns.value = setColomn({ columnData, showOpt: true, showRadio: true, operateWidth: 140 });
   };
 
   /** 搜索 */
@@ -199,10 +199,6 @@ export function useConfig() {
     getTableList();
   }
 
-  function handleSelectionChange(rows: KingdeeDBItemType[]) {
-    console.log("多选", rows);
-  }
-
   const onRowClick = (row: KingdeeDBItemType) => {
     tableRef.value?.getTableRef().toggleRowSelection(row);
   };
@@ -221,7 +217,6 @@ export function useConfig() {
     onRowClick,
     handleDelete,
     handleSizeChange,
-    handleCurrentChange,
-    handleSelectionChange
+    handleCurrentChange
   };
 }

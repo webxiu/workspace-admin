@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-07-06 14:21:11
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-09-21 11:01:39
+ * @Last Modified time: 2023-11-13 11:46:20
  */
 
 import EditForm from "@/components/EditForm/index.vue";
@@ -17,20 +17,28 @@ import { type PaginationProps } from "@pureadmin/table";
 import { testList, addTest, updateTest, deleteTest, TestItemType } from "@/api/editTable";
 import { setColomn, downloadDataToExcel, getTableCellEdit } from "@/utils/common";
 import Bpmn from "../component/Bpmn.vue";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { LoadingType, ButtonItemType } from "@/components/ButtonList/index.vue";
+import { UploadProps } from "element-plus";
+import { Plus, Download, SetUp, Edit, Delete, Printer, Upload } from "@element-plus/icons-vue";
 
 export type RowHandleType = "add" | "edit";
 export type TableDataItemType = TestItemType;
 export type TableColumnItemType = Ref<TableColumnList[]>;
 
+const baseApi = import.meta.env.VITE_BASE_API;
+
 export function useTable() {
   const formRef = ref();
-  const formData = reactive({
-    name: ""
-  });
+  const tableRef = ref();
   const loading = ref(true);
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<TableDataItemType[]>([]);
+  const rowData = ref<TableDataItemType>();
+  const formData = reactive({ name: "" });
+  const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
   const maxHeight = useEleHeight(".app-main .el-scrollbar", 20 + 70 + 48);
+
   const pagination = reactive<PaginationProps>({
     total: 0,
     pageSize: 20,
@@ -41,13 +49,49 @@ export function useTable() {
     pageSizes: [20, 40, 60]
   });
 
-  const getColumnConfig = (dataList: Ref<TableDataItemType[]>) => {
+  //默认搜索值
+  const queryParams = ref({
+    username: { key: "username", label: "用户名", value: "张三xx", valueLabel: "" },
+    status: { key: "status", label: "状态", readonly: true, value: 1, valueLabel: "正常" },
+    date: { key: "date", label: "时间", value: "2020-05-08 ~ 2022-06-25", valueLabel: "" }
+  });
+
+  const searchOptions: SearchOptionType[] = [
+    { label: "ID", value: "id" },
+    { label: "用户名", value: "username" },
+    { label: "年龄", value: "age" },
+    {
+      label: "状态",
+      value: "status",
+      readonly: true,
+      children: [
+        { label: "开启", value: 1 },
+        { label: "关闭", value: 0 }
+      ]
+    },
+    {
+      label: "组织名称",
+      value: "uname",
+      children: [
+        { label: "零度空间", value: "零度空间" },
+        { label: "利达科技", value: "利达科技" }
+      ]
+    },
+    { label: "日期1", value: "date" },
+    { label: "日期2", value: "date2" }
+  ];
+
+  onMounted(() => {
+    getColumnConfig();
+  });
+
+  const getColumnConfig = () => {
     const { editCellRenderer, editSelectRenderer } = getTableCellEdit(dataList, (data) => {
       const { prop, index, value, row } = data;
       dataList.value[index][prop] = value;
       if (prop === "position") {
         onEditCell(prop, value, row);
-        // 编辑成功后 对顺序字段进行排序处理 
+        // 编辑成功后 对顺序字段进行排序处理
         moveTableRow(dataList, dataList.value[index]);
         return;
       }
@@ -82,17 +126,22 @@ export function useTable() {
       { label: "创建时间", prop: "createTime" },
       { label: "更新时间", prop: "updateTime" }
     ];
-    columns.value = setColomn({ columnData, showOpt: true, showRadio: true, indexColumn: false });
+    columns.value = setColomn({ columnData, showOpt: true, showRadio: true, showSelection: true, indexColumn: false });
+  };
+
+  const onSearch = (values) => {
+    console.log("提交搜索:", values);
+    formData.name = values;
+    getTableList();
   };
 
   /** 获取列表 */
-  async function onSearch() {
+  async function getTableList() {
     try {
       loading.value = true;
       const res = await testList(formData);
       const data = res.data.map((item, index) => ({ position: index + 1, ...item }));
       dataList.value = data;
-      getColumnConfig(dataList);
       pagination.total = data.length;
       pagination.pageSize = 100;
       pagination.currentPage = 1;
@@ -108,6 +157,16 @@ export function useTable() {
     console.log("编辑字段:", prop, "提交的值:", value, "\n行数据:", row);
   }
 
+  /** 提交拦截 */
+  const wrapFn = (func: Function) => {
+    return (...arg: any) => {
+      if (!rowData.value) {
+        return message("请选择一条数据", { type: "error" });
+      }
+      func.call(null, ...arg);
+    };
+  };
+
   const onExport = () => {
     downloadDataToExcel([
       {
@@ -121,8 +180,18 @@ export function useTable() {
   const resetForm = (formEl) => {
     if (!formEl) return;
     formEl.resetFields();
-    onSearch();
+    getTableList();
   };
+
+  // 添加
+  const onAdd = () => {
+    openDialog("add");
+  };
+
+  /** 编辑 */
+  const onEdit = wrapFn(({ text }) => {
+    openDialog("edit", rowData.value);
+  });
 
   // 添加、编辑弹窗
   function openDialog(type: RowHandleType, row?: TestItemType) {
@@ -159,10 +228,10 @@ export function useTable() {
               .then(() => {
                 onaddTest(type, title, curData, () => {
                   done(); // 关闭弹框
-                  onSearch(); // 刷新表格数据
+                  getTableList(); // 刷新表格数据
                 });
               })
-              .catch(() => { });
+              .catch(() => {});
           }
         });
       }
@@ -183,12 +252,12 @@ export function useTable() {
       });
   };
 
-  // 删除组织
+  // 删除
   function handleDelete(row: TestItemType) {
     deleteTest({ id: row.id })
       .then((res) => {
         message(`删除成功`, { type: "success" });
-        onSearch();
+        getTableList();
       })
       .catch((err) => {
         console.log("err", err);
@@ -196,7 +265,7 @@ export function useTable() {
   }
 
   /** 流程图 */
-  const openWorkFlow = ({ text }) => {
+  const openWorkFlow = wrapFn(({ text }) => {
     addDialog({
       title: "部署流程设计文件",
       props: { dataMsg: { dataMsg: 666 } },
@@ -235,7 +304,42 @@ export function useTable() {
           .catch(console.log);
       }
     });
+  });
+
+  const clickHandler = ({ text }) => {
+    console.log("当前按钮:", text);
+    // 设置loading
+    loadingStatus.value = { text: text, loading: true };
+    (function () {
+      setTimeout(() => {
+        loadingStatus.value = { text: text, loading: false };
+      }, 3000);
+    })();
   };
+
+  // 上传过滤
+  const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
+    loadingStatus.value = { text: "导入Excel", loading: true };
+    if (!["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"].includes(rawFile.type)) {
+      message("文件必须为xls或xlsx格式!", { type: "warning" });
+      return false;
+    }
+    if (rawFile.size / 1024 / 1024 > 5) {
+      message("文件大小不能超过5MB！", { type: "warning" });
+      return false;
+    }
+    return true;
+  };
+  // 上传成功回调
+  function onUploadSuccess(response) {
+    loadingStatus.value = { text: "导入Excel", loading: false };
+    message("导入成功");
+  }
+  // 上传失败回调
+  function onUploadError(error) {
+    loadingStatus.value = { text: "导入Excel", loading: false };
+    message("导入失败", { type: "error" });
+  }
 
   // 分页相关
   function handleSizeChange(val: number) {
@@ -247,10 +351,16 @@ export function useTable() {
   }
 
   function handleSelectionChange(rows: TableDataItemType[]) {
-    console.log("多选", JSON.parse(JSON.stringify(rows)));
+    console.log("多选", rows);
   }
+
+  const onRowClick = (row: TableDataItemType) => {
+    tableRef.value?.getTableRef().toggleRowSelection(row);
+  };
+
   function onCurrentChange(row: TableDataItemType) {
     console.log("单选", row?.id);
+    rowData.value = row;
   }
 
   const moveTableRow = (dataList, row, type?) => {
@@ -267,19 +377,44 @@ export function useTable() {
     dataList.value = newArr;
   };
 
+  const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onAdd, type: "primary", icon: Plus, text: "添加数据", isDropDown: false },
+    { clickHandler: onExport, type: "warnint", icon: Download, text: "导出", isDropDown: false },
+    { clickHandler: openWorkFlow, type: "success", icon: SetUp, text: "流程图", isDropDown: false },
+    { clickHandler: onEdit, type: "default", icon: Edit, text: "编辑", isDropDown: true },
+    { clickHandler: clickHandler, type: "primary", icon: Printer, text: "打印(-)", isDropDown: true },
+    {
+      clickHandler: clickHandler,
+      type: "danger",
+      text: "上传",
+      isDropDown: true,
+      icon: Upload,
+      uploadProp: {
+        accept: ".xls,.xlsx",
+        action: `${baseApi}/oa/hr/attendanceSummary/uploadExcel`,
+        onSuccess: onUploadSuccess,
+        onError: onUploadError,
+        beforeUpload: beforeAvatarUpload
+      }
+    }
+  ]);
+
   return {
+    queryParams,
+    tableRef,
     formData,
     maxHeight,
     loading,
     columns,
     dataList,
     pagination,
+    buttonList,
+    searchOptions,
     onSearch,
     resetForm,
     openDialog,
     handleDelete,
-    onExport,
-    openWorkFlow,
+    onRowClick,
     handleSizeChange,
     onCurrentChange,
     handleCurrentChange,

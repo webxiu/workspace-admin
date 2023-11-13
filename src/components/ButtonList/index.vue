@@ -22,9 +22,14 @@ export interface ButtonItemType {
   text: string;
   /** 必传项 */
   clickHandler: (item: ButtonItemType) => void;
+  /** 是否显示在下拉按钮中 */
+  isDropDown?: boolean;
 }
 
 const props = defineProps({
+  /** 是否自动计算布局 */
+  autoLayout: { type: Boolean, default: true },
+  /** 按钮列表配置 */
   buttonList: {
     type: Array as PropType<ButtonItemType[]>,
     default: () => []
@@ -39,10 +44,7 @@ const props = defineProps({
     type: Object as PropType<LoadingType>,
     default: () => ({ loading: false, text: "" })
   },
-  moreActionText: {
-    type: String as PropType<string>,
-    defautlt: ""
-  }
+  moreActionText: { type: String as PropType<string>, defautlt: "" }
 });
 
 const sliceNum = ref(1); // 默认显示的个数 除了更多按钮外
@@ -62,7 +64,7 @@ const initBtnNum = debounce(() => {
     const btnShowNum = Math.floor(pWidthNum / btnWidthNum);
     sliceNum.value = btnShowNum - 1;
   }
-});
+}, 5);
 
 onMounted(() => {
   initBtnNum();
@@ -97,17 +99,23 @@ watch(props, (newProp) => {
 
 // 默认显示的按钮列表
 const calcFrontList = computed<ButtonItemType[]>(() => {
+  if (!props.autoLayout) {
+    return props.buttonList.filter((item) => !item.isDropDown);
+  }
   return props.buttonList.slice(0, sliceNum.value) as any[];
 });
 
 // 下拉中的按钮列表
 const calcBackList = computed<ButtonItemType[]>(() => {
+  if (!props.autoLayout) {
+    return props.buttonList.filter((item) => item.isDropDown);
+  }
   return props.buttonList.slice(sliceNum.value) as any[];
 });
 </script>
 
 <template>
-  <div class="ui-w-100 mr-3">
+  <div class="ui-w-100">
     <div class="wrapper-btn" ref="parentBox">
       <template v-for="(item, index) in calcFrontList" :key="index">
         <!-- 处理是上传按钮包裹el-upload -->

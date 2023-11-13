@@ -15,8 +15,7 @@ import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import BlendedSearch from "@/components/BlendedSearch/index.vue";
 
-const { tableRef, formData, loading, columns, dataList, pagination, searchOptions, onSearch, openDialog, handleDelete, handleSizeChange, onRowClick, handleCurrentChange, handleSelectionChange } =
-  useConfig();
+const { tableRef, loading, columns, dataList, pagination, searchOptions, onSearch, openDialog, handleDelete, handleSizeChange, onRowClick, handleCurrentChange } = useConfig();
 
 const defaultValue = ref({}); //默认搜索值
 const boxRef = ref<HTMLDivElement>();
@@ -48,8 +47,8 @@ const maxHeight = useEleHeight(".app-main .el-scrollbar", 60 + 64 + 48);
           :columns="dynamicColumns"
           :pagination="pagination"
           :paginationSmall="size === 'small'"
+          highlight-current-row
           @row-click="onRowClick"
-          @selection-change="handleSelectionChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
         >
@@ -66,15 +65,3 @@ const maxHeight = useEleHeight(".app-main .el-scrollbar", 60 + 64 + 48);
     </PureTableBar>
   </div>
 </template>
-
-<style scoped lang="scss">
-:deep(.el-dropdown-menu__item i) {
-  margin: 0;
-}
-
-.search-form {
-  :deep(.el-form-item) {
-    margin-bottom: 12px;
-  }
-}
-</style>
