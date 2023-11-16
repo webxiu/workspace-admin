@@ -12,8 +12,6 @@ function handleSearch() {
 
 onMounted(() => {
   onKeyStroke(["Ctrl", "k"], (e) => {
-    e.preventDefault();
-    e.stopPropagation();
     toggle();
   });
 });

@@ -35,6 +35,19 @@ declare global {
     mozRequestAnimationFrame: (callback: FrameRequestCallback) => number;
     oRequestAnimationFrame: (callback: FrameRequestCallback) => number;
     msRequestAnimationFrame: (callback: FrameRequestCallback) => number;
+
+    bpmnInstances: {
+      modeler: any;
+      modeling: any;
+      moddle: any;
+      eventBus: any;
+      bpmnFactory: any;
+      elementFactory: any;
+      elementRegistry: any;
+      replace: any;
+      selection: any;
+      bpmnElement: any;
+    };
   }
 
   /**

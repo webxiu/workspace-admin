@@ -18,6 +18,12 @@ export default {
       name: "Calendar",
       component: () => import("@/views/calendar/index.vue"),
       meta: { title: "日历", icon: "Card" }
+    },
+    {
+      path: "/bpmn",
+      name: "Bpmn",
+      component: () => import("@/views/bpmn/index.vue"),
+      meta: { title: "BPMN", icon: "SetUp" }
     }
   ]
 } as RouteConfigsTable;

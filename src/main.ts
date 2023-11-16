@@ -4,6 +4,8 @@ import "./style/tailwind.css";
 import "element-plus/dist/index.css";
 import "./assets/iconfont/iconfont.js";
 import "./assets/iconfont/iconfont.css";
+import "../mock";
+import "./components/BpmnV3/package/theme/index.scss";
 
 import * as directives from "@/directives";
 
@@ -19,7 +21,10 @@ import { getServerConfig } from "./config";
 import { injectResponsiveStorage } from "@/utils/responsive";
 import router from "./router";
 import { setupStore } from "@/store";
-import "../mock";
+
+// import MyPD from "@/components/BpmnV3/package";
+
+// import vuePlugin from "@/components/BpmnV3/package/highlight";
 
 // import { useEcharts } from "@/plugins/echarts";
 
@@ -34,6 +39,7 @@ import "../mock";
 // 导入字体图标
 
 const app = createApp(App);
+app.config.warnHandler = () => null;
 
 // 自定义指令
 
