@@ -197,7 +197,7 @@ const lineLayout = { span: 24 };
 export const formConfigs = (type: "add" | "edit"): FormConfigItemType[] => {
   return [
     /** ===================== 组织配置 ========================= */
-    { label: "", prop: "", hide: false, colProp: lineLayout, render: ({ formModel, row }) => <TitleCate name="组织配置" class="ui-w-100" /> },
+    { label: "", prop: "", hide: false, colProp: lineLayout, labelWidth: '0px', render: () => <TitleCate name="组织配置" class="ui-w-100" /> },
     { label: "组织ID", prop: "id", hide: type === "add", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" disabled clearable /> },
     { label: "组织名称", prop: "orgName", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "组织简称", prop: "shortName", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
@@ -208,11 +208,9 @@ export const formConfigs = (type: "add" | "edit"): FormConfigItemType[] => {
     {
       label: "状态",
       prop: "status",
+      colProp: layout,
       render: ({ formModel, row }) => {
-        const options = [
-          { label: "开启", value: 1 },
-          { label: "关闭", value: 0 }
-        ];
+        const options = [{ label: "开启", value: 1 }, { label: "关闭", value: 0 }];
         return (
           <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
             {options.map((item) => (
@@ -223,17 +221,14 @@ export const formConfigs = (type: "add" | "edit"): FormConfigItemType[] => {
       }
     },
     { label: "PC端组织域名", prop: "orgDomain", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
-    { label: "PC端组织域名端口", prop: "orgDomainPort", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
-    { label: "", prop: "", hide: false, colProp: lineLayout, render: ({ formModel, row }) => <TitleCate name="金蝶API配置" class="ui-w-100" /> },
+    { label: "PC端域名端口", prop: "orgDomainPort", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
+    { label: "", prop: "", hide: false, colProp: lineLayout, labelWidth: '0px', render: () => <TitleCate name="金蝶API配置" class="ui-w-100" /> },
     {
       label: "是否启用金蝶",
       prop: "kingdeeEnable",
       colProp: layout,
       render: ({ formModel, row }) => {
-        const options = [
-          { label: "启用", value: true },
-          { label: "关闭", value: false }
-        ];
+        const options = [{ label: "启用", value: true }, { label: "关闭", value: false }];
         return (
           <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
             {options.map((item) => (
@@ -251,16 +246,13 @@ export const formConfigs = (type: "add" | "edit"): FormConfigItemType[] => {
     { label: "FcreateorgId", prop: "kdApiFcreateorgid", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "FuseorgId", prop: "kdApiFuseorgid", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     /** ===================== 群晖配置 ========================= */
-    { label: "", prop: "", hide: false, colProp: lineLayout, render: ({ formModel, row }) => <TitleCate name="群晖配置" class="ui-w-100" /> },
+    { label: "", prop: "", hide: false, colProp: lineLayout, labelWidth: '0px', render: ({ formModel, row }) => <TitleCate name="群晖配置" class="ui-w-100" /> },
     {
       label: "是否启用群晖",
       prop: "qhEnable",
       colProp: layout,
       render: ({ formModel, row }) => {
-        const options = [
-          { label: "启用", value: true },
-          { label: "关闭", value: false }
-        ];
+        const options = [{ label: "启用", value: true }, { label: "关闭", value: false }];
         return (
           <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
             {options.map((item) => (
@@ -276,16 +268,13 @@ export const formConfigs = (type: "add" | "edit"): FormConfigItemType[] => {
     { label: "UserName", prop: "qhFileUserName", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "Password", prop: "qhFilePassword", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     /** ===================== 企业微信配置 ========================= */
-    { label: "", prop: "", hide: false, colProp: lineLayout, render: ({ formModel, row }) => <TitleCate name="企业微信配置" class="ui-w-100" /> },
+    { label: "", prop: "", hide: false, colProp: lineLayout, labelWidth: '0px', render: ({ formModel, row }) => <TitleCate name="企业微信配置" class="ui-w-100" /> },
     {
-      label: "是否启用企业微信",
+      label: "企业微信状态",
       prop: "qywxEnable",
       colProp: layout,
       render: ({ formModel, row }) => {
-        const options = [
-          { label: "启用", value: true },
-          { label: "关闭", value: false }
-        ];
+        const options = [{ label: "启用", value: true }, { label: "关闭", value: false }];
         return (
           <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
             {options.map((item) => (
@@ -299,9 +288,9 @@ export const formConfigs = (type: "add" | "edit"): FormConfigItemType[] => {
     { label: "OrgDomain", prop: "qywxOrgDomain", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "Oauth2Url", prop: "qywxOauth2url", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "企业微信ID", prop: "corpId", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
-    { label: "WorkComplaintDetailUrl", prop: "qywxWorkComplaintDetailurl", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
+    { label: "WorkDetailUrl", prop: "qywxWorkComplaintDetailurl", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     /** ===================== PC端企业微信应用设置 ========================= */
-    { label: "", prop: "", hide: false, colProp: lineLayout, render: ({ formModel, row }) => <TitleCate name="企业微信应用设置" class="ui-w-100" /> },
+    { label: "", prop: "", hide: false, colProp: lineLayout, labelWidth: '0px', render: () => <TitleCate name="企业微信应用设置" class="ui-w-100" /> },
     { label: "扫码登录AgentID", prop: "pcLoginAgengId", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "扫码登录Secret", prop: "pcLoginSecret", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "工作台AgentId", prop: "workbenchAgentID", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
@@ -313,9 +302,9 @@ export const formConfigs = (type: "add" | "edit"): FormConfigItemType[] => {
     { label: "审批AgentId", prop: "approvalAgentId", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "审批Secret", prop: "approvalSecret", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     { label: "审批Token", prop: "approvalToken", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
-    { label: "审批EncodingAESKey", prop: "approvalEncodingAESKey", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
+    { label: "审批AESKey", prop: "approvalEncodingAESKey", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> },
     /** ===================== 组织Logo设置设置 ========================= */
-    { label: "", prop: "", hide: false, colProp: lineLayout, render: ({ formModel, row }) => <TitleCate name="Logo设置" class="ui-w-100" /> },
+    { label: "", prop: "", hide: false, colProp: lineLayout, labelWidth: '0px', render: () => <TitleCate name="Logo设置" class="ui-w-100" /> },
     { label: "组织Logo", prop: "logo", colProp: layout, render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable /> }
   ];
 };

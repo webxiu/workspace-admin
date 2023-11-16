@@ -18,7 +18,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="search-container w-[40px] h-[48px] flex-c cursor-pointer navbar-bg-hover" @click="handleSearch">
+  <div class="search-container w-[40px] h-[48px] flex-c cursor-pointer navbar-bg-hover" @click="handleSearch" title="Ctrl + K">
     <IconifyIconOffline :icon="Search" />
   </div>
   <SearchModal v-model:value="show" />

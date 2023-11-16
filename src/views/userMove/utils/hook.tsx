@@ -52,7 +52,7 @@ export function useRole() {
       { label: "员工姓名", prop: "userName" },
       { label: "部门编号", prop: "deptId" },
       { label: "部门", prop: "deptName" },
-      { label: "员工头像", prop: "avatar", cellRenderer: ({ row, column }) => <el-image src={row[column["property"]]} /> },
+      { label: "员工头像", prop: "avatar", align: 'center', cellRenderer: ({ row, column }) => <el-image src={row[column["property"]]} /> },
       { label: "员工状态", prop: "userState" },
       { label: "移动电话", prop: "mobile" },
       { label: "企业微信ID", prop: "wxOpenid" },

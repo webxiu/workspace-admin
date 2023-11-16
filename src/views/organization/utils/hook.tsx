@@ -225,7 +225,8 @@ export function useConfig() {
       title: `${title}组织`,
       props: {
         formInline: _formData,
-        formConfigs: formConfigs(type)
+        formConfigs: formConfigs(type),
+        formProps: { labelWidth: 160 }
       },
       width: "75%",
       draggable: true,
