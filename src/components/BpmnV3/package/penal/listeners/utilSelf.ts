@@ -13,7 +13,7 @@ export function initListenerForm(listener) {
   if (listener.event === "timeout" && listener.eventDefinitions) {
     if (listener.eventDefinitions.length) {
       let k = "";
-      for (let key in listener.eventDefinitions[0]) {
+      for (const key in listener.eventDefinitions[0]) {
         if (key.indexOf("time") !== -1) {
           k = key;
           self.eventDefinitionType = key.replace("time", "").toLowerCase();

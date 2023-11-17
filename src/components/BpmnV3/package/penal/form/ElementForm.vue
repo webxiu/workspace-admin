@@ -22,19 +22,19 @@
         <el-table-column label="默认值" prop="defaultValue" min-width="80px" show-overflow-tooltip />
         <el-table-column label="操作" width="90px">
           <template #default="{ row, $index }">
-            <el-button size="small" type="text" @click="openFieldForm(row, $index)">编辑</el-button>
+            <el-button size="small" link type="primary" @click="openFieldForm(row, $index)">编辑</el-button>
             <el-divider direction="vertical" />
-            <el-button size="small" type="text" style="color: #ff4d4f" @click="removeField(row, $index)">移除</el-button>
+            <el-button size="small" link type="danger" @click="removeField(row, $index)">移除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
     <div class="element-drawer__button">
-      <el-button size="small" type="primary" icon="el-icon-plus" @click="openFieldForm(null, -1)">添加字段</el-button>
+      <el-button size="small" type="primary" :icon="Plus" @click="openFieldForm(null, -1)">添加字段</el-button>
     </div>
 
     <!--字段配置侧边栏-->
-    <el-drawer :visible="fieldModelVisible" title="字段配置" :size="`${width}px`" append-to-body destroy-on-close>
+    <el-drawer v-model="fieldModelVisible" title="字段配置" :size="`${width}px`" append-to-body destroy-on-close>
       <el-form :model="formFieldForm" label-width="90px" size="small" @submit.prevent>
         <el-form-item label="字段ID">
           <el-input v-model="formFieldForm.id" clearable />
@@ -71,9 +71,9 @@
           <el-table-column label="枚举值名称" prop="name" min-width="100px" show-overflow-tooltip />
           <el-table-column label="操作" width="90px">
             <template #default="{ row, $index }">
-              <el-button size="small" type="text" @click="openFieldOptionForm(row, $index, 'enum')">编辑</el-button>
+              <el-button size="small" link type="primary" @click="openFieldOptionForm(row, $index, 'enum')">编辑</el-button>
               <el-divider direction="vertical" />
-              <el-button size="small" type="text" style="color: #ff4d4f" @click="removeFieldOptionItem(row, $index, 'enum')">移除</el-button>
+              <el-button size="small" link type="danger" @click="removeFieldOptionItem(row, $index, 'enum')">移除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -91,9 +91,9 @@
         <el-table-column label="约束配置" prop="config" min-width="100px" show-overflow-tooltip />
         <el-table-column label="操作" width="90px">
           <template #default="{ row, $index }">
-            <el-button size="small" type="text" @click="openFieldOptionForm(row, $index, 'constraint')">编辑</el-button>
+            <el-button size="small" link type="primary" @click="openFieldOptionForm(row, $index, 'constraint')">编辑</el-button>
             <el-divider direction="vertical" />
-            <el-button size="small" type="text" style="color: #ff4d4f" @click="removeFieldOptionItem(row, $index, 'constraint')">移除</el-button>
+            <el-button size="small" link type="danger" @click="removeFieldOptionItem(row, $index, 'constraint')">移除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -110,9 +110,9 @@
         <el-table-column label="属性值" prop="value" min-width="100px" show-overflow-tooltip />
         <el-table-column label="操作" width="90px">
           <template #default="{ row, $index }">
-            <el-button size="small" type="text" @click="openFieldOptionForm(row, $index, 'property')">编辑</el-button>
+            <el-button size="small" link type="primary" @click="openFieldOptionForm(row, $index, 'property')">编辑</el-button>
             <el-divider direction="vertical" />
-            <el-button size="small" type="text" style="color: #ff4d4f" @click="removeFieldOptionItem(row, $index, 'property')">移除</el-button>
+            <el-button size="small" link type="danger" @click="removeFieldOptionItem(row, $index, 'property')">移除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -124,7 +124,7 @@
       </div>
     </el-drawer>
 
-    <el-dialog :visible="fieldOptionModelVisible" :title="optionModelTitle" width="600px" append-to-body destroy-on-close>
+    <el-dialog v-model="fieldOptionModelVisible" :title="optionModelTitle" width="600px" append-to-body destroy-on-close>
       <el-form :model="fieldOptionForm" size="small" label-width="96px" @submit.prevent>
         <el-form-item label="编号/ID" v-if="fieldOptionType !== 'constraint'" key="option-id">
           <el-input v-model="fieldOptionForm.id" clearable />
@@ -149,6 +149,7 @@
 
 <script lang="ts" setup>
 import { ref, reactive, watch, nextTick, inject } from "vue";
+import { Plus } from "@element-plus/icons-vue";
 
 const props = defineProps<{
   id: string;

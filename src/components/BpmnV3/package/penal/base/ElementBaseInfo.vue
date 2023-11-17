@@ -36,7 +36,15 @@ const props = withDefaults(
   }
 );
 
-const elementBaseInfo = ref({});
+const elementBaseInfo = ref({
+  di: { isExpanded: false },
+  id: "",
+  name: "",
+  $type: "",
+  versionTag: "",
+  isExecutable: false,
+  isExpanded: false
+});
 const bpmnElement = ref();
 
 watch(props, (val) => {
@@ -49,8 +57,7 @@ const resetBaseInfo = () => {
   bpmnElement.value = window?.bpmnInstances?.bpmnElement || {};
   elementBaseInfo.value = JSON.parse(JSON.stringify(bpmnElement.value.businessObject));
   if (elementBaseInfo.value && elementBaseInfo.value.$type === "bpmn:SubProcess") {
-    elementBaseInfo.value.isExpanded = elementBaseInfo.value.di?.isExpanded;
-    // this.$set(elementBaseInfo.value, "isExpanded", elementBaseInfo.value?.di?.isExpanded);
+    elementBaseInfo.value.isExpanded = elementBaseInfo.value.di.isExpanded;
   }
 };
 const updateBaseInfo = (key) => {

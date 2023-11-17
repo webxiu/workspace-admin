@@ -2,7 +2,6 @@
   <div id="bpmn">
     <ProcessPalette />
     <ProcessDesigner
-      v-if="xmlString"
       :key="`designer-${reloadIndex}`"
       :options="{ taskResizingEnabled: true, eventResizingEnabled: true, minimap: { open: true } }"
       :value="xmlString"
@@ -41,7 +40,6 @@ import UserSql from "./modules/extension/user.json";
 import RewriteAutoPlace from "./modules/auto-place/rewriteAutoPlace";
 
 import { ref, reactive, watch } from "vue";
-import { nextTick } from "vue";
 
 const props = withDefaults(defineProps<{ xml: string }>(), {
   xml: ""
@@ -77,12 +75,12 @@ const controlForm = reactive({
   ]
 });
 
-// const addis = reactive({
-//   CustomContentPadProvider,
-//   CustomPaletteProvider,
-//   labelEditing: undefined,
-//   customRenderer: undefined
-// });
+const addis = reactive({
+  CustomContentPadProvider,
+  CustomPaletteProvider,
+  labelEditing: undefined,
+  customRenderer: undefined
+});
 
 watch(props, (val) => {
   xmlString.value = val.xml;
@@ -107,33 +105,33 @@ const elementContextmenu = (element) => {
   console.log("elementContextmenu:", element);
 };
 
-// const reloadProcessDesigner = (notDeep = false) => {
-//   controlForm.additionalModel = [];
-//   for (const key in addis) {
-//     if (addis[key]) {
-//       controlForm.additionalModel.push(addis[key]);
-//     }
-//   }
-//   !notDeep && (xmlString.value = undefined);
-//   reloadIndex.value += 1;
-//   modeler.value = null; // 避免 panel 异常
-// };
-// const changeLabelEditingStatus = (status) => {
-//   addis.labelEditing = status ? { labelEditingProvider: ["value", ""] } : false;
-//   reloadProcessDesigner();
-// };
-// const changeLabelVisibleStatus = (status) => {
-//   addis.customRenderer = status ? CustomRenderer : false;
-//   reloadProcessDesigner();
-// };
+const reloadProcessDesigner = (notDeep = false) => {
+  controlForm.additionalModel = [];
+  for (const key in addis) {
+    if (addis[key]) {
+      controlForm.additionalModel.push(addis[key]);
+    }
+  }
+  !notDeep && (xmlString.value = undefined);
+  reloadIndex.value += 1;
+  modeler.value = null; // 避免 panel 异常
+};
+const changeLabelEditingStatus = (status) => {
+  addis.labelEditing = status ? { labelEditingProvider: ["value", ""] } : false;
+  reloadProcessDesigner();
+};
+const changeLabelVisibleStatus = (status) => {
+  addis.customRenderer = status ? CustomRenderer : false;
+  reloadProcessDesigner();
+};
 
-// const changePageMode = (mode) => {
-//   const theme = mode
-//     ? { stroke: "#ffffff", fill: "#333333" } // dark
-//     : { stroke: "#000000", fill: "#ffffff" }; // light
-//   const elements = modeler.value.get("elementRegistry").getAll();
-//   modeler.value.get("modeling").setColor(elements, theme);
-// };
+const changePageMode = (mode) => {
+  const theme = mode
+    ? { stroke: "#ffffff", fill: "#333333" } // dark
+    : { stroke: "#000000", fill: "#ffffff" }; // light
+  const elements = modeler.value.get("elementRegistry").getAll();
+  modeler.value.get("modeling").setColor(elements, theme);
+};
 const toggle = (mode) => {
   // console.log(modeler.value.get("toggleMode"));
   modeler.value.get("toggleMode").toggleMode();

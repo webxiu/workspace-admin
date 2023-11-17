@@ -1,7 +1,7 @@
-@import url("bpmn-js-token-simulation/assets/css/bpmn-js-token-simulation.css");
-@import url("bpmn-js-token-simulation/assets/css/font-awesome.min.css");
-@import url("bpmn-js-token-simulation/assets/css/normalize.css");
-@import url("diagram-js-minimap/assets/diagram-js-minimap.css");
+@import "bpmn-js-token-simulation/assets/css/bpmn-js-token-simulation.css";
+@import "bpmn-js-token-simulation/assets/css/font-awesome.min.css";
+@import "bpmn-js-token-simulation/assets/css/normalize.css";
+@import "diagram-js-minimap/assets/diagram-js-minimap.css";
 
 /* 边框被 token-simulation 样式覆盖了 */
 .djs-palette {
@@ -43,7 +43,7 @@
         &:after {
           content: "|";
           position: absolute;
-          transform: rotate(90deg) translate(200%, 60%);
+          transform: rotate(90deg) translate(7px, 0px);
         }
       }
     }
@@ -60,15 +60,15 @@
       transform: rotate(0deg);
     }
     .align.align-center i {
-      transform: rotate(90deg);
+      transform: rotate(0deg);
       &:after {
-        transform: rotate(90deg) translate(0, 60%);
+        transform: rotate(90deg) translate(1px, 0);
       }
     }
     .align.align-middle i {
-      transform: rotate(0deg);
+      transform: rotate(90deg);
       &:after {
-        transform: rotate(90deg) translate(0, 60%);
+        transform: rotate(90deg) translate(1px, 0);
       }
     }
   }
@@ -104,7 +104,7 @@
   }
 }
 
-/* 侧边栏配置*/
+/* 侧边栏配置 */
 .djs-palette.open {
   .djs-palette-entries {
     div[class^="bpmn-icon-"]:before,

@@ -5,18 +5,18 @@ const DEFAULT_DISTANCE = 200;
 const LOW_PRIORITY = 100;
 
 export default function RewriteAutoPlace(eventBus, modeling, canvas) {
-  eventBus.on("autoPlace", LOW_PRIORITY, function(context) {
+  eventBus.on("autoPlace", LOW_PRIORITY, function (context) {
     const shape = context.shape,
       source = context.source;
 
     return getNewShapePosition(source, shape);
   });
 
-  eventBus.on("autoPlace.end", function(event) {
+  eventBus.on("autoPlace.end", function (event) {
     canvas.scrollToElement(event.shape);
   });
 
-  this.append = function(source, shape, hints) {
+  this.append = function (source, shape, hints) {
     eventBus.fire("autoPlace.start", {
       source: source,
       shape: shape

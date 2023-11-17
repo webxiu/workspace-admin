@@ -1,7 +1,8 @@
 <template>
   <div class="process-panel-box">
     <div class="collapse-btn" @click="togglePanel" :title="isCollapse ? '收起' : '展开'">
-      <span :class="isCollapse ? 'el-icon-d-arrow-right' : 'el-icon-d-arrow-left'" />
+      <el-icon v-show="isCollapse"><DArrowRight /></el-icon>
+      <el-icon v-show="!isCollapse"><DArrowLeft /></el-icon>
     </div>
     <div class="process-panel__container" :style="isCollapse ? { width: `${this.width}px`, overflowY: 'scroll' } : { width: `1px`, overflow: 'hidden' }">
       <el-collapse v-model="activeTab">
@@ -90,7 +91,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, onMounted, watch, provide } from "vue";
+import { ref, onMounted, watch, provide, onUnmounted } from "vue";
 import ElementBaseInfo from "./base/ElementBaseInfo.vue";
 import ElementOtherConfig from "./other/ElementOtherConfig.vue";
 import ElementTask from "./task/ElementTask.vue";
@@ -101,10 +102,10 @@ import ElementListeners from "./listeners/ElementListeners.vue";
 import ElementProperties from "./properties/ElementProperties.vue";
 import ElementForm from "./form/ElementForm.vue";
 import UserTaskListeners from "./listeners/UserTaskListeners.vue";
+import { DArrowRight, DArrowLeft } from "@element-plus/icons-vue";
 import Log from "../Log";
 
 import BpmnModeler from "bpmn-js/lib/Modeler";
-// 如果您正在使用CDN引入，请删除下面一行。
 import { InfoFilled, List, Checked, HelpFilled, BellFilled, CirclePlusFilled, Promotion, Comment } from "@element-plus/icons-vue";
 
 /**
@@ -145,6 +146,10 @@ onMounted(() => {
   initModels();
 });
 
+onUnmounted(() => {
+  window.bpmnInstances = null;
+});
+
 const initModels = () => {
   // 初始化 modeler 以及其他 moddle
   if (!props.bpmnModeler) {
@@ -177,11 +182,9 @@ const getActiveElement = () => {
   });
   // 监听选择事件，修改当前激活的元素以及表单
   props.bpmnModeler.on("selection.changed", ({ newSelection }) => {
-    const shape = newSelection.length ? newSelection[0] : null;
-    initFormOnChanged(shape);
+    initFormOnChanged(newSelection[0] || null);
   });
   props.bpmnModeler.on("element.changed", ({ element }) => {
-    console.log("element", element);
     // 保证 修改 "默认流转路径" 类似需要修改多个元素的事件发生的时候，更新表单的元素与原选中元素不一致。
     if (element && element.id === elementId.value) {
       initFormOnChanged(element);
@@ -191,25 +194,20 @@ const getActiveElement = () => {
 
 // 初始化数据
 const initFormOnChanged = (element) => {
-  if (!element) {
-    element = window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Process") ?? window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Collaboration");
-    return;
+  let activatedElement = element;
+  if (!activatedElement) {
+    activatedElement = window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Process") ?? window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Collaboration");
   }
-  // Log.printBack(`select element changed: id: ${activatedElement.id} , type: ${activatedElement.businessObject.$type}`);
-  // Log.prettyInfo("businessObject", activatedElement.businessObject);
-  window.bpmnInstances.bpmnElement = element;
-  elementId.value = element.id;
-  elementType.value = element.type.split(":")[1] || "";
-  elementBusinessObject.value = JSON.parse(JSON.stringify(element.businessObject));
-  conditionFormVisible.value = !!(elementType.value === "SequenceFlow" && element.source && element.source.type.indexOf("StartEvent") === -1);
+  if (!activatedElement) return;
+  window.bpmnInstances.bpmnElement = activatedElement;
+  elementId.value = activatedElement.id;
+  elementType.value = activatedElement.type.split(":")[1] || "";
+  elementBusinessObject.value = JSON.parse(JSON.stringify(activatedElement.businessObject));
+  conditionFormVisible.value = !!(elementType.value === "SequenceFlow" && activatedElement.source && activatedElement.source.type.indexOf("StartEvent") === -1);
   formVisible.value = elementType.value === "UserTask" || elementType.value === "StartEvent";
 };
 
 const togglePanel = () => {
   isCollapse.value = !isCollapse.value;
-};
-
-const beforeDestroy = () => {
-  window.bpmnInstances = null;
 };
 </script>

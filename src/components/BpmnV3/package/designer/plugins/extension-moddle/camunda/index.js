@@ -4,7 +4,10 @@
 //   __init__: ["camundaModdleExtension"],
 //   camundaModdleExtension: ["type", require("./extension")]
 // };
+
+import { CamundaModdleExtension } from "./extension";
+
 export default {
   __init__: ["camundaModdleExtension"],
-  camundaModdleExtension: ["type", import("./extension")]
+  camundaModdleExtension: ["type", CamundaModdleExtension]
 };

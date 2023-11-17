@@ -7,7 +7,10 @@
 //   __init__: ["ActivitiModdleExtension"],
 //   ActivitiModdleExtension: ["type", require("./activitiExtension")]
 // };
+
+import { ActivitiModdleExtension } from "./activitiExtension";
+
 export default {
   __init__: ["ActivitiModdleExtension"],
-  ActivitiModdleExtension: ["type", import("./activitiExtension")]
+  ActivitiModdleExtension: ["type", ActivitiModdleExtension]
 };

@@ -5,7 +5,7 @@
         <el-icon style="margin-right: 8px; color: #555555"><Menu /></el-icon>
         消息列表
       </span>
-      <el-button size="small" type="primary" icon="el-icon-plus" @click="openModel('message')">创建新消息</el-button>
+      <el-button size="small" type="primary" :icon="Plus" @click="openModel('message')">创建新消息</el-button>
     </div>
     <el-table :data="messageList" size="small" border>
       <el-table-column type="index" label="序号" width="60px" />
@@ -16,7 +16,7 @@
       <span>
         <el-icon style="margin-right: 8px; color: #555555"><Menu /></el-icon>信号列表
       </span>
-      <el-button size="small" type="primary" icon="el-icon-plus" @click="openModel('signal')">创建新信号</el-button>
+      <el-button size="small" type="primary" :icon="Plus" @click="openModel('signal')">创建新信号</el-button>
     </div>
     <el-table :data="signalList" size="small" border>
       <el-table-column type="index" label="序号" width="60px" />
@@ -24,7 +24,7 @@
       <el-table-column label="信号名称" prop="name" max-width="300px" show-overflow-tooltip />
     </el-table>
 
-    <el-dialog :visible="modelVisible" :title="modelConfig.title" :close-on-click-modal="false" width="400px" append-to-body destroy-on-close>
+    <el-dialog v-model="modelVisible" :title="modelConfig.title" :close-on-click-modal="false" width="400px" append-to-body destroy-on-close>
       <el-form :model="modelObjectForm" size="small" label-width="90px" @submit.prevent>
         <el-form-item :label="modelConfig.idLabel">
           <el-input v-model="modelObjectForm.id" clearable />
@@ -41,7 +41,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { Menu } from "@element-plus/icons-vue";
+import { Menu, Plus } from "@element-plus/icons-vue";
 import { ref, onMounted, watch, computed } from "vue";
 import { message } from "@/utils/message";
 

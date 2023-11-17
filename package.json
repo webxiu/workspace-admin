@@ -30,6 +30,7 @@
     "not op_mini all"
   ],
   "dependencies": {
+    "@highlightjs/vue-plugin": "^2.1.0",
     "@logicflow/core": "^1.2.10",
     "@logicflow/extension": "^1.2.10",
     "@pureadmin/descriptions": "^1.1.1",
@@ -41,10 +42,11 @@
     "ant-design-vue": "^4.0.3",
     "axios": "^1.4.0",
     "bpmn-js": "^8.8.3",
+    "bpmn-js-properties-panel": "^0.37.2",
     "bpmn-js-sketchy": "^0.5.3",
     "bpmn-js-task-resize": "^1.2.0",
     "bpmn-js-token-simulation": "^0.10.0",
-    "bpmn-js-properties-panel": "^0.37.2",
+    "camunda-bpmn-moddle": "^4.4.1",
     "dayjs": "^1.11.8",
     "diagram-js-minimap": "^2.0.4",
     "echarts": "^5.4.2",
@@ -55,8 +57,8 @@
     "js-base64": "^3.7.5",
     "js-cookie": "^3.0.5",
     "md5": "^2.3.0",
-    "mitt": "^3.0.0",
     "min-dash": "^3.5.2",
+    "mitt": "^3.0.0",
     "mockjs": "^1.1.0",
     "mxgraph": "^4.2.2",
     "nprogress": "^0.2.0",
@@ -73,8 +75,8 @@
     "vue-router": "^4.2.2",
     "vue-types": "^5.1.0",
     "vue3-tree-org": "^4.2.2",
-    "xcrud-vue3": "^0.0.12",
     "x2js": "^3.4.2",
+    "xcrud-vue3": "^0.0.12",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

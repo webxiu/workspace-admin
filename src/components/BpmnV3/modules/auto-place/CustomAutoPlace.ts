@@ -3,26 +3,26 @@ import AutoPlace from "diagram-js/lib/features/auto-place/AutoPlace";
 export default function CustomAutoPlace(eventBus, modeling) {
   AutoPlace.call(this, eventBus, modeling, 3000);
 
-  eventBus.on("autoPlace", 3000, function(context) {
+  eventBus.on("autoPlace", 3000, function (context) {
     const shape = context.shape,
       source = context.source;
 
     return getNewCustomShapePosition(source, shape);
   });
 
-  this.append = function(source, shape, hints) {
+  this.append = function (source, shape, hints) {
     eventBus.fire("autoPlace.start", {
       source: source,
       shape: shape
     });
 
     // allow others to provide the position
-    var position = eventBus.fire("autoPlace", {
+    const position = eventBus.fire("autoPlace", {
       source: source,
       shape: shape
     });
 
-    var newShape = modeling.appendShape(source, shape, position, source.parent, hints);
+    const newShape = modeling.appendShape(source, shape, position, source.parent, hints);
 
     eventBus.fire("autoPlace.end", {
       source: source,
@@ -56,14 +56,14 @@ export function getMid(bounds) {
   });
 }
 
-export function getNewCustomShapePosition(source, element, hints) {
+export function getNewCustomShapePosition(source, element, hints?) {
   if (!hints) {
     hints = {};
   }
 
-  var distance = hints.defaultDistance || 50;
+  const distance = hints.defaultDistance || 50;
 
-  var sourceMid = getMid(source),
+  const sourceMid = getMid(source),
     sourceTrbl = asTRBL(source);
 
   // simply put element right next to source
@@ -73,7 +73,7 @@ export function getNewCustomShapePosition(source, element, hints) {
   };
 }
 
-const F = function() {}; // 核心，利用空对象作为中介；
+const F = function () {}; // 核心，利用空对象作为中介；
 F.prototype = AutoPlace.prototype; // 核心，将父类的原型赋值给空对象F；
 CustomAutoPlace.prototype = new F(); // 核心，将 F的实例赋值给子类；
 CustomAutoPlace.prototype.constructor = AutoPlace; // 修复子类CustomRenderer的构造器指向，防止原型链的混乱；

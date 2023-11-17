@@ -3,57 +3,47 @@
     <div class="element-property input-property">
       <div class="element-property__label">元素文档：</div>
       <div class="element-property__value">
-        <el-input
-          type="textarea"
-          v-model="documentation"
-          size="mini"
-          resize="vertical"
-          :autosize="{ minRows: 2, maxRows: 4 }"
-          @input="updateDocumentation"
-          @blur="updateDocumentation"
-        />
+        <el-input type="textarea" v-model="documentation" size="small" resize="vertical" :autosize="{ minRows: 2, maxRows: 4 }" @input="updateDocumentation" @blur="updateDocumentation" />
       </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "ElementOtherConfig",
-  props: {
-    id: String
-  },
-  data() {
-    return {
-      documentation: ""
-    };
-  },
-  watch: {
-    id: {
-      immediate: true,
-      handler: function(id) {
-        if (id && id.length) {
-          this.$nextTick(() => {
-            const documentations = window.bpmnInstances.bpmnElement.businessObject?.documentation;
-            this.documentation = documentations && documentations.length ? documentations[0].text : "";
-          });
-        } else {
-          this.documentation = "";
-        }
-      }
-    }
-  },
-  methods: {
-    updateDocumentation() {
-      (this.bpmnElement && this.bpmnElement.id === this.id) || (this.bpmnElement = window.bpmnInstances.elementRegistry.get(this.id));
-      const documentation = window.bpmnInstances.bpmnFactory.create("bpmn:Documentation", { text: this.documentation });
-      window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
-        documentation: [documentation]
+<script lang="ts" setup>
+import { onUnmounted } from "vue";
+import { ref, watch, nextTick } from "vue";
+
+const props = defineProps<{
+  id: string;
+}>();
+
+const documentation = ref("");
+const bpmnElement = ref();
+
+watch(
+  props,
+  (val) => {
+    if (val.id && val.id?.length) {
+      nextTick(() => {
+        const documentations = window.bpmnInstances.bpmnElement.businessObject?.documentation;
+        documentation.value = documentations && documentations.length ? documentations[0].text : "";
       });
+    } else {
+      documentation.value = "";
     }
   },
-  beforeDestroy() {
-    this.bpmnElement = null;
-  }
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  bpmnElement.value = null;
+});
+
+const updateDocumentation = () => {
+  (bpmnElement.value && bpmnElement.value.id === props.id) || (bpmnElement.value = window.bpmnInstances.elementRegistry.get(this.id));
+  const cDocumentation = window.bpmnInstances.bpmnFactory.create("bpmn:Documentation", { text: documentation.value });
+  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    documentation: [cDocumentation]
+  });
 };
 </script>

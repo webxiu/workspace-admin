@@ -18,7 +18,7 @@ export function createListenerObject(options, isTask, prefix) {
   }
   // 注入字段
   if (options.fields) {
-    listenerObj.fields = options.fields.map(field => {
+    listenerObj.fields = options.fields.map((field) => {
       return createFieldObject(field, prefix);
     });
   }
@@ -29,7 +29,7 @@ export function createListenerObject(options, isTask, prefix) {
     });
     const TimerEventDefinition = window.bpmnInstances.moddle.create("bpmn:TimerEventDefinition", {
       id: `TimerEventDefinition_${uuid(8)}`,
-      [`time${options.eventDefinitionType.replace(/^\S/, s => s.toUpperCase())}`]: timeDefinition
+      [`time${options.eventDefinitionType.replace(/^\S/, (s) => s.toUpperCase())}`]: timeDefinition
     });
     listenerObj.eventDefinitions = [TimerEventDefinition];
   }
@@ -63,7 +63,7 @@ export function updateElementExtensions(element, extensionList) {
 // 创建一个id
 export function uuid(length = 8, chars) {
   let result = "";
-  let charsString = chars || "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const charsString = chars || "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (let i = length; i > 0; --i) {
     result += charsString[Math.floor(Math.random() * charsString.length)];
   }

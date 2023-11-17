@@ -5,10 +5,10 @@
         <el-select v-model="bindMessageId" @change="updateTaskMessage" class="ui-w-100">
           <el-option v-for="id in Object.keys(messageMap)" :value="id" :label="messageMap[id]" :key="id" />
         </el-select>
-        <el-button size="small" type="primary" icon="el-icon-plus" style="margin-left: 8px" @click="openMessageModel" />
+        <el-button size="small" type="primary" :icon="Plus" style="margin-left: 8px" @click="openMessageModel" />
       </div>
     </el-form-item>
-    <el-dialog :visible="messageModelVisible" :close-on-click-modal="false" title="创建新消息" width="400px" append-to-body destroy-on-close>
+    <el-dialog v-model="messageModelVisible" :close-on-click-modal="false" title="创建新消息" width="400px" append-to-body destroy-on-close>
       <el-form :model="newMessageForm" size="small" label-width="90px" @submit.prevent>
         <el-form-item label="消息ID">
           <el-input v-model="newMessageForm.id" clearable />
@@ -29,6 +29,7 @@ import { message } from "@/utils/message";
 import { onUnmounted } from "vue";
 import { onMounted } from "vue";
 import { ref, nextTick, watch, reactive } from "vue";
+import { Plus } from "@element-plus/icons-vue";
 
 const props = defineProps<{ id: string; type: string }>();
 

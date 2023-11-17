@@ -3,8 +3,9 @@
     <div class="my-process-designer__header">
       <slot name="control-header" />
       <template v-if="!$slots['control-header']">
+        <!-- 上传下载 -->
         <el-button-group key="file-control">
-          <el-button :size="size" type="primary" icon="el-icon-folder-opened" @click="refFile.click()">打开文件</el-button>
+          <el-button :size="size" type="primary" :icon="FolderOpened" @click="refFile.click()">打开文件</el-button>
           <el-tooltip effect="light">
             <template #content>
               <el-button :size="size" link @click="downloadProcessAsXml()">下载为XML文件</el-button>
@@ -13,7 +14,7 @@
               <br />
               <el-button :size="size" link @click="downloadProcessAsBpmn()">下载为BPMN文件</el-button>
             </template>
-            <el-button :size="size" type="primary">下载文件</el-button>
+            <el-button :size="size" :icon="Download" type="primary">下载文件</el-button>
           </el-tooltip>
           <el-tooltip effect="light">
             <template #content>
@@ -21,20 +22,22 @@
               <br />
               <el-button :size="size" link @click="previewProcessJson">预览JSON</el-button>
             </template>
-            <el-button :size="size" type="primary">预览</el-button>
+            <el-button :size="size" :icon="View" type="primary">预览</el-button>
           </el-tooltip>
           <el-tooltip v-if="simulation" effect="light" :content="simulationStatus ? '退出模拟' : '开启模拟'">
-            <el-button :size="size" type="primary" icon="el-icon-cpu" @click="processSimulation"> 模拟 </el-button>
+            <el-button :size="size" type="primary" :icon="Cpu" @click="processSimulation"> 模拟 </el-button>
           </el-tooltip>
           <el-tooltip effect="light" :content="'保存XML'">
-            <el-button :size="size" type="primary" icon="el-icon-cpu" @click="onSaveProcess()"> 保存XML </el-button>
+            <el-button :size="size" type="primary" :icon="MessageBox" @click="onSaveProcess()"> 保存XML </el-button>
           </el-tooltip>
         </el-button-group>
+        <!-- 对齐方式 -->
         <el-button-group key="align-control">
           <el-tooltip v-for="item in btns" effect="light" :content="item.content" :key="item.type">
-            <el-button size="small" class="align align-right" icon="el-icon-s-data" @click="elementsAlign(item.type)">{{ item.content }}</el-button>
+            <el-button :size="size" :class="item.class" :icon="Histogram" @click="elementsAlign(item.type)" />
           </el-tooltip>
         </el-button-group>
+        <!-- 视图操作 -->
         <el-button-group key="scale-control">
           <el-tooltip effect="light" content="缩小视图">
             <el-button :size="size" :disabled="defaultZoom < 0.2" :icon="ZoomOut" @click="processZoomOut()" />
@@ -49,37 +52,53 @@
         </el-button-group>
         <el-button-group key="stack-control">
           <el-tooltip effect="light" content="撤销">
-            <el-button :size="size" :disabled="!revocable" icon="el-icon-refresh-left" @click="processUndo()">撤销</el-button>
+            <el-button :size="size" :disabled="!revocable" :icon="RefreshLeft" @click="processUndo()" />
           </el-tooltip>
           <el-tooltip effect="light" content="恢复">
-            <el-button :size="size" :disabled="!recoverable" icon="el-icon-refresh-right" @click="processRedo()">恢复</el-button>
+            <el-button :size="size" :disabled="!recoverable" :icon="RefreshRight" @click="processRedo()" />
           </el-tooltip>
           <el-tooltip effect="light" content="重新绘制">
-            <el-button :size="size" icon="el-icon-refresh" @click="processRestart">重新绘制</el-button>
+            <el-button :size="size" :icon="Refresh" @click="processRestart" />
           </el-tooltip>
         </el-button-group>
       </template>
       <!-- 用于打开本地文件-->
-      <input type="file" ref="refFile" style="display: none" accept=".xml, .bpmn" @change="importLocalFile" />
+      <input type="file" ref="refFile" style="display: none" accept=".xml,.bpmn" @change="importLocalFile" />
     </div>
     <div class="my-process-designer__container">
       <div class="my-process-designer__canvas" ref="bpmnRef" />
     </div>
-    <el-dialog title="预览" width="60%" :visible="previewModelVisible" append-to-body destroy-on-close>
-      <!-- <highlightjs :language="previewType" :code="previewResult" /> -->
+    <el-dialog title="预览" width="60%" v-model="previewModelVisible" align-center append-to-body destroy-on-close>
+      <highlightjs :language="previewType" :code="previewResult" />
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted, watch, computed, toRaw } from "vue";
 import BpmnModeler from "bpmn-js/lib/Modeler";
-import { ref, onMounted, onUnmounted, markRaw } from "vue";
+import { View, Download, FolderOpened, Cpu, MessageBox, Histogram } from "@element-plus/icons-vue";
 import DefaultEmptyXML from "./plugins/defaultEmpty";
-import { message } from "@/utils/message";
-import { ElMessageBox } from "element-plus";
-import { ZoomOut, ZoomIn, ScaleToOriginal } from "@element-plus/icons-vue";
+// 翻译方法
+import customTranslate from "./plugins/translate/customTranslate";
+import translationsCN from "./plugins/translate/zh";
+// 模拟流转流程
+import tokenSimulation from "bpmn-js-token-simulation";
+// 标签解析构建器
+// import bpmnPropertiesProvider from "bpmn-js-properties-panel/lib/provider/bpmn";
+// 标签解析 Moddle
+import camundaModdleDescriptor from "./plugins/descriptor/camundaDescriptor.json";
+import activitiModdleDescriptor from "./plugins/descriptor/activitiDescriptor.json";
+import flowableModdleDescriptor from "./plugins/descriptor/flowableDescriptor.json";
+// 标签解析 Extension
+import camundaModdleExtension from "./plugins/extension-moddle/camunda";
+import activitiModdleExtension from "./plugins/extension-moddle/activiti";
+import flowableModdleExtension from "./plugins/extension-moddle/flowable";
 
 import X2JS from "x2js"; // 引入json转换与高亮
+import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
+import { ZoomOut, ZoomIn, ScaleToOriginal, RefreshLeft, RefreshRight, Refresh } from "@element-plus/icons-vue";
 
 const props = withDefaults(
   defineProps<
@@ -119,7 +138,7 @@ const props = withDefaults(
     primary: "primary" // "default", "primary", "success", "warning", "danger", "info"
   }
 );
-const emits = defineEmits(["destroy", "init-finished", "commandStack-changed", "input", "change", "canvas-viewbox-changed"]);
+const emits = defineEmits(["element-click", "destroy", "init-finished", "commandStack-changed", "input", "change", "canvas-viewbox-changed"]);
 
 const bpmnRef = ref();
 const bpmnModeler = ref();
@@ -134,13 +153,87 @@ const revocable = ref(false);
 const refFile = ref();
 
 const btns = [
-  { content: "向左对齐", type: "left" },
-  { content: "向右对齐", type: "right" },
-  { content: "向上对齐", type: "top" },
-  { content: "向下对齐", type: "bottom" },
-  { content: "水平居中", type: "center" },
-  { content: "垂直居中", type: "middle" }
+  { content: "向左对齐", class: "align align-left", type: "left" },
+  { content: "向右对齐", class: "align align-right", type: "right" },
+  { content: "向上对齐", class: "align align-top", type: "top" },
+  { content: "向下对齐", class: "align align-bottom", type: "bottom" },
+  { content: "水平居中", class: "align align-center", type: "center" },
+  { content: "垂直居中", class: "align align-middle", type: "middle" }
 ];
+
+const additionalModules = computed(() => {
+  const Modules = [];
+  const adModel = toRaw(props.additionalModel);
+  // 仅保留用户自定义扩展模块
+  if (props.onlyCustomizeAddi) {
+    if (Object.prototype.toString.call(adModel) === "[object Array]") {
+      return adModel || [];
+    }
+    return [adModel];
+  }
+
+  // 插入用户自定义扩展模块
+  if (Object.prototype.toString.call(adModel) === "[object Array]") {
+    Modules.push(...adModel);
+  } else {
+    adModel && Modules.push(adModel);
+  }
+
+  // 翻译模块
+  const TranslateModule = {
+    translate: ["value", customTranslate(props.translations || translationsCN)]
+  };
+  Modules.push(TranslateModule);
+
+  // 模拟流转模块
+  if (props.simulation) {
+    Modules.push(tokenSimulation);
+  }
+
+  // 根据需要的流程类型设置扩展元素构建模块
+  // if (props.prefix === "bpmn") {
+  //   Modules.push(bpmnModdleExtension);
+  // }
+  if (props.prefix === "camunda") {
+    Modules.push(camundaModdleExtension);
+  }
+  if (props.prefix === "flowable") {
+    Modules.push(flowableModdleExtension);
+  }
+  if (props.prefix === "activiti") {
+    Modules.push(activitiModdleExtension);
+  }
+
+  return Modules;
+});
+
+const moddleExtensions = computed(() => {
+  const Extensions: Record<string, any> = {};
+  // 仅使用用户自定义模块
+  if (props.onlyCustomizeModdle) {
+    return props.moddleExtension || null;
+  }
+
+  // 插入用户自定义模块
+  if (props.moddleExtension) {
+    for (const key in props.moddleExtension) {
+      Extensions[key] = toRaw(props.moddleExtension[key]);
+    }
+  }
+
+  // 根据需要的 "流程类型" 设置 对应的解析文件
+  if (props.prefix === "activiti") {
+    Extensions.activiti = activitiModdleDescriptor;
+  }
+  if (props.prefix === "flowable") {
+    Extensions.flowable = flowableModdleDescriptor;
+  }
+  if (props.prefix === "camunda") {
+    Extensions.camunda = camundaModdleDescriptor;
+  }
+
+  return Extensions;
+});
 
 onMounted(() => {
   initBpmnModeler();
@@ -153,14 +246,21 @@ onUnmounted(() => {
   bpmnModeler.value = null;
 });
 
+watch(props, (val) => {
+  createNewDiagram(props.value);
+});
+
+console.log("7777777777777", toRaw(additionalModules.value));
+console.log("8888888888888", toRaw(moddleExtensions.value));
+
 const initBpmnModeler = () => {
   if (bpmnModeler.value) return;
   bpmnModeler.value = new BpmnModeler({
-    container: bpmnRef.value,
+    container: toRaw(bpmnRef.value),
     keyboard: props.keyboard ? { bindTo: document } : null,
-    // additionalModules: this.additionalModules,
-    // moddleExtensions: this.moddleExtensions,
-    ...props.options
+    additionalModules: toRaw(additionalModules.value),
+    moddleExtensions: toRaw(moddleExtensions.value),
+    ...toRaw(props.options)
   });
   emits("init-finished", bpmnModeler.value);
   initModelListeners();
@@ -397,7 +497,3 @@ const previewProcessJson = () => {
   });
 };
 </script>
-
-<style scoped>
-@import url("../theme/index.scss");
-</style>

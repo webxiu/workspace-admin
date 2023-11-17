@@ -5,7 +5,7 @@ $--color-danger: #ff4d4f;
 /* 改变 icon 字体路径变量，必需 */
 $--font-path: "~element-ui/lib/theme-chalk/fonts";
 
-@import "~element-ui/packages/theme-chalk/src/index";
+/* @import "~element-ui/packages/theme-chalk/src/index"; */
 
 .el-table td,
 .el-table th {
@@ -31,11 +31,6 @@ span:focus {
   overflow-y: auto;
 }
 
-.el-dialog {
-  margin-top: 50vh !important;
-  transform: translateY(-50%);
-  overflow: hidden;
-}
 .el-dialog__wrapper {
   overflow: hidden;
   max-height: 100vh;

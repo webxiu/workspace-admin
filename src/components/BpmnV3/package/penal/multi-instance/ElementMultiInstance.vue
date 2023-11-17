@@ -37,155 +37,164 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "ElementMultiInstance",
-  props: {
-    businessObject: Object,
-    type: String
+<script lang="ts" setup>
+import { inject, reactive, ref, watch, onUnmounted, nextTick } from "vue";
+
+const props = defineProps<{
+  businessObject: object;
+  type: string;
+}>();
+
+const prefix = inject("prefix");
+
+const loopCharacteristics = ref("");
+//默认配置，用来覆盖原始不存在的选项，避免报错
+const defaultLoopInstanceForm = reactive({
+  completionCondition: "",
+  loopCardinality: "",
+  extensionElements: [],
+  asyncAfter: false,
+  asyncBefore: false,
+  exclusive: false
+});
+
+const loopInstanceForm = ref({
+  loopCardinality: "",
+  collection: "",
+  elementVariable: "",
+  completionCondition: "",
+  asyncBefore: "",
+  asyncAfter: "",
+  exclusive: false,
+  timeCycle: ""
+});
+const bpmnElement = ref({});
+const multiLoopInstance = ref({});
+
+watch(
+  props,
+  (val) => {
+    bpmnElement.value = window.bpmnInstances.bpmnElement;
+    nextTick(() => {
+      getElementLoop(val.businessObject);
+    });
   },
-  inject: {
-    prefix: "prefix"
-  },
-  data() {
-    return {
-      loopCharacteristics: "",
-      //默认配置，用来覆盖原始不存在的选项，避免报错
-      defaultLoopInstanceForm: {
-        completionCondition: "",
-        loopCardinality: "",
-        extensionElements: [],
-        asyncAfter: false,
-        asyncBefore: false,
-        exclusive: false
-      },
-      loopInstanceForm: {}
-    };
-  },
-  watch: {
-    businessObject: {
-      immediate: true,
-      handler(val) {
-        this.bpmnElement = window.bpmnInstances.bpmnElement;
-        this.getElementLoop(val);
-      }
-    }
-  },
-  methods: {
-    getElementLoop(businessObject) {
-      if (!businessObject.loopCharacteristics) {
-        this.loopCharacteristics = "Null";
-        this.loopInstanceForm = {};
-        return;
-      }
-      if (businessObject.loopCharacteristics.$type === "bpmn:StandardLoopCharacteristics") {
-        this.loopCharacteristics = "StandardLoop";
-        this.loopInstanceForm = {};
-        return;
-      }
-      if (businessObject.loopCharacteristics.isSequential) {
-        this.loopCharacteristics = "SequentialMultiInstance";
-      } else {
-        this.loopCharacteristics = "ParallelMultiInstance";
-      }
-      // 合并配置
-      this.loopInstanceForm = {
-        ...this.defaultLoopInstanceForm,
-        ...businessObject.loopCharacteristics,
-        completionCondition: businessObject.loopCharacteristics?.completionCondition?.body ?? "",
-        loopCardinality: businessObject.loopCharacteristics?.loopCardinality?.body ?? ""
-      };
-      // 保留当前元素 businessObject 上的 loopCharacteristics 实例
-      this.multiLoopInstance = window.bpmnInstances.bpmnElement.businessObject.loopCharacteristics;
-      // 更新表单
-      if (businessObject.loopCharacteristics.extensionElements && businessObject.loopCharacteristics.extensionElements.values && businessObject.loopCharacteristics.extensionElements.values.length) {
-        this.$set(this.loopInstanceForm, "timeCycle", businessObject.loopCharacteristics.extensionElements.values[0].body);
-      }
-    },
-    changeLoopCharacteristicsType(type) {
-      // this.loopInstanceForm = { ...this.defaultLoopInstanceForm }; // 切换类型取消原表单配置
-      // 取消多实例配置
-      if (type === "Null") {
-        window.bpmnInstances.modeling.updateProperties(this.bpmnElement, { loopCharacteristics: null });
-        return;
-      }
-      // 配置循环
-      if (type === "StandardLoop") {
-        const loopCharacteristicsObject = window.bpmnInstances.moddle.create("bpmn:StandardLoopCharacteristics");
-        window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
-          loopCharacteristics: loopCharacteristicsObject
-        });
-        this.multiLoopInstance = null;
-        return;
-      }
-      // 时序
-      if (type === "SequentialMultiInstance") {
-        this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics", {
-          isSequential: true
-        });
-      } else {
-        this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics");
-      }
-      window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
-        loopCharacteristics: this.multiLoopInstance
-      });
-    },
-    // 循环基数
-    updateLoopCardinality(cardinality) {
-      let loopCardinality = null;
-      if (cardinality && cardinality.length) {
-        loopCardinality = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: cardinality });
-      }
-      window.bpmnInstances.modeling.updateModdleProperties(this.bpmnElement, this.multiLoopInstance, {
-        loopCardinality
-      });
-    },
-    // 完成条件
-    updateLoopCondition(condition) {
-      let completionCondition = null;
-      if (condition && condition.length) {
-        completionCondition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: condition });
-      }
-      window.bpmnInstances.modeling.updateModdleProperties(this.bpmnElement, this.multiLoopInstance, {
-        completionCondition
-      });
-    },
-    // 重试周期
-    updateLoopTimeCycle(timeCycle) {
-      const extensionElements = window.bpmnInstances.moddle.create("bpmn:ExtensionElements", {
-        values: [
-          window.bpmnInstances.moddle.create(`${this.prefix}:FailedJobRetryTimeCycle`, {
-            body: timeCycle
-          })
-        ]
-      });
-      window.bpmnInstances.modeling.updateModdleProperties(this.bpmnElement, this.multiLoopInstance, {
-        extensionElements
-      });
-    },
-    // 直接更新的基础信息
-    updateLoopBase() {
-      window.bpmnInstances.modeling.updateModdleProperties(this.bpmnElement, this.multiLoopInstance, {
-        collection: this.loopInstanceForm.collection || null,
-        elementVariable: this.loopInstanceForm.elementVariable || null
-      });
-    },
-    // 各异步状态
-    updateLoopAsync(key) {
-      const { asyncBefore, asyncAfter } = this.loopInstanceForm;
-      let asyncAttr = Object.create(null);
-      if (!asyncBefore && !asyncAfter) {
-        this.$set(this.loopInstanceForm, "exclusive", false);
-        asyncAttr = { asyncBefore: false, asyncAfter: false, exclusive: false, extensionElements: null };
-      } else {
-        asyncAttr[key] = this.loopInstanceForm[key];
-      }
-      window.bpmnInstances.modeling.updateModdleProperties(this.bpmnElement, this.multiLoopInstance, asyncAttr);
-    }
-  },
-  beforeDestroy() {
-    this.multiLoopInstance = null;
-    this.bpmnElement = null;
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  multiLoopInstance.value = null;
+  bpmnElement.value = null;
+});
+
+const getElementLoop = (businessObject) => {
+  if (!businessObject.loopCharacteristics) {
+    loopCharacteristics.value = "Null";
+    loopInstanceForm.value = {};
+    return;
   }
+  if (businessObject.loopCharacteristics.$type === "bpmn:StandardLoopCharacteristics") {
+    loopCharacteristics.value = "StandardLoop";
+    loopInstanceForm.value = {};
+    return;
+  }
+  if (businessObject.loopCharacteristics.isSequential) {
+    loopCharacteristics.value = "SequentialMultiInstance";
+  } else {
+    loopCharacteristics.value = "ParallelMultiInstance";
+  }
+  // 合并配置
+  loopInstanceForm.value = {
+    ...defaultLoopInstanceForm,
+    ...businessObject.loopCharacteristics,
+    completionCondition: businessObject.loopCharacteristics?.completionCondition?.body ?? "",
+    loopCardinality: businessObject.loopCharacteristics?.loopCardinality?.body ?? ""
+  };
+  // 保留当前元素 businessObject 上的 loopCharacteristics 实例
+  multiLoopInstance.value = window.bpmnInstances.bpmnElement.businessObject.loopCharacteristics;
+  // 更新表单
+  if (businessObject.loopCharacteristics.extensionElements && businessObject.loopCharacteristics.extensionElements.values && businessObject.loopCharacteristics.extensionElements.values.length) {
+    loopInstanceForm.value.timeCycle = businessObject.loopCharacteristics.extensionElements.values[0].body;
+  }
+};
+const changeLoopCharacteristicsType = (type) => {
+  // loopInstanceForm.value = { ...defaultLoopInstanceForm }; // 切换类型取消原表单配置
+  // 取消多实例配置
+  if (type === "Null") {
+    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, { loopCharacteristics: null });
+    return;
+  }
+  // 配置循环
+  if (type === "StandardLoop") {
+    const loopCharacteristicsObject = window.bpmnInstances.moddle.create("bpmn:StandardLoopCharacteristics");
+    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+      loopCharacteristics: loopCharacteristicsObject
+    });
+    multiLoopInstance.value = null;
+    return;
+  }
+  // 时序
+  if (type === "SequentialMultiInstance") {
+    multiLoopInstance.value = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics", {
+      isSequential: true
+    });
+  } else {
+    multiLoopInstance.value = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics");
+  }
+  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    loopCharacteristics: multiLoopInstance.value
+  });
+};
+// 循环基数
+const updateLoopCardinality = (cardinality) => {
+  let loopCardinality = null;
+  if (cardinality && cardinality.length) {
+    loopCardinality = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: cardinality });
+  }
+  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+    loopCardinality
+  });
+};
+// 完成条件
+const updateLoopCondition = (condition) => {
+  let completionCondition = null;
+  if (condition && condition.length) {
+    completionCondition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: condition });
+  }
+  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+    completionCondition
+  });
+};
+// 重试周期
+const updateLoopTimeCycle = (timeCycle) => {
+  const extensionElements = window.bpmnInstances.moddle.create("bpmn:ExtensionElements", {
+    values: [
+      window.bpmnInstances.moddle.create(`${prefix}:FailedJobRetryTimeCycle`, {
+        body: timeCycle
+      })
+    ]
+  });
+  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+    extensionElements
+  });
+};
+// 直接更新的基础信息
+const updateLoopBase = () => {
+  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+    collection: loopInstanceForm.value.collection || null,
+    elementVariable: loopInstanceForm.value.elementVariable || null
+  });
+};
+// 各异步状态
+const updateLoopAsync = (key) => {
+  const { asyncBefore, asyncAfter } = loopInstanceForm.value;
+  let asyncAttr = Object.create(null);
+  if (!asyncBefore && !asyncAfter) {
+    loopInstanceForm.value.exclusive = false;
+    asyncAttr = { asyncBefore: false, asyncAfter: false, exclusive: false, extensionElements: null };
+  } else {
+    asyncAttr[key] = loopInstanceForm.value[key];
+  }
+  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, asyncAttr);
 };
 </script>

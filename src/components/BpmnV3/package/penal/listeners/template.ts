@@ -1,20 +1,20 @@
 export const template = (isTaskListener) => {
   return `
   <div class="panel-tab__content">
-    <el-table :data="elementListenersList" size="mini" border>
+    <el-table :data="elementListenersList" size="small" border>
       <el-table-column label="序号" width="50px" type="index" />
       <el-table-column label="事件类型" min-width="100px" prop="event" />
       <el-table-column label="监听器类型" min-width="100px" show-overflow-tooltip :formatter="row => listenerTypeObject[row.listenerType]" />
-      <el-table-column label="操作" width="90px">
+      <el-table-column label="操作" width="100px">
         <template #default="{ row, $index }">
-          <el-button size="small" type="text" @click="openListenerForm(row, $index)">编辑</el-button>
+          <el-button size="small" link type="primary" @click="openListenerForm(row, $index)">编辑</el-button>
           <el-divider direction="vertical" />
-          <el-button size="small" type="text" style="color: #ff4d4f" @click="removeListener(row, $index)">移除</el-button>
+          <el-button size="small" link type="danger" @click="removeListener(row, $index)">移除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <div class="element-drawer__button">
-      <el-button size="small" type="primary" icon="el-icon-plus" @click="openListenerForm(null)">添加监听器</el-button>
+      <el-button size="small" type="primary" :icon="Plus" @click="openListenerForm(null)">添加监听器</el-button>
     </div>
 
     <!-- 监听器 编辑/创建 部分 -->
@@ -118,16 +118,16 @@ export const template = (isTaskListener) => {
         <span><i class="el-icon-menu"></i>注入字段：</span>
         <el-button size="small" type="primary" @click="openListenerFieldForm(null)">添加字段</el-button>
       </p>
-      <el-table :data="fieldsListOfListener" size="mini" max-height="240" border fit style="flex: none">
+      <el-table :data="fieldsListOfListener" size="small" max-height="240" border fit style="flex: none">
         <el-table-column label="序号" width="50px" type="index" />
         <el-table-column label="字段名称" min-width="100px" prop="name" />
         <el-table-column label="字段类型" min-width="80px" show-overflow-tooltip :formatter="row => fieldTypeObject[row.fieldType]" />
         <el-table-column label="字段值/表达式" min-width="100px" show-overflow-tooltip :formatter="row => row.string || row.expression" />
         <el-table-column label="操作" width="100px">
           <template #default="{ row, $index }">
-            <el-button size="small" type="text" @click="openListenerFieldForm(row, $index)">编辑</el-button>
+            <el-button size="small" link type="primary" @click="openListenerFieldForm(row, $index)">编辑</el-button>
             <el-divider direction="vertical" />
-            <el-button size="small" type="text" style="color: #ff4d4f" @click="removeListenerField(row, $index)">移除</el-button>
+            <el-button size="small" link type="danger" @click="removeListenerField(row, $index)">移除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -140,7 +140,7 @@ export const template = (isTaskListener) => {
 
     <!-- 注入西段 编辑/创建 部分 -->
     <el-dialog title="字段配置" :visible.sync="listenerFieldFormModelVisible" width="600px" append-to-body destroy-on-close>
-      <el-form :model="listenerFieldForm" size="mini" label-width="96px" ref="listenerFieldFormRef" style="height: 136px" @submit.prevent>
+      <el-form :model="listenerFieldForm" size="small" label-width="96px" ref="listenerFieldFormRef" style="height: 136px" @submit.prevent>
         <el-form-item label="字段名称：" prop="name" :rules="{ required: true, trigger: ['blur', 'change'] }">
           <el-input v-model="listenerFieldForm.name" clearable />
         </el-form-item>
