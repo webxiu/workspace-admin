@@ -148,7 +148,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, watch, nextTick, inject } from "vue";
+import { ref, reactive, watch, nextTick, inject, toRaw } from "vue";
 import { Plus } from "@element-plus/icons-vue";
 
 const props = defineProps<{
@@ -376,7 +376,7 @@ const updateElementExtensions = () => {
     values: otherExtensions.value.concat(formData.value)
   });
   // 更新到元素上
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
     extensionElements: newElExtensionElements
   });
 };

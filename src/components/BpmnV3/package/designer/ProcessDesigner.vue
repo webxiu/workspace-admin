@@ -18,9 +18,9 @@
           </el-tooltip>
           <el-tooltip effect="light">
             <template #content>
-              <el-button :size="size" link @click="previewProcessXML">预览XML</el-button>
+              <el-button :size="size" type="primary" link @click="previewProcessXML">预览XML</el-button>
               <br />
-              <el-button :size="size" link @click="previewProcessJson">预览JSON</el-button>
+              <el-button :size="size" type="primary" link @click="previewProcessJson">预览JSON</el-button>
             </template>
             <el-button :size="size" :icon="View" type="primary">预览</el-button>
           </el-tooltip>
