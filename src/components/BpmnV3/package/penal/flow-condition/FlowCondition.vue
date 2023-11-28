@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onUnmounted, ref, watch } from "vue";
+import { nextTick, onUnmounted, ref, toRaw, watch } from "vue";
 
 const props = defineProps<{ businessObject: object; type: string }>();
 
@@ -105,28 +105,28 @@ const updateFlowType = (flowType) => {
   // 正常条件类
   if (flowType === "condition") {
     const flowConditionRef = window.bpmnInstances.moddle.create("bpmn:FormalExpression");
-    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
       conditionExpression: flowConditionRef
     });
     return;
   }
   // 默认路径
   if (flowType === "default") {
-    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
       conditionExpression: null
     });
-    window.bpmnInstances.modeling.updateProperties(bpmnElementSource.value, {
-      default: bpmnElement.value
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElementSource.value), {
+      default: toRaw(bpmnElement.value)
     });
     return;
   }
   // 正常路径，如果来源节点的默认路径是当前连线时，清除父元素的默认路径配置
   if (bpmnElementSourceRef.value.default && bpmnElementSourceRef.value.default.id === bpmnElement.value.id) {
-    window.bpmnInstances.modeling.updateProperties(bpmnElementSource.value, {
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElementSource.value), {
       default: null
     });
   }
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
     conditionExpression: null
   });
 };
@@ -144,6 +144,6 @@ const updateFlowCondition = () => {
       condition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { resource, language });
     }
   }
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, { conditionExpression: condition });
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), { conditionExpression: condition });
 };
 </script>

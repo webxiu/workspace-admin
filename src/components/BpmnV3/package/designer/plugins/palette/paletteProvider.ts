@@ -18,8 +18,8 @@ export default function PaletteProvider(palette, create, elementFactory, spaceTo
 
 PaletteProvider.$inject = ["palette", "create", "elementFactory", "spaceTool", "lassoTool", "handTool", "globalConnect", "translate"];
 
-PaletteProvider.prototype.getPaletteEntries = function() {
-  var actions = {},
+PaletteProvider.prototype.getPaletteEntries = function () {
+  const actions = {},
     create = this._create,
     elementFactory = this._elementFactory,
     spaceTool = this._spaceTool,
@@ -28,9 +28,9 @@ PaletteProvider.prototype.getPaletteEntries = function() {
     globalConnect = this._globalConnect,
     translate = this._translate;
 
-  function createAction(type, group, className, title, options) {
+  function createAction(type, group, className, title, options?) {
     function createListener(event) {
-      var shape = elementFactory.createShape(assign({ type: type }, options));
+      const shape = elementFactory.createShape(assign({ type: type }, options));
 
       if (options) {
         shape.businessObject.di.isExpanded = options.isExpanded;
@@ -39,7 +39,7 @@ PaletteProvider.prototype.getPaletteEntries = function() {
       create.start(event, shape);
     }
 
-    var shortType = type.replace(/^bpmn:/, "");
+    const shortType = type.replace(/^bpmn:/, "");
 
     return {
       group: group,
@@ -53,14 +53,14 @@ PaletteProvider.prototype.getPaletteEntries = function() {
   }
 
   function createSubprocess(event) {
-    var subProcess = elementFactory.createShape({
+    const subProcess = elementFactory.createShape({
       type: "bpmn:SubProcess",
       x: 0,
       y: 0,
       isExpanded: true
     });
 
-    var startEvent = elementFactory.createShape({
+    const startEvent = elementFactory.createShape({
       type: "bpmn:StartEvent",
       x: 40,
       y: 82,
@@ -84,7 +84,7 @@ PaletteProvider.prototype.getPaletteEntries = function() {
       className: "bpmn-icon-hand-tool",
       title: translate("Activate the hand tool"),
       action: {
-        click: function(event) {
+        click: function (event) {
           handTool.activateHand(event);
         }
       }
@@ -94,7 +94,7 @@ PaletteProvider.prototype.getPaletteEntries = function() {
       className: "bpmn-icon-lasso-tool",
       title: translate("Activate the lasso tool"),
       action: {
-        click: function(event) {
+        click: function (event) {
           lassoTool.activateSelection(event);
         }
       }
@@ -104,7 +104,7 @@ PaletteProvider.prototype.getPaletteEntries = function() {
       className: "bpmn-icon-space-tool",
       title: translate("Activate the create/remove space tool"),
       action: {
-        click: function(event) {
+        click: function (event) {
           spaceTool.activateSelection(event);
         }
       }
@@ -114,7 +114,7 @@ PaletteProvider.prototype.getPaletteEntries = function() {
       className: "bpmn-icon-connection-multi",
       title: translate("Activate the global connect tool"),
       action: {
-        click: function(event) {
+        click: function (event) {
           globalConnect.toggle(event);
         }
       }

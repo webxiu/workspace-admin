@@ -2,7 +2,7 @@
 
 import { some } from "min-dash";
 
-var ALLOWED_TYPES = {
+const ALLOWED_TYPES = {
   FailedJobRetryTimeCycle: ["bpmn:StartEvent", "bpmn:BoundaryEvent", "bpmn:IntermediateCatchEvent", "bpmn:Activity"],
   Connector: ["bpmn:EndEvent", "bpmn:IntermediateThrowEvent"],
   Field: ["bpmn:EndEvent", "bpmn:IntermediateThrowEvent"]
@@ -32,17 +32,17 @@ function anyType(element, types) {
 }
 
 function isAllowed(propName, propDescriptor, newElement) {
-  var name = propDescriptor.name,
-    types = ALLOWED_TYPES[name.replace(/activiti:/, "")];
+  const name = propDescriptor.name,
+    types = ALLOWED_TYPES[name.replace(/flowable:/, "")];
 
   return name === propName && anyType(newElement, types);
 }
 
-function ActivitiModdleExtension(eventBus) {
+function FlowableModdleExtension(eventBus) {
   eventBus.on(
     "property.clone",
     function (context) {
-      var newElement = context.newElement,
+      const newElement = context.newElement,
         propDescriptor = context.propertyDescriptor;
 
       this.canCloneProperty(newElement, propDescriptor);
@@ -51,10 +51,10 @@ function ActivitiModdleExtension(eventBus) {
   );
 }
 
-ActivitiModdleExtension.$inject = ["eventBus"];
+FlowableModdleExtension.$inject = ["eventBus"];
 
-ActivitiModdleExtension.prototype.canCloneProperty = function (newElement, propDescriptor) {
-  if (isAllowed("activiti:FailedJobRetryTimeCycle", propDescriptor, newElement)) {
+FlowableModdleExtension.prototype.canCloneProperty = function (newElement, propDescriptor) {
+  if (isAllowed("flowable:FailedJobRetryTimeCycle", propDescriptor, newElement)) {
     return (
       includesType(newElement.eventDefinitions, "bpmn:TimerEventDefinition") ||
       includesType(newElement.eventDefinitions, "bpmn:SignalEventDefinition") ||
@@ -62,14 +62,14 @@ ActivitiModdleExtension.prototype.canCloneProperty = function (newElement, propD
     );
   }
 
-  if (isAllowed("activiti:Connector", propDescriptor, newElement)) {
+  if (isAllowed("flowable:Connector", propDescriptor, newElement)) {
     return includesType(newElement.eventDefinitions, "bpmn:MessageEventDefinition");
   }
 
-  if (isAllowed("activiti:Field", propDescriptor, newElement)) {
+  if (isAllowed("flowable:Field", propDescriptor, newElement)) {
     return includesType(newElement.eventDefinitions, "bpmn:MessageEventDefinition");
   }
 };
 
-// module.exports = ActivitiModdleExtension;
-export { ActivitiModdleExtension };
+// module.exports = FlowableModdleExtension;
+export { FlowableModdleExtension };

@@ -35,7 +35,7 @@
 
 <script lang="ts" setup>
 import { ElMessageBox } from "element-plus";
-import { inject, nextTick, ref, watch } from "vue";
+import { inject, nextTick, ref, watch, toRaw } from "vue";
 import { Plus } from "@element-plus/icons-vue";
 
 const props = defineProps<{
@@ -116,7 +116,7 @@ const removeAttributes = (attr, index) => {
 const saveAttribute = () => {
   const { name, value } = propertyForm.value;
   if (editingPropertyIndex.value !== -1) {
-    window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, bpmnElementPropertyList.value[editingPropertyIndex.value], {
+    window.bpmnInstances.modeling.updateModdleProperties(toRaw(bpmnElement.value), bpmnElementPropertyList.value[editingPropertyIndex.value], {
       name,
       value
     });
@@ -136,7 +136,7 @@ const updateElementExtensions = (properties) => {
   const extensions = window.bpmnInstances.moddle.create("bpmn:ExtensionElements", {
     values: otherExtensionList.value.concat([properties])
   });
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
     extensionElements: extensions
   });
 };

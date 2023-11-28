@@ -33,10 +33,22 @@
             <el-option v-for="i in Object.keys(listenerTypeObject)" :key="i" :label="listenerTypeObject[i]" :value="i" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="listenerForm.listenerType === 'classListener'" label="Java类" prop="class" key="listener-class" :rules="{ required: true, trigger: ['blur', 'change'] }">
+        <el-form-item
+          v-if="listenerForm.listenerType === 'classListener'"
+          label="Java类"
+          prop="class"
+          key="listener-class"
+          :rules="{ required: true, trigger: ['blur', 'change'] }"
+        >
           <el-input v-model="listenerForm.class" clearable />
         </el-form-item>
-        <el-form-item v-if="listenerForm.listenerType === 'expressionListener'" label="表达式" prop="expression" key="listener-expression" :rules="{ required: true, trigger: ['blur', 'change'] }">
+        <el-form-item
+          v-if="listenerForm.listenerType === 'expressionListener'"
+          label="表达式"
+          prop="expression"
+          key="listener-expression"
+          :rules="{ required: true, trigger: ['blur', 'change'] }"
+        >
           <el-input v-model="listenerForm.expression" clearable />
         </el-form-item>
         <el-form-item
@@ -49,10 +61,20 @@
           <el-input v-model="listenerForm.delegateExpression" clearable />
         </el-form-item>
         <template v-if="listenerForm.listenerType === 'scriptListener'">
-          <el-form-item label="脚本格式" prop="scriptFormat" key="listener-script-format" :rules="{ required: true, trigger: ['blur', 'change'], message: '请填写脚本格式' }">
+          <el-form-item
+            label="脚本格式"
+            prop="scriptFormat"
+            key="listener-script-format"
+            :rules="{ required: true, trigger: ['blur', 'change'], message: '请填写脚本格式' }"
+          >
             <el-input v-model="listenerForm.scriptFormat" clearable />
           </el-form-item>
-          <el-form-item label="脚本类型" prop="scriptType" key="listener-script-type" :rules="{ required: true, trigger: ['blur', 'change'], message: '请选择脚本类型' }">
+          <el-form-item
+            label="脚本类型"
+            prop="scriptType"
+            key="listener-script-type"
+            :rules="{ required: true, trigger: ['blur', 'change'], message: '请选择脚本类型' }"
+          >
             <el-select v-model="listenerForm.scriptType">
               <el-option label="内联脚本" value="inlineScript" />
               <el-option label="外部脚本" value="externalScript" />
@@ -137,10 +159,22 @@
             <el-option v-for="i in Object.keys(fieldTypeObject)" :key="i" :label="fieldTypeObject[i]" :value="i" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="listenerFieldForm.fieldType === 'string'" label="字段值：" prop="string" key="field-string" :rules="{ required: true, trigger: ['blur', 'change'] }">
+        <el-form-item
+          v-if="listenerFieldForm.fieldType === 'string'"
+          label="字段值："
+          prop="string"
+          key="field-string"
+          :rules="{ required: true, trigger: ['blur', 'change'] }"
+        >
           <el-input v-model="listenerFieldForm.string" clearable />
         </el-form-item>
-        <el-form-item v-if="listenerFieldForm.fieldType === 'expression'" label="表达式：" prop="expression" key="field-expression" :rules="{ required: true, trigger: ['blur', 'change'] }">
+        <el-form-item
+          v-if="listenerFieldForm.fieldType === 'expression'"
+          label="表达式："
+          prop="expression"
+          key="field-expression"
+          :rules="{ required: true, trigger: ['blur', 'change'] }"
+        >
           <el-input v-model="listenerFieldForm.expression" clearable />
         </el-form-item>
       </el-form>
@@ -224,7 +258,7 @@ const openListenerForm = (listener?, index = -1) => {
     listenerForm.value = initListenerForm(listener);
     editingListenerIndex.value = index;
   } else {
-    listenerForm.value = {};
+    listenerForm.value = {} as any;
     editingListenerIndex.value = -1; // 标记为新增
   }
   if (listener && listener.fields) {
@@ -272,7 +306,7 @@ const saveListenerConfig = async () => {
   updateElementExtensions(bpmnElement.value, otherExtensionList.value.concat(bpmnElementListeners.value));
   // 4. 隐藏侧边栏
   listenerFormModelVisible.value = false;
-  listenerForm.value = {};
+  listenerForm.value = {} as any;
 };
 // 打开监听器字段编辑弹窗
 const openListenerFieldForm = (field?, index = -1) => {
@@ -295,7 +329,7 @@ const saveListenerFiled = async () => {
     listenerForm.value.fields.splice(editingListenerFieldIndex.value, 1, listenerFieldForm.value);
   }
   listenerFieldFormModelVisible.value = false;
-  nextTick(() => (listenerFieldForm.value = {}));
+  nextTick(() => (listenerFieldForm.value = {} as any));
 };
 // 移除监听器字段
 const removeListenerField = (field, index) => {

@@ -196,7 +196,9 @@ const getActiveElement = () => {
 const initFormOnChanged = (element) => {
   let activatedElement = element;
   if (!activatedElement) {
-    activatedElement = window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Process") ?? window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Collaboration");
+    activatedElement =
+      window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Process") ??
+      window.bpmnInstances.elementRegistry.find((el) => el.type === "bpmn:Collaboration");
   }
   if (!activatedElement) return;
   window.bpmnInstances.bpmnElement = activatedElement;

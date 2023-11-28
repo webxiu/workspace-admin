@@ -48,8 +48,6 @@ const props = withDefaults(defineProps<{ xml: string }>(), {
   xml: ""
 });
 
-const emits = defineEmits(["onSave"]);
-
 const xmlString = ref("");
 const modeler = ref(null);
 const reloadIndex = ref(0);
@@ -58,6 +56,7 @@ const infoTipVisible = ref(false);
 const pageMode = ref(false);
 const translationsSelf = ref(translations);
 const elementRef = ref();
+const emits = defineEmits(["onSave"]);
 
 const controlForm = reactive({
   processId: "",

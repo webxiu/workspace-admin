@@ -2,87 +2,87 @@
   <div class="my-process-palette">
     <p>设计面板</p>
     <el-collapse>
-      <el-collapse-item title="任务" name="1">
-        <!--  可以简化。。。 -->
-        <div class="custom-button" @click="createElement($event, 'Task')" @mousedown="createElement($event, 'Task')">
-          任务
-        </div>
-        <div class="custom-button" @click="createElement($event, 'UserTask')" @mousedown="createElement($event, 'UserTask')">
-          用户任务
-        </div>
-        <div class="custom-button" @click="createElement($event, 'SendTask')" @mousedown="createElement($event, 'SendTask')">
-          发送任务
-        </div>
-        <div class="custom-button" @click="createElement($event, 'ReceiveTask')" @mousedown="createElement($event, 'ReceiveTask')">
-          接收任务
-        </div>
-        <div class="custom-button" @click="createElement($event, 'ScriptTask')" @mousedown="createElement($event, 'ScriptTask')">
-          脚本任务
-        </div>
-        <div class="custom-button" @click="createElement($event, 'ServiceTask')" @mousedown="createElement($event, 'ServiceTask')">
-          服务任务
-        </div>
-      </el-collapse-item>
-      <el-collapse-item title="网关" name="2">
-        <div class="custom-button" @click="createElement($event, 'Gateway')" @mousedown="createElement($event, 'Gateway')">
-          网关
-        </div>
-      </el-collapse-item>
-      <el-collapse-item title="开始" name="3">
-        <div class="custom-button" @click="createElement($event, 'StartEvent')" @mousedown="createElement($event, 'StartEvent')">
-          开始
-        </div>
-      </el-collapse-item>
-      <el-collapse-item title="结束" name="4">
-        <div class="custom-button" @click="createElement($event, 'EndEvent')" @mousedown="createElement($event, 'EndEvent')">
-          结束
-        </div>
-      </el-collapse-item>
-      <el-collapse-item title="工具" name="5">
-        <div class="custom-button" @click="startTool($event, 'handTool')" @mousedown="startTool($event, 'handTool')">
-          手型工具
-        </div>
-        <div class="custom-button" @click="startTool($event, 'lassoTool')" @mousedown="startTool($event, 'lassoTool')">
-          框选工具
-        </div>
-        <div class="custom-button" @click="startTool($event, 'connectTool')" @mousedown="startTool($event, 'connectTool')">
-          连线工具
+      <el-collapse-item v-for="item in taskList" :title="item.title" :name="item.type" :key="item.type">
+        <div
+          :key="cell.type"
+          class="custom-button"
+          v-for="cell in item.children"
+          @click="onClickPalette($event, cell, item.type)"
+          @mousedown="onClickPalette($event, cell, item.type)"
+        >
+          {{ cell.title }}
         </div>
       </el-collapse-item>
     </el-collapse>
   </div>
 </template>
 
-<script>
+<script lang="ts" setup>
 import { assign } from "min-dash";
 
-export default {
-  name: "MyProcessPalette",
-  data() {
-    return {};
+interface TaskItem {
+  type: string;
+  title: string;
+  children?: TaskItem[];
+}
+
+// 面板列表
+const taskList: TaskItem[] = [
+  {
+    title: "任务",
+    type: "1",
+    children: [
+      { type: "Task", title: "任务" },
+      { type: "UserTask", title: "用户任务" },
+      { type: "SendTask", title: "发送任务" },
+      { type: "ReceiveTask", title: "接收任务" },
+      { type: "ScriptTask", title: "脚本任务" },
+      { type: "ServiceTask", title: "服务任务" }
+    ]
   },
-  mounted() {},
-  methods: {
-    createElement(event, type, options = {}) {
-      const ElementFactory = window.bpmnInstances.elementFactory;
-      const create = window.bpmnInstances.modeler.get("create");
-      const shape = ElementFactory.createShape(assign({ type: `bpmn:${type}` }, options));
-      if (options) {
-        shape.businessObject.di.isExpanded = options.isExpanded;
-      }
-      create.start(event, shape);
-    },
-    startTool(event, type) {
-      if (type === "handTool") {
-        window.bpmnInstances.modeler.get("handTool").activateHand(event);
-      }
-      if (type === "lassoTool") {
-        window.bpmnInstances.modeler.get("lassoTool").activateSelection(event);
-      }
-      if (type === "connectTool") {
-        window.bpmnInstances.modeler.get("globalConnect").toggle(event);
-      }
-    }
+  { title: "网关", type: "2", children: [{ type: "Gateway", title: "网关" }] },
+  { title: "开始", type: "3", children: [{ type: "StartEvent", title: "开始" }] },
+  { title: "结束", type: "4", children: [{ type: "EndEvent", title: "结束" }] },
+  {
+    title: "工具",
+    type: "5",
+    children: [
+      { type: "handTool", title: "手型工具" },
+      { type: "lassoTool", title: "框选工具" },
+      { type: "connectTool", title: "连线工具" }
+    ]
+  }
+];
+
+const onClickPalette = (event: MouseEvent, cell: TaskItem, collapseName: string) => {
+  if (collapseName === "5") {
+    startTool(event, cell.type);
+  } else {
+    createElement(event, cell.type);
+  }
+};
+
+// 任务元素
+const createElement = (event, type, options?) => {
+  const ElementFactory = window.bpmnInstances.elementFactory;
+  const create = window.bpmnInstances.modeler.get("create");
+  const shape = ElementFactory.createShape(assign({ type: `bpmn:${type}` }, options));
+  if (options) {
+    shape.businessObject.di.isExpanded = options.isExpanded;
+  }
+  create.start(event, shape);
+};
+
+// 工具
+const startTool = (event, type) => {
+  if (type === "handTool") {
+    window.bpmnInstances.modeler.get("handTool").activateHand(event);
+  }
+  if (type === "lassoTool") {
+    window.bpmnInstances.modeler.get("lassoTool").activateSelection(event);
+  }
+  if (type === "connectTool") {
+    window.bpmnInstances.modeler.get("globalConnect").toggle(event);
   }
 };
 </script>

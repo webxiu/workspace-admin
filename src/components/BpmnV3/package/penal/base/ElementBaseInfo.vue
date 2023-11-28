@@ -23,7 +23,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick, toRaw } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -62,18 +62,18 @@ const resetBaseInfo = () => {
 };
 const updateBaseInfo = (key) => {
   if (key === "id") {
-    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
       id: elementBaseInfo.value[key],
       di: { id: `${elementBaseInfo.value[key]}_di` }
     });
     return;
   }
   if (key === "isExpanded") {
-    window?.bpmnInstances?.modeling.toggleCollapse(bpmnElement.value);
+    window?.bpmnInstances?.modeling.toggleCollapse(toRaw(bpmnElement.value));
     return;
   }
   const attrObj = Object.create(null);
   attrObj[key] = elementBaseInfo.value[key];
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, attrObj);
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), attrObj);
 };
 </script>

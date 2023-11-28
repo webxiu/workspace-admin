@@ -7,10 +7,10 @@ export default function CustomRules(eventBus) {
 
 inherits(CustomRules, BpmnRules);
 
-CustomRules.prototype.canDrop = function() {
+CustomRules.prototype.canDrop = function () {
   return false;
 };
 
-CustomRules.prototype.canMove = function() {
+CustomRules.prototype.canMove = function () {
   return false;
 };

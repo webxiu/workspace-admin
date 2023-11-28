@@ -87,7 +87,7 @@ const initDataList = () => {
 };
 const openModel = (type) => {
   modelType.value = type;
-  modelObjectForm.value = {};
+  modelObjectForm.value = {} as any;
   modelVisible.value = true;
 };
 const addNewObject = () => {

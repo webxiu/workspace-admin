@@ -216,9 +216,12 @@ const resetFormList = () => {
   bpmnElement.value = window.bpmnInstances.bpmnElement;
   formKey.value = bpmnElement.value.businessObject.formKey;
   // 获取元素扩展属性 或者 创建扩展属性
-  elExtensionElements.value = bpmnElement.value.businessObject.get("extensionElements") || window.bpmnInstances.moddle.create("bpmn:ExtensionElements", { values: [] });
+  elExtensionElements.value =
+    bpmnElement.value.businessObject.get("extensionElements") || window.bpmnInstances.moddle.create("bpmn:ExtensionElements", { values: [] });
   // 获取元素表单配置 或者 创建新的表单配置
-  formData.value = elExtensionElements.value.values.filter((ex) => ex.$type === `${prefix}:FormData`)?.[0] || window.bpmnInstances.moddle.create(`${prefix}:FormData`, { fields: [] });
+  formData.value =
+    elExtensionElements.value.values.filter((ex) => ex.$type === `${prefix}:FormData`)?.[0] ||
+    window.bpmnInstances.moddle.create(`${prefix}:FormData`, { fields: [] });
 
   // 业务标识 businessKey， 绑定在 formData 中
   businessKey.value = formData.value.businessKey;
@@ -233,10 +236,10 @@ const resetFormList = () => {
   updateElementExtensions();
 };
 const updateElementFormKey = () => {
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, { formKey: formKey.value });
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), { formKey: formKey.value });
 };
 const updateElementBusinessKey = () => {
-  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, formData.value, {
+  window.bpmnInstances.modeling.updateModdleProperties(toRaw(bpmnElement.value), formData.value, {
     businessKey: businessKey.value
   });
 };
@@ -262,7 +265,7 @@ const openFieldForm = (field, index) => {
     // 初始化自定义属性列表
     fieldPropertiesList.value = JSON.parse(JSON.stringify(FieldObject?.properties?.values || []));
   } else {
-    formFieldForm.value = {};
+    formFieldForm.value = {} as any;
     // 初始化枚举值列表
     fieldEnumList.value = [];
     // 初始化约束条件列表
@@ -307,7 +310,7 @@ const saveFieldOption = () => {
     fieldOptionType.value === "enum" && fieldEnumList.value.splice(formFieldOptionIndex.value, 1, fieldOptionForm.value);
   }
   fieldOptionModelVisible.value = false;
-  fieldOptionForm.value = {};
+  fieldOptionForm.value = {} as any;
 };
 // 保存字段配置
 const saveField = () => {

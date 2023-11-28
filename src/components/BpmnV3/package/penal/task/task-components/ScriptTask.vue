@@ -10,7 +10,15 @@
       </el-select>
     </el-form-item>
     <el-form-item label="脚本" v-show="scriptTaskForm.scriptType === 'inline'">
-      <el-input v-model="scriptTaskForm.script" type="textarea" resize="vertical" :autosize="{ minRows: 2, maxRows: 4 }" clearable @input="updateElementTask()" @change="updateElementTask()" />
+      <el-input
+        v-model="scriptTaskForm.script"
+        type="textarea"
+        resize="vertical"
+        :autosize="{ minRows: 2, maxRows: 4 }"
+        clearable
+        @input="updateElementTask()"
+        @change="updateElementTask()"
+      />
     </el-form-item>
     <el-form-item label="资源地址" v-show="scriptTaskForm.scriptType === 'external'">
       <el-input v-model="scriptTaskForm.resource" clearable @input="updateElementTask()" @change="updateElementTask()" />
@@ -22,7 +30,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, ref } from "vue";
+import { onUnmounted, ref, toRaw } from "vue";
 import { nextTick, reactive, watch } from "vue";
 
 const props = defineProps<{ id: string; type: string }>();
@@ -74,6 +82,6 @@ const updateElementTask = () => {
     taskAttr.resource = scriptTaskForm.resource || null;
     taskAttr.script = null;
   }
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, taskAttr);
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), taskAttr);
 };
 </script>

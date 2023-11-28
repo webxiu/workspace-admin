@@ -27,7 +27,12 @@
         <el-form-item label="异步状态" key="async">
           <el-checkbox v-model="loopInstanceForm.asyncBefore" label="异步前" @change="updateLoopAsync('asyncBefore')" />
           <el-checkbox v-model="loopInstanceForm.asyncAfter" label="异步后" @change="updateLoopAsync('asyncAfter')" />
-          <el-checkbox v-model="loopInstanceForm.exclusive" v-if="loopInstanceForm.asyncAfter || loopInstanceForm.asyncBefore" label="排除" @change="updateLoopAsync('exclusive')" />
+          <el-checkbox
+            v-model="loopInstanceForm.exclusive"
+            v-if="loopInstanceForm.asyncAfter || loopInstanceForm.asyncBefore"
+            label="排除"
+            @change="updateLoopAsync('exclusive')"
+          />
         </el-form-item>
         <el-form-item label="重试周期" prop="timeCycle" v-if="loopInstanceForm.asyncAfter || loopInstanceForm.asyncBefore" key="timeCycle">
           <el-input v-model="loopInstanceForm.timeCycle" clearable @change="updateLoopTimeCycle" />
@@ -38,7 +43,7 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, reactive, ref, watch, onUnmounted, nextTick } from "vue";
+import { inject, reactive, ref, watch, onUnmounted, nextTick, toRaw } from "vue";
 
 const props = defineProps<{
   businessObject: object;
@@ -90,12 +95,12 @@ onUnmounted(() => {
 const getElementLoop = (businessObject) => {
   if (!businessObject.loopCharacteristics) {
     loopCharacteristics.value = "Null";
-    loopInstanceForm.value = {};
+    loopInstanceForm.value = {} as any;
     return;
   }
   if (businessObject.loopCharacteristics.$type === "bpmn:StandardLoopCharacteristics") {
     loopCharacteristics.value = "StandardLoop";
-    loopInstanceForm.value = {};
+    loopInstanceForm.value = {} as any;
     return;
   }
   if (businessObject.loopCharacteristics.isSequential) {
@@ -113,7 +118,11 @@ const getElementLoop = (businessObject) => {
   // 保留当前元素 businessObject 上的 loopCharacteristics 实例
   multiLoopInstance.value = window.bpmnInstances.bpmnElement.businessObject.loopCharacteristics;
   // 更新表单
-  if (businessObject.loopCharacteristics.extensionElements && businessObject.loopCharacteristics.extensionElements.values && businessObject.loopCharacteristics.extensionElements.values.length) {
+  if (
+    businessObject.loopCharacteristics.extensionElements &&
+    businessObject.loopCharacteristics.extensionElements.values &&
+    businessObject.loopCharacteristics.extensionElements.values.length
+  ) {
     loopInstanceForm.value.timeCycle = businessObject.loopCharacteristics.extensionElements.values[0].body;
   }
 };
@@ -121,13 +130,13 @@ const changeLoopCharacteristicsType = (type) => {
   // loopInstanceForm.value = { ...defaultLoopInstanceForm }; // 切换类型取消原表单配置
   // 取消多实例配置
   if (type === "Null") {
-    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, { loopCharacteristics: null });
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), { loopCharacteristics: null });
     return;
   }
   // 配置循环
   if (type === "StandardLoop") {
     const loopCharacteristicsObject = window.bpmnInstances.moddle.create("bpmn:StandardLoopCharacteristics");
-    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
       loopCharacteristics: loopCharacteristicsObject
     });
     multiLoopInstance.value = null;
@@ -141,7 +150,7 @@ const changeLoopCharacteristicsType = (type) => {
   } else {
     multiLoopInstance.value = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics");
   }
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
     loopCharacteristics: multiLoopInstance.value
   });
 };
@@ -151,7 +160,7 @@ const updateLoopCardinality = (cardinality) => {
   if (cardinality && cardinality.length) {
     loopCardinality = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: cardinality });
   }
-  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+  window.bpmnInstances.modeling.updateModdleProperties(toRaw(bpmnElement.value), multiLoopInstance.value, {
     loopCardinality
   });
 };
@@ -161,7 +170,7 @@ const updateLoopCondition = (condition) => {
   if (condition && condition.length) {
     completionCondition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: condition });
   }
-  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+  window.bpmnInstances.modeling.updateModdleProperties(toRaw(bpmnElement.value), multiLoopInstance.value, {
     completionCondition
   });
 };
@@ -174,13 +183,13 @@ const updateLoopTimeCycle = (timeCycle) => {
       })
     ]
   });
-  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+  window.bpmnInstances.modeling.updateModdleProperties(toRaw(bpmnElement.value), multiLoopInstance.value, {
     extensionElements
   });
 };
 // 直接更新的基础信息
 const updateLoopBase = () => {
-  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, {
+  window.bpmnInstances.modeling.updateModdleProperties(toRaw(bpmnElement.value), multiLoopInstance.value, {
     collection: loopInstanceForm.value.collection || null,
     elementVariable: loopInstanceForm.value.elementVariable || null
   });
@@ -195,6 +204,6 @@ const updateLoopAsync = (key) => {
   } else {
     asyncAttr[key] = loopInstanceForm.value[key];
   }
-  window.bpmnInstances.modeling.updateModdleProperties(bpmnElement.value, multiLoopInstance.value, asyncAttr);
+  window.bpmnInstances.modeling.updateModdleProperties(toRaw(bpmnElement.value), multiLoopInstance.value, asyncAttr);
 };
 </script>

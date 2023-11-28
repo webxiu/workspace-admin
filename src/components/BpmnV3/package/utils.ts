@@ -1,3 +1,5 @@
+import { toRaw } from "vue";
+
 // 创建监听器实例
 export function createListenerObject(options, isTask, prefix) {
   const listenerObj = Object.create(null);
@@ -55,13 +57,13 @@ export function updateElementExtensions(element, extensionList) {
   const extensions = window.bpmnInstances.moddle.create("bpmn:ExtensionElements", {
     values: extensionList
   });
-  window.bpmnInstances.modeling.updateProperties(element, {
+  window.bpmnInstances.modeling.updateProperties(toRaw(element), {
     extensionElements: extensions
   });
 }
 
 // 创建一个id
-export function uuid(length = 8, chars) {
+export function uuid(length = 8, chars?) {
   let result = "";
   const charsString = chars || "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (let i = length; i > 0; --i) {

@@ -15,7 +15,7 @@
 import UserTask from "./task-components/UserTask.vue";
 import ScriptTask from "./task-components/ScriptTask.vue";
 import ReceiveTask from "./task-components/ReceiveTask.vue";
-import { reactive, ref, watch } from "vue";
+import { reactive, ref, toRaw, watch } from "vue";
 
 const props = defineProps<{ id: string; type: string }>();
 
@@ -55,7 +55,7 @@ const changeTaskAsync = () => {
   if (!taskConfigForm.asyncBefore && !taskConfigForm.asyncAfter) {
     taskConfigForm.exclusive = false;
   }
-  window.bpmnInstances.modeling.updateProperties(window.bpmnInstances.bpmnElement, {
+  window.bpmnInstances.modeling.updateProperties(toRaw(window.bpmnInstances.bpmnElement), {
     ...taskConfigForm
   });
 };

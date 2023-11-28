@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, watch, reactive, ref, nextTick } from "vue";
+import { onUnmounted, watch, reactive, ref, nextTick, toRaw } from "vue";
 
 const props = defineProps<{ id: string; type: string }>();
 const defaultTaskForm = reactive({
@@ -82,6 +82,6 @@ const updateElementTask = (key) => {
   } else {
     taskAttr[key] = userTaskForm[key] || null;
   }
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, taskAttr);
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), taskAttr);
 };
 </script>

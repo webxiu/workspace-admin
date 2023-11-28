@@ -3,14 +3,22 @@
     <div class="element-property input-property">
       <div class="element-property__label">元素文档：</div>
       <div class="element-property__value">
-        <el-input type="textarea" v-model="documentation" size="small" resize="vertical" :autosize="{ minRows: 2, maxRows: 4 }" @input="updateDocumentation" @blur="updateDocumentation" />
+        <el-input
+          type="textarea"
+          v-model="documentation"
+          size="small"
+          resize="vertical"
+          :autosize="{ minRows: 2, maxRows: 4 }"
+          @input="updateDocumentation"
+          @blur="updateDocumentation"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted } from "vue";
+import { onUnmounted, toRaw } from "vue";
 import { ref, watch, nextTick } from "vue";
 
 const props = defineProps<{
@@ -42,7 +50,7 @@ onUnmounted(() => {
 const updateDocumentation = () => {
   (bpmnElement.value && bpmnElement.value.id === props.id) || (bpmnElement.value = window.bpmnInstances.elementRegistry.get(this.id));
   const cDocumentation = window.bpmnInstances.bpmnFactory.create("bpmn:Documentation", { text: documentation.value });
-  window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+  window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
     documentation: [cDocumentation]
   });
 };

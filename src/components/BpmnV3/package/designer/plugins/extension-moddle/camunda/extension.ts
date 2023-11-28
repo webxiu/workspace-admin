@@ -43,7 +43,7 @@ CamundaModdleExtension.prototype.canCopyProperty = function (property, parent) {
 
 CamundaModdleExtension.prototype.canHostInputOutput = function (parent) {
   // allowed in camunda:Connector
-  var connector = getParent(parent, "camunda:Connector");
+  const connector = getParent(parent, "camunda:Connector");
 
   if (connector) {
     return true;

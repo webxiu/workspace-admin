@@ -26,7 +26,7 @@
 
 <script lang="ts" setup>
 import { message } from "@/utils/message";
-import { onUnmounted } from "vue";
+import { onUnmounted, toRaw } from "vue";
 import { onMounted } from "vue";
 import { ref, nextTick, watch, reactive } from "vue";
 import { Plus } from "@element-plus/icons-vue";
@@ -87,11 +87,11 @@ const createNewMessage = () => {
 };
 const updateTaskMessage = (messageId) => {
   if (messageId === "-1") {
-    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
       messageRef: null
     });
   } else {
-    window.bpmnInstances.modeling.updateProperties(bpmnElement.value, {
+    window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
       messageRef: bpmnMessageRefsMap[messageId]
     });
   }
