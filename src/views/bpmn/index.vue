@@ -22,18 +22,23 @@ const getXml = () => {
       console.log("error", error);
     });
 };
+
+const onSave = (data) => {
+  console.log("XML数据:", data);
+};
 </script>
 
 <template>
   <div class="bpmn-container">
     <!-- https://github.com/miyuesc/bpmn-process-designer -->
     <!-- <iframe width="100%" height="100%" @load="loaded" style="border: 0" src="/bpmn/index.html" ref="iframeRef" id="iframeRef" /> -->
-    <BpmnV3 :xml="xmlStr" />
+    <BpmnV3 :xml="xmlStr" @onSave="onSave" />
   </div>
 </template>
 
 <style scoped>
 .bpmn-container {
-  height: 100vh;
+  height: 88vh;
+  background: #fff;
 }
 </style>

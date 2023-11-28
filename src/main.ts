@@ -1,4 +1,3 @@
-import "./components/BpmnV3/theme/index.scss";
 import "./style/reset.scss";
 import "./style/index.scss";
 import "./style/tailwind.css";

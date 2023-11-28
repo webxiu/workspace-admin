@@ -138,7 +138,7 @@ const props = withDefaults(
     primary: "primary" // "default", "primary", "success", "warning", "danger", "info"
   }
 );
-const emits = defineEmits(["element-click", "destroy", "init-finished", "commandStack-changed", "input", "change", "canvas-viewbox-changed"]);
+const emits = defineEmits(["element-click", "destroy", "init-finished", "save-process", "commandStack-changed", "input", "change", "canvas-viewbox-changed"]);
 
 const bpmnRef = ref();
 const bpmnModeler = ref();
@@ -250,9 +250,6 @@ watch(props, (val) => {
   createNewDiagram(props.value);
 });
 
-console.log("7777777777777", toRaw(additionalModules.value));
-console.log("8888888888888", toRaw(moddleExtensions.value));
-
 const initBpmnModeler = () => {
   if (bpmnModeler.value) return;
   bpmnModeler.value = new BpmnModeler({
@@ -334,6 +331,7 @@ const saveProcess = async (type) => {
       console.error(`[Process Designer Warn ]: ${err.message || err}`);
     }
     const { name } = getProcessElement();
+    emits("save-process", { type, name, data: xml });
     window.parent.postMessage({ type, name, data: xml }, "*");
   } catch (e) {
     console.error(`[Process Designer Warn ]: ${e.message || e}`);
