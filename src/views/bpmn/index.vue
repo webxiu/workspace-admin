@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Bpmn, { XmlDataType, FlowType } from "./bpmn.vue";
+// import { XmlDataType, FlowType } from "./bpmn.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import { message } from "@/utils/message";
@@ -7,6 +7,7 @@ import { ElMessageBox } from "element-plus";
 import { useBpmnStore } from "@/components/BpmnFlow/hooks";
 import BpmnModeler from "bpmn-js/lib/Modeler";
 import { useEleHeight } from "@/hooks";
+import BpmnFlow, { XmlDataType, FlowType } from "@/components/BpmnFlow/index.vue";
 
 const { VITE_PUBLIC_PATH } = import.meta.env;
 const xml = ref("");
@@ -151,6 +152,13 @@ const onSave = async () => {
     <div class="ui-ta-r p-2">
       <el-button type="primary" @click="onSave">保存</el-button>
     </div>
-    <Bpmn class="flex-1" :xml="xml" :loading="loading" />
+    <div class="bpmn-container" v-loading="loading">
+      <BpmnFlow :xml="xml" />
+    </div>
   </div>
 </template>
+<style lang="scss" scoped>
+.bpmn-container {
+  height: 100%;
+}
+</style>

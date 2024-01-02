@@ -44,6 +44,18 @@ import RewriteAutoPlace from "./modules/auto-place/rewriteAutoPlace";
 import { ref, reactive, watch } from "vue";
 import { useBpmnStore, BpmnStoreKey } from "@/components/BpmnFlow/hooks";
 
+export type FlowType = "xml" | "svg" | "bpmn";
+
+/** 数据类型 */
+export interface XmlDataType {
+  /** xml数据 */
+  data: string;
+  /** 流程名称 */
+  name: string;
+  /** 类型: `svg` */
+  type: FlowType;
+}
+
 const props = withDefaults(defineProps<{ xml: string }>(), { xml: "" });
 
 const xmlString = ref("");
