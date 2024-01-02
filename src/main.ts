@@ -5,7 +5,7 @@ import "element-plus/dist/index.css";
 import "./assets/iconfont/iconfont.js";
 import "./assets/iconfont/iconfont.css";
 import "../mock";
-import "@/components/BpmnV3/package/highlight";
+import "@/components/BpmnFlow/package/highlight";
 
 import * as directives from "@/directives";
 

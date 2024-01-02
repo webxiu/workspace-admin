@@ -1,4 +1,4 @@
-import type { ArgsType, ButtonProps, DialogOptions, DialogProps, EventType } from "./type";
+import type { ArgsType, BtnClickDialog, ButtonProps, DialogOptions, DialogProps, EventType } from "./type";
 
 import reDialog from "./index.vue";
 import { ref } from "vue";
@@ -17,6 +17,9 @@ const addDialog = (options: DialogOptions) => {
   } else {
     open();
   }
+  return {
+    options: ref(options)
+  };
 };
 
 /** 关闭弹框 */
@@ -47,5 +50,5 @@ const closeAllDialog = () => {
  */
 const ReDialog = withInstall(reDialog);
 
-export type { EventType, ArgsType, DialogProps, ButtonProps, DialogOptions };
+export type { EventType, ArgsType, DialogProps, ButtonProps, DialogOptions, BtnClickDialog };
 export { ReDialog, dialogStore, addDialog, closeDialog, updateDialog, closeAllDialog };

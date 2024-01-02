@@ -16,7 +16,6 @@ import { message } from "@/utils/message";
 import { type PaginationProps } from "@pureadmin/table";
 import { testList, addTest, updateTest, deleteTest, TestItemType } from "@/api/editTable";
 import { setColomn, downloadDataToExcel, getTableCellEdit } from "@/utils/common";
-import Bpmn from "../component/Bpmn.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { LoadingType, ButtonItemType } from "@/components/ButtonList/index.vue";
 import { UploadProps } from "element-plus";
@@ -263,48 +262,6 @@ export function useTable() {
       });
   }
 
-  /** 流程图 */
-  const openWorkFlow = wrapFn(({ text }) => {
-    addDialog({
-      title: "部署流程设计文件",
-      props: { dataMsg: { dataMsg: 666 } },
-      width: "640px",
-      draggable: true,
-      fullscreen: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(Bpmn, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        if (!FormRef) return message("请保存模型", { type: "error" });
-        console.log("FormRef", FormRef);
-        ElMessageBox.confirm("确认提交吗", "系统提示", {
-          type: "warning",
-          draggable: true,
-          cancelButtonText: "取消",
-          confirmButtonText: "确定",
-          dangerouslyUseHTMLString: true
-        })
-          .then(() => {
-            const fd = new FormData();
-            const fileName = `${FormRef.name}.xml`;
-            const xmlFile = new File([FormRef.data], fileName, { type: "text/xml" });
-            fd.append("files", xmlFile);
-            fd.append("deployName", FormRef.name);
-
-            // deployFlow(fd).then((res) => {
-            //   if (res.data) {
-            //     message("部署成功");
-            //   } else {
-            //     message("部署失败", { type: "error" });
-            //   }
-            // });
-          })
-          .catch(console.log);
-      }
-    });
-  });
-
   const clickHandler = ({ text }) => {
     console.log("当前按钮:", text);
     // 设置loading
@@ -379,7 +336,6 @@ export function useTable() {
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", icon: Plus, text: "添加数据", isDropDown: false },
     { clickHandler: onExport, type: "warnint", icon: Download, text: "导出", isDropDown: false },
-    { clickHandler: openWorkFlow, type: "success", icon: SetUp, text: "流程图", isDropDown: false },
     { clickHandler: onEdit, type: "default", icon: Edit, text: "编辑", isDropDown: true },
     { clickHandler: clickHandler, type: "primary", icon: Printer, text: "打印(-)", isDropDown: true },
     {

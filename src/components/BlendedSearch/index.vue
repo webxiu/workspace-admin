@@ -10,7 +10,18 @@
     <div v-show="searchOptions.length > 0">
       <el-cascader ref="CascaderRef" :options="searchOptions" :props="{ expandTrigger: 'hover' }" @change="onCascaderChange" />
     </div>
-    <el-tag v-for="(v, k) in filterTags" :key="k" :name="k" closable size="small" class="filter-tag" type="info" :disable-transitions="true" @close="onTagClose(k)" @click="onTagClick(k, v)">
+    <el-tag
+      v-for="(v, k) in filterTags"
+      :key="k"
+      :name="k"
+      closable
+      size="small"
+      class="filter-tag"
+      type="info"
+      :disable-transitions="true"
+      @close="onTagClose(k)"
+      @click="onTagClick(k, v)"
+    >
       <strong v-if="v.label">{{ v.label + ":" }}</strong>
       <span v-if="v.valueLabel">{{ v.valueLabel }}</span>
       <span v-else>{{ v.value }}</span>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { closeDialog, dialogStore, type EventType, type ButtonProps, type DialogOptions } from "./index";
+import { closeDialog, dialogStore, type EventType, type ButtonProps, type DialogOptions, type BtnClickDialog } from "./index";
 import { ref, computed } from "vue";
 import { isFunction } from "@pureadmin/utils";
 import Fullscreen from "@iconify-icons/ri/fullscreen-fill";
@@ -7,39 +7,47 @@ import ExitFullscreen from "@iconify-icons/ri/fullscreen-exit-fill";
 
 const fullscreen = ref(false);
 
+/**
+ * 生成事件的回调方法
+ * command: 注册的事件名(例: 注册reset事件,回调方法就是:beforeReset)
+ */
+const callbackFn = (command: string, dialog: BtnClickDialog) => {
+  const { options, index } = dialog;
+  const eventName = command.slice(0, 1).toUpperCase() + command.slice(1);
+  const done = () => closeDialog(options, index, { command });
+  const fn = options[`before${eventName}`];
+  if (fn && isFunction(fn)) {
+    fn(done, dialog);
+  } else {
+    done();
+  }
+};
+
 const footerButtons = computed(() => {
   return (options: DialogOptions) => {
-    return options?.footerButtons?.length > 0
-      ? options.footerButtons
-      : ([
-          {
-            label: "取消",
-            text: true,
-            bg: true,
-            btnClick: ({ dialog: { options, index } }) => {
-              const done = () => closeDialog(options, index, { command: "cancel" });
-              if (options?.beforeCancel && isFunction(options?.beforeCancel)) {
-                options.beforeCancel(done, { options, index });
-              } else {
-                done();
-              }
-            }
-          },
-          {
-            label: "确定",
-            type: "primary",
-            text: true,
-            bg: true,
-            btnClick: ({ dialog: { options, index } }) => {
-              const done = () => closeDialog(options, index, { command: "sure" });
-              if (options?.beforeSure && isFunction(options?.beforeSure)) {
-                options.beforeSure(done, { options, index });
-              } else {
-                done();
-              }
-            }
-          }
-        ] as Array<ButtonProps>);
+    const buttons: Array<ButtonProps> = [
+      { label: "重置", btnType: "reset", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("reset", dialog) },
+      { label: options.cancelButtonText || "取消", btnType: "cancel", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("cancel", dialog) },
+      { label: options.okButtonText || "确定", btnType: "ok", text: false, bg: true, btnClick: ({ dialog }) => callbackFn("sure", dialog), type: "primary" },
+      {
+        label: options.customButtonText || "按钮",
+        btnType: "custom",
+        text: false,
+        bg: true,
+        btnClick: ({ dialog }) => callbackFn("custom", dialog),
+        type: "primary"
+      }
+    ];
+    // 过滤掉不显示的按钮, 重置按钮和自定义按钮根据是否配置来显示
+    const newButtons = buttons.filter((item) => {
+      if (item.btnType === "reset") {
+        return options.showResetButton;
+      } else if (item.btnType === "custom") {
+        return options.customButtonText;
+      }
+      return !options.hideItem?.includes(item.btnType);
+    });
+    return options?.footerButtons?.length > 0 ? options.footerButtons : newButtons;
   };
 });
 
@@ -94,12 +102,7 @@ function handleClose(options: DialogOptions, index: number, args = { command: "c
           v-for="(btn, key) in footerButtons(options)"
           :key="key"
           v-bind="btn"
-          @click="
-            btn.btnClick({
-              dialog: { options, index },
-              button: { btn, index: key }
-            })
-          "
+          @click="btn.btnClick({ dialog: { options, index }, button: { btn, index: key } })"
         >
           {{ btn?.label }}
         </el-button>

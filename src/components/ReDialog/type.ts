@@ -2,6 +2,7 @@ import type { CSSProperties, Component, VNode } from "vue";
 
 type DoneFn = (cancel?: boolean) => void;
 type EventType = "open" | "close" | "openAutoFocus" | "closeAutoFocus";
+type ButtonItemType = "reset" | "cancel" | "ok" | "custom";
 type ArgsType = {
   /** `cancel` 点击取消按钮、`sure` 点击确定按钮、`close` 点击右上角关闭按钮或者空白页 */
   command: "cancel" | "sure" | "close";
@@ -51,6 +52,16 @@ type DialogProps = {
   alignCenter?: boolean;
   /** 当关闭 `Dialog` 时，销毁其中的元素，默认 `false` */
   destroyOnClose?: boolean;
+  /** 自定义确定按钮文本 */
+  cancelButtonText?: string;
+  /** 自定义确定按钮文本 */
+  okButtonText?: string;
+  /** 是否显示重置按钮，默认 `false` */
+  showResetButton?: boolean;
+  /** 是否显示自定义按钮，默认 `` */
+  customButtonText?: string;
+  /** 隐藏按钮 默认显示`确定`和`关闭` */
+  hideItem?: ButtonItemType[];
 };
 
 type BtnClickDialog = {
@@ -111,6 +122,8 @@ type ButtonProps = {
     /** 当前 `button` 信息 */
     button: BtnClickButton;
   }) => void;
+  /** 按钮类别: 重置`reset` 取消`cancel` 确定`ok` 自定义`custom` */
+  btnType: ButtonItemType;
 };
 
 interface DialogOptions extends DialogProps {
@@ -139,6 +152,28 @@ interface DialogOptions extends DialogProps {
   openAutoFocus?: ({ options, index }: { options: DialogOptions; index: number }) => void;
   /** 输入焦点从 `Dialog` 内容失焦时的回调 */
   closeAutoFocus?: ({ options, index }: { options: DialogOptions; index: number }) => void;
+  /** 自定义按钮 */
+  beforeCustom?: (
+    done: Function,
+    {
+      options,
+      index
+    }: {
+      options: DialogOptions;
+      index: number;
+    }
+  ) => void;
+  /** 重置按钮 */
+  beforeReset?: (
+    done: Function,
+    {
+      options,
+      index
+    }: {
+      options: DialogOptions;
+      index: number;
+    }
+  ) => void;
   /** 点击底部取消按钮的回调，会暂停 `Dialog` 的关闭. 回调函数内执行 `done` 参数方法的时候才是真正关闭对话框的时候 */
   beforeCancel?: (
     done: Function,
@@ -163,4 +198,4 @@ interface DialogOptions extends DialogProps {
   ) => void;
 }
 
-export type { EventType, ArgsType, DialogProps, ButtonProps, DialogOptions };
+export type { EventType, ArgsType, DialogProps, ButtonProps, DialogOptions, BtnClickDialog };
