@@ -1,0 +1,11 @@
+.bigScreen {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: 1px solid rgba(130, 130, 130, 0.5);
+}

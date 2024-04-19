@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-06-29 16:50:23
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-06-30 17:59:53
+ * @Last Modified time: 2024-01-02 15:22:33
  */
 import EditForm from "@/components/EditForm/index.vue";
 import { organizationList, addOrganization, updateOrganization, deleteOrganization } from "@/api/orgList";
@@ -12,7 +12,7 @@ import { type OrganizationItemType } from "../utils/types";
 import { type PaginationProps } from "@pureadmin/table";
 import { reactive, ref, onMounted, h } from "vue";
 import { getColumns, formConfigs } from "./config";
-import { setColomn } from "@/utils/common";
+import { setColumn } from "@/utils/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { useEleHeight } from "@/hooks/common";
 
@@ -137,7 +137,7 @@ export function useConfig() {
 
   const getColumnConfig = () => {
     const columnData = getColumns(orgOptionList);
-    columns.value = setColomn({ columnData, showOpt: true, showSelection: true, operateWidth: 140 });
+    columns.value = setColumn({ columnData, showOpt: true, showSelection: true, operateWidth: 140 });
   };
 
   /** 搜索 */
@@ -251,7 +251,7 @@ export function useConfig() {
                   getTableList(); // 刷新表格数据
                 });
               })
-              .catch(() => { });
+              .catch(() => {});
           }
         });
       }

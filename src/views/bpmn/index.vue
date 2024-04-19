@@ -100,7 +100,7 @@ const verifyFlow = (xml: string) => {
       for (const key of Object.keys(msgObj)) {
         // 多实例->回路特性的选项为:循环事件或无时, 没有子选项, 不做校验
         if (["StandardLoop", "Null"].includes(taskNode["loopCharacteristics"])) {
-          break outerLoop;
+          return;
         }
         if (!taskNode[key] || !taskNode[key]?.length) {
           mark = false;

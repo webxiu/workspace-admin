@@ -15,7 +15,7 @@ import EditPen from "@iconify-icons/ep/edit-pen";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import BlendedSearch from "@/components/BlendedSearch/index.vue";
 
-const { tableRef, loading, columns, dataList, pagination, searchOptions, onSearch, openDialog, handleDelete, handleSizeChange, onRowClick, handleCurrentChange } = useConfig();
+const { tableRef, loading, columns, dataList, pagination, searchOptions, onSearch, openDialog, onViewGantt, handleDelete, handleSizeChange, onRowClick, handleCurrentChange } = useConfig();
 
 const defaultValue = ref({}); //默认搜索值
 const boxRef = ref<HTMLDivElement>();
@@ -54,6 +54,7 @@ const maxHeight = useEleHeight(".app-main .el-scrollbar", 60 + 64 + 48);
         >
           <template #operation="{ row }">
             <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(EditPen)" @click="openDialog('edit', row)"> 修改 </el-button>
+            <el-button type="primary" :size="size" @click="onViewGantt(row)"> 甘特图 </el-button>
             <el-popconfirm :width="180" :title="`确认删除组织名称\n【${row.orgName}】?`" @confirm="handleDelete(row)">
               <template #reference>
                 <el-button class="reset-margin" link type="primary" :size="size" :icon="useRenderIcon(Delete)"> 删除 </el-button>

@@ -2,24 +2,23 @@
  * @Author: lixiuhai
  * @Date: 2023-07-06 14:21:11
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-11-14 11:02:25
+ * @Last Modified time: 2024-01-02 15:31:53
  */
 
 import EditForm from "@/components/EditForm/index.vue";
 import { useEleHeight } from "@/hooks";
 import { addDialog } from "@/components/ReDialog";
-import { reactive, ref, onMounted, h, withModifiers, Ref } from "vue";
+import { reactive, ref, onMounted, h, Ref } from "vue";
 import { formConfigs } from "./config";
-import { ElMessageBox } from "element-plus";
+import { ElMessageBox, UploadProps } from "element-plus";
 import { message } from "@/utils/message";
 
 import { type PaginationProps } from "@pureadmin/table";
 import { testList, addTest, updateTest, deleteTest, TestItemType } from "@/api/editTable";
-import { setColomn, downloadDataToExcel, getTableCellEdit } from "@/utils/common";
+import { setColumn, downloadDataToExcel, getTableCellEdit } from "@/utils/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { LoadingType, ButtonItemType } from "@/components/ButtonList/index.vue";
-import { UploadProps } from "element-plus";
-import { Plus, Download, SetUp, Edit, Delete, Printer, Upload } from "@element-plus/icons-vue";
+import { Plus, Download, Edit, Printer, Upload } from "@element-plus/icons-vue";
 
 export type RowHandleType = "add" | "edit";
 export type TableDataItemType = TestItemType;
@@ -125,7 +124,7 @@ export function useTable() {
       { label: "创建时间", prop: "createTime" },
       { label: "更新时间", prop: "updateTime" }
     ];
-    columns.value = setColomn({ columnData, showOpt: true, showSelection: true, indexColumn: false });
+    columns.value = setColumn({ columnData, showOpt: true, showSelection: true, indexColumn: false });
   };
 
   const onSearch = (values) => {

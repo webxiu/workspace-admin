@@ -7,8 +7,9 @@ import { type PaginationProps } from "@pureadmin/table";
 import { reactive, ref, h, onMounted } from "vue";
 import { getColumns, formConfigs, OptionsType } from "./config";
 import { organizationList } from "@/api/orgList";
-import { setColomn } from "@/utils/common";
+import { setColumn } from "@/utils/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import Gantt from "../gantt.vue";
 
 export function useConfig() {
   const formRef = ref();
@@ -69,7 +70,7 @@ export function useConfig() {
 
   const getColumnConfig = () => {
     const columnData = getColumns(orgOptionList);
-    columns.value = setColomn({ columnData, showOpt: true, showRadio: true, operateWidth: 140 });
+    columns.value = setColumn({ columnData, operationColumn: { width: 180 } });
   };
 
   /** 搜索 */
@@ -202,6 +203,20 @@ export function useConfig() {
   const onRowClick = (row: KingdeeDBItemType) => {
     tableRef.value?.getTableRef().toggleRowSelection(row);
   };
+  const onViewGantt = (row: KingdeeDBItemType) => {
+    addDialog({
+      title: "甘特图",
+      props: {},
+      width: "75%",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(Gantt, { ref: formRef }),
+      beforeSure: (done, { options }) => {
+        done();
+      }
+    });
+  };
 
   return {
     tableRef,
@@ -214,6 +229,7 @@ export function useConfig() {
     onSearch,
     resetForm,
     openDialog,
+    onViewGantt,
     onRowClick,
     handleDelete,
     handleSizeChange,

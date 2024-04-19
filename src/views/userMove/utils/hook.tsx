@@ -2,7 +2,7 @@
  * @Author: lixiuhai
  * @Date: 2023-06-29 16:50:23
  * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-11-13 09:53:11
+ * @Last Modified time: 2024-01-02 15:22:55
  */
 import AddModel from "../addModel.vue";
 import { message } from "@/utils/message";
@@ -14,7 +14,7 @@ import { ElMessageBox, ElMessage } from "element-plus";
 import { type PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { userMoveList, sendUserMove, UserMoveItemType, UserMoveRequestType, UserMoveRequestQueryType } from "@/api/userMove";
-import { setColomn } from "@/utils/common";
+import { setColumn } from "@/utils/table";
 
 export function useRole() {
   const formRef = ref();
@@ -52,13 +52,13 @@ export function useRole() {
       { label: "员工姓名", prop: "userName" },
       { label: "部门编号", prop: "deptId" },
       { label: "部门", prop: "deptName" },
-      { label: "员工头像", prop: "avatar", align: 'center', cellRenderer: ({ row, column }) => <el-image src={row[column["property"]]} /> },
+      { label: "员工头像", prop: "avatar", align: "center", cellRenderer: ({ row, column }) => <el-image src={row[column["property"]]} /> },
       { label: "员工状态", prop: "userState" },
       { label: "移动电话", prop: "mobile" },
       { label: "企业微信ID", prop: "wxOpenid" },
       { label: "创建时间", prop: "createdate" }
     ];
-    columns.value = setColomn({ columnData, dataList, isDragRow: true, isDragColumn: true, dragSelector: ".user-move", showOpt: true, showSelection: true, operateWidth: 80 });
+    columns.value = setColumn({ columnData, dataList, isDragRow: true, isDragColumn: true, dragSelector: ".user-move", showOpt: true, showSelection: true, operateWidth: 80 });
   };
 
   /** 获取列表 */

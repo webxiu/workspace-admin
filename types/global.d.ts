@@ -92,6 +92,8 @@ declare global {
     disabled?: boolean;
     /** 下拉选项列表 */
     options?: Array<ElOption>;
+    /** 格式化处理方式(json字符串) */
+    formatType?: string;
   }
 
   /**
