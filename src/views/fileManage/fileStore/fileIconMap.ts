@@ -1,0 +1,22 @@
+export const IconMap = {
+  文件夹: "wenjianjia",
+  XLSX: "xlsx",
+  PDF: "Pdf",
+  ZIP: "zip",
+  DOCX: "docx",
+  PPT: "PPT",
+  FILE_AI: "file-ai",
+  PNG: "PNGtubiao",
+  PSD: "psd",
+  CDR: "CDRtubiao",
+  PROE: "icon_proe",
+  XLTX: "xltx",
+  PPTX: "pptx",
+  RAR: "RAR",
+  TXT: "TXTtubiao",
+  MD: "md",
+  CAD: "CAD",
+  JPG: "Jpg",
+  DOC: "doc",
+  XLS: "xls"
+};

@@ -2,12 +2,14 @@
 const warpperEnv = (envConf: Recordable): ViteEnv => {
   /** 此处为默认值 */
   const ret: ViteEnv = {
-    VITE_PORT: 8848,
+    VITE_PORT: 5500,
     VITE_PUBLIC_PATH: "",
     VITE_ROUTER_HISTORY: "",
     VITE_CDN: false,
     VITE_HIDE_HOME: "false",
-    VITE_COMPRESSION: "none"
+    VITE_COMPRESSION: "none",
+    VITE_BASE_API: "/api",
+    VITE_BASE_URL: ""
   };
 
   for (const envName of Object.keys(envConf)) {

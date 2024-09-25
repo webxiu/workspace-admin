@@ -1,6 +1,7 @@
-@import "./element-variables.scss";
-@import "./process-designer.scss";
-@import "./process-panel.scss";
+@import "./element-variables";
+@import "./process-designer";
+@import "./process-panel";
+
 /* bpmn */
 @import "bpmn-js/dist/assets/diagram-js.css";
 @import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";

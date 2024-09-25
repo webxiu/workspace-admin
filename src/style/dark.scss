@@ -7,10 +7,8 @@ html.dark {
   $border-style: #303030;
   $color-white: #fff;
 
-  /* 自定义边框线的颜色 */
-  .border-line-color {
-    box-shadow: 0 0 0 1px $border-style inset;
-  }
+  /* 表格行高亮背景色 */
+  --table-row-bg: #535353;
 
   .navbar,
   .tags-view,
@@ -143,9 +141,8 @@ html.dark {
     }
   }
 
-  /** 组合搜索框 */
-  .filter-field {
-    background-color: var(--el-input-bg-color, var(--el-fill-color-blank));
-    border-color: var(--el-input-border-color, var(--el-border-color));
+  .el-table .el-table__body tr.current-row > td.el-table__cell,
+  .el-table .el-table__body tr.hover-row > td.el-table__cell {
+    background-color: var(--table-row-bg);
   }
 }

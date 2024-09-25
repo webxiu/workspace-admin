@@ -15,7 +15,19 @@ const visible = ref(false);
 const { tooltipEffect } = useNav();
 
 const iconClass = computed(() => {
-  return ["ml-4", "mb-1", "w-[16px]", "h-[16px]", "inline-block", "align-middle", "text-primary", "cursor-pointer", "duration-[100ms]", "hover:text-primary", "dark:hover:!text-white"];
+  return [
+    "ml-4",
+    "mb-1",
+    "w-[16px]",
+    "h-[16px]",
+    "inline-block",
+    "align-middle",
+    "text-primary",
+    "cursor-pointer",
+    "duration-[100ms]",
+    "hover:text-primary",
+    "dark:hover:!text-white"
+  ];
 });
 
 const emit = defineEmits<{

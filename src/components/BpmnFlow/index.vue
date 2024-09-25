@@ -42,9 +42,8 @@ import UserSql from "./modules/extension/user.json";
 import RewriteAutoPlace from "./modules/auto-place/rewriteAutoPlace";
 
 import { ref, reactive, watch } from "vue";
+import { FlowManageItemType } from "@/api/systemManage";
 import { useBpmnStore, BpmnStoreKey } from "@/components/BpmnFlow/hooks";
-
-export type FlowType = "xml" | "svg" | "bpmn";
 
 /** 数据类型 */
 export interface XmlDataType {
@@ -53,10 +52,13 @@ export interface XmlDataType {
   /** 流程名称 */
   name: string;
   /** 类型: `svg` */
-  type: FlowType;
+  type: string;
 }
 
-const props = withDefaults(defineProps<{ xml: string }>(), { xml: "" });
+const props = withDefaults(defineProps<{ xml: string; row?: Partial<FlowManageItemType> }>(), {
+  xml: "",
+  row: () => ({})
+});
 
 const xmlString = ref("");
 const modeler = ref(null);
@@ -68,6 +70,10 @@ const translationsSelf = ref(translations);
 const elementRef = ref();
 
 const { setBpmnStore } = useBpmnStore();
+
+watch(props, (val) => {
+  setBpmnStore(BpmnStoreKey.row, val.row);
+});
 
 const controlForm = reactive({
   processId: "",
@@ -156,10 +162,10 @@ const toggle = (mode) => {
 
 <style lang="scss" scoped>
 #bpmn {
-  width: 100%;
-  height: 100%;
   box-sizing: border-box;
   display: inline-grid;
   grid-template-columns: 140px auto max-content;
+  width: 100%;
+  height: 100%;
 }
 </style>

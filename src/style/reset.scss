@@ -255,8 +255,9 @@ div:focus {
   }
 }
 
+/** 滚动条设置 */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
   height: 8px;
   background-color: var(--scrollbar-bg-color);
 }

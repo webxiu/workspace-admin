@@ -1,6 +1,6 @@
 "use strict";
 
-const some = require("min-dash").some;
+import { some } from "min-dash";
 
 const ALLOWED_TYPES = {
   FailedJobRetryTimeCycle: ["bpmn:StartEvent", "bpmn:BoundaryEvent", "bpmn:IntermediateCatchEvent", "bpmn:Activity"],

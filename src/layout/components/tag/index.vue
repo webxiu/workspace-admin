@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from "@/plugins/i18n";
 import { emitter } from "@/utils/mitt";
 import { RouteConfigs } from "../../types";
 import { useTags } from "../../hooks/useTag";
@@ -9,6 +10,7 @@ import { useResizeObserver, useFullscreen } from "@vueuse/core";
 import { isEqual, isAllEmpty, debounce } from "@pureadmin/utils";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { ref, watch, unref, toRaw, nextTick, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
 
 import ExitFullscreen from "@iconify-icons/ri/fullscreen-exit-fill";
 import Fullscreen from "@iconify-icons/ri/fullscreen-fill";
@@ -41,9 +43,11 @@ const {
   onMounted,
   onMouseenter,
   onMouseleave,
+  transformI18n,
   onContentFullScreen
 } = useTags();
 
+const routeObj = useRoute();
 const tabDom = ref();
 const containerDom = ref();
 const scrollbarDom = ref();
@@ -116,21 +120,20 @@ function dynamicRouteTag(value: string): void {
   });
 
   function concatPath(arr: object[], value: string) {
-    if (!hasValue) {
-      arr.forEach((arrItem: any) => {
-        if (arrItem.path === value || arrItem.path === value) {
-          useMultiTagsStoreHook().handleTags("push", {
-            path: value,
-            meta: arrItem.meta,
-            name: arrItem.name
-          });
-        } else {
-          if (arrItem.children && arrItem.children.length > 0) {
-            concatPath(arrItem.children, value);
-          }
+    arr.forEach((arrItem: any) => {
+      if (arrItem.path === value) {
+        useMultiTagsStoreHook().handleTags(hasValue ? "update" : "push", {
+          path: value,
+          meta: arrItem.meta,
+          name: arrItem.name,
+          query: routeObj.query
+        });
+      } else {
+        if (arrItem.children && arrItem.children.length > 0) {
+          concatPath(arrItem.children, value);
         }
-      });
-    }
+      }
+    });
   }
   concatPath(router.options.routes as any, value);
 }
@@ -264,10 +267,10 @@ function onClickDrop(key, item, selectRoute?: RouteConfigs) {
       setTimeout(() => {
         if (isFullscreen.value) {
           tagsViews[6].icon = ExitFullscreen;
-          tagsViews[6].text = "退出全屏";
+          tagsViews[6].text = $t("buttons.hswholeExitFullScreen");
         } else {
           tagsViews[6].icon = Fullscreen;
-          tagsViews[6].text = "全屏";
+          tagsViews[6].text = $t("buttons.hswholeFullScreen");
         }
       }, 100);
       break;
@@ -277,10 +280,10 @@ function onClickDrop(key, item, selectRoute?: RouteConfigs) {
       setTimeout(() => {
         if (pureSetting.hiddenSideBar) {
           tagsViews[7].icon = ExitFullscreen;
-          tagsViews[7].text = "内容区退出全屏";
+          tagsViews[7].text = $t("buttons.hscontentExitFullScreen");
         } else {
           tagsViews[7].icon = Fullscreen;
-          tagsViews[7].text = "内容区全屏";
+          tagsViews[7].text = $t("buttons.hscontentFullScreen");
         }
       }, 100);
       break;
@@ -404,18 +407,12 @@ function openMenu(tag, e) {
 
 /** 触发tags标签切换 */
 function tagOnClick(item) {
-  const { name, path } = item;
+  const { name, path, query, params } = item;
   if (name) {
     if (item.query) {
-      router.push({
-        name,
-        query: item.query
-      });
+      router.push({ name, query });
     } else if (item.params) {
-      router.push({
-        name,
-        params: item.params
-      });
+      router.push({ name, params });
     } else {
       router.push({ name });
     }
@@ -432,7 +429,7 @@ watch(route, () => {
 
 watch(isFullscreen, () => {
   tagsViews[6].icon = Fullscreen;
-  tagsViews[6].text = "全屏";
+  tagsViews[6].text = $t("buttons.hswholeFullScreen");
 });
 
 onMounted(() => {
@@ -491,8 +488,8 @@ onBeforeUnmount(() => {
           @mouseleave.prevent="onMouseleave(index)"
           @click="tagOnClick(item)"
         >
-          <router-link :to="item.path" class="dark:!text-text_color_primary dark:hover:!text-primary">
-            {{ item.meta.title }}
+          <router-link :to="{ path: item.path, query: item.query }" class="dark:!text-text_color_primary dark:hover:!text-primary">
+            {{ transformI18n(item.meta.title) }}{{ item?.query?.title ? `【${item.query?.title}】` : "" }}
           </router-link>
           <span v-if="iconIsActive(item, index) || (index === activeIndex && index !== 0)" class="el-icon-close" @click.stop="deleteMenu(item)">
             <IconifyIconOffline :icon="CloseBold" />
@@ -510,7 +507,7 @@ onBeforeUnmount(() => {
         <div v-for="(item, key) in tagsViews.slice(0, 6)" :key="key" style="display: flex; align-items: center">
           <li v-if="item.show" @click="selectTag(key, item)">
             <IconifyIconOffline :icon="item.icon" />
-            {{ item.text }}
+            {{ transformI18n(item.text) }}
           </li>
         </div>
       </ul>
@@ -524,7 +521,7 @@ onBeforeUnmount(() => {
         <el-dropdown-menu>
           <el-dropdown-item v-for="(item, key) in tagsViews" :key="key" :command="{ key, item }" :divided="item.divided" :disabled="item.disabled">
             <IconifyIconOffline :icon="item.icon" />
-            {{ item.text }}
+            {{ transformI18n(item.text) }}
           </el-dropdown-item>
         </el-dropdown-menu>
       </template>

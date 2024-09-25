@@ -1,3 +1,4 @@
+@import "./mixins";
 @import "./variables";
 @import "./transition";
 @import "./element-plus";
@@ -9,13 +10,52 @@
   /* 左侧菜单展开、收起动画时长 */
   --pure-transition-duration: 0.3s;
 
+  /* 内容主体背景色 */
+  --app-main-bg: #f0f2f5;
+
+  /* 表格行高亮背景色 */
+  --table-row-bg: #e7e7e7;
+
   /* 滚动条 */
   --scrollbar-bg-color: #ccc;
   --scrollbar-thumb-bg-color: #c0c1c2;
   --scrollbar-corner-color: #ccc;
 }
 
+/** 计算器数字字体 */
+@font-face {
+  font-family: digitFont;
+  src: url("./font/ds-digit.ttf");
+}
+
 /* 灰色模式 */
 .html-grey {
   filter: grayscale(100%);
+}
+
+/* 定义svg图标的样式 */
+.icon {
+  width: 1.5em;
+  height: 1.5em;
+  overflow: hidden;
+  vertical-align: -0.15em;
+  fill: currentcolor;
+}
+
+// 引用提示块
+.block-quote-tip {
+  padding: 8px 16px;
+  background-color: var(--el-fill-color-light);
+  border-left: 5px solid var(--el-color-primary);
+  border-radius: 4px;
+}
+
+.el-table .el-table__body tr.current-row > td.el-table__cell,
+.el-table .el-table__body tr.hover-row > td.el-table__cell {
+  background-color: var(--el-color-primary-light-8);
+}
+
+/** 设置滚动条宽度 */
+.menu-tree-popover {
+  @include scrollBar(16px, rgba(133, 143, 255, 0.3), var(--scrollbar-bg-color), rgba(196, 0, 0, 0.5), 10px);
 }

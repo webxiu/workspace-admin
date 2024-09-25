@@ -7,13 +7,23 @@
       <el-form-item label="名称" required>
         <el-input v-model="elementBaseInfo.name" clearable placeholder="必填" @change="updateBaseInfo('name')" />
       </el-form-item>
+
+      <!--任务管理-->
+      <TaskManage :elementBaseInfo="elementBaseInfo" :activeId="activeId" />
       <!--流程的基础属性-->
       <template v-if="elementBaseInfo.$type === 'bpmn:Process'">
         <el-form-item label="版本标签">
           <el-input v-model="elementBaseInfo.versionTag" clearable @change="updateBaseInfo('versionTag')" />
         </el-form-item>
         <el-form-item label="可执行">
-          <el-switch v-model="elementBaseInfo.isExecutable" active-text="是" inactive-text="否" :active-value="true" :inactive-value="false" @change="updateBaseInfo('isExecutable')" />
+          <el-switch
+            v-model="elementBaseInfo.isExecutable"
+            active-text="是"
+            inactive-text="否"
+            :active-value="true"
+            :inactive-value="false"
+            @change="updateBaseInfo('isExecutable')"
+          />
         </el-form-item>
       </template>
       <el-form-item v-if="elementBaseInfo.$type === 'bpmn:SubProcess'" label="状态">
@@ -24,6 +34,7 @@
 </template>
 <script lang="ts" setup>
 import { ref, watch, nextTick, toRaw } from "vue";
+import TaskManage from "@/views/system/workflow/manage/taskManage/TaskManage.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -43,7 +54,21 @@ const elementBaseInfo = ref({
   $type: "",
   versionTag: "",
   isExecutable: false,
-  isExpanded: false
+  isExpanded: false,
+  // task
+  personFrom: "",
+  users: "",
+  finishAdviceWay: [],
+  // add
+  billList: "",
+  processId: "",
+  billId: "",
+  formUrl: "",
+  tableName: "",
+  fieldName: "",
+  userFieldName: "",
+  flowName: "",
+  isEnable: false
 });
 const bpmnElement = ref();
 const activeId = ref("");

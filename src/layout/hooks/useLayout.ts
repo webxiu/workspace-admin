@@ -1,6 +1,7 @@
 import { computed } from "vue";
 import { routerArrays } from "../types";
 import { useGlobal } from "@pureadmin/utils";
+import { useI18n } from "vue-i18n";
 import { useMultiTagsStore } from "@/store/modules/multiTags";
 
 export function useLayout() {
@@ -11,11 +12,16 @@ export function useLayout() {
     if (useMultiTagsStore().multiTagsCache && (!$storage.tags || $storage.tags.length === 0)) {
       $storage.tags = routerArrays;
     }
+    /** 国际化 */
+    if (!$storage.locale) {
+      $storage.locale = { locale: $config?.Locale ?? "zh" };
+      useI18n().locale.value = $config?.Locale ?? "zh";
+    }
     /** 导航 */
     if (!$storage.layout) {
       $storage.layout = {
-        layout: $config?.Layout ?? "vertical",
-        theme: $config?.Theme ?? "default",
+        layout: $config?.Layout ?? "horizontal",
+        theme: $config?.Theme ?? "light",
         darkMode: $config?.DarkMode ?? false,
         sidebarStatus: $config?.SidebarStatus ?? true,
         epThemeColor: $config?.EpThemeColor ?? "#409EFF"
@@ -25,7 +31,6 @@ export function useLayout() {
     if (!$storage.configure) {
       $storage.configure = {
         grey: $config?.Grey ?? false,
-        weak: $config?.Weak ?? false,
         hideTabs: $config?.HideTabs ?? false,
         showLogo: $config?.ShowLogo ?? true,
         showModel: $config?.ShowModel ?? "smart",

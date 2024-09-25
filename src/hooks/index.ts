@@ -1,13 +1,11 @@
 /*
- * @Author: lixiuhai
+ * @Author: Hailen
  * @Date: 2023-07-06 16:06:53
- * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-08-02 11:11:04
+ * @Last Modified by: Hailen
+ * @Last Modified time: 2024-02-27 11:14:15
  */
 
-import { Ref, nextTick, onMounted, ref } from "vue";
-
-import Sortable from "sortablejs";
+import { Ref, isRef, onMounted, onUnmounted, ref } from "vue";
 
 /**
  * 获取元素的高度
@@ -15,7 +13,7 @@ import Sortable from "sortablejs";
  * @param offset 偏移量(表格的偏移量 = 查询表单高度 + 表头高度 + 分页高度)
  * @returns 最大高度
  */
-export function useEleHeight(selector: string, offset: number) {
+export function useEleHeight(selector: string, offset = 0) {
   const heightRef = ref<number>(0);
 
   onMounted(() => {
@@ -34,41 +32,41 @@ export function useEleHeight(selector: string, offset: number) {
   return heightRef;
 }
 
-/** 行拖拽(需要等列配置加载完成在初始化) */
-export const rowDrop = (dataList: Ref<any>, prefixSelector: string) => {
-  event?.preventDefault();
-  nextTick(() => {
-    const wrapper: HTMLElement = document.querySelector(prefixSelector + " .el-table__body-wrapper tbody");
-    Sortable.create(wrapper, {
-      animation: 300,
-      handle: prefixSelector + " .el-table__row",
-      onEnd: ({ newIndex, oldIndex }) => {
-        const currentRow = dataList.value.splice(oldIndex, 1)[0];
-        dataList.value.splice(newIndex, 0, currentRow);
-      }
-    });
-  });
-};
+/**
+ * 监听滚动元素高度, 自动滚动到底部
+ * @param selector 元素或选择器
+ * @param offset 底部的偏移量
+ */
+export function useObserElement(selector: string | Ref<HTMLDivElement>, offset = 10) {
+  let isAutoScroll = true;
+  let watchDom: HTMLElement;
+  let observer: MutationObserver;
+  function initObserver() {
+    watchDom = isRef(selector) ? selector.value : document.querySelector(selector);
+    watchDom.style.scrollBehavior = "smooth";
+    if (isAutoScroll) scrollToBottom(1000);
 
-/** 列拖拽 */
-export const columnDrop = (columnsDrag: Ref<any>, prefixSelector: string) => {
-  event?.preventDefault();
-  nextTick(() => {
-    const wrapper: HTMLElement = document.querySelector(prefixSelector + " .el-table__header-wrapper tr");
-    Sortable.create(wrapper, {
-      animation: 300,
-      delay: 0,
-      onEnd: ({ newIndex, oldIndex }) => {
-        const oldItem = columnsDrag.value[oldIndex];
-        columnsDrag.value.splice(oldIndex, 1);
-        columnsDrag.value.splice(newIndex, 0, oldItem);
-      }
+    observer = new MutationObserver((mutations) => {
+      mutations.forEach(({ type }) => type === "childList" && scrollToBottom());
     });
-  });
-};
+    observer.observe(watchDom, { childList: true, subtree: true });
+    watchDom.addEventListener("scroll", (e: any) => {
+      const { scrollTop, offsetHeight, scrollHeight } = e.target;
+      isAutoScroll = scrollTop + offsetHeight >= scrollHeight - offset;
+    });
+  }
+  function scrollToBottom(delay = 0) {
+    const timer = setTimeout(() => {
+      if (isAutoScroll) watchDom.scrollTop = watchDom.scrollHeight;
+      clearTimeout(timer);
+    }, delay);
+  }
 
-/** 列筛选函数 */
-export const filterHandler = (value, row, column) => {
-  const property = column["property"];
-  return row[property] === value;
-};
+  /** 滚动到底部 */
+  function sendToBottom() {
+    isAutoScroll = true;
+    scrollToBottom();
+  }
+  onUnmounted(() => observer?.disconnect());
+  return { observer, initObserver, sendToBottom };
+}

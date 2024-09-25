@@ -11,11 +11,23 @@
           <el-option label="无" value="Null" />
         </el-select>
       </el-form-item>
-      <template v-if="loopCharacteristics === 'ParallelMultiInstance' || loopCharacteristics === 'SequentialMultiInstance'">
+      <template v-if="['ParallelMultiInstance', 'SequentialMultiInstance'].includes(loopCharacteristics)">
         <el-form-item label="循环基数" key="loopCardinality">
           <el-input v-model="loopInstanceForm.loopCardinality" clearable @change="updateLoopCardinality" />
         </el-form-item>
         <el-form-item label="集合" key="collection" required>
+          <template #label>
+            <el-tooltip class="box-item" effect="light" placement="top-start" content="有多个任务节点, 集合的值不能相同(参考值: personList2, personList3, ...)">
+              <template #default>
+                <span>
+                  <span>集合</span>
+                  <el-icon style="margin-left: 2px" class="ui-va-tt fz-14">
+                    <QuestionFilled style="color: orange" />
+                  </el-icon>
+                </span>
+              </template>
+            </el-tooltip>
+          </template>
           <el-input v-model="loopInstanceForm.collection" placeholder="必填" clearable @change="updateLoopBase" />
         </el-form-item>
         <el-form-item label="元素变量" key="elementVariable" required>
@@ -44,6 +56,7 @@
 
 <script lang="ts" setup>
 import { inject, reactive, ref, watch, onUnmounted, nextTick, toRaw } from "vue";
+import { QuestionFilled } from "@element-plus/icons-vue";
 import { setTaskForm } from "@/components/BpmnFlow/hooks";
 
 const props = defineProps<{
@@ -107,7 +120,7 @@ const getElementLoop = (businessObject) => {
     addTaskForm();
     return;
   }
-  if (businessObject.loopCharacteristics.isSequential) {
+  if (businessObject.loopCharacteristics.isSequential === true) {
     loopCharacteristics.value = "SequentialMultiInstance";
   } else {
     loopCharacteristics.value = "ParallelMultiInstance";
@@ -154,7 +167,9 @@ const changeLoopCharacteristicsType = (type) => {
       isSequential: true
     });
   } else {
-    multiLoopInstance.value = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics");
+    multiLoopInstance.value = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics", {
+      isSequential: "false"
+    });
   }
   window.bpmnInstances.modeling.updateProperties(toRaw(bpmnElement.value), {
     loopCharacteristics: multiLoopInstance.value

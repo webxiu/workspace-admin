@@ -1,0 +1,52 @@
+<!-- /*
+ * @Author: Hailen 
+ * @Date: 2024-06-05 15:12:21 
+ * @Last Modified by:   Hailen 
+ * @Last Modified time: 2024-06-05 15:12:21 
+ */ -->
+
+<script setup lang="ts">
+import { h, ref } from "vue";
+import { menuPageRouter } from "@/config/constant";
+import { addDialog } from "@/components/ReDialog";
+import { message, showMessageBox } from "@/utils/message";
+import ProductStore from "@/views/plmManage/productMgmt/productStore/index.vue";
+
+defineProps({
+  disable: { type: Boolean, default: false },
+  size: { type: String as any, default: "small" },
+  modelValue: { type: [String, Number], default: "" }
+});
+
+const rowData = ref();
+const emits = defineEmits(["update:modelValue", "checkRow"]);
+
+function onRowClick() {
+  const { PageUrl, setRouterInfo } = menuPageRouter();
+  setRouterInfo(PageUrl.productStore, () => {
+    addDialog({
+      title: "选择成品",
+      props: { tableHeight: 300, isModal: true },
+      width: "85%",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(ProductStore, { onSelectRow: (v) => (rowData.value = v) }),
+      beforeSure: (done, { options }) => {
+        const row = rowData.value;
+        if (!row) return message("请选择产品", { type: "error" });
+        showMessageBox(`确认选择产品型号【${row.productCode}】吗?`).then(() => {
+          row.productType = row.productType.split("-")[1].trim();
+          emits("update:modelValue", row.productType);
+          emits("checkRow", row);
+          done();
+        });
+      }
+    });
+  });
+}
+</script>
+
+<template>
+  <el-button @click="onRowClick" :size="size" :disabled="disable">选择</el-button>
+</template>

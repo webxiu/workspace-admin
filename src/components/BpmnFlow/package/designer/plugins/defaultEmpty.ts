@@ -3,7 +3,7 @@ export default (key, name, type) => {
   const TYPE_TARGET = {
     activiti: "http://activiti.org/bpmn",
     camunda: "http://bpmn.io/schema/bpmn",
-    flowable: "http://flowable.org/bpmn"
+    flowable: "http://flowable.org/bpmn" // http://www.flowable.org/processdef
   };
   /** 生成任务节点有bpmn2 */
   // return `<?xml version="1.0" encoding="UTF-8"?>
@@ -23,15 +23,18 @@ export default (key, name, type) => {
   //   </bpmndi:BPMNDiagram>
   // </definitions>`;
 
-  /** 只有任务 */
+  /** 生成任务节点没有bpmn2 */
   return `<?xml version="1.0" encoding="UTF-8"?>
   <definitions 
     xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-    xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
-    xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+    xmlns:flowable="http://flowable.org/bpmn" 
+    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+    xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" 
+    xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" 
+    typeLanguage="http://www.w3.org/2001/XMLSchema" 
+    expressionLanguage="http://www.w3.org/1999/XPath" 
     targetNamespace="http://www.flowable.org/processdef" 
     exporter="Flowable Open Source Modeler" 
     exporterVersion="6.7.2"

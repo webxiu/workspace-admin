@@ -20,23 +20,11 @@
     "lib": ["dom", "esnext"],
     "paths": {
       "@/*": ["src/*"],
-      "@build/*": ["build/*"]
+      "@build/*": ["build/*"],
+      "~/*": ["./*"]
     },
-    "types": [
-      "node",
-      "vite/client",
-      "element-plus/global",
-      "@pureadmin/table/volar",
-      "@pureadmin/descriptions/volar"
-    ]
+    "types": ["node", "vite/client", "element-plus/global", "@pureadmin/table/volar", "@pureadmin/descriptions/volar"]
   },
-  "include": [
-    "mock/*.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "types/*.d.ts",
-    "vite.config.ts"
-  ],
+  "include": ["mock/*.ts", "src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "types/*.d.ts", "vite.config.ts"],
   "exclude": ["dist", "**/*.js", "node_modules"]
 }

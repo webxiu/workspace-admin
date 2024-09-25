@@ -58,6 +58,11 @@
             <el-button :size="size" :icon="Refresh" @click="processRestart" />
           </el-tooltip>
         </el-button-group>
+        <el-button-group key="stack-control">
+          <el-tooltip effect="light" placement="top" content="配置说明">
+            <el-button :size="size" :icon="QuestionFilled" @click="onFlowConfig" />
+          </el-tooltip>
+        </el-button-group>
       </template>
       <!-- 用于打开本地文件-->
       <input type="file" ref="refFile" style="display: none" accept=".xml,.bpmn" @change="importLocalFile" />
@@ -97,6 +102,18 @@ import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { ZoomOut, ZoomIn, ScaleToOriginal, RefreshLeft, RefreshRight, Refresh, QuestionFilled } from "@element-plus/icons-vue";
 import { useBpmnStore, BpmnStoreKey } from "@/components/BpmnFlow/hooks";
+import { useBpmnFlowStore } from "@/store/modules/bpmn";
+import { addDialog } from "@/components/ReDialog";
+// 配置说明图片
+import img01 from "@/assets/bpmn/flow-img01.png";
+import img02 from "@/assets/bpmn/flow-img02.png";
+import img03 from "@/assets/bpmn/flow-img03.png";
+import img04 from "@/assets/bpmn/flow-img04.png";
+import img05 from "@/assets/bpmn/flow-img05.png";
+import img06 from "@/assets/bpmn/flow-img06.png";
+import img07 from "@/assets/bpmn/flow-img07.png";
+import img08 from "@/assets/bpmn/flow-img08.png";
+import img09 from "@/assets/bpmn/flow-img09.png";
 
 const props = withDefaults(
   defineProps<
@@ -138,6 +155,7 @@ const props = withDefaults(
 );
 const emits = defineEmits(["element-click", "destroy", "init-finished", "saveProcess", "commandStack-changed", "input", "change", "canvas-viewbox-changed"]);
 const { setBpmnStore } = useBpmnStore<{ saveProcess: Function }>();
+const { setTaskList } = useBpmnFlowStore();
 
 const bpmnRef = ref();
 const bpmnModeler = ref();
@@ -397,6 +415,7 @@ const importLocalFile = () => {
   reader.onload = function (e) {
     const xmlStr = e.target.result;
     createNewDiagram(xmlStr);
+    resetProcess();
   };
 };
 /* ------------------------------------------------ refs methods ------------------------------------------------------ */
@@ -456,6 +475,7 @@ const processRestart = () => {
   recoverable.value = false;
   revocable.value = false;
   createNewDiagram(null);
+  resetProcess();
 };
 
 const elementsAlign = (align: string) => {
@@ -493,6 +513,77 @@ const previewProcessJson = () => {
 
     previewType.value = "json";
     previewModelVisible.value = true;
+  });
+};
+// 打开新的流程或者重新绘制
+const resetProcess = () => {
+  setTaskList({ key: "taskLists", value: [] });
+};
+
+// 流程配置说明
+const onFlowConfig = () => {
+  const DocComp = () => (
+    <div class="vditor-reset" id="preview">
+      <h1 id="流程模板配置">流程模板配置</h1>
+      <h2 id="主界面配置">1.主界面配置</h2>
+      <hr />
+      <p style={{ marginLeft: "99px" }}>
+        <img src={img01} alt="image.png" />
+        <img src={img02} alt="image.png" />
+      </p>
+      <h2 id="节点配置">2.节点配置</h2>
+      <hr />
+      <p style={{ marginLeft: "99px" }}>
+        <img src={img03} alt="image.png" />
+      </p>
+      <br />
+      <p style={{ marginLeft: "99px" }}>
+        <p style={{ margin: "15px 0" }}>
+          <strong>集合: </strong>personList1
+          <br />
+          <strong>元素变量: </strong>person
+          <br />
+          <strong>完成条件: </strong>$&#123;nrOfCompletedInstances&#62;=nrOfInstances&#125;
+        </p>
+        <img src={img04} alt="image.png" />
+      </p>
+      <h2 id="任务监听器">3.任务监听器</h2>
+      <hr />
+      <br />
+      <p style={{ marginLeft: "99px" }}>
+        <img src={img05} alt="image.png" />
+        <p style={{ margin: "15px 0" }}>
+          <strong>依次选择: </strong>创建 - Java类
+          <br />
+          <strong>Java类值为: </strong>com.deogra.app.common.workflow.listener.MulitiInstanceTaskListener
+        </p>
+        <img src={img06} alt="image.png" />
+      </p>
+      <p style={{ marginLeft: "99px" }}>
+        <p style={{ margin: "15px 0" }}>
+          <strong>创建完成: </strong>
+        </p>
+        <img src={img07} alt="image.png" />
+      </p>
+      <br />
+      <h2 id="保存创建和修改">4.保存创建和修改</h2>
+      <hr />
+      <p style={{ marginLeft: "99px" }}>
+        <img src={img08} alt="image.png" />
+      </p>
+      <p style={{ marginLeft: "99px" }}>
+        <img src={img09} alt="image.png" />
+      </p>
+    </div>
+  );
+  addDialog({
+    title: "流程配置说明",
+    width: "80%",
+    draggable: true,
+    fullscreenIcon: true,
+    closeOnClickModal: false,
+    contentRenderer: () => h(DocComp),
+    beforeSure: (done, { options }) => done()
   });
 };
 </script>

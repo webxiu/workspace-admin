@@ -2,12 +2,17 @@ import type { VNode, FunctionalComponent, PropType as VuePropType, ComponentPubl
 import type { ECharts } from "echarts";
 import type { IconifyIcon } from "@iconify/vue";
 import type { TableColumns } from "@pureadmin/table";
-import type { ElOption } from "element-plus";
+import type { ElOption, UploadProps } from "element-plus";
+import { CheckOnlineWebsocket } from "@/hooks/websocketOnline";
 
 /**
  * 全局类型声明，无需引入直接在 `.vue` 、`.ts` 、`.tsx` 文件使用即可获得类型提示
  */
 declare global {
+  /**
+   * 项目根目录
+   */
+  const __ROOT__: string;
   /**
    * 平台的名称、版本、依赖、最后构建时间的类型提示
    */
@@ -27,6 +32,10 @@ declare global {
   interface Window {
     // Global vue app instance
     __APP__: App<Element>;
+    // 检测在线用户数websocket
+    _onlineSocket: CheckOnlineWebsocket;
+    // 企业微信
+    wxlogin: Function;
     webkitCancelAnimationFrame: (handle: number) => void;
     mozCancelAnimationFrame: (handle: number) => void;
     oCancelAnimationFrame: (handle: number) => void;
@@ -55,7 +64,7 @@ declare global {
    */
   interface BaseResponseType<T> {
     data: T;
-    code: number;
+    status: number;
     message: string;
     timestamp: number;
   }
@@ -86,16 +95,38 @@ declare global {
   interface TableColumnList extends TableColumns {
     /** 表格行编辑表单网格占比 */
     span?: number;
-    /** 字段属性 */
-    prop?: string;
     /** 禁止编辑 */
     disabled?: boolean;
+    /** 输入提示 */
+    placeholder?: string;
     /** 下拉选项列表 */
     options?: Array<ElOption>;
+    /** 导出时间格式 (yyyy-MM-dd HH:mm:ss) */
+    format?: string;
     /** 格式化处理方式(json字符串) */
     formatType?: string;
+
+    id?: string;
+    menuId?: number;
+    sortable?: boolean;
+    minWidth?: number | string;
+    width?: number | string;
+    seq?: number;
+    className?: string;
+    columnname?: string;
+    tablename?: string;
+    groupCode?: string;
+    groupName?: string;
+    columnGroupId?: string;
+    // type?: string;
+    // align?: string;
+    // fixed?: string;
+    // headerAlign?: string;
+    /** 是否新建 */
+    isNew?: boolean;
   }
 
+  type LayoutStyle = "horizontal" | "vertical" | "mix";
   /**
    * 对应 `public/serverConfig.json` 文件的类型声明
    * @see {@link https://yiming_chang.gitee.io/pure-admin-doc/pages/config/#serverconfig-json}
@@ -103,16 +134,16 @@ declare global {
   interface ServerConfigs {
     Version?: string;
     Title?: string;
+    Logo?: string;
     FixedHeader?: boolean;
     HiddenSideBar?: boolean;
     MultiTagsCache?: boolean;
     KeepAlive?: boolean;
     Locale?: string;
-    Layout?: string;
+    Layout?: LayoutStyle;
     Theme?: string;
     DarkMode?: boolean;
     Grey?: boolean;
-    Weak?: boolean;
     HideTabs?: boolean;
     SidebarStatus?: boolean;
     EpThemeColor?: string;
@@ -131,6 +162,8 @@ declare global {
   interface StorageConfigs {
     version?: string;
     title?: string;
+    orgName?: string;
+    logo?: string;
     fixedHeader?: boolean;
     hiddenSideBar?: boolean;
     multiTagsCache?: boolean;
@@ -140,7 +173,6 @@ declare global {
     theme?: string;
     darkMode?: boolean;
     grey?: boolean;
-    weak?: boolean;
     hideTabs?: boolean;
     sidebarStatus?: boolean;
     epThemeColor?: string;
@@ -157,7 +189,7 @@ declare global {
       locale?: string;
     };
     layout: {
-      layout?: string;
+      layout?: LayoutStyle;
       theme?: string;
       darkMode?: boolean;
       sidebarStatus?: boolean;
@@ -165,7 +197,6 @@ declare global {
     };
     configure: {
       grey?: boolean;
-      weak?: boolean;
       hideTabs?: boolean;
       showLogo?: boolean;
       showModel?: string;
@@ -181,5 +212,40 @@ declare global {
     $echarts: ECharts;
     $storage: ResponsiveStorage;
     $config: ServerConfigs;
+  }
+
+  /** 分页表格响应类型 */
+  export interface TablePagingResType<T> {
+    records: T[];
+    total: number;
+    size: number;
+    current: number;
+    orders: number[];
+    optimizeCountSql: boolean;
+    searchCount: boolean;
+    countId: number;
+    maxLimit: number;
+    pages: number;
+  }
+
+  export interface ButtonItemType {
+    loading?: boolean;
+    disabled?: boolean;
+    dark?: boolean;
+    icon?: any;
+    width?: string;
+    color?: string;
+    circle?: boolean;
+    round?: boolean;
+    type?: any;
+    size?: any;
+    /** 配置此属性则显示为上传按钮, 默认为普通按钮 */
+    uploadProp?: Partial<UploadProps>;
+    /** 必传项 */
+    text: string;
+    /** 点击选择事件 */
+    clickHandler?: (item: ButtonItemType) => void;
+    /** 是否显示在下拉按钮中 */
+    isDropDown?: boolean;
   }
 }

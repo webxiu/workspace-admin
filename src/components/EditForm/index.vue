@@ -1,16 +1,17 @@
 <!-- 
   /*
- * @Author: lixiuhai 
+ * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
- * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-10-31 10:27:20
+ * @Last Modified by: Hailen
+ * @Last Modified time: 2024-07-24 14:23:29
  */ 
 -->
 
 <script lang="tsx">
-import { reactive, ref, defineComponent, PropType, watch, withModifiers, toRaw } from "vue";
+import { reactive, ref, defineComponent, PropType, watch, withModifiers, toRaw, Ref } from "vue";
 import type { FormInstance, FormRules, FormProps, ColProps, FormItemProps } from "element-plus";
 import { JSX } from "vue/jsx-runtime";
+import { computed, isRef, CSSProperties } from "vue";
 
 export type FormModelType = Record<string, any>;
 
@@ -30,7 +31,9 @@ export interface FormConfigItemType extends Partial<FormItemProps> {
   /** 表单项渲染函数 */
   render: ((item: RenderParamsType) => JSX.Element) | JSX.Element;
   /** 表单Item插槽 */
-  slots?: { [key: string]: () => JSX.Element };
+  slots?: { [key: string]: (slot: Record<string, any>) => JSX.Element };
+  style?: CSSProperties;
+  class?: string;
 }
 /**
  * 说明: 给 EditForm 组件添加类名 `preview-disabled-form` 输入框添再加 `disabled` 属性, 显示只读输入框
@@ -46,7 +49,7 @@ const props = {
   },
   /** 表单Item配置 */
   formConfigs: {
-    type: Array as PropType<FormConfigItemType[]>,
+    type: Array as PropType<FormConfigItemType[] | Ref<FormConfigItemType[]>>,
     default: () => []
   },
   /** 表单规则 */
@@ -57,7 +60,7 @@ const props = {
   /** 表单属性 */
   formProps: {
     type: Object as PropType<Partial<FormProps>>,
-    default: () => ({})
+    default: () => ({} as Partial<FormProps>)
   },
   /** 按钮网格布局配置 */
   buttonColProp: {
@@ -76,23 +79,38 @@ const props = {
 
 export default defineComponent({
   props: props,
-  emits: ["submit", "reset"],
+  emits: ["submit", "reset", "change"],
   setup(props, { emit, expose, attrs, slots }) {
-    const state = reactive({ loading: false, uiLoading: false });
+    const state = reactive({ loading: false });
     const ruleFormRef = ref<FormInstance>();
     const newFormInline = ref<FormModelType>(props.formInline);
 
-    watch(props, (values) => (newFormInline.value = values.formInline), { deep: true });
+    watch(props, watchUpdata, { deep: true });
 
-    const onSubmitForm = () => {
-      ruleFormRef.value.validate((valid: boolean) => {
-        if (valid && !state.loading) {
-          emit("submit", newFormInline.value);
-        }
+    function watchUpdata(values) {
+      newFormInline.value = values.formInline;
+      emit("change", values.formInline); // 监听回调
+    }
+
+    const configList = computed<FormConfigItemType[]>(() => {
+      const configs = props.formConfigs;
+      return isRef(configs) ? configs.value : configs;
+    });
+
+    const onSubmit = () => {
+      return new Promise<any>((resolve, reject) => {
+        ruleFormRef.value.validate((valid: boolean) => {
+          if (valid && !state.loading) {
+            emit("submit", newFormInline.value);
+            resolve(newFormInline.value);
+          } else {
+            reject();
+          }
+        });
       });
     };
 
-    const onResetForm = () => {
+    const onReset = () => {
       ruleFormRef.value.resetFields();
       emit("reset");
       setLoading();
@@ -106,7 +124,7 @@ export default defineComponent({
       return ruleFormRef.value;
     }
 
-    expose({ getRef, setLoading, onResetForm });
+    expose({ getRef, setLoading, onSubmit, onReset });
 
     // eslint-disable-next-line vue/no-setup-props-destructure
     const { showButtons, submitText, resetText } = props;
@@ -117,16 +135,16 @@ export default defineComponent({
         v-loading={props.loading}
         rules={props.formRules}
         class="dialog-form"
-        onSubmit={withModifiers(onSubmitForm, ["stop", "prevent"])}
+        onSubmit={withModifiers(onSubmit, ["stop", "prevent"])}
         {...props.formProps}
       >
         <el-row gutter={props.formItemGutter}>
-          {props.formConfigs.map((item, index) => {
+          {configList.value.map((item, index) => {
             const { render, colProp, hide, slots, ...itemProps } = item;
             const formItem = typeof render === "function" ? render({ formModel: newFormInline.value, row: item, index }) : render;
             const innerEle = slots ? { ...toRaw(slots), default: () => formItem } : formItem;
             return hide ? null : (
-              <el-col span={24} {...colProp}>
+              <el-col span={24} {...colProp} key={item.prop}>
                 <el-form-item {...itemProps}>{innerEle}</el-form-item>
               </el-col>
             );
@@ -136,11 +154,11 @@ export default defineComponent({
             {showButtons ? (
               <el-form-item class={props.buttonColProp.span === 24 ? "dialog-btns" : ""}>
                 {typeof submitText === "boolean" ? null : (
-                  <el-button type="primary" loading={state.loading} onClick={onSubmitForm}>
+                  <el-button type="primary" loading={state.loading} onClick={onSubmit}>
                     {submitText}
                   </el-button>
                 )}
-                {typeof resetText === "boolean" ? null : <el-button onClick={onResetForm}>{resetText}</el-button>}
+                {typeof resetText === "boolean" ? null : <el-button onClick={onReset}>{resetText}</el-button>}
               </el-form-item>
             ) : null}
           </el-col>

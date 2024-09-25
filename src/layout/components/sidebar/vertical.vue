@@ -9,6 +9,7 @@ import { responsiveStorageNameSpace } from "@/config";
 import { storageLocal, isAllEmpty } from "@pureadmin/utils";
 import { findRouteByPath, getParentPaths } from "@/router/utils";
 import { usePermissionStoreHook } from "@/store/modules/permission";
+import { useAppStore } from "@/store/modules/app";
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 
 const route = useRoute();
@@ -22,7 +23,7 @@ const menuData = computed(() => {
   return pureApp.layout === "mix" && device.value !== "mobile" ? subMenuData.value : usePermissionStoreHook().wholeMenus;
 });
 
-// const loading = computed(() => (pureApp.layout === "mix" ? false : menuData.value.length === 0 ? true : false));
+const loading = computed(() => (pureApp.layout === "mix" ? false : menuData.value.length === 0 ? true : false));
 
 const defaultActive = computed(() => (!isAllEmpty(route.meta?.activePath) ? route.meta.activePath : route.path));
 
@@ -62,19 +63,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div :class="['sidebar-container', showLogo ? 'has-logo' : '']">
+  <div v-loading="loading" :class="['sidebar-container', showLogo ? 'has-logo' : '']">
     <Logo v-if="showLogo" :collapse="isCollapse" />
-    <el-scrollbar wrap-class="scrollbar-wrapper" :class="[device === 'mobile' ? 'mobile' : 'pc']">
-      <el-menu router unique-opened mode="vertical" class="outer-most select-none" :collapse="isCollapse" :default-active="defaultActive" :collapse-transition="false">
+    <el-scrollbar v-loading="useAppStore().routeLoading" wrap-class="scrollbar-wrapper" :class="[device === 'mobile' ? 'mobile' : 'pc']">
+      <el-menu unique-opened mode="vertical" class="outer-most select-none" :collapse="isCollapse" :default-active="defaultActive" :collapse-transition="false">
         <sidebar-item v-for="routes in menuData" :key="routes.path" :item="routes" :base-path="routes.path" class="outer-most select-none" />
       </el-menu>
     </el-scrollbar>
     <leftCollapse v-if="device !== 'mobile'" :is-active="pureApp.sidebar.opened" @toggleClick="toggleSideBar" />
   </div>
 </template>
-
-<style scoped>
-:deep(.el-loading-mask) {
-  opacity: 0.45;
-}
-</style>

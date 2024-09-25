@@ -1,19 +1,9 @@
 import type { IconifyIcon } from "@iconify/vue";
+import workbench from "@/router/modules/workbench";
 
 const { VITE_HIDE_HOME } = import.meta.env;
 
-export const routerArrays: Array<RouteConfigs> =
-  VITE_HIDE_HOME === "false"
-    ? [
-        {
-          path: "/organization",
-          meta: {
-            title: "组织机构列表",
-            icon: "HomeFilled"
-          }
-        }
-      ]
-    : [];
+export const routerArrays: Array<RouteConfigs> = VITE_HIDE_HOME === "false" ? [workbench.children[0]] : [];
 
 export type routeMetaType = {
   title?: string;
@@ -59,6 +49,7 @@ export interface setType {
     mobile: boolean;
   };
   hideTabs: boolean;
+  currentLoadings: string[];
 }
 
 export type menuType = {
@@ -75,7 +66,8 @@ export type menuType = {
     extraIcon?: string;
   };
   showTooltip?: boolean;
-  parentId?: number;
+  menuCode?: string;
+  parentCode?: string;
   pathList?: number[];
   redirect?: string;
 };

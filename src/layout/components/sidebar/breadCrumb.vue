@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { isEqual } from "@pureadmin/utils";
+import { transformI18n } from "@/plugins/i18n";
 import { ref, watch, onMounted, toRaw } from "vue";
 import { getParentPaths, findRouteByPath } from "@/router/utils";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
@@ -58,11 +59,18 @@ const getBreadcrumb = (): void => {
 };
 
 const handleLink = (item: RouteLocationMatched): void => {
-  const { redirect, path } = item;
-  if (redirect) {
-    router.push(redirect as any);
-  } else {
-    router.push(path);
+  const lastItem = levelList.value.slice(-1)[0];
+  // const { redirect, path, query } = item;
+  // if (redirect) {
+  //   router.push(redirect as any);
+  // } else {
+  //   router.push({ path, query });
+  // }
+  // 点击不是最后一级，跳转主菜单面板
+  if (lastItem.path !== item.path) {
+    const { menuCode, from } = route.query;
+    router.push({ path: "/menuPanel", query: { menuCode, from } });
+    return;
   }
 };
 
@@ -72,12 +80,8 @@ onMounted(() => {
 
 watch(
   () => route.path,
-  () => {
-    getBreadcrumb();
-  },
-  {
-    deep: true
-  }
+  () => getBreadcrumb(),
+  { deep: true }
 );
 </script>
 
@@ -86,7 +90,7 @@ watch(
     <transition-group name="breadcrumb">
       <el-breadcrumb-item class="!inline !items-stretch" v-for="item in levelList" :key="item.path">
         <a @click.prevent="handleLink(item)">
-          {{ item.meta.title }}
+          {{ transformI18n(item.meta.title) }}
         </a>
       </el-breadcrumb-item>
     </transition-group>

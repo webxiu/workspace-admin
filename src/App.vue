@@ -1,7 +1,9 @@
 <template>
-  <el-config-provider :locale="currentLocale">
-    <router-view />
-    <ReDialog />
+  <el-config-provider :locale="currentLocale" :message="{ max: 1 }">
+    <a-config-provider :locale="antdvLocal">
+      <router-view />
+      <ReDialog />
+    </a-config-provider>
   </el-config-provider>
 </template>
 
@@ -9,7 +11,10 @@
 import { defineComponent } from "vue";
 import { ElConfigProvider } from "element-plus";
 import zhCn from "element-plus/lib/locale/lang/zh-cn";
+import en from "element-plus/lib/locale/lang/en";
 import { ReDialog } from "@/components/ReDialog";
+import zhCN from "ant-design-vue/es/locale/zh_CN";
+import enUS from "ant-design-vue/es/locale/en_US";
 export default defineComponent({
   name: "app",
   components: {
@@ -18,7 +23,10 @@ export default defineComponent({
   },
   computed: {
     currentLocale() {
-      return zhCn;
+      return this.$storage.locale?.locale === "zh" ? zhCn : en;
+    },
+    antdvLocal() {
+      return this.$storage.locale?.locale === "zh" ? zhCN : enUS;
     }
   }
 });

@@ -2,7 +2,7 @@ import type { CSSProperties, Component, VNode } from "vue";
 
 type DoneFn = (cancel?: boolean) => void;
 type EventType = "open" | "close" | "openAutoFocus" | "closeAutoFocus";
-type ButtonItemType = "reset" | "cancel" | "ok" | "custom";
+type ButtonsItemType = "reset" | "cancel" | "ok" | "custom";
 type ArgsType = {
   /** `cancel` 点击取消按钮、`sure` 点击确定按钮、`close` 点击右上角关闭按钮或者空白页 */
   command: "cancel" | "sure" | "close";
@@ -54,6 +54,8 @@ type DialogProps = {
   destroyOnClose?: boolean;
   /** 自定义确定按钮文本 */
   cancelButtonText?: string;
+  /** 自定义重置按钮文本 */
+  resetButtonText?: string;
   /** 自定义确定按钮文本 */
   okButtonText?: string;
   /** 是否显示重置按钮，默认 `false` */
@@ -61,7 +63,7 @@ type DialogProps = {
   /** 是否显示自定义按钮，默认 `` */
   customButtonText?: string;
   /** 隐藏按钮 默认显示`确定`和`关闭` */
-  hideItem?: ButtonItemType[];
+  hideItem?: ButtonsItemType[];
 };
 
 type BtnClickDialog = {
@@ -123,7 +125,7 @@ type ButtonProps = {
     button: BtnClickButton;
   }) => void;
   /** 按钮类别: 重置`reset` 取消`cancel` 确定`ok` 自定义`custom` */
-  btnType: ButtonItemType;
+  btnType: ButtonsItemType;
 };
 
 interface DialogOptions extends DialogProps {

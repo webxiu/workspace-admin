@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { transformI18n } from "@/plugins/i18n";
 import { useResizeObserver } from "@vueuse/core";
 import { useEpThemeStoreHook } from "@/store/modules/epTheme";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
@@ -6,21 +7,13 @@ import { ref, computed, getCurrentInstance, onMounted } from "vue";
 import enterOutlined from "@/assets/svg/enter_outlined.svg?component";
 import Bookmark2Line from "@iconify-icons/ri/bookmark-2-line";
 
-interface optionsItem {
-  path: string;
-  meta?: {
-    icon?: string;
-    title?: string;
-  };
-}
-
 interface Props {
-  value: string;
-  options: Array<optionsItem>;
+  value: RouteConfigsTable;
+  options: Array<RouteConfigsTable>;
 }
 
 interface Emits {
-  (e: "update:value", val: string): void;
+  (e: "update:value", val: RouteConfigsTable): void;
   (e: "enter"): void;
 }
 
@@ -33,25 +26,21 @@ const instance = getCurrentInstance()!;
 const itemStyle = computed(() => {
   return (item) => {
     return {
-      background: item?.path === active.value ? useEpThemeStoreHook().epThemeColor : "",
-      color: item.path === active.value ? "#fff" : "",
-      fontSize: item.path === active.value ? "16px" : "14px"
+      background: item?.path === active.value?.path ? useEpThemeStoreHook().epThemeColor : "",
+      color: item.path === active.value?.path ? "#fff" : "",
+      fontSize: item.path === active.value?.path ? "16px" : "14px"
     };
   };
 });
 
 const active = computed({
-  get() {
-    return props.value;
-  },
-  set(val: string) {
-    emit("update:value", val);
-  }
+  get: () => props.value,
+  set: (val) => emit("update:value", val)
 });
 
 /** 鼠标移入 */
-async function handleMouse(item) {
-  active.value = item.path;
+async function handleMouse(item: RouteConfigsTable) {
+  active.value = item;
 }
 
 function handleTo() {
@@ -94,7 +83,9 @@ defineExpose({ handleScroll });
       @mouseenter="handleMouse(item)"
     >
       <component :is="useRenderIcon(item.meta?.icon ?? Bookmark2Line)" />
-      <span class="result-item-title">{{ item.meta?.title }}</span>
+      <span class="result-item-title">
+        {{ transformI18n(item.meta?.title) }}
+      </span>
       <enterOutlined />
     </div>
   </div>

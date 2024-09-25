@@ -1,0 +1,52 @@
+variables:
+  TEST_SERVER: 192.168.1.204
+  TEST_HOST_DIR: /var/file/workspace-web/
+  TEST_SOURCE_FOLDER: ./dist/
+
+  PROD_SERVER: 192.168.1.231
+  PROD_HOST_DIR: /var/workspace-web/
+  PROD_SOURCE_FOLDER: ./dist/
+test-deploy:
+  before_script:
+    - git config core.longpaths true
+    - npm config set registry https://registry.npmmirror.com
+    - npm install -g pnpm
+    - pnpm install --no-frozen-lockfile
+  script:
+    - pnpm build
+  after_script:
+    - sshpass -p $TEST_USER_PASSWORD ssh -o StrictHostKeyChecking=no workspace@$TEST_SERVER "rm -Rf /var/file/workspace-web/*"
+    - sshpass -p $TEST_USER_PASSWORD scp -o StrictHostKeyChecking=no -r $TEST_SOURCE_FOLDER/** workspace@$TEST_SERVER:$TEST_HOST_DIR
+  allow_failure: false
+  rules:
+    - if: $DEPLOY =~ /^test/
+  tags:
+    - pnpm
+prod-deploy:
+  before_script:
+    - mkdir -p ~/.ssh/
+    - cp $DEPLOY_PRIVATE_KEY ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa
+    - cp $KNOWN_HOSTS ~/.ssh/known_hosts
+    - ssh -V
+    - git config core.longpaths true
+    - git config --global user.email "erpmsg@deogra.com"
+    - git config --global user.name "Administrator"
+    - git remote set-url origin git@192.168.1.235:webui/workspace.web.git
+    - git checkout -B "$CI_COMMIT_REF_NAME"
+    - npm config set registry https://registry.npmmirror.com/
+    - npm install -g pnpm
+    - pnpm install --no-frozen-lockfile
+  script:
+    - sh chgVer.sh
+    - git commit ./package.json -m "修改版本号"
+    - git push origin "$CI_COMMIT_REF_NAME":dev
+    - pnpm build
+    - ls -l
+  after_script:
+    - sshpass -p "$PROD_USER_PASSWORD" ssh -o StrictHostKeyChecking=no workspace@$PROD_SERVER "rm -Rf /var/workspace-web/*"
+    - sshpass -p "$PROD_USER_PASSWORD" scp -o StrictHostKeyChecking=no -r $PROD_SOURCE_FOLDER/** workspace@$PROD_SERVER:$PROD_HOST_DIR
+  allow_failure: false
+  rules:
+    - if: $DEPLOY =~ /^prod/
+  tags:
+    - pnpm

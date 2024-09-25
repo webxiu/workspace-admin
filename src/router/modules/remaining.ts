@@ -1,3 +1,5 @@
+import { $t } from "@/plugins/i18n";
+
 const Layout = () => import("@/layout/index.vue");
 
 export default [
@@ -5,18 +7,29 @@ export default [
     path: "/login",
     name: "Login",
     component: () => import("@/views/login/index.vue"),
-    meta: { title: "登录", showLink: false, rank: 101 }
+    meta: { title: $t("menus.hslogin"), showLink: false, rank: 101 }
   },
   {
-    path: "/dataScreen",
-    name: "DataScreen",
-    component: () => import("@/views/dataScreen/index.vue"),
-    meta: { title: "数据大屏", showLink: true, rank: 102 }
+    path: "/app/qywx/workspace/suppliercomplaint/index",
+    meta: { title: "工作台投诉建议", rank: 104, showLink: false },
+    redirect: "/supplierComplaint"
+  },
+  {
+    path: "/supplierComplaint",
+    name: "supplierComplaintQYWX",
+    meta: { title: "工作台投诉建议", rank: 103, showLink: false },
+    component: () => import("@/views/qywxH5Page/complaint.vue")
+  },
+  {
+    path: "/mobileApp/projectChart",
+    name: "MobileAppProjectChart",
+    component: () => import("@/views/appChart/index.vue"),
+    meta: { title: "项目管理看板", showLink: false }
   },
   {
     path: "/redirect",
     component: Layout,
-    meta: { title: "加载中...", showLink: false, rank: 107 },
+    meta: { title: $t("status.hsLoad"), showLink: false, rank: 102 },
     children: [
       {
         path: "/redirect/:path(.*)",

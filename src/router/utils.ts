@@ -1,13 +1,27 @@
-import { RouterHistory, RouteRecordRaw, RouteComponent, createWebHistory, createWebHashHistory } from "vue-router";
-import { router } from "./index";
+import { RouteComponent, RouteRecordRaw, RouterHistory, createWebHashHistory, createWebHistory } from "vue-router";
+import { cloneDeep, intersection, isAllEmpty, isIncludeAllChildren, isString, storageSession } from "@pureadmin/utils";
 import { isProxy, toRaw } from "vue";
-import { useTimeoutFn } from "@vueuse/core";
-import { isString, cloneDeep, isAllEmpty, intersection, storageSession, isIncludeAllChildren } from "@pureadmin/utils";
-import { menuType } from "@/layout/types";
+
 import { buildHierarchyTree } from "@/utils/tree";
-import { sessionKey, type DataInfo } from "@/utils/auth";
+import emptyRoute from "@/router/modules/empty";
+import { getConfig } from "@/config";
+import { getMenuList } from "@/api/routes";
+import { getUserInfo } from "@/utils/storage";
+import { handleTree } from "@/utils/tree";
+import { menuType } from "@/layout/types";
+import { message } from "@/utils/message";
+import { router } from "./index";
+import { topRouteList } from "@/config/constant";
+import { transformI18n } from "@/plugins/i18n";
+import { useAppStoreHook } from "@/store/modules/app";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
+import { useSettingStoreHook } from "@/store/modules/settings";
+import { useTimeoutFn } from "@vueuse/core";
+import { webSocketConnect } from "@/config";
+import workbench from "@/router/modules/workbench";
+
+// 动态路由
 const IFrame = () => import("@/layout/frameView.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
 const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
@@ -30,7 +44,7 @@ function ascending(arr: any[]) {
 
 /** 过滤meta中showLink为false的菜单 */
 function filterTree(data: RouteComponent[]) {
-  const newTree = cloneDeep(data).filter((v: { meta: { showLink: boolean } }) => v.meta?.showLink !== false);
+  const newTree = cloneDeep(data).filter((v: { meta: { showLink: boolean; title?: string } }) => v.meta?.showLink !== false && v.meta?.title !== "空白页面");
   newTree.forEach((v: { children }) => v.children && (v.children = filterTree(v.children)));
   return newTree;
 }
@@ -45,14 +59,6 @@ function filterChildrenTree(data: RouteComponent[]) {
 /** 判断两个数组彼此是否存在相同值 */
 function isOneOfArray(a: Array<string>, b: Array<string>) {
   return Array.isArray(a) && Array.isArray(b) ? (intersection(a, b).length > 0 ? true : false) : true;
-}
-
-/** 从sessionStorage里取出当前登陆用户的角色roles，过滤无权限的菜单 */
-function filterNoPermissionTree(data: RouteComponent[]) {
-  const currentRoles = storageSession().getItem<DataInfo<number>>(sessionKey)?.roles ?? [];
-  const newTree = cloneDeep(data).filter((v: any) => isOneOfArray(v.meta?.roles, currentRoles));
-  newTree.forEach((v: any) => v.children && (v.children = filterNoPermissionTree(v.children)));
-  return filterChildrenTree(newTree);
 }
 
 /** 通过指定 `key` 获取父级路径集合，默认 `key` 为 `path` */
@@ -107,12 +113,14 @@ function addPathMatch() {
   }
 }
 
-/** 处理动态路由（后端返回的路由） */
-function handleAsyncRoutes(routeList = []) {
+/** 1.处理动态路由（后端返回的路由） */
+function handleAsyncRoutes(routeList) {
   if (routeList.length === 0) {
     usePermissionStoreHook().handleWholeMenus(routeList);
   } else {
-    formatFlatteningRoutes(addAsyncRoutes(routeList)).map((v: RouteRecordRaw) => {
+    const flatRoutes = formatFlatteningRoutes(addAsyncRoutes(routeList));
+    const fullRoutes = [...flatRoutes, emptyRoute];
+    fullRoutes.map((v: RouteRecordRaw) => {
       // 防止重复添加路由
       if (router.options.routes[0].children.findIndex((value) => value.path === v.path) !== -1) {
         return;
@@ -131,12 +139,86 @@ function handleAsyncRoutes(routeList = []) {
   addPathMatch();
 }
 
+/** 2.需要单独一屏显示的路由地址(不会嵌套在导航菜单内, 例如:数据大屏)） */
+function addTopRouteList(v: RouteRecordRaw) {
+  const modulesRoutesKeys = Object.keys(modulesRoutes);
+  const index = modulesRoutesKeys.findIndex((ev) => ev.includes(v.path));
+  v.component = modulesRoutes[modulesRoutesKeys[index]];
+  router.addRoute(v); // 添加动态路由
+}
+
+/** 获取接口菜单 */
+const getAsyncRouter = () => {
+  const userInfo = getUserInfo();
+  useAppStoreHook().setRouteLoading(true);
+  return new Promise<RouteRecordRaw[]>((resolve) => {
+    getMenuList({ userId: userInfo.id })
+      .then(({ data }) => {
+        const tableColMenu = data.filter((v) => v.menuType === "菜单" && v.webRouter);
+        useSettingStoreHook().setTableConfigMenuRoutes(tableColMenu);
+        webSocketConnect(userInfo.userCode);
+        const newList2 = data
+          .filter((v) => !!v.webRouter)
+          .map((item) => {
+            const { menuName, webRouter, icon, ...reset } = item;
+            const routerDirs = webRouter?.split("/").filter(Boolean);
+            // 生成驼峰组件名
+            const name = routerDirs.map((dir) => dir.charAt(0).toUpperCase() + dir.slice(1)).join("");
+            const meta = { title: transformI18n(menuName), icon, keepAlive: true };
+            // 修改菜单标准结构
+            return { ...reset, path: webRouter, name, meta, title: transformI18n(menuName), redirect: "" };
+          });
+
+        const newList = cloneDeep(newList2).filter((v) => {
+          // 过滤掉需要单独一屏显示的路由地址
+          if (topRouteList.includes(v.path)) {
+            addTopRouteList(v);
+            return false;
+          }
+          return true;
+        });
+
+        const treeList2 = handleTree(newList2, "menuCode", "parentCode", "children"); // 导航菜单列表(所有动态路由)
+        const treeList = handleTree(newList, "menuCode", "parentCode", "children"); // 用于组件路由菜单(不包括`topRouteList`配置的路由)
+        useAppStoreHook().setAsyncRoutes(treeList2);
+        resolve(treeList);
+      })
+      .catch(() => {
+        message("菜单列表获取失败", { type: "error", duration: 9000 });
+        resolve([]);
+      })
+      .finally(() => useAppStoreHook().setRouteLoading(false));
+  });
+};
+
 /** 初始化路由（`new Promise` 写法防止在异步请求中造成无限循环）*/
 function initRouter() {
-  return new Promise((resolve) => {
-    handleAsyncRoutes([]);
-    resolve(router);
-  });
+  if (getConfig()?.CachingAsyncRoutes) {
+    // 开启动态路由缓存本地sessionStorage
+    const key = "async-routes";
+    const asyncRouteList = storageSession().getItem(key) as any;
+    if (asyncRouteList && asyncRouteList?.length > 0) {
+      return new Promise((resolve) => {
+        handleAsyncRoutes(asyncRouteList);
+        resolve(router);
+      });
+    } else {
+      return new Promise((resolve) => {
+        getAsyncRouter().then((data) => {
+          handleAsyncRoutes(cloneDeep(data));
+          storageSession().setItem(key, data);
+          resolve(router);
+        });
+      });
+    }
+  } else {
+    return new Promise((resolve) => {
+      getAsyncRouter().then((data) => {
+        handleAsyncRoutes(cloneDeep(data));
+        resolve(router);
+      });
+    });
+  }
 }
 
 /**
@@ -166,14 +248,8 @@ function formatTwoStageRoutes(routesList: RouteRecordRaw[]) {
   const newRoutesList: RouteRecordRaw[] = [];
   routesList.forEach((v: RouteRecordRaw) => {
     if (v.path === "/") {
-      newRoutesList.push({
-        component: v.component,
-        name: v.name,
-        path: v.path,
-        redirect: v.redirect,
-        meta: v.meta,
-        children: []
-      });
+      const { name, component, path, redirect, meta } = v;
+      newRoutesList.push({ component, name, path, redirect, meta, children: [] });
     } else {
       newRoutesList[0]?.children.push({ ...v });
     }
@@ -185,33 +261,18 @@ function formatTwoStageRoutes(routesList: RouteRecordRaw[]) {
 function handleAliveRoute({ name }: ToRouteType, mode?: string) {
   switch (mode) {
     case "add":
-      usePermissionStoreHook().cacheOperate({
-        mode: "add",
-        name
-      });
+      usePermissionStoreHook().cacheOperate({ mode: "add", name });
       break;
     case "delete":
-      usePermissionStoreHook().cacheOperate({
-        mode: "delete",
-        name
-      });
+      usePermissionStoreHook().cacheOperate({ mode: "delete", name });
       break;
     case "refresh":
-      usePermissionStoreHook().cacheOperate({
-        mode: "refresh",
-        name
-      });
+      usePermissionStoreHook().cacheOperate({ mode: "refresh", name });
       break;
     default:
-      usePermissionStoreHook().cacheOperate({
-        mode: "delete",
-        name
-      });
+      usePermissionStoreHook().cacheOperate({ mode: "delete", name });
       useTimeoutFn(() => {
-        usePermissionStoreHook().cacheOperate({
-          mode: "add",
-          name
-        });
+        usePermissionStoreHook().cacheOperate({ mode: "add", name });
       }, 100);
   }
 }
@@ -231,7 +292,9 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
       v.component = IFrame;
     } else {
       // 对后端传component组件路径和不传做兼容（如果后端传component组件路径，那么path可以随便写，如果不传，component组件路径会跟path保持一致）
-      const index = v?.component ? modulesRoutesKeys.findIndex((ev) => ev.includes(v.component as any)) : modulesRoutesKeys.findIndex((ev) => ev.includes(v.path));
+      const index = v?.component
+        ? modulesRoutesKeys.findIndex((ev) => ev.includes(v.component as any))
+        : modulesRoutesKeys.findIndex((ev) => ev.includes(v.path));
       v.component = modulesRoutes[modulesRoutesKeys[index]];
     }
     if (v?.children && v.children.length) {
@@ -281,7 +344,7 @@ function hasAuth(value: string | Array<string>): boolean {
 
 /** 获取所有菜单中的第一个菜单（顶级菜单）*/
 function getTopMenu(tag = false): menuType {
-  const topMenu = usePermissionStoreHook().wholeMenus[0]?.children[0];
+  const topMenu = usePermissionStoreHook().wholeMenus[0]?.children[0] || workbench.children[0];
   tag && useMultiTagsStoreHook().handleTags("push", topMenu);
   return topMenu;
 }
@@ -301,6 +364,5 @@ export {
   findRouteByPath,
   handleAliveRoute,
   formatTwoStageRoutes,
-  formatFlatteningRoutes,
-  filterNoPermissionTree
+  formatFlatteningRoutes
 };

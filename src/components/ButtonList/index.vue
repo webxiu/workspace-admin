@@ -2,42 +2,15 @@
 import { computed, onMounted, ref, onBeforeUnmount, PropType, watch } from "vue";
 import { ArrowDown } from "@element-plus/icons-vue";
 import { debounce } from "@/utils/common";
-import type { UploadProps, UploadUserFile } from "element-plus";
 export type LoadingType = { loading: boolean; text: string };
 
-export interface ButtonItemType {
-  loading?: boolean;
-  disabled?: boolean;
-  dark?: boolean;
-  icon?: any;
-  width?: string;
-  color?: string;
-  circle?: boolean;
-  round?: boolean;
-  type?: any;
-  size?: any;
-  /** 配置此属性则显示为上传按钮, 默认为普通按钮 */
-  uploadProp?: Partial<UploadProps>;
-  /** 必传项 */
-  text: string;
-  /** 必传项 */
-  clickHandler: (item: ButtonItemType) => void;
-  /** 是否显示在下拉按钮中 */
-  isDropDown?: boolean;
-}
-
 const props = defineProps({
-  /** 是否自动计算布局 */
+  /** 是否自动计算布局(为false不显示下拉) */
   autoLayout: { type: Boolean, default: true },
   /** 按钮列表配置 */
   buttonList: {
     type: Array as PropType<ButtonItemType[]>,
     default: () => []
-  },
-  /** 是否需要加载loading状态 */
-  isLoading: {
-    type: Boolean as PropType<boolean>,
-    default: true
   },
   /** 点击按钮的loading状态 */
   loadingStatus: {
@@ -75,12 +48,12 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", initBtnNum);
 });
 
+const _buttonList = computed(() => props.buttonList);
+
 watch(props, (newProp) => {
   const {
-    isLoading,
     loadingStatus: { text, loading }
   } = newProp;
-  if (!isLoading) return;
   // 修改前点击的按钮的loading状态
   const curIndex = calcFrontList.value.findIndex((c) => c.text === text);
   const currentList = curIndex > -1 ? calcFrontList : calcBackList;
@@ -100,22 +73,22 @@ watch(props, (newProp) => {
 // 默认显示的按钮列表
 const calcFrontList = computed<ButtonItemType[]>(() => {
   if (!props.autoLayout) {
-    return props.buttonList.filter((item) => !item.isDropDown);
+    return _buttonList.value.filter((item) => !item.isDropDown);
   }
-  return props.buttonList.slice(0, sliceNum.value) as any[];
+  return _buttonList.value.slice(0, sliceNum.value) as any[];
 });
 
 // 下拉中的按钮列表
 const calcBackList = computed<ButtonItemType[]>(() => {
   if (!props.autoLayout) {
-    return props.buttonList.filter((item) => item.isDropDown);
+    return _buttonList.value.filter((item) => item.isDropDown);
   }
-  return props.buttonList.slice(sliceNum.value) as any[];
+  return _buttonList.value.slice(sliceNum.value) as any[];
 });
 </script>
 
 <template>
-  <div class="ui-w-100">
+  <div class="">
     <div class="wrapper-btn" ref="parentBox">
       <template v-for="(item, index) in calcFrontList" :key="index">
         <!-- 处理是上传按钮包裹el-upload -->
@@ -132,7 +105,7 @@ const calcBackList = computed<ButtonItemType[]>(() => {
             :circle="item.circle"
             :round="item.round"
             :size="item.size"
-            @click="item.clickHandler(item)"
+            @click="item.clickHandler && item.clickHandler(item)"
             :type="item.type"
           >
             {{ item.text }}
@@ -151,7 +124,7 @@ const calcBackList = computed<ButtonItemType[]>(() => {
           :circle="item.circle"
           :round="item.round"
           :size="item.size"
-          @click="item.clickHandler(item)"
+          @click="item.clickHandler && item.clickHandler(item)"
           :type="item.type"
         >
           {{ item.text }}
@@ -160,18 +133,18 @@ const calcBackList = computed<ButtonItemType[]>(() => {
 
       <el-dropdown trigger="click" style="margin-left: 10px" v-show="calcBackList.length" :teleported="false">
         <el-button type="primary" ref="moreBtnRef" v-bind="$attrs">
-          {{ moreActionText || "更多操作" }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+          {{ moreActionText || "业务操作" }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
         </el-button>
         <template #dropdown>
           <el-dropdown-menu>
             <template v-for="(el, idx) in calcBackList" :key="idx">
               <!-- 处理是上传按钮包裹el-upload -->
               <el-upload v-if="el.uploadProp" :show-file-list="false" v-bind="el.uploadProp">
-                <el-dropdown-item :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler(el)">
+                <el-dropdown-item :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler && el.clickHandler(el)">
                   {{ el.text }}
                 </el-dropdown-item>
               </el-upload>
-              <el-dropdown-item v-else :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler(el)">
+              <el-dropdown-item v-else :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler && el.clickHandler(el)">
                 {{ el.text }}
               </el-dropdown-item>
             </template>

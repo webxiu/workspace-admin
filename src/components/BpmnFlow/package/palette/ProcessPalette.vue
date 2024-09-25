@@ -91,13 +91,15 @@ const startTool = (event, type) => {
 .my-process-palette {
   box-sizing: border-box;
   padding: 8px;
+
   .custom-button {
     box-sizing: border-box;
     padding: 4px 8px;
-    border-radius: 4px;
-    border: 1px solid rgba(24, 144, 255, 0.8);
-    cursor: pointer;
     margin-bottom: 8px;
+    cursor: pointer;
+    border: 1px solid rgb(24 144 255 / 80%);
+    border-radius: 4px;
+
     &:first-child {
       margin-top: 8px;
     }

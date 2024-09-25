@@ -1,0 +1,29 @@
+/** 省略 */
+@mixin ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/** 多行省略 */
+@mixin ellipsis-row($line: 3) {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: $line;
+  -webkit-box-orient: vertical;
+}
+
+/** 滚动条设置 */
+@mixin scrollBar($width: 10px, $color: var(--scrollbar-thumb-bg-color), $bgColor: var(--scrollbar-bg-color), $shadowColor: rgba(0, 0, 0, 0.2), $radius: 10px) {
+  &::-webkit-scrollbar {
+    width: $width;
+    border-radius: $radius;
+    background-color: $bgColor;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: $radius;
+    box-shadow: inset 0 0 10px $shadowColor;
+    background-color: $color;
+  }
+}

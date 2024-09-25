@@ -1,6 +1,6 @@
-import { type VNode } from "vue";
+import { type VNode, Ref } from "vue";
 import { isFunction } from "@pureadmin/utils";
-import { type MessageHandler, ElMessage } from "element-plus";
+import { type MessageHandler, ElMessage, ElMessageBox, MessageBoxData, ElMessageBoxOptions } from "element-plus";
 
 type messageStyle = "el" | "antd";
 type messageTypes = "info" | "success" | "warning" | "error";
@@ -35,19 +35,20 @@ interface MessageParams {
 /**
  * `Message` 消息提示函数
  */
-const message = (message: string | VNode | (() => VNode), params?: MessageParams): MessageHandler => {
+export const message = (message: string | VNode | (() => VNode), params?: MessageParams): MessageHandler => {
   if (!params) {
     return ElMessage({
       message,
+      type: "success",
       customClass: "pure-message"
     });
   } else {
     const {
       icon,
-      type = "info",
+      type = "success",
       dangerouslyUseHTMLString = false,
       customClass = "antd",
-      duration = 2000,
+      duration = 3000,
       showClose = false,
       center = false,
       offset = 20,
@@ -77,6 +78,39 @@ const message = (message: string | VNode | (() => VNode), params?: MessageParams
 /**
  * 关闭所有 `Message` 消息提示函数
  */
-const closeAllMessage = (): void => ElMessage.closeAll();
+export const closeAllMessage = (): void => ElMessage.closeAll();
 
-export { message, closeAllMessage };
+/** 提示消息框简单封装 */
+export const showMessageBox = (msg: ElMessageBoxOptions["message"], options?: ElMessageBoxOptions) => {
+  return new Promise<MessageBoxData>((resolve, reject) => {
+    ElMessageBox.confirm(msg, "系统提示", {
+      type: "warning",
+      draggable: true,
+      cancelButtonText: "取消",
+      confirmButtonText: "确定",
+      dangerouslyUseHTMLString: true,
+      distinguishCancelAndClose: true,
+      ...options
+    })
+      .then(resolve)
+      .catch(reject);
+  });
+};
+
+/**
+ * 提交拦截函数
+ * @param row 选择数据
+ * @param func 执行回调
+ * @param msg 提示信息(可选)
+ */
+export const wrapFn = (row: Ref<any | any[]>, func: Function, msg = "请选择记录") => {
+  return (...arg: any) => {
+    const rowData = row.value;
+    if (Array.isArray(rowData)) {
+      if (!rowData.length) return message(msg, { type: "warning" });
+    } else {
+      if (!rowData) return message(msg, { type: "warning" });
+    }
+    func.call(null, ...arg);
+  };
+};

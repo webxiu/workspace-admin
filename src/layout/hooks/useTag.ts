@@ -1,19 +1,20 @@
-import { ref, unref, watch, computed, reactive, onMounted, CSSProperties, getCurrentInstance } from "vue";
-import { tagsViewsType } from "../types";
-import { useEventListener } from "@vueuse/core";
+import { $t, transformI18n } from "@/plugins/i18n";
+import { CSSProperties, computed, getCurrentInstance, onMounted, reactive, ref, unref, watch } from "vue";
+import { hasClass, isBoolean, isEqual, storageLocal, toggleClass } from "@pureadmin/utils";
 import { useRoute, useRouter } from "vue-router";
-import { responsiveStorageNameSpace } from "@/config";
-import { useSettingStoreHook } from "@/store/modules/settings";
-import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
-import { isEqual, isBoolean, storageLocal, toggleClass, hasClass } from "@pureadmin/utils";
 
-import Fullscreen from "@iconify-icons/ri/fullscreen-fill";
+import Close from "@iconify-icons/ep/close";
 import CloseAllTags from "@iconify-icons/ri/subtract-line";
+import CloseLeftTags from "@iconify-icons/ri/text-direction-r";
 import CloseOtherTags from "@iconify-icons/ri/text-spacing";
 import CloseRightTags from "@iconify-icons/ri/text-direction-l";
-import CloseLeftTags from "@iconify-icons/ri/text-direction-r";
+import Fullscreen from "@iconify-icons/ri/fullscreen-fill";
 import RefreshRight from "@iconify-icons/ep/refresh-right";
-import Close from "@iconify-icons/ep/close";
+import { responsiveStorageNameSpace } from "@/config";
+import { tagsViewsType } from "../types";
+import { useEventListener } from "@vueuse/core";
+import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
+import { useSettingStoreHook } from "@/store/modules/settings";
 
 export function useTags() {
   const route = useRoute();
@@ -40,56 +41,56 @@ export function useTags() {
   const tagsViews = reactive<Array<tagsViewsType>>([
     {
       icon: RefreshRight,
-      text: "重新加载",
+      text: $t("buttons.hsreload"),
       divided: false,
       disabled: false,
       show: true
     },
     {
       icon: Close,
-      text: "关闭当前标签页",
+      text: $t("buttons.hscloseCurrentTab"),
       divided: false,
       disabled: multiTags.value.length > 1 ? false : true,
       show: true
     },
     {
       icon: CloseLeftTags,
-      text: "关闭左侧标签页",
+      text: $t("buttons.hscloseLeftTabs"),
       divided: true,
       disabled: multiTags.value.length > 1 ? false : true,
       show: true
     },
     {
       icon: CloseRightTags,
-      text: "关闭右侧标签页",
+      text: $t("buttons.hscloseRightTabs"),
       divided: false,
       disabled: multiTags.value.length > 1 ? false : true,
       show: true
     },
     {
       icon: CloseOtherTags,
-      text: "关闭其他标签页",
+      text: $t("buttons.hscloseOtherTabs"),
       divided: true,
       disabled: multiTags.value.length > 2 ? false : true,
       show: true
     },
     {
       icon: CloseAllTags,
-      text: "关闭全部标签页",
+      text: $t("buttons.hscloseAllTabs"),
       divided: false,
       disabled: multiTags.value.length > 1 ? false : true,
       show: true
     },
     {
       icon: Fullscreen,
-      text: "整体页面全屏",
+      text: $t("buttons.hswholeFullScreen"),
       divided: true,
       disabled: false,
       show: true
     },
     {
       icon: Fullscreen,
-      text: "内容区全屏",
+      text: $t("buttons.hscontentFullScreen"),
       divided: false,
       disabled: false,
       show: true
@@ -104,6 +105,12 @@ export function useTags() {
         return isEqual(route.params, item.params) ? previous : next;
       }
     } else {
+      // 判断路由及参数来激活当前Tag标签
+      const routeQuery = JSON.stringify(route.query);
+      const itemQuery = JSON.stringify(item.query);
+      if (Object.keys(item.query || {}).length > 0) {
+        return route.path + routeQuery === item.path + itemQuery ? previous : next;
+      }
       return route.path === item.path ? previous : next;
     }
   }
@@ -170,7 +177,9 @@ export function useTags() {
   }
 
   function onContentFullScreen() {
-    pureSetting.hiddenSideBar ? pureSetting.changeSetting({ key: "hiddenSideBar", value: false }) : pureSetting.changeSetting({ key: "hiddenSideBar", value: true });
+    pureSetting.hiddenSideBar
+      ? pureSetting.changeSetting({ key: "hiddenSideBar", value: false })
+      : pureSetting.changeSetting({ key: "hiddenSideBar", value: true });
   }
 
   onMounted(() => {
@@ -208,10 +217,12 @@ export function useTags() {
     currentSelect,
     scheduleIsActive,
     getContextMenuStyle,
+    $t,
     closeMenu,
     onMounted,
     onMouseenter,
     onMouseleave,
+    transformI18n,
     onContentFullScreen
   };
 }

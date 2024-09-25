@@ -1,4 +1,6 @@
 import { RouteRecordName } from "vue-router";
+import { UserInfoType } from "@/api/user/types";
+import { UserMenuItem } from "@/api/routes";
 
 export type cacheType = {
   mode: string;
@@ -17,15 +19,19 @@ export type appType = {
     // 判断是否手动点击Collapse
     isClickCollapse: boolean;
   };
-  layout: string;
+  layout: LayoutStyle;
+  appConfig: StorageConfigs;
   device: string;
+  asyncRoutes: RouteConfigsTable[];
+  routeLoading: boolean;
+  currentLoadings: string[];
 };
 
 export type multiType = {
   path: string;
   name: string;
   meta: any;
-  query?: object;
+  query?: Record<string, any>;
   params?: object;
 };
 
@@ -33,8 +39,12 @@ export type setType = {
   title: string;
   fixedHeader: boolean;
   hiddenSideBar: boolean;
+  tableConfigMenuRoutes: UserMenuItem[];
 };
 
 export type userType = {
-  userName?: string;
+  userInfo?: UserInfoType;
+  roles?: Array<string>;
+  verifyCode?: string;
+  currentPage?: number;
 };

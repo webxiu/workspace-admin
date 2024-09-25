@@ -70,6 +70,16 @@ declare global {
     meta?: CustomizeRouteMeta;
     /** 子路由配置项 */
     children?: Array<RouteChildrenConfigsTable>;
+    /** 后端配置路由 */
+    webRouter?: string;
+    /** 菜单编码 */
+    menuCode?: string;
+    /** 父级菜单编码 */
+    parentCode?: string;
+    /** 是否收藏 */
+    isNoLike?: boolean;
+    /** 菜单id */
+    id?: number;
   }
 
   /**
@@ -96,6 +106,18 @@ declare global {
     };
     /** 子路由配置项 */
     children?: Array<RouteChildrenConfigsTable>;
+    /** 后端配置路由 */
+    webRouter?: string;
+    /** 菜单编码 */
+    menuCode?: string;
+    /** 父级菜单编码 */
+    parentCode?: string;
+    /** 是否收藏 */
+    isNoLike?: boolean;
+    /** 菜单id */
+    id?: number;
+    /** 菜单类型 */
+    menuType?: number;
   }
 }
 

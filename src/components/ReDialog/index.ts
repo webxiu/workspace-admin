@@ -7,7 +7,10 @@ import { withInstall } from "@pureadmin/utils";
 
 const dialogStore = ref<Array<DialogOptions>>([]);
 
-/** 打开弹框 */
+/**
+ * 打开弹框
+ * 全屏显示配置class类名为: full-dialog, 移除了内容边距
+ */
 const addDialog = (options: DialogOptions) => {
   const open = () => dialogStore.value.push(Object.assign(options, { visible: true }));
   if (options?.openDelay) {

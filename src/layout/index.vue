@@ -35,6 +35,10 @@ const set: setType = reactive({
     return useAppStoreHook().device;
   }),
 
+  currentLoadings: computed(() => {
+    return useAppStoreHook().currentLoadings;
+  }),
+
   fixedHeader: computed(() => {
     return pureSetting.fixedHeader;
   }),
@@ -53,7 +57,7 @@ const set: setType = reactive({
   })
 });
 
-function setTheme(layoutModel: string) {
+function setTheme(layoutModel: LayoutStyle) {
   window.document.body.setAttribute("layout", layoutModel);
   $storage.layout = {
     layout: `${layoutModel}`,
@@ -73,24 +77,24 @@ function toggle(device: string, bool: boolean) {
 let isAutoCloseSidebar = true;
 
 useResizeObserver(appWrapperRef, (entries) => {
-  if (isMobile) return;
+  // if (isMobile) return;
   const entry = entries[0];
   const { width } = entry.contentRect;
   width <= 760 ? setTheme("vertical") : setTheme(useAppStoreHook().layout);
   /** width app-wrapper类容器宽度
    * 0 < width <= 760 隐藏侧边栏
-   * 760 < width <= 990 折叠侧边栏
-   * width > 990 展开侧边栏
+   * 760 < width <= 992 折叠侧边栏
+   * width > 992 展开侧边栏
    */
   if (width > 0 && width <= 760) {
     toggle("mobile", false);
     isAutoCloseSidebar = true;
-  } else if (width > 760 && width <= 990) {
+  } else if (width > 760 && width <= 992) {
     if (isAutoCloseSidebar) {
       toggle("desktop", false);
       isAutoCloseSidebar = false;
     }
-  } else if (width > 990 && !set.sidebar.isClickCollapse) {
+  } else if (width > 992 && !set.sidebar.isClickCollapse) {
     toggle("desktop", true);
     isAutoCloseSidebar = true;
   } else {
@@ -115,7 +119,13 @@ const layoutHeader = defineComponent({
       "div",
       {
         class: { "fixed-header": set.fixedHeader },
-        style: [set.hideTabs && layout.value.includes("horizontal") ? (isDark.value ? "box-shadow: 0 1px 4px #0d0d0d" : "box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08)") : ""]
+        style: [
+          set.hideTabs && layout.value.includes("horizontal")
+            ? isDark.value
+              ? "box-shadow: 0 1px 4px #0d0d0d"
+              : "box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08)"
+            : ""
+        ]
       },
       {
         default: () => [
@@ -130,7 +140,7 @@ const layoutHeader = defineComponent({
 </script>
 
 <template>
-  <div ref="appWrapperRef" :class="['app-wrapper', set.classes]">
+  <div ref="appWrapperRef" :class="['app-wrapper', set.classes]" v-loading="set.currentLoadings.length">
     <div v-show="set.device === 'mobile' && set.sidebar.opened && layout.includes('vertical')" class="app-mask" @click="useAppStoreHook().toggleSideBar()" />
     <Vertical v-show="!pureSetting.hiddenSideBar && (layout.includes('vertical') || layout.includes('mix'))" />
     <div :class="['main-container', pureSetting.hiddenSideBar ? 'main-hidden' : '']">

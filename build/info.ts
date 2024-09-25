@@ -19,7 +19,7 @@ export function viteBuildInfo(): Plugin {
       outDir = resolvedConfig.build?.outDir ?? "dist";
     },
     buildStart() {
-      console.log(bold(green(`👏 项目运行中...`)));
+      console.log(bold(green(`👏项目${blue("运行中")}...`)));
       if (config.command === "build") {
         startTime = dayjs(new Date());
       }
@@ -30,7 +30,7 @@ export function viteBuildInfo(): Plugin {
         utils.getPackageSize({
           folder: outDir,
           callback: (size: string) => {
-            console.log(bold(green(`🎉 打包完成（总用时${dayjs.duration(endTime.diff(startTime)).format("mm分ss秒")}，打包后的大小为${size}）`)));
+            console.log(bold(green(`🎉恭喜打包完成（总用时${dayjs.duration(endTime.diff(startTime)).format("mm分ss秒")}，打包后的大小为${size}）`)));
           }
         });
       }

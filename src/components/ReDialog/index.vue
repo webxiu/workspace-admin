@@ -25,27 +25,18 @@ const callbackFn = (command: string, dialog: BtnClickDialog) => {
 
 const footerButtons = computed(() => {
   return (options: DialogOptions) => {
+    const { resetButtonText, cancelButtonText, okButtonText, customButtonText, showResetButton, hideItem } = options;
     const buttons: Array<ButtonProps> = [
-      { label: "重置", btnType: "reset", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("reset", dialog) },
-      { label: options.cancelButtonText || "取消", btnType: "cancel", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("cancel", dialog) },
-      { label: options.okButtonText || "确定", btnType: "ok", text: false, bg: true, btnClick: ({ dialog }) => callbackFn("sure", dialog), type: "primary" },
-      {
-        label: options.customButtonText || "按钮",
-        btnType: "custom",
-        text: false,
-        bg: true,
-        btnClick: ({ dialog }) => callbackFn("custom", dialog),
-        type: "primary"
-      }
+      { label: resetButtonText || "重置", btnType: "reset", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("reset", dialog) },
+      { label: cancelButtonText || "取消", btnType: "cancel", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("cancel", dialog) },
+      { label: okButtonText || "确定", btnType: "ok", text: false, bg: true, btnClick: ({ dialog }) => callbackFn("sure", dialog), type: "primary" },
+      { label: customButtonText || "自定义", btnType: "custom", text: false, bg: true, btnClick: ({ dialog }) => callbackFn("custom", dialog), type: "primary" }
     ];
-    // 过滤掉不显示的按钮, 重置按钮和自定义按钮根据是否配置来显示
-    const newButtons = buttons.filter((item) => {
-      if (item.btnType === "reset") {
-        return options.showResetButton;
-      } else if (item.btnType === "custom") {
-        return options.customButtonText;
-      }
-      return !options.hideItem?.includes(item.btnType);
+    // 重置与自定义按钮是否显示(自定义按钮配置名称才显示)
+    const newButtons = buttons.filter(({ btnType }) => {
+      if (btnType === "reset") return showResetButton;
+      if (btnType === "custom") return customButtonText;
+      return !hideItem?.includes(btnType);
     });
     return options?.footerButtons?.length > 0 ? options.footerButtons : newButtons;
   };

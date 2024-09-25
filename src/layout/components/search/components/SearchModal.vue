@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { match } from "pinyin-pro";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import SearchResult from "./SearchResult.vue";
 import SearchFooter from "./SearchFooter.vue";
 import { useNav } from "@/layout/hooks/useNav";
-import { ref, computed, shallowRef, watch } from "vue";
+import { transformI18n } from "@/plugins/i18n";
+import { ref, computed, shallowRef, onMounted, watch } from "vue";
 import { cloneDeep, isAllEmpty } from "@pureadmin/utils";
 import { useDebounceFn, onKeyStroke } from "@vueuse/core";
-import { usePermissionStoreHook } from "@/store/modules/permission";
 import Search from "@iconify-icons/ri/search-line";
+import { useAppStoreHook } from "@/store/modules/app";
 import { flatTree } from "@/utils/tree";
 
 interface Props {
@@ -24,18 +26,21 @@ const { device } = useNav();
 const emit = defineEmits<Emits>();
 const props = withDefaults(defineProps<Props>(), {});
 const router = useRouter();
+const { locale } = useI18n();
 
 const keyword = ref("");
 const scrollbarRef = ref();
 const resultRef = ref();
-const activePath = ref("");
+const activePath = ref<RouteConfigsTable>();
 const inputRef = ref<HTMLInputElement | null>(null);
 const resultOptions = shallowRef([]);
 const handleSearch = useDebounceFn(search, 300);
 
 /** 菜单树形结构 */
-const menusData = computed(() => {
-  return cloneDeep(usePermissionStoreHook().wholeMenus);
+const menusData = computed(() => cloneDeep(useAppStoreHook().asyncRoutes));
+
+onMounted(() => {
+  resultOptions.value = menusData.value;
 });
 
 const show = computed({
@@ -49,7 +54,7 @@ const show = computed({
 
 watch(show, (val) => {
   if (val) {
-    resultOptions.value = flatTree(menusData.value);
+    resultOptions.value = menusData.value;
   }
 });
 
@@ -58,26 +63,29 @@ function search() {
   const flatMenusData = flatTree(menusData.value);
   resultOptions.value = flatMenusData.filter((menu) =>
     keyword.value
-      ? menu.meta?.title.toLocaleLowerCase().includes(keyword.value.toLocaleLowerCase().trim()) || !isAllEmpty(match(menu.meta?.title.toLocaleLowerCase(), keyword.value.toLocaleLowerCase().trim()))
+      ? transformI18n(menu.meta?.title).toLocaleLowerCase().includes(keyword.value.toLocaleLowerCase().trim()) ||
+        (locale.value === "zh" && !isAllEmpty(match(transformI18n(menu.meta?.title).toLocaleLowerCase(), keyword.value.toLocaleLowerCase().trim())))
       : false
   );
   if (resultOptions.value?.length > 0) {
-    activePath.value = resultOptions.value[0].path;
+    activePath.value = resultOptions.value[0];
   } else {
-    activePath.value = "";
+    activePath.value = undefined;
   }
 }
 
 function handleClose() {
   show.value = false;
   /** 延时处理防止用户看到某些操作 */
-  setTimeout(() => {
+  const timer = setTimeout(() => {
     resultOptions.value = [];
     keyword.value = "";
+    clearTimeout(timer);
   }, 200);
 }
 
 function scrollTo(index) {
+  if (!scrollbarRef.value) return;
   const scrollTop = resultRef.value.handleScroll(index);
   scrollbarRef.value.setScrollTop(scrollTop);
 }
@@ -86,12 +94,12 @@ function scrollTo(index) {
 function handleUp() {
   const { length } = resultOptions.value;
   if (length === 0) return;
-  const index = resultOptions.value.findIndex((item) => item.path === activePath.value);
+  const index = resultOptions.value.findIndex((item) => item.path === activePath.value?.path);
   if (index === 0) {
-    activePath.value = resultOptions.value[length - 1].path;
+    activePath.value = resultOptions.value[length - 1];
     scrollTo(resultOptions.value.length - 1);
   } else {
-    activePath.value = resultOptions.value[index - 1].path;
+    activePath.value = resultOptions.value[index - 1];
     scrollTo(index - 1);
   }
 }
@@ -100,11 +108,11 @@ function handleUp() {
 function handleDown() {
   const { length } = resultOptions.value;
   if (length === 0) return;
-  const index = resultOptions.value.findIndex((item) => item.path === activePath.value);
+  const index = resultOptions.value.findIndex((item) => item.path === activePath.value?.path);
   if (index + 1 === length) {
-    activePath.value = resultOptions.value[0].path;
+    activePath.value = resultOptions.value[0];
   } else {
-    activePath.value = resultOptions.value[index + 1].path;
+    activePath.value = resultOptions.value[index + 1];
   }
   scrollTo(index + 1);
 }
@@ -112,8 +120,15 @@ function handleDown() {
 /** key enter */
 function handleEnter() {
   const { length } = resultOptions.value;
-  if (length === 0 || activePath.value === "") return;
-  router.push(activePath.value);
+  const menuItem = activePath.value;
+  const hasChild = menuItem?.children?.length > 0;
+  if (length === 0 || !menuItem) return;
+  // 跳转主菜单
+  const mainPath = `/menuPanel?menuCode=${menuItem.menuCode}&from=${menuItem.path}`;
+  // 跳转具体页面
+  const pagePath = `${menuItem.path}?menuId=${menuItem.id}`;
+
+  router.push(hasChild ? mainPath : pagePath);
   handleClose();
 }
 
@@ -130,9 +145,7 @@ onKeyStroke("ArrowDown", handleDown);
     :show-close="false"
     :width="device === 'mobile' ? '80vw' : '40vw'"
     :before-close="handleClose"
-    :style="{
-      borderRadius: '6px'
-    }"
+    :style="{ borderRadius: '6px' }"
     append-to-body
     @opened="inputRef.focus()"
     @closed="inputRef.blur()"

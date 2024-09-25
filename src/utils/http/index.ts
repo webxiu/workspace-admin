@@ -1,24 +1,25 @@
 /*
- * @Author: lixiuhai
- * @Date: 2023-06-30 16:30:09
- * @Last Modified by: lixiuhai
- * @Last Modified time: 2023-09-21 10:37:58
+ * @Author: Hailen
+ * @Date: 2023-07-13 10:10:59
+ * @Last Modified by: Hailen
+ * @Last Modified time: 2024-09-25 18:11:31
  */
 
-import Axios, { AxiosInstance, AxiosRequestConfig, CustomParamsSerializer } from "axios";
+import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken, CustomParamsSerializer } from "axios";
 import { PureHttpError, PureHttpRequestConfig, PureHttpResponse, RequestMethods } from "./types.d";
-import { formatToken, getToken } from "@/utils/auth";
 
-import { ElMessage } from "element-plus";
 import NProgress from "../progress";
+import { message } from "@/utils/message";
 import { stringify } from "qs";
+import { useAppStoreHook } from "@/store/modules/app";
 import { useUserStoreHook } from "@/store/modules/user";
+import { whiteList } from "@/router/index";
 
 // 相关配置请参考：www.axios-js.com/zh-cn/docs/#axios-request-config-1
 const defaultConfig: AxiosRequestConfig = {
   // baseURL: import.meta.env.VITE_BASE_API,
-  // 请求超时时间 50秒
-  timeout: 50 * 1000,
+  // 请求超时时间 60秒
+  timeout: 60 * 1000,
   headers: {
     Accept: "application/json, text/plain, */*",
     "Content-Type": "application/json",
@@ -30,17 +31,20 @@ const defaultConfig: AxiosRequestConfig = {
   }
 };
 
+/**
+ * 状态码说明:
+ * 502: TOKEN过期
+ * 504: 没有token
+ * 508: token不合法
+ * 509: 身份验证异常
+ */
+const STATUS_CODE = [401, 403, 405, 502, 504, 508, 509];
+
 class PureHttp {
   constructor() {
     this.httpInterceptorsRequest();
     this.httpInterceptorsResponse();
   }
-
-  /** token过期后，暂存待执行的请求 */
-  private static requests = [];
-
-  /** 防止重复刷新token */
-  private static isRefreshing = false;
 
   /** 初始化配置对象 */
   private static initConfig: PureHttpRequestConfig = {};
@@ -48,22 +52,29 @@ class PureHttp {
   /** 保存当前Axios实例对象 */
   private static axiosInstance: AxiosInstance = Axios.create(defaultConfig);
 
-  /** 重连原始请求 */
-  private static retryOriginalRequest(config: PureHttpRequestConfig) {
-    return new Promise((resolve) => {
-      PureHttp.requests.push((token: string) => {
-        config.headers["Authorization"] = formatToken(token);
-        resolve(config);
-      });
-    });
+  /** 移除字符串前后空格 */
+  private removeBlank(data: Record<string, any>) {
+    if (typeof data === "object") {
+      for (const key in data) {
+        if (typeof data[key] === "string") {
+          data[key] = data[key].trim();
+        }
+      }
+    }
+    return data;
   }
 
   /** 请求拦截 */
   private httpInterceptorsRequest(): void {
     PureHttp.axiosInstance.interceptors.request.use(
       async (config: PureHttpRequestConfig): Promise<any> => {
-        // 开启进度条动画
-        NProgress.start();
+        this.removeBlank(config.data); // 移除请求参数前后空格
+
+        // 是否隐藏Loading
+        if (!config.headers.hideLoading) {
+          NProgress.start();
+          useAppStoreHook().pushPageLoading("loading");
+        }
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof config.beforeRequestCallback === "function") {
           config.beforeRequestCallback(config);
@@ -73,23 +84,10 @@ class PureHttp {
           PureHttp.initConfig.beforeRequestCallback(config);
           return config;
         }
-        /** 请求白名单，放置一些不需要token的接口（通过设置请求白名单，防止token过期后再请求造成的死循环问题） */
-        const whiteList = ["/refreshToken", "/login"];
-        return whiteList.some((v) => config.url.indexOf(v) > -1)
-          ? config
-          : new Promise((resolve) => {
-              const data = getToken();
-              if (data) {
-                config.headers["Authorization"] = formatToken(data.accessToken);
-                resolve(config);
-              } else {
-                resolve(config);
-              }
-            });
+        const hasAuth = whiteList.some((v) => config.url.indexOf(v) > -1);
+        return hasAuth ? config : new Promise((resolve) => resolve(config));
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
   }
 
@@ -102,6 +100,8 @@ class PureHttp {
         const data = response.data;
         // 关闭进度条动画
         NProgress.done();
+        // 关闭loading
+        useAppStoreHook().popPageLoading();
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof $config.beforeResponseCallback === "function") {
           $config.beforeResponseCallback(response);
@@ -111,54 +111,69 @@ class PureHttp {
         }
 
         // ================ 状态码判断 start ================
-        if (data.code === 200) {
-          return response.data;
-        } else if ([401, 504, 509].includes(data.code)) {
-          useUserStoreHook().logOut();
-        } else if (data.code === 403) {
-          ElMessage({ message: "请求未授权", type: "error" });
-        } else {
-          ElMessage({ message: data.message, duration: 3000 });
-          return Promise.reject(data.message);
+        if (data.status === 200) {
+          return data;
+        } else if (response.status === 200 && !data.status) {
+          // 处理Excel数据导出没有包装响应格式
+          return data;
         }
+
+        if (STATUS_CODE.includes(data.status)) {
+          useUserStoreHook().logOut();
+          message(data.message, { type: "error" });
+        } else if (data.status === 403) {
+          message("请求未授权", { type: "error" });
+        } else {
+          message(data.message || "服务器错误, 错误代码:" + data.status, { type: "error" });
+        }
+        return Promise.reject(data);
         // ================ 状态码判断 end ================
       },
       (error: PureHttpError) => {
-        const $error = error;
-        const data = error.response.data as any;
-        if ([500].includes(data.status)) {
-          ElMessage({ message: data.error || "获取失败", type: "error" });
+        console.log("http_error:", error);
+        // 关闭loading
+        useAppStoreHook().popPageLoading();
+        const data = error.response?.data as any;
+        const status = error.response?.status as any;
+
+        if (!data) {
+          message(error.message, { type: "error" });
+        } else if (STATUS_CODE.includes(data.status)) {
+          message(data.error, { type: "error" });
+        } else if (STATUS_CODE.includes(status)) {
+          message(data.error || error.message, { type: "error" });
         }
-        if ($error?.isCancelRequest) {
-          $error.isCancelRequest = Axios.isCancel($error);
+
+        if (error?.isCancelRequest) {
+          error.isCancelRequest = Axios.isCancel(error);
         }
         // 关闭进度条动画
         NProgress.done();
         // 所有的响应异常 区分来源为取消请求/非取消请求
-        return Promise.reject($error);
+        return Promise.reject(error);
       }
     );
   }
 
-  /** 通用请求工具函数 */
-  public request<T = {}>(method: RequestMethods, url: string, param?: AxiosRequestConfig, axiosConfig?: PureHttpRequestConfig): Promise<BaseResponseType<T>> {
-    const config = {
-      method,
-      url,
-      ...param,
-      ...axiosConfig
-    } as PureHttpRequestConfig;
+  /**
+   * 通用请求工具函数
+   * method: 第一个参数是对象则为options方式配置请求参数, 调用接口是可自定义拦截请求和响应, 可配置取消请求 {..., cancelToken: InjectAbort(login) }
+   */
+  public request<T>(
+    method: RequestMethods | PureHttpRequestConfig,
+    url?: string,
+    param?: AxiosRequestConfig,
+    config?: PureHttpRequestConfig
+  ): Promise<BaseResponseType<T>> {
+    let option = { method, url, ...param, ...config } as PureHttpRequestConfig;
+    if (typeof method === "object") option = method; // 判断是否为options方式
 
     // 单独处理自定义请求/响应回调
-    return new Promise((resolve, reject) => {
+    return new Promise<BaseResponseType<T>>((resolve, reject) => {
       PureHttp.axiosInstance
-        .request(config)
-        .then((response: undefined) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
+        .request(option)
+        .then((response: any) => resolve(response as BaseResponseType<T>))
+        .catch((error) => reject(error));
     });
   }
 
@@ -171,6 +186,14 @@ class PureHttp {
   public get<T, P>(url: string, params?: AxiosRequestConfig<T>, config?: PureHttpRequestConfig): Promise<BaseResponseType<P>> {
     return this.request<P>("get", url, params, config);
   }
+}
+
+/** 为请求方法注入取消请求 */
+export function InjectCancel(fn: Function) {
+  const cancelToken = Axios.CancelToken;
+  const source = cancelToken.source();
+  fn["cancel"] = source.cancel;
+  return source.token;
 }
 
 export const http = new PureHttp();

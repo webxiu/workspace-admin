@@ -1,8 +1,3 @@
-/* 自定义边框线的颜色 */
-.border-line-color {
-  box-shadow: 0 0 0 1px var(--el-input-border-color, var(--el-border-color)) inset;
-}
-
 .el-breadcrumb__inner,
 .el-breadcrumb__inner a {
   font-weight: 400 !important;
@@ -35,6 +30,10 @@
 
 .el-range-separator {
   box-sizing: content-box;
+}
+
+.el-loading-mask {
+  z-index: 5500 !important;
 }
 
 .is-dark {
@@ -80,6 +79,7 @@
 }
 
 .pure-dialog {
+  min-width: 300px;
   margin: auto !important;
 
   .pure-dialog-svg {
@@ -87,9 +87,9 @@
   }
 
   .el-dialog__header {
-    border-bottom: 1px solid var(--el-input-border-color, var(--el-border-color));
-    margin-right: 0px;
     padding-right: 16px;
+    margin-right: 0;
+    border-bottom: 1px solid var(--el-input-border-color, var(--el-border-color));
   }
 
   .el-dialog__headerbtn {
@@ -100,7 +100,8 @@
   }
 
   .el-dialog__body {
-    max-height: 600px;
+    position: relative !important;
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
   }
 
@@ -114,6 +115,37 @@
       flex-direction: column;
       max-height: inherit;
     }
+  }
+}
+
+/** 弹窗内容高度自适应 */
+.dialog-fill_body.pure-dialog {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+
+  .el-dialog__body {
+    display: flex;
+    flex: 1;
+  }
+}
+
+/* 弹窗内容满屏 */
+.full-dialog {
+  .el-dialog__body {
+    box-sizing: border-box;
+    padding: 0;
+    overflow-y: auto;
+  }
+
+  .el-dialog__footer {
+    box-sizing: border-box;
+    padding: 16px;
+    border-top: 1px solid #e8e8e8;
+  }
+
+  .el-dialog__close {
+    font-weight: 600;
   }
 }
 
@@ -206,7 +238,19 @@
 
 /** 全局边框线 */
 .border-line {
-  border: 1px solid var(--el-input-border-color, var(--el-border-color));
+  border: 1px solid $borderColor;
+}
+
+.border-line-top {
+  border-top: 1px solid $borderColor;
+}
+
+.border-line-right {
+  border-right: 1px solid $borderColor;
+}
+
+.border-line-bottom {
+  border-bottom: 1px solid $borderColor;
 }
 
 /** 全局表格单选框 选中状态 */
@@ -214,6 +258,7 @@
   tr.current-row > td .el-radio .el-radio__inner {
     background: var(--el-color-primary);
     border-color: var(--el-color-primary);
+    transition: all 0.5s;
 
     &::after {
       background-color: var(--el-color-white);
@@ -236,18 +281,33 @@
 .el-table {
   &.el-table--small {
     font-size: 14px !important;
+
     .el-table__cell {
       padding: 2px 0;
     }
   }
 
   .el-scrollbar__bar.is-horizontal {
+    z-index: 222;
     height: 12px;
   }
+
   .el-scrollbar__bar.is-vertical {
+    z-index: 222;
     width: 12px;
   }
+
+  /** 表格单选按钮 */
+  .table-radio .el-radio__label {
+    display: none;
+  }
+
+  .cell.el-tooltip {
+    width: auto !important;
+    min-width: auto;
+  }
 }
+
 .el-table__body-wrapper .el-table-column--selection > .cell,
 .el-table__header-wrapper .el-table-column--selection > .cell {
   justify-content: center;
@@ -268,4 +328,42 @@
 .el-popper.is-pure {
   max-height: 520px;
   overflow-y: auto;
+}
+
+/** 取色器-自定义颜色边框 */
+.el-color-predefine__color-selector {
+  box-shadow: 0 0 0 1px #eee;
+}
+
+/** tabs内容区域高自适应 */
+.tabs-fill_content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+
+  > .el-tabs__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  > .el-tabs__content > .el-tab-pane {
+    display: flex;
+    flex: 1;
+  }
+}
+
+/** 树形列表 */
+.el-tree {
+  &.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
+    background-color: #bbdcff !important;
+  }
+
+  .el-tree-node__content:hover {
+    background-color: #bbdcff !important;
+  }
+  .el-tree-node .el-tree-node__content .el-tree-node__label {
+    @include ellipsis();
+  }
 }

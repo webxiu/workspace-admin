@@ -1,21 +1,18 @@
 <script setup lang="ts">
+import NavRight from "./NavRight.vue";
 import extraIcon from "./extraIcon.vue";
-import Search from "../search/index.vue";
-// import Notice from "../notice/index.vue";
 import { isAllEmpty } from "@pureadmin/utils";
 import { useNav } from "@/layout/hooks/useNav";
-import { ref, toRaw, watch, onMounted, nextTick } from "vue";
-import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import { transformI18n } from "@/plugins/i18n";
+import { ref, watch, onMounted, nextTick } from "vue";
 import { getParentPaths, findRouteByPath } from "@/router/utils";
+import { useTranslationLang } from "../../hooks/useTranslationLang";
 import { usePermissionStoreHook } from "@/store/modules/permission";
-import LogoutCircleRLine from "@iconify-icons/ri/logout-circle-r-line";
-import Setting from "@iconify-icons/ri/settings-3-line";
-import LogoutEditLine from "@iconify-icons/ri/edit-2-line";
 
 const menuRef = ref();
 const defaultActive = ref(null);
-
-const { route, device, logout, onUpdatePassword, onPanel, resolvePath, userName, userAvatar, getDivStyle, avatarsStyle } = useNav();
+const { route } = useTranslationLang(menuRef);
+const { device, resolvePath, getDivStyle } = useNav();
 
 function getDefaultActive(routePath) {
   const wholeMenus = usePermissionStoreHook().wholeMenus;
@@ -24,81 +21,34 @@ function getDefaultActive(routePath) {
   defaultActive.value = !isAllEmpty(route.meta?.activePath) ? route.meta.activePath : findRouteByPath(parentRoutes, wholeMenus)?.children[0]?.path;
 }
 
-onMounted(() => {
-  getDefaultActive(route.path);
-});
-
-nextTick(() => {
-  menuRef.value?.handleResize();
-});
-
+onMounted(() => getDefaultActive(route.path));
+nextTick(() => menuRef.value?.handleResize());
 watch(
   () => [route.path, usePermissionStoreHook().wholeMenus],
-  () => {
-    getDefaultActive(route.path);
-  }
+  () => getDefaultActive(route.path)
 );
 </script>
 
 <template>
-  <div v-if="device !== 'mobile'" class="horizontal-header">
-    <el-menu router ref="menuRef" mode="horizontal" class="horizontal-header-menu" :default-active="defaultActive">
+  <div v-if="device !== 'mobile'" class="horizontal-header" v-loading="usePermissionStoreHook().wholeMenus.length === 0">
+    <el-menu ref="menuRef" mode="horizontal" class="horizontal-header-menu" :default-active="defaultActive">
       <el-menu-item v-for="route in usePermissionStoreHook().wholeMenus" :key="route.path" :index="resolvePath(route) || route.redirect">
         <template #title>
-          <div v-if="toRaw(route.meta.icon)" :class="['sub-menu-icon', route.meta.icon]">
-            <component :is="useRenderIcon(route.meta && toRaw(route.meta.icon))" />
-          </div>
-          <div :style="getDivStyle">
-            <span class="select-none">
-              {{ route.meta.title }}
-            </span>
-            <extraIcon :extraIcon="route.meta.extraIcon" />
-          </div>
+          <router-link :to="resolvePath(route) || route.redirect" :style="getDivStyle">
+            <!-- TODO: 这里先注释，后续根据是否需要显示顶部导航图标在做处理 -->
+            <!-- <div v-if="toRaw(route.meta.icon)" :class="['sub-menu-icon', route.meta.icon]">
+              <component :is="useRenderIcon(route.meta && toRaw(route.meta.icon))" />
+            </div> -->
+            <div :style="getDivStyle">
+              <span class="select-none">
+                {{ transformI18n(route.meta.title) }}
+              </span>
+              <extraIcon :extraIcon="route.meta.extraIcon" />
+            </div>
+          </router-link>
         </template>
       </el-menu-item>
     </el-menu>
-    <div class="horizontal-header-right">
-      <!-- 菜单搜索 -->
-      <Search />
-      <!-- 通知 -->
-      <!-- <Notice id="header-notice" /> -->
-      <!-- 退出登录 -->
-      <el-dropdown trigger="click">
-        <span class="el-dropdown-link navbar-bg-hover select-none">
-          <img :src="userAvatar" :style="avatarsStyle" />
-          <p v-if="userName" class="dark:text-white">{{ userName }}</p>
-        </span>
-        <template #dropdown>
-          <el-dropdown-menu class="logout">
-            <el-dropdown-item @click="onUpdatePassword">
-              <IconifyIconOffline :icon="LogoutEditLine" style="margin: 5px" />
-              修改密码
-            </el-dropdown-item>
-            <el-dropdown-item @click="logout">
-              <IconifyIconOffline :icon="LogoutCircleRLine" style="margin: 5px" />
-              退出系统
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-      <span class="set-icon navbar-bg-hover" title="打开项目配置" @click="onPanel">
-        <IconifyIconOffline :icon="Setting" />
-      </span>
-    </div>
+    <NavRight class="horizontal-header-right" />
   </div>
 </template>
-
-<style lang="scss" scoped>
-:deep(.el-loading-mask) {
-  opacity: 0.45;
-}
-
-.logout {
-  max-width: 120px;
-
-  ::v-deep(.el-dropdown-menu__item) {
-    display: inline-flex;
-    min-width: 100%;
-  }
-}
-</style>

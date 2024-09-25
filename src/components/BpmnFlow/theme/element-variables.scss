@@ -11,32 +11,37 @@ $--font-path: "~element-ui/lib/theme-chalk/fonts";
 .el-table th {
   color: #333;
 }
+
 .el-drawer__header {
-  padding: 16px 16px 8px 16px;
-  margin: 0;
-  line-height: 24px;
-  font-size: 18px;
-  color: #303133;
   box-sizing: border-box;
+  padding: 16px 16px 8px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  color: #303133;
   border-bottom: 1px solid #e8e8e8;
 }
+
 div[class^="el-drawer"]:focus,
 span:focus {
   outline: none;
 }
+
 .el-drawer__body {
   box-sizing: border-box;
-  padding: 16px;
   width: 100%;
+  padding: 16px;
   overflow-y: auto;
 }
 
 .el-select {
   width: 100%;
 }
+
 .el-divider:not(.el-divider--horizontal) {
   margin: 0 8px;
 }
+
 .el-divider.el-divider--horizontal {
   margin: 16px 0;
 }

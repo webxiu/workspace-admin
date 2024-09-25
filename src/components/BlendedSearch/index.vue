@@ -1,14 +1,18 @@
 <!-- /*
- * @Author: lixiuhai 
+ * @Author: Hailen 
  * @Date: 2023-06-29 11:27:55 
- * @Last Modified by:   lixiuhai 
+ * @Last Modified by:   Hailen 
  * @Last Modified time: 2023-06-29 11:27:55 
  */ -->
 
 <template>
   <div class="filter-field border-line">
     <div v-show="searchOptions.length > 0">
-      <el-cascader ref="CascaderRef" :options="searchOptions" :props="{ expandTrigger: 'hover' }" @change="onCascaderChange" />
+      <el-cascader ref="CascaderRef" :options="searchOptions" :props="{ expandTrigger: 'hover' }">
+        <template #default="{ node, data }">
+          <div @click="onSelectNode(node, data)">{{ data.label }}</div>
+        </template>
+      </el-cascader>
     </div>
     <el-tag
       v-for="(v, k) in filterTags"
@@ -27,123 +31,150 @@
       <span v-else>{{ v.value }}</span>
     </el-tag>
     <span v-if="keyLabel" class="filterTitle">{{ keyLabel + ":" }}</span>
-    <el-input
+    <el-date-picker
+      v-if="['datetimerange', 'daterange', 'monthrange'].includes(inputType)"
       ref="SearchInput"
-      v-if="formType !== 'date'"
+      class="date-input"
+      :type="inputType"
       v-model="filterValue"
-      :placeholder="placeholderText"
+      unlink-panels
+      range-separator="~"
+      start-placeholder="开始时间"
+      end-placeholder="结束时间"
+      :shortcuts="shortcuts"
+      size="default"
+      @focus="focus = true"
+      @blur="onDateBlur"
+      @change="onDataChange"
+      style="width: 240px"
+      clearable
+    />
+    <el-date-picker
+      v-else-if="inputType"
+      ref="SearchInput"
+      class="date-input"
+      :type="inputType"
+      v-model="filterValue"
+      :value-format="dateFormat"
+      placeholder="请选择"
+      size="default"
+      @focus="focus = true"
+      @blur="onDateBlur"
+      @change="onDataChange"
+      style="width: 140px"
+    />
+    <el-input
+      v-else
+      ref="SearchInput"
       class="search-input"
+      v-model.trim="filterValue"
+      :placeholder="placeholderText"
       :class="searchOptions.length < 1 ? 'search-input2' : ''"
       :validate-event="false"
-      format="YYYY-MM-DD"
-      value-format="YYYY-MM-DD"
       @blur="focus = false"
       @focus="focus = true"
       @change="onSearch"
       @keyup.enter="onSearch"
     >
       <template #suffix>
-        <el-icon class="el-input__icon" @click="onSearch">
-          <IconifyIconOffline :icon="Search" />
-        </el-icon>
+        <el-icon @click="onSearch"><Search /></el-icon>
       </template>
     </el-input>
-    <el-date-picker
-      v-else
-      ref="SearchInput"
-      v-model="filterValue"
-      type="daterange"
-      unlink-panels
-      range-separator="~"
-      start-placeholder="开始时间"
-      end-placeholder="结束时间"
-      :shortcuts="shortcuts"
-      :size="'default'"
-      @blur="onDateBlur"
-      @focus="focus = true"
-      @change="onDataChange"
-      style="width: 240px"
-      clearable
-    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { CascaderOption, CascaderProps, ElMessage } from "element-plus";
-import { ref, onMounted, computed, PropType, nextTick } from "vue";
-import Search from "@iconify-icons/ep/search";
 import dayjs from "dayjs";
+import { message } from "@/utils/message";
+import { CascaderOption, DatePickType } from "element-plus";
+import { Search } from "@element-plus/icons-vue";
+import { ref, onMounted, computed, nextTick, watch } from "vue";
 
+/**
+ * ============ 组合搜索框使用说明 ============
+ *
+ * 1.时间范围回显格式, 必须使用~符号连接 (如: 2020-05-08 ~ 2022-06-25)
+ *
+ * 2.配置默认查询(示例):
+ *  queryParams:{
+ *    user: "张三xx",
+ *    status: 1,
+ *    month: "2023-02",
+ *    date: "2023-05-08 ~ 2023-06-25",
+ *    deptId: { value: "6", valueLabel: "技术研发中心" } // 存在children默认值配置格式
+ *  }
+ */
+/** 配置选项类型 */
 export interface SearchOptionType extends CascaderOption {
   /** 字段名称 */
   key?: string;
   /** 搜索字段名称 */
   label: string;
-  /** 搜索字段 */
+  /** 搜索字段(输入项) */
   value: any;
-  /** 是否只读 */
-  readonly?: boolean;
   /** 点击Tag选中的Lable,默认搜索为空 */
   valueLabel?: string;
   /** 搜索项列表 */
   children?: SearchOptionType[];
+  /** 日期类型(仅日期添加) */
+  type?: DatePickType;
+  /** 日期格式(如: YYYY-MM-DD, 仅日期添加) */
+  format?: string;
 }
 
-/** 默认值 */
-export interface DefaultValueType {
-  [key: string]: SearchOptionType;
-}
+/** 默认搜索类型 */
+export type QueryParamsType = Record<string, any>;
 
-/** 默认值 */
-export interface TagItemType {
-  [key: string]: any;
-}
-
-/**
- * ============ 组合搜索框使用说明 ============
- * 配置说明:
- * 1.options列表配置项
- *  key: 搜索字段
- *  label: 下拉搜索一级label名称
- *  value: 搜索的值
- *  valueLabel: 下拉搜索二级label搜索名称
- *  readonly: 是否禁止下拉搜索的编辑(如状态为 1和0的字段)
- *
- * 2.配置默认查询(Example):
- *  queryParams:{
- *    username: { key: "username", label: "用户名", value: "张三xx", valueLabel: "" },
- *    status: { key: "status", label: "状态", readonly: true, value: 1, valueLabel: "正常" }
- *  }
- *
- * 3.配置默认查询时间(必须使用~符号分割, 字段命名必须包含date, 如:date, date1, date2)
- *  date: { key: "date", label: "创建时间", value: "2020-05-08 ~ 2022-06-25", valueLabel: "" }
- */
-
-const props = defineProps({
+interface Props {
+  /** 是否立即执行(默认立即执行) */
+  immediate: boolean;
   /** 输入提示文本 */
-  placeholder: {
-    type: String as PropType<CascaderProps>,
-    default: "请输入搜索内容"
-  },
+  placeholder: string;
   /** 默认搜索字段 */
-  searchField: { type: String, default: "search" },
-  /** 配置查询下拉列表数据项 */
-  searchOptions: {
-    type: Array as PropType<SearchOptionType[]>,
-    default: () => []
-  },
+  searchField: string;
+  /** 搜索配置列表 */
+  searchOptions: SearchOptionType[];
   /** 默认查询配置 */
-  queryParams: {
-    type: Object as PropType<DefaultValueType>,
-    default: () => ({})
-  }
+  queryParams: QueryParamsType;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  immediate: true,
+  placeholder: "请输入搜索内容",
+  searchField: "search",
+  searchOptions: () => [],
+  queryParams: () => ({})
 });
 
-defineOptions({ name: "MySearch" });
+defineOptions({ name: "BlendedSearch" });
 
 const shortcuts = [
   {
-    text: "上周",
+    text: "今天",
+    value: () => {
+      return [new Date(), new Date()];
+    }
+  },
+  {
+    text: "昨天",
+    value: () => {
+      const end = new Date();
+      const start = new Date();
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
+      return [start, end];
+    }
+  },
+  {
+    text: "最近三天",
+    value: () => {
+      const end = new Date();
+      const start = new Date();
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 3);
+      return [start, end];
+    }
+  },
+  {
+    text: "最近一周",
     value: () => {
       const end = new Date();
       const start = new Date();
@@ -152,7 +183,7 @@ const shortcuts = [
     }
   },
   {
-    text: "上个月",
+    text: "最近一月",
     value: () => {
       const end = new Date();
       const start = new Date();
@@ -161,16 +192,35 @@ const shortcuts = [
     }
   },
   {
-    text: "最近3个月",
+    text: "最近三月",
     value: () => {
       const end = new Date();
       const start = new Date();
       start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
       return [start, end];
     }
+  },
+  {
+    text: "最近半年",
+    value: () => {
+      const end = new Date();
+      const start = new Date();
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 30 * 6);
+      return [start, end];
+    }
+  },
+  {
+    text: "最近一年",
+    value: () => {
+      const end = new Date();
+      const start = new Date();
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 30 * 12);
+      return [start, end];
+    }
   }
 ];
-const formType = ref<"date" | "xxx">("xxx");
+const inputType = ref<DatePickType>(); // 输入类型
+const dateFormat = ref<string>("YYYY-MMM-DD"); // 日期格式
 const SearchInput = ref();
 const CascaderRef = ref();
 const focus = ref<boolean>(false);
@@ -179,7 +229,19 @@ const valueLabel = ref<string>(""); // option中的label值
 const filterValue = ref<string | any>(""); // option中的value值
 const filterTags = ref(props.queryParams || {});
 
-const emits = defineEmits(["tagSearch"]);
+const emits = defineEmits(["tagSearch", "selectNode"]);
+
+onMounted(() => {
+  // 初始化时是否执行
+  if (!props.immediate || !Object.keys(props.queryParams).length) return;
+  const timer = setTimeout(() => {
+    if (Object.keys(resultMaps).length > 0) {
+      emits("tagSearch", resultMaps.value);
+    }
+    clearTimeout(timer);
+  }, 500);
+});
+
 const keyLabel = computed<string>(() => {
   if (!filterKey.value) return "";
   for (const field of props.searchOptions) {
@@ -191,7 +253,7 @@ const keyLabel = computed<string>(() => {
 });
 
 const resultMaps = computed(() => {
-  const data: TagItemType = {};
+  const data: Record<string, any> = {};
   for (let key in filterTags.value) {
     const value = filterTags.value[key]["value"];
     if (key === "") {
@@ -212,44 +274,61 @@ const placeholderText = computed(() => {
   return props.placeholder;
 });
 
-onMounted(() => {
-  if (!Object.keys(props.queryParams).length) return;
-  const timer = setTimeout(() => {
-    if (Object.keys(resultMaps).length > 0) {
-      emits("tagSearch", resultMaps.value);
-    }
-    clearTimeout(timer);
-  }, 500);
-});
-
-const getValueLabel = (key: string, value: string) => {
-  for (const field of props.searchOptions) {
-    if (field.value !== key || !field.children) continue;
-    for (const child of field.children) {
-      if (child.value === value) {
-        return child.label;
+watch(
+  props,
+  (val) => {
+    const defaultParam: QueryParamsType = {};
+    const param = val.queryParams as QueryParamsType;
+    const options: SearchOptionType[] = val.searchOptions;
+    // 处理默认值显示
+    Object.keys(param).forEach((key) => {
+      const oItem = options.find((item) => item.value === key);
+      let value = param[key];
+      let valueLabel = param[key];
+      if (Object.prototype.toString.call(param[key]) === "[object Object]") {
+        value = (param[key] as SearchOptionType).value;
+        valueLabel = (param[key] as SearchOptionType).valueLabel;
       }
-    }
-  }
-  return "";
-};
+      defaultParam[key] = {
+        key: key,
+        label: oItem?.label,
+        value: value,
+        valueLabel: valueLabel,
+        type: oItem?.type,
+        format: oItem?.format
+      };
+    });
+    filterTags.value = defaultParam;
+  },
+  { immediate: true }
+);
 
-const onCascaderChange = (keys: any) => {
+const onSelectNode = (node, data) => {
+  const keys = node.pathValues;
+  const fieldName = keys[0]; // 选择的字段名称
+
+  const fieldItem = props.searchOptions.find(({ value }) => value === fieldName);
+  // 如果点击一级菜单 且有下级选项(children), 则阻止执行
+  if (fieldItem.children && keys.length === 1) return;
+
   if (!keys || keys.length === 0) return;
   if (keys.length === 1) {
-    if (keys[0].indexOf("date") > -1) {
-      formType.value = "date";
+    if (data.type) {
+      inputType.value = data.type;
+      if (!data.format && data.type !== "daterange") message("请配置日期格式", { type: "warning" });
+      dateFormat.value = data.format;
     }
-    filterKey.value = keys[0];
+    filterKey.value = fieldName;
     SearchInput.value.focus();
-  } else if (keys.length === 2) {
-    filterKey.value = keys[0];
-    filterValue.value = keys[1];
-    valueLabel.value = getValueLabel(keys[0], keys[1]);
+  } else if (keys.length >= 2) {
+    filterKey.value = fieldName;
+    filterValue.value = data.value;
+    valueLabel.value = data.label;
     onSearch();
   }
+  emits("selectNode", node);
   nextTick(() => {
-    CascaderRef.value?.cascaderPanelRef?.clearCheckedNodes();
+    CascaderRef.value?.togglePopperVisible(false);
   });
 };
 
@@ -264,22 +343,32 @@ const onDateBlur = () => {
 };
 
 const onDataChange = (values) => {
-  const startDate = dayjs(values[0]).format("YYYY-MM-DD");
-  const endDate = dayjs(values[1]).format("YYYY-MM-DD");
-  filterValue.value = startDate + " ~ " + endDate;
+  if (["datetimerange", "daterange", "monthrange"].includes(inputType.value)) {
+    const startDate = dayjs(values[0]).format("YYYY-MM-DD");
+    const endDate = dayjs(values[1]).format("YYYY-MM-DD");
+    filterValue.value = startDate + " ~ " + endDate;
+    //if (inputType.value === "month")
+  } else {
+    filterValue.value = values;
+  }
 
   const tag: SearchOptionType = {
     key: filterKey.value,
     label: keyLabel.value,
     value: filterValue.value,
-    valueLabel: valueLabel.value
+    valueLabel: valueLabel.value,
+    type: inputType.value,
+    format: dateFormat.value
   };
+
   filterTags.value[filterKey.value] = tag;
   emits("tagSearch", resultMaps.value);
+  // 清空显示输入框
   filterKey.value = "";
   filterValue.value = "";
   valueLabel.value = "";
-  formType.value = "xxx";
+  inputType.value = undefined;
+  dateFormat.value = "";
 };
 
 const onSearch = () => {
@@ -296,24 +385,29 @@ const onSearch = () => {
     key: filterKey.value,
     label: keyLabel.value,
     value: filterValue.value,
-    valueLabel: valueLabel.value
+    valueLabel: valueLabel.value,
+    type: inputType.value,
+    format: dateFormat.value
   };
   filterTags.value[filterKey.value] = tag;
   emits("tagSearch", resultMaps.value);
   filterKey.value = "";
   filterValue.value = "";
   valueLabel.value = "";
+  inputType.value = undefined;
+  dateFormat.value = "";
 };
 
 const onTagClick = (k: string | number, v: SearchOptionType) => {
   let unableChange = false;
   for (const field of props.searchOptions) {
-    if (field.value === v.key && field.readonly) {
+    if (field.value === v.key && field.children) {
       unableChange = true;
+      break;
     }
   }
   if (unableChange) {
-    ElMessage({ message: "当前选项不可编辑", type: "warning" });
+    message("当前选项不可编辑", { type: "warning" });
     return;
   }
   if (filterValue.value.length !== 0) {
@@ -321,19 +415,20 @@ const onTagClick = (k: string | number, v: SearchOptionType) => {
   }
   delete filterTags.value[k];
   filterKey.value = v.key;
-  if (k.toString().indexOf("date") > -1) {
-    formType.value = "date";
+  inputType.value = v.type;
+  dateFormat.value = v.format;
+  if (["datetimerange", "daterange", "monthrange"].includes(v.type)) {
+    // 需要处理赋值显示
     const dateStr = v.value.split("~");
     const dateStart = dateStr[0].toString().trim();
-    const dateEnd = dateStr[0].toString().trim();
+    const dateEnd = dateStr[1].toString().trim();
     filterValue.value = [new Date(dateStart), new Date(dateEnd)];
   } else {
-    formType.value = "xxx";
     filterValue.value = v.value;
   }
 
   nextTick(() => {
-    SearchInput.value.focus();
+    SearchInput.value?.focus();
   });
 };
 </script>
@@ -349,7 +444,7 @@ const onTagClick = (k: string | number, v: SearchOptionType) => {
   margin-right: 15px;
   overflow: hidden;
   overflow-x: auto;
-  background-color: #fff;
+  background-color: var(--el-input-bg-color, var(--el-fill-color-blank));
   border-radius: 3px;
 }
 
@@ -381,6 +476,7 @@ const onTagClick = (k: string | number, v: SearchOptionType) => {
   }
 
   .el-input__inner {
+    min-width: 43px;
     border: none !important;
   }
 
@@ -409,7 +505,13 @@ const onTagClick = (k: string | number, v: SearchOptionType) => {
   }
 }
 
-:deep(.el-range-editor) {
+/** 日期 */
+:deep(.date-input) {
   box-shadow: none !important;
+
+  .el-input__wrapper {
+    border: none !important;
+    box-shadow: none !important;
+  }
 }
 </style>

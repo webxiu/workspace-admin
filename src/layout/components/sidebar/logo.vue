@@ -6,19 +6,19 @@ const props = defineProps({
   collapse: Boolean
 });
 
-const { title } = useNav();
+const { appConfig } = useNav();
 </script>
 
 <template>
   <div class="sidebar-logo-container" :class="{ collapses: props.collapse }">
     <transition name="sidebarLogoFade">
-      <router-link v-if="props.collapse" key="props.collapse" :title="title" class="sidebar-logo-link" :to="getTopMenu()?.path ?? '/'">
-        <img src="/logo.png" alt="logo" />
-        <span class="sidebar-title">{{ title }}</span>
+      <router-link v-if="props.collapse" key="props.collapse" :title="appConfig.title" class="sidebar-logo-link" :to="getTopMenu()?.path ?? '/'">
+        <img :src="appConfig.logo" alt="logo" />
+        <span class="sidebar-title">{{ appConfig.title }}</span>
       </router-link>
-      <router-link v-else key="expand" :title="title" class="sidebar-logo-link" :to="getTopMenu()?.path ?? '/'">
-        <img src="/logo.png" alt="logo" />
-        <span class="sidebar-title">{{ title }}</span>
+      <router-link v-else key="expand" :title="appConfig.title" class="sidebar-logo-link" :to="getTopMenu()?.path ?? '/'">
+        <img :src="appConfig.logo" alt="logo" />
+        <span class="sidebar-title">{{ appConfig.title }}</span>
       </router-link>
     </transition>
   </div>
@@ -36,10 +36,11 @@ const { title } = useNav();
     flex-wrap: nowrap;
     align-items: center;
     height: 100%;
+    padding-left: 10px;
 
     img {
       display: inline-block;
-      height: 38px;
+      height: 32px;
     }
 
     .sidebar-title {
@@ -47,7 +48,7 @@ const { title } = useNav();
       height: 32px;
       margin: 2px 0 0 12px;
       overflow: hidden;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       line-height: 32px;
       color: $subMenuActiveText;

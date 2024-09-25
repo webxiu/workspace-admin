@@ -1,6 +1,7 @@
 node_modules
 .DS_Store
 dist
+.vscode
 dist-ssr
 *.local
 .eslintcache
@@ -18,6 +19,8 @@ tests/**/coverage/
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
-*.svn
+.svn
 tsconfig.tsbuildinfo
+
+#exclude
+!public/source/vditor@3.9.6/dist

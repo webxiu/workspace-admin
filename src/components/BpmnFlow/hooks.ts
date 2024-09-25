@@ -3,8 +3,14 @@ import { reactive } from "vue";
 /** =============================== BPMN数据存储中心 ========================================= */
 /** Bpmn存储枚举key */
 export enum BpmnStoreKey {
+  /** 流程表格行数据 */
+  row = "row",
   /** 获取流程图xml方法 */
   saveProcess = "saveProcess",
+  /** 删除流程任务节点事件 */
+  deleteTaskFn = "deleteTaskFn",
+  /** 流程图节点配置任务列表 */
+  taskConfig = "taskConfig",
   /** 流程图节点配置任务列表 */
   taskForm = "taskForm",
   /** 流程图实例对象 */

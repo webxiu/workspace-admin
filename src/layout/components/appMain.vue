@@ -75,17 +75,17 @@ const transitionMain = defineComponent({
             <backTop />
           </el-backtop>
           <transitionMain :route="route">
-            <keep-alive v-if="keepAlive" :include="usePermissionStoreHook().cachePageList">
+            <KeepAlive v-if="keepAlive" :include="usePermissionStoreHook().cachePageList">
               <component :is="Component" :key="route.fullPath" class="main-content" />
-            </keep-alive>
+            </KeepAlive>
             <component v-else :is="Component" :key="route.fullPath" class="main-content" />
           </transitionMain>
         </el-scrollbar>
         <div v-else>
           <transitionMain :route="route">
-            <keep-alive v-if="keepAlive" :include="usePermissionStoreHook().cachePageList">
+            <KeepAlive v-if="keepAlive" :include="usePermissionStoreHook().cachePageList">
               <component :is="Component" :key="route.fullPath" class="main-content" />
-            </keep-alive>
+            </KeepAlive>
             <component v-else :is="Component" :key="route.fullPath" class="main-content" />
           </transitionMain>
         </div>
@@ -109,6 +109,9 @@ const transitionMain = defineComponent({
 }
 
 .main-content {
+  padding: 10px;
   margin: 10px;
+  background: var(--el-bg-color);
+  border-radius: 6px;
 }
 </style>

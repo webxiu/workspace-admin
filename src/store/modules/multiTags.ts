@@ -1,9 +1,18 @@
-import { defineStore } from "pinia";
-import { store } from "@/store";
-import { routerArrays } from "@/layout/types";
+import { isBoolean, isEqual, isUrl, storageLocal } from "@pureadmin/utils";
 import { multiType, positionType } from "./types";
+
+import { defineStore } from "pinia";
 import { responsiveStorageNameSpace } from "@/config";
-import { isEqual, isBoolean, isUrl, storageLocal } from "@pureadmin/utils";
+import { routerArrays } from "@/layout/types";
+import { store } from "@/store";
+
+// 获取error页面的name名称
+const modules: Record<string, any> = import.meta.glob(["@/router/modules/empty.ts", "@/router/modules/error.ts"], { eager: true });
+const errorNames = Object.keys(modules).reduce((prev, key) => {
+  const names = modules[key].default.children.map((item) => item.name);
+  prev.push(...names);
+  return prev;
+}, []);
 
 export const useMultiTagsStore = defineStore({
   id: "pure-multiTags",
@@ -32,10 +41,36 @@ export const useMultiTagsStore = defineStore({
       this.getMultiTagsCache && storageLocal().setItem(`${responsiveStorageNameSpace()}tags`, multiTags);
     },
     handleTags<T>(mode: string, value?: T | multiType, position?: positionType): T {
+      // 404 405 403 empty页面不添加进tag标签
+      if (errorNames.includes((value as multiType)?.name)) return;
+
       switch (mode) {
         case "equal":
           this.multiTags = value;
           this.tagsCache(this.multiTags);
+          break;
+        case "update":
+          {
+            const { name, query, path } = value as multiType;
+            if (query?.isNewTag) {
+              // isNewTag: 参数存在代表需要新增一个Tag, 同时判断路由及携带参数是不是同一个地址
+              const idx = this.multiTags.findIndex((item) => {
+                const routeQuery = JSON.stringify(query);
+                const itemQuery = JSON.stringify(item.query);
+                return path + routeQuery === item.path + itemQuery;
+              });
+              if (idx < 0) {
+                this.multiTags.push(value);
+                this.tagsCache(this.multiTags);
+              }
+            } else {
+              // 更新query参数;
+              this.multiTags.forEach((item) => {
+                if (item.name === name) item.query = query;
+              });
+              this.tagsCache(this.multiTags);
+            }
+          }
           break;
         case "push":
           {
@@ -75,7 +110,16 @@ export const useMultiTagsStore = defineStore({
                 index !== -1 && this.multiTags.splice(index, 1);
               }
             }
-            this.multiTags.push(value);
+            const posIndex = this.multiTags.findIndex(({ name, query, path }) => {
+              const routeQuery = JSON.stringify(tagVal.query);
+              const itemQuery = JSON.stringify(query);
+              // 如果是页面跳转详情, 比较路由及携带参数
+              if (tagVal.query?.isNewTag) {
+                return path + routeQuery === tagVal.path + itemQuery;
+              }
+              return name === tagVal.name;
+            });
+            if (posIndex < 0) this.multiTags.push(value);
             this.tagsCache(this.multiTags);
           }
           break;

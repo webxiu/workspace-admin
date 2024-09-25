@@ -1,13 +1,89 @@
 /* 定义全局遍历变量 */
 
 // 间距与字体
-$spaces: 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 28, 30, 32, 36, 40, 46, 50, 60, 80, 100, 120;
+$spaces: 4, 6, 8, 10, 12, 14, 15, 16, 18, 20, 22, 24, 28, 30, 32, 36, 40, 46, 50, 60, 80, 100, 120, 130, 140, 160, 180, 200, 220, 240, 260, 280, 300;
 
 // 字体从粗细
 $weights: 100, 200, 300, 400, 500, 600, 700;
 
 // 颜色
-$colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c12f38;
+$colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, f00, 0f0, 00f, c12f38;
+
+// 边框颜色
+$borderColor: var(--el-input-border-color, var(--el-border-color));
+
+// flex
+$flexs: 1, 2, 3, 4, 5, 6, 7, 8, 9;
+
+@each $i in $spaces {
+  /* **************************** 宽高 *****************************/
+
+  .wi-#{$i} {
+    width: #{$i}px !important;
+  }
+  .hi-#{$i} {
+    height: #{$i}px !important;
+  }
+  .lh-#{$i} {
+    line-height: #{$i}px;
+  }
+
+  /* **************************** 字体 *****************************/
+
+  .fz-#{$i} {
+    font-size: #{$i}px;
+  }
+
+  /* **************************** 圆角 *****************************/
+
+  .br-#{$i} {
+    border-radius: #{$i}px;
+  }
+
+  /* **************************** margin间距 *****************************/
+
+  .m-#{$i} {
+    margin: #{$i}px;
+  }
+
+  .mt-#{$i} {
+    margin-top: #{$i}px;
+  }
+
+  .mr-#{$i} {
+    margin-right: #{$i}px;
+  }
+
+  .ml-#{$i} {
+    margin-left: #{$i}px;
+  }
+
+  .mb-#{$i} {
+    margin-bottom: #{$i}px;
+  }
+
+  /* **************************** padding间距 *****************************/
+
+  .p-#{$i} {
+    padding: #{$i}px;
+  }
+
+  .pt-#{$i} {
+    padding-top: #{$i}px;
+  }
+
+  .pr-#{$i} {
+    padding-right: #{$i}px;
+  }
+
+  .pl-#{$i} {
+    padding-left: #{$i}px;
+  }
+
+  .pb-#{$i} {
+    padding-bottom: #{$i}px;
+  }
+}
 
 /* **************************** 颜色 *****************************/
 @each $i in $colors {
@@ -15,11 +91,10 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
   .color-#{$i} {
     color: #{"#" + $i};
   }
-
+  // ---- 背景色 ----
   .bg-#{$i} {
     background-color: #{"#" + $i};
   }
-
   // ---- 边框颜色 ----
   .border-#{$i} {
     border: 1px solid #{"#" + $i};
@@ -27,6 +102,7 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
   .border-b-#{$i} {
     border-bottom: 1px solid #{"#" + $i};
   }
+
   .border-t-#{$i} {
     border-top: 1px solid #{"#" + $i};
   }
@@ -40,72 +116,25 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
   }
 }
 
-@each $i in $spaces {
-  /* **************************** 字体 *****************************/
-
-  .fz-#{$i} {
-    font-size: #{$i}px;
+/* **************************** flex  *****************************/
+@each $i in $flexs {
+  // flex 0.1-0.9
+  .flexf-#{$i} {
+    flex: #{"0." + $i};
   }
 
-  /* **************************** margin间距 *****************************/
-
-  .m-#{$i} {
-    margin: #{$i}px;
+  // flex1-9
+  .flex-#{$i} {
+    flex: #{$i};
   }
-  .mt-#{$i} {
-    margin-top: #{$i}px;
-  }
-  .mr-#{$i} {
-    margin-right: #{$i}px;
-  }
-  .ml-#{$i} {
-    margin-left: #{$i}px;
-  }
-  .mb-#{$i} {
-    margin-bottom: #{$i}px;
-  }
-
-  /* **************************** padding间距 *****************************/
-
-  .p-#{$i} {
-    padding: #{$i}px;
-  }
-  .pt-#{$i} {
-    padding-top: #{$i}px;
-  }
-  .pr-#{$i} {
-    padding-right: #{$i}px;
-  }
-  .pl-#{$i} {
-    padding-left: #{$i}px;
-  }
-  .pb-#{$i} {
-    padding-bottom: #{$i}px;
-  }
-}
-
-.flex-1 {
-  flex: 1;
-}
-
-.flex-2 {
-  flex: 2;
-}
-
-.flex-3 {
-  flex: 3;
-}
-
-.flex-4 {
-  flex: 4;
-}
-
-.flex-5 {
-  flex: 5;
 }
 
 .flex {
   display: flex;
+}
+
+.inline-flex {
+  display: inline-flex;
 }
 
 .flex-col {
@@ -116,6 +145,10 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
 .flex-shrink {
   /* flex布局 避免空间不足挤压自身 */
   flex-shrink: 0;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
 }
 
 .just-start {
@@ -190,6 +223,18 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
   vertical-align: middle;
 }
 
+.ui-va-s {
+  vertical-align: sub;
+}
+
+.ui-va-tb {
+  vertical-align: text-bottom;
+}
+
+.ui-va-tt {
+  vertical-align: text-top;
+}
+
 .ui-ta-c {
   text-align: center;
 }
@@ -206,6 +251,10 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
   display: block;
 }
 
+.ui-d-i {
+  display: inline;
+}
+
 .ui-d-ib {
   display: inline-block;
 }
@@ -214,18 +263,17 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
   box-sizing: border-box;
 }
 
-.text-ellipsis-3 {
-  display: -webkit-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+.ellipsis {
+  @include ellipsis();
 }
 
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/** 超过2行省略 */
+.ellipsis-2 {
+  @include ellipsis-row(2);
+}
+
+.ellipsis-3 {
+  @include ellipsis-row(3);
 }
 
 .ellipsis-col {
@@ -235,10 +283,6 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
   text-overflow: ellipsis;
   word-break: break-all;
   -webkit-box-orient: vertical;
-}
-
-.ellipsis-col2 {
-  -webkit-line-clamp: 2;
 }
 
 .no-select {
@@ -255,11 +299,5 @@ $colors: 111, 222, 333, 555, 666, 777, 888, 999, aaa, bbb, ccc, ddd, eee, fff, c
 
 pre {
   word-wrap: break-word;
-
-  // 兼容多个浏览器
-  white-space: pre-wrap;
-  white-space: -moz-pre-wrap;
-  white-space: -pre-wrap;
-  white-space: -o-pre-wrap;
-  white-space: normal;
+  white-space: pre;
 }

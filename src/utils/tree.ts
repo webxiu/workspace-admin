@@ -59,7 +59,7 @@ export const buildHierarchyTree = (tree: any[], pathList = []): any => {
   }
   if (!tree || tree.length === 0) return [];
   for (const [key, node] of tree.entries()) {
-    node.id = key;
+    if (!node.id) node.id = key;
     node.parentId = pathList.length ? pathList[pathList.length - 1] : null;
     node.pathList = [...pathList, node.id];
     const hasChildren = node.children && node.children.length > 0;
@@ -170,6 +170,41 @@ export const handleTree = (data: any[], id?: string, parentId?: string, children
   return tree;
 };
 
+export interface OptionConfig<T> {
+  id: string;
+  parentId: string;
+  children?: string;
+  name?: keyof T;
+  /** 自定义名称 */
+  render?: (item: T, name: T[keyof T]) => T[keyof T];
+}
+
+/** 对象数组转树形数组 */
+export const arrayToTree = <T extends Record<string, any>>(data: T[], config: OptionConfig<T>): T[] => {
+  const { parentId = "parentId", children = "children", id = "id", name = "name", render } = config;
+  const map = new Map<string | number, T>();
+  const result: T[] = [];
+  data.forEach((item) => {
+    const itemClone = { ...item, [children]: [] as T[] };
+    map.set(item[id], itemClone);
+  });
+
+  data.forEach((item) => {
+    const oItem = map.get(item[id])!;
+    if (map.has(item[parentId] as string | number)) {
+      const parentNode = map.get(item[parentId] as string | number)!;
+      parentNode.children.push(oItem);
+    } else {
+      result.push(oItem);
+    }
+    // 自定义名称
+    if (name && typeof render === "function") {
+      oItem[name] = render(oItem, oItem[name]);
+    }
+  });
+  return result;
+};
+
 /** 将菜单树形结构扁平化为一维数组，用于菜单查询 */
 export function flatTree(arr) {
   const res = [];
@@ -181,4 +216,23 @@ export function flatTree(arr) {
   }
   deep(arr);
   return res;
+}
+
+/**
+ * 查询满足条件函数的数据
+ * @param tree 树列表
+ * @param func 条件函数
+ * @param findArr 找到的数据
+ * @param recursion 是否递归查找
+ */
+export function findTreeNodes<T extends Record<string, any>>(tree: T[], func: (f: T) => boolean, findArr = [], recursion = true): T[] {
+  if (!tree?.length) return [];
+  for (const item of tree) {
+    if (func(item as T)) {
+      findArr.push(item);
+    } else if (recursion) {
+      if (item.children?.length) findTreeNodes(item.children, func, findArr);
+    }
+  }
+  return findArr;
 }

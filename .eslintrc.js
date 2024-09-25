@@ -1,7 +1,9 @@
 module.exports = {
   root: true,
   env: {
-    node: true
+    browser: true,
+    node: true,
+    es6: true
   },
   globals: {
     // Ref sugar (take 2)
@@ -40,7 +42,8 @@ module.exports = {
     sourceType: "module",
     jsxPragma: "React",
     ecmaFeatures: {
-      jsx: true
+      jsx: true,
+      tsx: true
     }
   },
   overrides: [
@@ -78,6 +81,7 @@ module.exports = {
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-this-alias": "off", // 关闭this起别名限制
     "vue/html-self-closing": [
       "error",
       {
@@ -105,7 +109,7 @@ module.exports = {
       }
     ],
     "prettier/prettier": [
-      "off",
+      "error",
       {
         endOfLine: "auto"
       }
