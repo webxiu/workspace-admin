@@ -57,7 +57,7 @@ const org_domain = import.meta.env.VITE_ORGANIZATION_URL || "dlpctest.deogra.com
 export const orgHostMap = {
   localhost: org_domain,
   "127.0.0.1": org_domain,
-  "192.168.2.37": org_domain,
+  "192.168.2.202": org_domain,
   "192.168.2.14": org_domain,
   "192.168.2.23": org_domain,
   "192.168.1.204": org_domain,

@@ -139,7 +139,7 @@ function onSubmit() {
 function onSubmit2() {
   loading.value = true;
   formData.message = "";
-  fetch("http://192.168.2.37:3000/kimi/chat", {
+  fetch("http://192.168.2.202:3000/kimi/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData)
