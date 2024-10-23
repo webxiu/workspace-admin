@@ -31,13 +31,16 @@ export const useConfig = () => {
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const carStrMap = { true: "自驾", false: "指派司机", null: "" };
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
+  const formData: any = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
 
   const searchOptions: any = ref([
-    { label: "工号", value: "applyUserId" },
-    { label: "单据编号", value: "billNo" },
-    { label: "申请人", value: "applyName" },
+    { label: "工号", value: "userCode" },
+    { label: "申请人", value: "applyUserName" },
     { label: "同行人", value: "userNames" },
+    { label: "外出人", value: "outUserName" },
+    { label: "创建时间", value: "createRangeDate", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "预计外出时间", value: "planOutRangeDate", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "预计返回时间", value: "planBackRangeDate", type: "daterange", format: "YYYY-MM-DD" },
     { label: "外出事由", value: "gooutReason" },
     { label: "司机", value: "driverName" },
     { label: "状态", value: "billState", children: billStateList.map((item) => ({ label: item.optionName, value: item.optionValue })) }
@@ -193,14 +196,43 @@ export const useConfig = () => {
       .finally(() => (loading.value = false));
   };
 
-  const onTagSearch = (values = {}) => {
-    Object.keys(values)?.forEach((key) => {
-      if (key === "userNames") {
-        formData[key] = [values[key]];
-      } else {
-        formData[key] = values[key];
-      }
-    });
+  const onTagSearch = (values) => {
+    const userNamesArr = [values.userNames].filter(Boolean);
+    formData.applyUserName = values.applyUserName;
+    formData.billNo = values.billNo;
+    formData.userCode = values.userCode;
+    formData.userNames = userNamesArr.length ? userNamesArr : undefined;
+    formData.outUserName = values.outUserName;
+    formData.gooutReason = values.gooutReason;
+    formData.billState = values.billState;
+
+    if (values.createRangeDate) {
+      const [createStartDate, createEndDate] = values["createRangeDate"].split("~").map((el) => el.trim());
+      formData["createStartDate"] = createStartDate;
+      formData["createEndDate"] = createEndDate;
+    } else {
+      formData["createStartDate"] = undefined;
+      formData["createEndDate"] = undefined;
+    }
+
+    if (values.planOutRangeDate) {
+      const [planOutStartDate, planOutEndDate] = values["planOutRangeDate"].split("~").map((el) => el.trim());
+      formData["planOutStartDate"] = planOutStartDate;
+      formData["planOutEndDate"] = planOutEndDate;
+    } else {
+      formData["planOutStartDate"] = undefined;
+      formData["planOutEndDate"] = undefined;
+    }
+
+    if (values.planBackRangeDate) {
+      const [planBackStartDate, planBackEndDate] = values["planBackRangeDate"].split("~").map((el) => el.trim());
+      formData["planBackStartDate"] = planBackStartDate;
+      formData["planBackEndDate"] = planBackEndDate;
+    } else {
+      formData["planBackStartDate"] = undefined;
+      formData["planBackEndDate"] = undefined;
+    }
+
     onSearch();
   };
 

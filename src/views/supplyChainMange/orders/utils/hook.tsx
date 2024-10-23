@@ -28,7 +28,7 @@ import OrderDetail from "./orderDetail.vue";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { commonBackLogic } from "@/utils/common";
 
-export const useConfig = ({ id, authFlag }) => {
+export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
   const columns2 = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(true);
@@ -101,12 +101,6 @@ export const useConfig = ({ id, authFlag }) => {
   ];
 
   onMounted(async () => {
-    // id存在则是在信息中心->查看单据详情打开
-    if (id) {
-      const res: any = await getSupOrderBillId({ id }).catch(console.log);
-      if (res.data) formData.fbillno = res.data.billno;
-      formData.authFlag = authFlag;
-    }
     getColumnConfig();
   });
 

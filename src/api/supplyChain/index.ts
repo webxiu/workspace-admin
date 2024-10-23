@@ -141,7 +141,7 @@ export function deleteStatement(data) {
 }
 /** 对账单- 详情列表 */
 export function statementDetailList(data) {
-  return http.request<StatementDetailItemType[]>("post", "/sup/statement/selectstatementdetailsbybillno", { data });
+  return http.request<StatementDetailItemType[]>("post", "/sup/statement/selectstatementdetailsbybillno", { data, headers: { hideLoading: true } });
 }
 /** 对账单- 供应商下拉列表 */
 export function supplierListOptions() {

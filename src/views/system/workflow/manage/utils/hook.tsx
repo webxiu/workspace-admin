@@ -2,10 +2,11 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-13 16:57:07
+ * @Last Modified time: 2024-10-16 10:20:17
  */
 
 import { CustomPropsType, getFormColumns } from "@/utils/form";
+import { Delete, Edit, Plus, WarningFilled } from "@element-plus/icons-vue";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import {
   FlowBillItemType,
@@ -17,6 +18,7 @@ import {
   deployFlow,
   editFlow,
   flowManageList,
+  getDeptLevel,
   getFlowBillInfo,
   getFlowBillInfoById,
   getFlowBillPendingList,
@@ -29,7 +31,6 @@ import {
   updateFlowBillInfoById,
   updateFlowTask
 } from "@/api/systemManage";
-import { Plus, WarningFilled } from "@element-plus/icons-vue";
 import { QueryParamsType, SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { getEnumDictList, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, nextTick, onMounted, reactive, ref, resolveDirective, withDirectives } from "vue";
@@ -55,7 +56,7 @@ export const useConfig = () => {
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 56 + 32);
   const { store } = useBpmnStore<{ taskConfig: FlowTaskManageItemType[]; taskForm: { [key: string]: object }; bpmnModeler: BpmnModeler }>();
-  const { setTaskList } = useBpmnFlowStore();
+  const { setBpmnData } = useBpmnFlowStore();
 
   const formData = reactive({
     deployName: "",
@@ -148,9 +149,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.deployName = values.deployName;
-    formData.isEnable = values.isEnable;
-    formData.processSuspension = values.processSuspension;
+    Object.assign(formData, values);
     getTableList();
   };
 
@@ -359,7 +358,7 @@ export const useConfig = () => {
     const aLoading = ref(true);
     const sLoading = ref(false);
     const billOptions = ref<FlowBillItemType[]>([]);
-    const apiList: Array<Promise<any>> = [getFlowBillPendingList({ billId: row?.billId || undefined })];
+    const apiList: Array<Promise<any>> = [getDeptLevel(), getFlowBillPendingList({ billId: row?.billId || undefined })];
 
     if (type === "edit") {
       const { deployId: deploymentId, resourceName } = row;
@@ -371,17 +370,25 @@ export const useConfig = () => {
         aLoading.value = false;
         const res1: any = res[0];
         const res2: any = res[1];
-        const data2 = res[1].data as FlowGraphXMLType;
-        if (res1.status === 200 && res1.data) billOptions.value = res1.data;
-        if (res2.status === 200 && res2.data) {
-          taskLists.value = data2.taskLists || [];
-          xml.value = data2.xmlContent;
-          data2.taskLists.forEach((item) => {
+        const res3: any = res[2];
+        const data3 = res3.data as FlowGraphXMLType;
+        if (res2.status === 200 && res2.data) billOptions.value = res2.data;
+        if (res3.status === 200 && res3.data) {
+          taskLists.value = data3.taskLists || [];
+          xml.value = data3.xmlContent;
+          data3.taskLists.forEach((item) => {
             item.taskUsers = item.taskUsers || {};
             item.carbonTaskUsers = item.carbonTaskUsers || {};
             item.notifyTaskUsers = item.notifyTaskUsers || {};
           });
-          setTaskList({ key: "taskLists", value: data2.taskLists || [] });
+          setBpmnData({
+            taskLists: data3.taskLists || [],
+            deptLevels: new Array(res1.data || 0).fill(1).map((_, index) => {
+              let optionName = `上${index}层级`;
+              if (index === 0) optionName = "当前层级";
+              return { optionValue: index + 1, optionName: optionName };
+            })
+          });
         }
       })
       .catch(() => (aLoading.value = false));
@@ -547,25 +554,25 @@ export const useConfig = () => {
     }
   };
 
-  /** 撤销 */
-  const onRevoke = wrapFn(rowData, ({ text }) => {
+  /** 删除 */
+  const onDelete = wrapFn(rowData, ({ text }) => {
     const { id, processId, deployId, deployName } = rowData.value;
 
     function submitRevoke(api, params) {
       const cName = deployName ? `【${deployName}】` : "";
-      showMessageBox(`确定撤销当前部署流程${cName}吗?`)
+      showMessageBox(`确定删除当前部署流程${cName}吗?`)
         .then(() => {
           api(params)
             .then((res) => {
               if (res.status !== 200) return message(res.message);
               if (res.data) {
                 getTableList();
-                message(`流程撤销成功`);
+                message(`流程删除成功`);
               } else {
-                message("流程撤销失败");
+                message("流程删除失败");
               }
             })
-            .catch((err) => message(`流程撤销失败`, { type: "error" }));
+            .catch((err) => message(`流程删除失败`, { type: "error" }));
         })
         .catch(console.log);
     }
@@ -670,20 +677,18 @@ export const useConfig = () => {
     getTableList();
   }
 
-  const onDesign = () => {
-    if (!rowData.value) return message("请选择流程", { type: "error" });
+  const onDesign = wrapFn(rowData, () => {
     onEditFlow(rowData.value);
-  };
+  });
 
-  const onEditAction = () => {
-    if (!rowData.value) return message("请选择流程", { type: "error" });
+  const onEditAction = wrapFn(rowData, () => {
     onEditTemplate(rowData.value);
-  };
+  });
 
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus, isDropDown: false },
-    { clickHandler: onEditAction, type: "success", text: "修改", icon: Plus, isDropDown: false },
-    { clickHandler: onRevoke, type: "danger", text: "删除", isDropDown: false },
+    { clickHandler: onEditAction, type: "success", text: "修改", icon: Edit, isDropDown: false },
+    { clickHandler: onDelete, type: "danger", text: "删除", icon: Delete, isDropDown: false },
     { clickHandler: onPause, type: "warning", text: "暂停", isDropDown: true },
     { clickHandler: onActive, type: "success", text: "激活", isDropDown: true },
     { clickHandler: onFlow, type: "primary", text: "流程图", isDropDown: true },

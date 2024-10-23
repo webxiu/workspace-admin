@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3121802 */
-  src: url('iconfont.woff2?t=1725948230555') format('woff2'),
-       url('iconfont.woff?t=1725948230555') format('woff'),
-       url('iconfont.ttf?t=1725948230555') format('truetype'),
-       url('iconfont.svg?t=1725948230555#iconfont') format('svg');
+  src: url('iconfont.woff2?t=1729222971478') format('woff2'),
+       url('iconfont.woff?t=1729222971478') format('woff'),
+       url('iconfont.ttf?t=1729222971478') format('truetype'),
+       url('iconfont.svg?t=1729222971478#iconfont') format('svg');
 }
 
 .iconfont {
@@ -12,6 +12,34 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-hangzou:before {
+  content: "\e68d";
+}
+
+.icon-genghuanyanse:before {
+  content: "\e690";
+}
+
+.icon-gongzuojiaojietubiao:before {
+  content: "\e6a4";
+}
+
+.icon-lizhishenqing:before {
+  content: "\e6ad";
+}
+
+.icon-lizhishenqing1:before {
+  content: "\e777";
+}
+
+.icon-genghuan:before {
+  content: "\e6ae";
+}
+
+.icon-gongzuojiaojie:before {
+  content: "\e753";
 }
 
 .icon-a-dingdantongjibiao2x:before {

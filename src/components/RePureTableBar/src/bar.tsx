@@ -179,10 +179,10 @@ export default defineComponent({
     return () => (
       <>
         <div {...attrs} class="ui-w-100 px-2 bg-bg_color pt-2 ui-ov-h">
-          <div class="flex justify-between items-center w-full pb-2" style={{ display: slots?.title || props.showIcon ? "inline-flex" : "none" }}>
+          <div class="flex justify-between items-center w-full pb-2 table-operate" style={{ display: slots?.title || props.showIcon ? "inline-flex" : "none" }}>
             {slots?.title ? slots.title() : <p class="font-bold truncate">{props.title}</p>}
             <div class="flex items-center justify-around flex-1">
-              <div class={`flex flex-1 just-end`}>{slots.buttons && slots.buttons()}</div>
+              <div class={`flex flex-1 just-end table-buttons`}>{slots.buttons && slots.buttons()}</div>
               {props.showIcon ? (
                 <div class="flex ml-4">
                   {props.tableRef?.size ? (

@@ -10,8 +10,8 @@ import { RefreshLeft } from "@element-plus/icons-vue";
 import { message, showMessageBox } from "@/utils/message";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { ref, reactive, onMounted, watch, computed } from "vue";
-import { getEnumDictList, setColumn, editTableRender, CellOptionType } from "@/utils/table";
-import { distributeOperateBook, DistributeOperateBookItemType, updateDistribute, submitDistribute } from "@/api/oaManage/productMkCenter";
+import { getEnumDictList, setColumn, tableEditRender, CellOptionType } from "@/utils/table";
+import { distributeEsop, DistributeOperateBookItemType, updateEsopDistribute, submitEsopDistribute } from "@/api/oaManage/productMkCenter";
 
 const props = defineProps({ manualId: { type: String as any, default: "default" } });
 
@@ -47,8 +47,8 @@ const getOptions = () => {
 };
 
 // 编辑表格
-const editCell_1 = editTableRender();
-const editCell_2 = editTableRender();
+const editCell_1 = tableEditRender();
+const editCell_2 = tableEditRender();
 
 const getColumnConfig = async () => {
   const columnData: TableColumnList[] = [
@@ -81,7 +81,7 @@ const getTableList = () => {
   return new Promise<boolean>((resolve, reject) => {
     if (!formData.productionLine) return message("请选择生产线", { type: "warning" });
     loading.value = true;
-    distributeOperateBook(formData)
+    distributeEsop(formData)
       .then(({ data }) => {
         response.value = data;
         loading.value = false;
@@ -109,7 +109,7 @@ function onNodeClick(data) {
  */
 function onDistribute(cleanFlag = 0) {
   return new Promise<any>((resolve, reject) => {
-    submitDistribute({ primaryId: response.value.id, cleanFlag }).then((res) => {
+    submitEsopDistribute({ primaryId: response.value.id, cleanFlag }).then((res) => {
       if (!res.data) return reject(res);
       resolve(res);
     });
@@ -135,7 +135,7 @@ function getRef(callback) {
   const params = { ...response.value, manualDistributeDetail: tabetList };
   showMessageBox(`${msgTip}确认要提交${LineName.value}分发吗?`).then(async () => {
     try {
-      await updateDistribute(params);
+      await updateEsopDistribute(params);
       await getTableList();
       const { data } = await onDistribute(0);
       if (data) {

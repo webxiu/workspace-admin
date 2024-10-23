@@ -1,7 +1,7 @@
 import { ElMessage, ElMessageBox } from "element-plus";
 import { deleteProductsDevApplayInfo, fetchProductsDevApplayList, submitProductsDevApplayInfo } from "@/api/plmManage";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
-import { onMounted, reactive, ref } from "vue";
+import { h, onMounted, reactive, ref } from "vue";
 import { utils, write } from "xlsx";
 
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
@@ -9,6 +9,10 @@ import { getProductClassifyList } from "@/views/plmManage/productMgmt/classify/u
 import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
 import { useRouter } from "vue-router";
+import { message, showMessageBox } from "@/utils/message";
+import { commonBack, commonSubmit } from "@/api/systemManage";
+import { addDialog } from "@/components/ReDialog";
+import NodeDetailList from "@/components/NodeDetailList/index.vue";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -111,30 +115,19 @@ export const useConfig = () => {
   };
 
   const onSubmitAction = () => {
-    const row = currentRow.value;
-    if (row.billState !== 0) {
-      ElMessage({ message: `只能提交待提交的记录`, type: "error" });
-      return;
-    }
-    ElMessageBox.confirm(`确认要提交标题为【${row.titleName}】的申请单吗?`, "系统提示", {
-      type: "warning",
-      draggable: true,
-      cancelButtonText: "取消",
-      confirmButtonText: "确定",
-      dangerouslyUseHTMLString: true
-    })
-      .then(() => {
-        loading.value = true;
-        submitProductsDevApplayInfo(row.id).then((res) => {
-          if (res.data) {
-            ElMessage({ message: `提交成功`, type: "success" });
-            const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
-            onSearch(_rowIndex);
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      return message("请选择一条记录", { type: "warning" });
+    } else {
+      const { billNo, id } = currentRow.value;
+      showMessageBox(`确认要提交【${billNo}】吗?`).then(() => {
+        commonSubmit({ id, billId: "10031" }).then(({ data }) => {
+          if (data) {
+            message("提交成功");
+            onSearch();
           }
         });
-      })
-      .catch(() => {})
-      .finally(() => (loading.value = false));
+      });
+    }
   };
 
   const onDelete = () => {
@@ -218,6 +211,47 @@ export const useConfig = () => {
   const rowClick = (row) => {
     currentRow.value = row;
   };
+  const beforeOnRevoke = () => {
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      return message("请选择一条记录", { type: "warning" });
+    } else {
+      const { billNo } = currentRow.value;
+      showMessageBox(`确认要撤销【${billNo}】吗?`).then(() => {
+        commonBack({ comment: "", backToActivityId: "startEvent1", billNo }).then(({ data }) => {
+          if (data) {
+            message("撤销成功");
+            onSearch();
+          }
+        });
+      });
+    }
+  };
+
+  const beforeOnViewDetail = () => {
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      return message("请选择一条记录", { type: "warning" });
+    } else {
+      addDialog({
+        title: "查看审批详情",
+        width: "900px",
+        draggable: true,
+        fullscreenIcon: true,
+        closeOnClickModal: true,
+        hideFooter: true,
+        contentRenderer: ({ options }) =>
+          h(NodeDetailList, { options, billNo: currentRow.value.billNo, billType: "productDevApply", billState: currentRow.value.billState })
+      });
+    }
+  };
+
+  const beforePrint = () => {
+    // if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+    //   return message("请选择一条记录", { type: "warning" });
+    // } else {
+
+    // }
+    router.push("/plmManage/productMgmt/productsDevApplay/print/index");
+  };
 
   const clickHandler = ({ text }) => {
     switch (text) {
@@ -236,6 +270,15 @@ export const useConfig = () => {
       case "查看":
         onBeforeView();
         break;
+      case "撤销":
+        beforeOnRevoke();
+        break;
+      case "审批详情":
+        beforeOnViewDetail();
+        break;
+      case "打印":
+        beforePrint();
+        break;
       default:
         break;
     }
@@ -245,8 +288,11 @@ export const useConfig = () => {
     { clickHandler, type: "primary", text: "新增" },
     { clickHandler, type: "danger", text: "删除" },
     { clickHandler, type: "primary", text: "提交", isDropDown: true },
+    { clickHandler, type: "primary", text: "撤销", isDropDown: true },
+    { clickHandler, type: "primary", text: "审批详情", isDropDown: true },
     { clickHandler, type: "primary", text: "查看", isDropDown: true },
-    { clickHandler, type: "primary", text: "导出", isDropDown: true }
+    { clickHandler, type: "primary", text: "导出", isDropDown: true },
+    { clickHandler, type: "primary", text: "打印", isDropDown: true }
   ]);
 
   return {

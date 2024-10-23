@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-24 15:21:26
+ * @Last Modified time: 2024-10-16 10:18:54
  */
 import { onMounted, h, reactive, ref } from "vue";
 
@@ -38,7 +38,13 @@ export const useConfig = () => {
   const dataList = ref<DbMaintenanceItemType[]>([]);
   const loading = ref<boolean>(false);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 52);
-
+  const formData = reactive({
+    page: 1,
+    limit: PAGE_CONFIG.pageSize,
+    billNo: "",
+    isExecute: "",
+    billState: ""
+  });
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "单据编号", value: "billNo" },
     {
@@ -61,13 +67,6 @@ export const useConfig = () => {
     }
   ]);
 
-  const formData = reactive({
-    page: 1,
-    limit: PAGE_CONFIG.pageSize,
-    billNo: "",
-    isExecute: "",
-    billState: ""
-  });
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
   onMounted(() => {
@@ -122,10 +121,7 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.billNo = values.billNo;
-    formData.billState = values.billState;
-    formData.isExecute = values.isExecute;
-    formData.isExecute = values.isExecute;
+    Object.assign(formData, values);
     getTableList();
   };
 

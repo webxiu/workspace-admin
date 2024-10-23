@@ -2,16 +2,10 @@
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import Modal from "./modal.vue";
-import { computed } from "vue";
 import ButtonList from "@/components/ButtonList/index.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "SupplyChainMangeOrdersIndex" });
-
-/** 信息中心的查看单据id */
-const props = defineProps<{ id?: string; authFlag: boolean }>();
-// 信息中心id是否存在
-const infoCenterDeal = computed(() => !!props.id);
 
 const {
   columns,
@@ -41,16 +35,16 @@ const {
   signBackStatus,
   fresh,
   onUpload
-} = useConfig(props);
+} = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
-    <PureTableBar :columns="columns" class="flex-1" :show-icon="!infoCenterDeal" @refresh="onRefresh" @change-column="setUserMenuColumns">
-      <template #title v-if="!infoCenterDeal">
+    <PureTableBar :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <template #title>
         <BlendedSearch @tagSearch="handleTagSearch" :queryParams="queryParams" :searchOptions="searchOptions" placeholder="订单号" searchField="fbillno" />
       </template>
-      <template #buttons v-if="!infoCenterDeal">
+      <template #buttons>
         <ButtonList moreActionText="业务操作" :buttonList="buttonList" :auto-layout="false" />
         <input
           type="file"
@@ -121,7 +115,7 @@ const {
       </pure-table>
     </div>
     <el-dialog draggable v-model="dialogVisible" title="查看附件" width="800px">
-      <div><Modal ref="modalRef" @fresh="fresh" :disabled="infoCenterDeal" /></div>
+      <div><Modal ref="modalRef" @fresh="fresh" /></div>
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="dialogVisible = false"> 关闭 </el-button>

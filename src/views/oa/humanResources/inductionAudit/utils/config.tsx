@@ -34,7 +34,7 @@ const LoadingIcon = () => (
   </el-icon>
 );
 
-const layout = { span: 8 };
+const layout = { span: 8, xs: 24, sm: 24, md: 8, lg: 8, xl: 8 };
 
 /** 是否为临时工 */
 export const TemporaryFlag = { 0: "否", 1: "是" };

@@ -1,6 +1,6 @@
 import { ElMessage, FormRules } from "element-plus";
-import { editTableRender, setColumn } from "@/utils/table";
 import { reactive, ref } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import RelationPos from "./relationPos.vue";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
@@ -21,8 +21,8 @@ export const formConfigsEdit = ({ roleList, _formData, allDeliverTemplates, mode
   const beforeTaskModeList2: any = ref([]);
 
   // 编辑表格
-  const editCell_1 = editTableRender();
-  const editCell_2 = editTableRender();
+  const editCell_1 = tableEditRender();
+  const editCell_2 = tableEditRender();
 
   // 获取前置模式列表
   getBOMTableRowSelectOptions({ optioncode: "RequireMode" }).then((res) => {

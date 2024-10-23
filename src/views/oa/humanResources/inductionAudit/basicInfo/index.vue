@@ -13,7 +13,7 @@
       <Photo v-loading="loading" :src-list="detailInfo?.inductionCheckinPhotoVOList || []" />
     </el-tab-pane>
     <el-tab-pane label="教育经历" name="education">
-      <PureTableBar :columns="educationColumns" class="flex-1" :showIcon="false">
+      <PureTableBar :columns="educationColumns('view')" class="flex-1" :showIcon="false">
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
             border
@@ -34,7 +34,7 @@
       </PureTableBar>
     </el-tab-pane>
     <el-tab-pane label="家庭关系" name="family">
-      <PureTableBar :columns="foFamilyColumns" class="flex-1" :showIcon="false">
+      <PureTableBar :columns="foFamilyColumns('view')" class="flex-1" :showIcon="false">
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
             border

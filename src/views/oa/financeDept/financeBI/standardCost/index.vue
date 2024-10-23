@@ -39,7 +39,7 @@ const {
       <template #title>
         <div class="flex just-between">
           <el-form :model="formData" :inline="true" @submit.prevent>
-            <el-form-item label="物料编码" style="margin-bottom: 0">
+            <el-form-item label="物料编码" class="mb-4">
               <el-select
                 v-model.trim="formData.number"
                 filterable
@@ -69,20 +69,20 @@ const {
                 </div>
               </el-select>
             </el-form-item>
-            <el-form-item label="包含损耗" style="margin-bottom: 0">
+            <el-form-item label="包含损耗" class="mb-4">
               <el-select v-model.trim="formData.includeAttritionRate" placeholder="请选择" style="width: 100px">
                 <el-option v-for="item in includeLossList" :key="item.optionValue" :label="item.optionName" :value="item.optionValue" />
               </el-select>
             </el-form-item>
-            <el-form-item label="测算数量" style="margin-bottom: 0">
+            <el-form-item label="测算数量" class="mb-4">
               <el-input v-model.trim="formData.measuredQuantity" placeholder="请输入" @keyup.enter="oSearch" style="width: 100px" clearable />
             </el-form-item>
-            <el-form-item label="单价取值" style="margin-bottom: 0">
+            <el-form-item label="单价取值" class="mb-4">
               <el-select v-model.trim="formData.priceValue" placeholder="请选择" style="width: 130px">
                 <el-option v-for="item in unitPriceList" :key="item.optionValue" :label="item.optionName" :value="item.optionValue" />
               </el-select>
             </el-form-item>
-            <el-form-item style="margin-bottom: 0">
+            <el-form-item class="mb-4">
               <el-button type="primary" :icon="Search" @click="oSearch">查询</el-button>
             </el-form-item>
           </el-form>

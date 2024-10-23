@@ -295,7 +295,7 @@ export function detartMentDelete(params) {
 
 /** 部门分组 */
 export function detartMentGroup(params) {
-  return http.request<detartMentGroupItemType[]>("post", "/sys/sys/deptgroupinfo/selectgrouptree", { params });
+  return http.request<detartMentGroupItemType[]>("post", "/sys/sys/deptgroupinfo/selectgrouptree", { params, headers: { hideLoading: true } });
 }
 /** 新增分组 获取最大部门编号 */
 export function addGroupSelectMax() {
@@ -369,7 +369,7 @@ export function deleteDatabase(data) {
 /** 角色列表(右侧表格) */
 export function userInfoRole(params) {
   const { id, ...data } = params;
-  return http.request<UserInfoRoleItemType[]>("post", "/sys/sys/userinfo/selectuserrolebyid", { params: { id }, data });
+  return http.request<UserInfoRoleItemType[]>("post", "/sys/sys/userinfo/selectuserrolebyid", { params: { id }, data, headers: { hideLoading: true } });
 }
 
 /** 删除用户角色 */
@@ -394,7 +394,7 @@ export function setMainRole(data) {
 
 /** 查询用户部门列表  */
 export function queryUserDeptList(data) {
-  return http.request("post", "/sys/sys/userdeptinfo/selectAllDatas", { data });
+  return http.request("post", "/sys/sys/userdeptinfo/selectAllDatas", { data, headers: { hideLoading: true } });
 }
 
 /** 新增用户部门  */
@@ -483,24 +483,24 @@ export function setQYWXTag(data) {
   return http.request("post", `/sys/sys/roleinfo/setQYWXTag`, { data });
 }
 
-/** 获取角色下的用户(右侧表格) */
+/** 获取角色下的用户 */
 export function roleUserList(data) {
-  return http.request<RoleUserItemType[]>("post", "/sys/sys/userrole/select", { data });
+  return http.request<RoleUserItemType[]>("post", "/sys/sys/userrole/select", { data, headers: { hideLoading: true } });
 }
 /** 删除用户 */
 export function deleteRuleUser(data) {
   return http.request<boolean>("post", "/sys/sys/userrole/delete", { data });
 }
-/** 弹窗表格(右侧) */
+/** 弹窗表格 */
 export function getDeptUserList(params) {
-  return http.request<DeptUserItemType[]>("get", "/sys/sys/userinfo/queryuserinfo", { params });
+  return http.request<DeptUserItemType[]>("get", "/sys/sys/userinfo/queryuserinfo", { params, headers: { hideLoading: true } });
 }
 
 /** ========================= 角色权限(权限管理) ========================= */
 
 /** 获取权限树选中 */
 export function menuTree(params) {
-  return http.request<MenuTreeItemType[]>("post", "/sys/sys/roleauthority/select", { params });
+  return http.request<MenuTreeItemType[]>("post", "/sys/sys/roleauthority/select", { params, headers: { hideLoading: true } });
 }
 /** 复制权限 */
 export function copyAuthority(data) {
@@ -514,7 +514,7 @@ export function saveAuthority(data) {
 
 /** 按钮权限获取 */
 export function getBtnListByMenuId(data) {
-  return http.request("post", "/sys/sys/roleauthority/SelectRoleButtonAuthority", { params: data });
+  return http.request("post", "/sys/sys/roleauthority/SelectRoleButtonAuthority", { params: data, headers: { hideLoading: true } });
 }
 
 /** ========================= 数据权限(权限管理) ========================= */
@@ -526,7 +526,7 @@ export function dataAuthList(data) {
 
 /** 数据权限右侧菜单列表 */
 export function dataAuthMenuList(data) {
-  return http.request<DataAuthMenuItemType[]>("post", "/sys/sys/roledataauthority/select", { data });
+  return http.request<DataAuthMenuItemType[]>("post", "/sys/sys/roledataauthority/select", { data, headers: { hideLoading: true } });
 }
 /** 修改权限 */
 export function dataAuthMenuUpdate(data) {
@@ -560,7 +560,11 @@ export function optAuthList() {
 export function optAuthRoleList(params) {
   const { menuId, menuType, ...data } = params;
 
-  return http.request<OptAuthRoleItemType[]>("post", "/sys/sys/operationpermissions/queryroles", { params: { menuId, menuType }, data });
+  return http.request<OptAuthRoleItemType[]>("post", "/sys/sys/operationpermissions/queryroles", {
+    params: { menuId, menuType },
+    data,
+    headers: { hideLoading: true }
+  });
 }
 /** 数据权限部门列表 */
 export function optAuthDeptTree(data) {
@@ -585,7 +589,7 @@ export function systemParamsList() {
 
 /** 获取列表参数编号(中) */
 export function systemParamsNumberList(data) {
-  return http.request<SystemParamsNumberItemType[]>("post", "/sys/sys/systemparamlist/select", { data });
+  return http.request<SystemParamsNumberItemType[]>("post", "/sys/sys/systemparamlist/select", { data, headers: { hideLoading: true } });
 }
 /** 添加参数编号(中) */
 export function systemParamsNumberAdd(data) {
@@ -602,7 +606,7 @@ export function systemParamsNumbeDelete(params) {
 
 /** 获取列表参数值(右) */
 export function systemParamsValueList(data) {
-  return http.request<SystemParamsValueItemType[]>("post", "/sys/sys/systemparameter/select", { data });
+  return http.request<SystemParamsValueItemType[]>("post", "/sys/sys/systemparameter/select", { data, headers: { hideLoading: true } });
 }
 /** 添加参数值(右) */
 export function systemParamsValueAdd(data) {
@@ -679,12 +683,12 @@ export function dataBaseList(data) {
 
 /** 数据表列表 */
 export function dataTableList(params) {
-  return http.request<DataTableItemType[]>("get", "/sys/sys/datadictionary/querytableinfo", { params });
+  return http.request<DataTableItemType[]>("get", "/sys/sys/datadictionary/querytableinfo", { params, headers: { hideLoading: true } });
 }
 
 /** 数据字段列表 */
 export function dataFieldList(params) {
-  return http.request<DataFieldItemType[]>("get", "/sys/sys/datadictionary/queryfieldinfo", { params });
+  return http.request<DataFieldItemType[]>("get", "/sys/sys/datadictionary/queryfieldinfo", { params, headers: { hideLoading: true } });
 }
 
 /** 数据库搜素列表 */
@@ -759,16 +763,20 @@ export function updateFlowTask(data) {
 export function editFlow(params) {
   return http.request<FlowGraphXMLType>("get", "/sys/bp/processmanage/getprocessxml", { params });
 }
+/** 流程管理 - 获取审批部门最大层级 */
+export function getDeptLevel() {
+  return http.request<number>("post", "/sys/bp/processmanage/getdeptlevel");
+}
 
 /** 流程管理 - 撤销流程(检测接口) */
 export function revokeFlowCheck(params) {
   return http.request<boolean>("get", "/sys/bp/processmanage/ishashistoryprocess", { params });
 }
-/** 流程管理 - 撤销流程 */
+/** 流程管理 - 删除流程 */
 export function revokeFlow(params) {
   return http.request<boolean>("get", "/sys/bp/processmanage/deletedeploy", { params });
 }
-/** 流程管理 - 撤销流程(创建模板未创建流程时) */
+/** 流程管理 - 根据ID删除流程(只创建模板, 未创建流程时) */
 export function revokeFlowConfig(params) {
   return http.request<boolean>("get", "/sys/bp/processmanage/deleteprocessconfig", { params });
 }
@@ -901,7 +909,7 @@ export function getQywxDataByMonth(data) {
 
 /** 任务调度列表 */
 export function taskScheduleList(data) {
-  return http.request<TaskScheduleItemType[]>("post", "/sys/sys/taskschedulingconfig/select", { data });
+  return http.request<TablePagingResType<TaskScheduleItemType>>("post", "/sys/sys/taskschedulingconfig/select", { data });
 }
 
 /** 添加任务调度 */
@@ -926,17 +934,17 @@ export function freshTaskSchedule() {
 
 /** 任务角色列表 */
 export function taskRoleList(data) {
-  return http.request<TaskRoleItemType[]>("post", "/sys/sys/taskschedulingconfig/selectToRoles", { data });
+  return http.request<TaskRoleItemType[]>("post", "/sys/sys/taskschedulingconfig/selectToRoles", { data, headers: { hideLoading: true } });
 }
 
 /** 任务用户列表 */
 export function taskUserList(data) {
-  return http.request<TaskUserItemType[]>("post", "/sys/sys/taskschedulingconfig/selectToUsers", { data });
+  return http.request<TaskUserItemType[]>("post", "/sys/sys/taskschedulingconfig/selectToUsers", { data, headers: { hideLoading: true } });
 }
 
 /** 获取部门菜单(弹窗) */
 export function getDeptTreeData() {
-  return http.request<string>("get", "/sys/com/getdepttreedata");
+  return http.request<string>("get", "/sys/com/getdepttreedata", { headers: { hideLoading: true } });
 }
 
 /** 获取角色列表(弹窗) */

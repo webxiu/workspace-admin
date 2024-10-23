@@ -9,9 +9,9 @@ const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScree
 </script>
 
 <template>
-  <div class="flex flex-1 main main-content welcome home">
+  <div class="flex flex-1 main main-content welcome home" v-mainHeight="{ offset: -10 }">
     <el-row :gutter="20" style="width: -webkit-fill-available">
-      <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="13">
+      <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="13" style="display: flex">
         <el-row :gutter="20" class="panel-box">
           <el-col class="mb-5" v-for="item in homeList" :key="item.name" :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
             <el-card class="box-card" :class="{ calendar: item.name === '日历' }">
@@ -124,20 +124,12 @@ const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScree
 }
 @media only screen and (min-width: 992px) {
   .panel-box {
+    &:only-child {
+      flex: 1;
+    }
     > div:nth-last-child(-n + 2) {
       margin-bottom: 0px !important;
     }
-  }
-}
-
-#app .mobile {
-  .user-role {
-    width: 30px;
-    height: 30px;
-  }
-  .el-backtop {
-    right: 10px !important;
-    bottom: 80px !important;
   }
 }
 </style>

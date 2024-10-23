@@ -73,11 +73,11 @@
       :validate-event="false"
       @blur="focus = false"
       @focus="focus = true"
-      @change="onSearch"
-      @keyup.enter="onSearch"
+      @change="onSubmit"
+      @keyup.enter="onSubmit"
     >
       <template #suffix>
-        <el-icon @click="onSearch"><Search /></el-icon>
+        <el-icon @click="onSubmit"><Search /></el-icon>
       </template>
     </el-input>
   </div>
@@ -89,6 +89,7 @@ import { message } from "@/utils/message";
 import { CascaderOption, DatePickType } from "element-plus";
 import { Search } from "@element-plus/icons-vue";
 import { ref, onMounted, computed, nextTick, watch } from "vue";
+import { debounce } from "@/utils/common";
 
 /**
  * ============ 组合搜索框使用说明 ============
@@ -148,77 +149,41 @@ const props = withDefaults(defineProps<Props>(), {
 
 defineOptions({ name: "BlendedSearch" });
 
-const shortcuts = [
-  {
-    text: "今天",
-    value: () => {
-      return [new Date(), new Date()];
-    }
-  },
-  {
-    text: "昨天",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
-      return [start, end];
-    }
-  },
-  {
-    text: "最近三天",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 3);
-      return [start, end];
-    }
-  },
-  {
-    text: "最近一周",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-      return [start, end];
-    }
-  },
-  {
-    text: "最近一月",
+const timesConfig = () => {
+  const day = 3600 * 1000 * 24; // 一天
+  const year = 3600 * 1000 * 24 * 365; // 一年
+  return [
+    { text: "今天", value: day * 0 },
+    { text: "昨天", value: day * 1 },
+    { text: "最近三天", value: day * 3 },
+    { text: "最近一周", value: day * 7 },
+    { text: "最近一月", value: day * 30 },
+    { text: "最近三月", value: day * 30 * 3 },
+    { text: "最近半年", value: day * 30 * 6 },
+    { text: "最近一年", value: year * 1 },
+    { text: "最近两年", value: year * 2 },
+    { text: "最近三年", value: year * 3 },
+    { text: "最近四年", value: year * 4 },
+    { text: "最近五年", value: year * 5 },
+    { text: "最近六年", value: year * 6 },
+    { text: "最近七年", value: year * 7 },
+    { text: "最近八年", value: year * 8 },
+    { text: "最近九年", value: year * 9 },
+    { text: "最近十年", value: year * 10 }
+  ];
+};
+const shortcuts = timesConfig().map((item) => {
+  return {
+    text: item.text,
     value: () => {
       const end = new Date();
       const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+      start.setTime(start.getTime() - item.value);
       return [start, end];
     }
-  },
-  {
-    text: "最近三月",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
-      return [start, end];
-    }
-  },
-  {
-    text: "最近半年",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 30 * 6);
-      return [start, end];
-    }
-  },
-  {
-    text: "最近一年",
-    value: () => {
-      const end = new Date();
-      const start = new Date();
-      start.setTime(start.getTime() - 3600 * 1000 * 24 * 30 * 12);
-      return [start, end];
-    }
-  }
-];
+  };
+});
+
 const inputType = ref<DatePickType>(); // 输入类型
 const dateFormat = ref<string>("YYYY-MMM-DD"); // 日期格式
 const SearchInput = ref();
@@ -332,8 +297,11 @@ const onSelectNode = (node, data) => {
   });
 };
 
-const onTagClose = (evt: string | number) => {
+const onTagClose = (evt: string) => {
   delete filterTags.value[evt];
+  const keyField = `${evt}`.split("_")[0];
+  // 将值置空, 而不是删除字段
+  if (keyField) resultMaps.value[keyField] = undefined;
   emits("tagSearch", resultMaps.value);
 };
 
@@ -370,6 +338,9 @@ const onDataChange = (values) => {
   inputType.value = undefined;
   dateFormat.value = "";
 };
+
+// 避免change事件与回车键事件重复触发
+const onSubmit = debounce(() => onSearch());
 
 const onSearch = () => {
   if (filterValue.value === "") {

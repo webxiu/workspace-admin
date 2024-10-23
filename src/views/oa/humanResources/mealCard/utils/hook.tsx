@@ -74,6 +74,8 @@ export const useConfig = () => {
 
   const onSearchGroup = () => {
     onSearch();
+    currentRows.value = [];
+    rowData.value = null;
     onSearch2();
   };
 

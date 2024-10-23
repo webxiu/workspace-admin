@@ -14,7 +14,7 @@
         </el-table-column>
       </el-table>
       <div class="sign-user">
-        <template v-if="item.Image1 && item.Image2">
+        <template v-if="item.signatureFilePath">
           <el-image style="height: 80px" :src="getImageUrl(item)" :preview-src-list="[getImageUrl(item)]" fit="contain" class="border-line" />
           <div class="show-time">签名时间：{{ item.InDate }}</div>
         </template>
@@ -38,6 +38,7 @@ interface Props {
   gzDate: string;
 }
 const props = defineProps<Partial<Props>>();
+const baseApi = import.meta.env.VITE_BASE_API;
 
 const printRef = ref();
 const loading = ref(false);
@@ -76,8 +77,10 @@ function getUserName(item) {
 
 // 组合签名图片url
 function getImageUrl(item) {
-  const hasDot = item.Image1?.includes(",");
-  return hasDot ? item.Image1 + item?.Image2 : item.Image1 + "," + item?.Image2;
+  // const hasDot = item.Image1?.includes(",");
+  // return hasDot ? item.Image1 + item?.Image2 : item.Image1 + "," + item?.Image2;
+
+  return baseApi + item.signatureFilePath;
 }
 // 组合签名图片url
 function fmtDate(time: string, fmt = "dateTime") {

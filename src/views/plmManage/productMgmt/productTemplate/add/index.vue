@@ -35,8 +35,7 @@ import { useRouter } from "vue-router";
 import { getProductClassifyList } from "@/views/plmManage/productMgmt/classify/utils/hook";
 
 const formRules = reactive<FormRules>({
-  templateName: [{ required: true, message: "模板名称为必填项", trigger: "change" }],
-  productClassId: [{ required: true, message: "产品分类为必填项", trigger: "change" }]
+  templateName: [{ required: true, message: "模板名称为必填项", trigger: "change" }]
 });
 
 defineOptions({ name: "AddProductTemplate" });

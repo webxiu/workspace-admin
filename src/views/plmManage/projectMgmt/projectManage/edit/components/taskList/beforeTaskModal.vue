@@ -26,7 +26,7 @@
 
 <script setup lang="tsx">
 import { onMounted, ref } from "vue";
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { message } from "@/utils/message";
 
@@ -40,7 +40,7 @@ const beforeTaskModeList = ref([]);
 const props = defineProps(["currentTaskRow", "dataTreeList"]);
 
 const getConfig = () => {
-  const editCell = editTableRender();
+  const editCell = tableEditRender();
 
   const columnData: TableColumnList[] = [
     {

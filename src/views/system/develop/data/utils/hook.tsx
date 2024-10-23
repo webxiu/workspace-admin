@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-11 14:48:23
+ * @Last Modified time: 2024-10-16 10:18:16
  */
 
 import {
@@ -36,6 +36,7 @@ export const useConfig = () => {
   const rowData2 = ref<DataTableItemType>();
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49);
   const formData = reactive({ page: 1, limit: 10000 });
+  const formData2 = reactive({ tableName: "", columnName: "", schemaName: "" });
   const groupArrsList = ref<TableGroupItemType[]>([]);
 
   const searchOptions = reactive<SearchOptionType[]>([
@@ -85,17 +86,16 @@ export const useConfig = () => {
 
   // 搜索数据库表字段
   const onTagSearch = (values) => {
-    if (!rowData.value?.schemaName) {
-      return message("请先选择您要操作的数据库", { type: "error" });
-    }
-    getSearchList({ ...values, schemaName: rowData.value.schemaName });
+    Object.assign(formData2, values);
+    getSearchList();
   };
 
   /** 0.数据库搜索列表 */
-  const getSearchList = (data) => {
+  const getSearchList = () => {
+    if (!rowData.value?.schemaName) return message("请选择库名", { type: "error" });
     loading2.value = true;
     loading3.value = true;
-    dataBaseSearch(data)
+    dataBaseSearch({ ...formData2, schemaName: rowData.value.schemaName })
       .then((res) => {
         loading2.value = false;
         loading3.value = false;

@@ -285,7 +285,8 @@ export interface StaffInfoItemType {
   facePic: string;
   inDate: string;
   level: string;
-  exmpetAttendance: string;
+  exmpetAttendance: boolean;
+  machineId: string;
   orgId: string;
 }
 
@@ -742,7 +743,7 @@ export interface NoStaffItemType {
   validDate: string;
   authority: string;
   wageAccountingType: string;
-  exmpetAttendance: string;
+  exmpetAttendance: boolean;
   orgId: string;
   deptGroupInfoList: string;
   staffInfoWorkVOS: string;
@@ -951,6 +952,8 @@ export interface OvertimeOrderItemType {
   approver: string;
   priId: string;
   isNew?: boolean;
+  staffCode?: string;
+  staffName?: string;
 }
 /** 加班单: 详情列表类型 */
 export interface OvertimeDetailItemType {
@@ -1094,6 +1097,78 @@ export interface PersonFlowStatisticsDetailItemType {
   roleName: string;
   startDate: string;
   id: number;
+}
+
+/** ========================= 人事异动 ========================= */
+
+/** 人事异动列表类型 */
+export interface StaffChangeItemType {
+  adjustAfterSalary: number;
+  adjustSalaryFlag: boolean;
+  billId: string;
+  billNo: string;
+  billState: number;
+  createDate: string;
+  createUserName: string;
+  deptName: string;
+  effectiveDate: string;
+  id: string;
+  limit: number;
+  modifyDate: string;
+  modifyUserName: string;
+  orgId: string;
+  page: number;
+  roleName: string;
+  staffId: number;
+  staffCode: string;
+  staffName: string;
+  startDate: string;
+  transferAfterDeptId: number;
+  transferAfterDeptName: string;
+  transferAfterRoleId: number;
+  transferAfterRoleName: string;
+  transferDate: string;
+  transferReason: string;
+  transferType: string;
+}
+/** 工号获取人员信息列表类型 */
+export interface UserBasicInfoItemType {
+  deptName: string;
+  staffCode: string;
+  staffName: string;
+  roleName: string;
+  staffId: number;
+  startDate: string;
+}
+/** ========================= 离职申请 ========================= */
+
+/** 职员离职申请列表类型 */
+export interface ResignApplyItemType {
+  id: string;
+  billId: string;
+  billNo: string;
+  billState: number;
+  staffId: number;
+  deptName: string;
+  staffCode: string;
+  staffName: string;
+  roleName: string;
+  startDate: string;
+  applyDate: string;
+  resignationType: string;
+  resignationReason: string;
+  createUserId: number;
+  createDate: string;
+  modifyUserId: number;
+  modifyDate: string;
+  orgId: string;
+}
+/** 职员离职申请列表类型 */
+export interface ResignApplyApproveNodeItemType {
+  activityId: string;
+  handleComment: string;
+  activityName: string;
+  assignee: string;
 }
 
 /** ========================= 数据大屏 ========================= */

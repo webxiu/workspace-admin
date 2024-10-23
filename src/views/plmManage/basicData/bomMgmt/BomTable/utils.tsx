@@ -2,13 +2,13 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-07-04 17:43:40
+ * @Last Modified time: 2024-10-18 10:58:13
  */
 
 import { ElMessage, ElMessageBox, dayjs } from "element-plus";
-import { editTableRender, moveTableRow, setColumn } from "@/utils/table";
-import { fetchBomDetailData, fetchSelectList, getBOMTableRowSelectOptions, selectMaterialInfo } from "@/api/plmManage";
+import { fetchBomDetailData, getBOMTableRowSelectOptions, selectMaterialInfo } from "@/api/plmManage";
 import { h, onMounted, reactive, ref } from "vue";
+import { moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 import { useRoute, useRouter } from "vue-router";
 
 import ImportExcelModal from "../importExcelModal.vue";
@@ -79,12 +79,14 @@ export function useConfig(emits) {
   };
 
   // 编辑表格
-  const { editCellRender } = editTableRender(({ index, prop }) => {
-    if (prop === "sequence") {
-      moveTableRow(dataList, dataList.value[index], "sequence", "", ({ newArr }) => {
-        dataList.value = newArr;
-        emits("loadData", { formData, tableData: newArr, type: "add" });
-      });
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ index, prop }) => {
+      if (prop === "sequence") {
+        moveTableRow(dataList, dataList.value[index], "sequence", "", ({ newArr }) => {
+          dataList.value = newArr;
+          emits("loadData", { formData, tableData: newArr, type: "add" });
+        });
+      }
     }
   });
 
@@ -197,7 +199,6 @@ export function useConfig(emits) {
         dosageType: item.dosageType ?? "2",
         fixscrapqty: item.fixscrapqty ?? "0",
         issueType: item.issueType ?? "1",
-        // itemUnit: item.baseUnit + "",
         scraprate: item.scraprate ?? "0",
         isEdit: false,
         remark: item.remark ?? ""
@@ -233,7 +234,6 @@ export function useConfig(emits) {
           dataList.value = dataList.value.map((item, idx, arr) => ({
             ...item,
             issueType: item.issueType ?? "1",
-            // sequence: +idx + 1,
             isEdit: false
           }));
           emits("loadData", { formData, tableData: dataList.value, type: "edit" });

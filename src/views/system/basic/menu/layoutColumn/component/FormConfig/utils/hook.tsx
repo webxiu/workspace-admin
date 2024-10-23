@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-07-04 17:48:52
+ * @Last Modified time: 2024-10-18 10:59:54
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
@@ -10,9 +10,9 @@ import { FormColumnItemType, deleteformColumn, formColumnList, updateformColumn 
 import { FormatDataType, ItemKey } from "@/utils/form";
 import { computed, h, onMounted, reactive, ref, watch } from "vue";
 import { copyText, debounce, readClipboard } from "@/utils/common";
-import { editTableRender, moveTableRow, setColumn } from "@/utils/table";
 import { formConfigs, formRules, formatConfigs, formatRules, hideList, inputList, pasteConfigs, slotsList } from "./config";
 import { message, showMessageBox } from "@/utils/message";
+import { moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessageBox } from "element-plus";
@@ -54,9 +54,11 @@ export const useConfig = (props) => {
     { immediate: true }
   );
   // 编辑表格
-  const { editCellRender } = editTableRender(({ prop, row }) => {
-    if (prop === "seq") {
-      moveTableRow<FormColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ prop, row }) => {
+      if (prop === "seq") {
+        moveTableRow<FormColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+      }
     }
   });
 

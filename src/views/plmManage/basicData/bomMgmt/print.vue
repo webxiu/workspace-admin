@@ -70,7 +70,6 @@
             </tr>
           </tbody>
         </table>
-        <!-- padding-top: 15px; -->
         <div style="margin: 8px auto 0">
           <el-row style="font-size: 16px; text-align: center">
             <el-col :span="6" :offset="3">创建：</el-col>
@@ -107,16 +106,7 @@ const fetchDetailInfoById = (id) => {
 const printAction = () => {
   console.log(detailInfo.value, "获取的列表数据");
   if (printRef.value) {
-    // console.log(printRef.value.outerHTML);
     Print(printRef.value);
-    // const pWindow = window.open("", "_blank");
-    // pWindow.focus();
-    // const pDocument = pWindow.document;
-    // pDocument.open();
-    // pDocument.write(printRef.value.outerHTML);
-    // pDocument.close();
-    // pWindow.print();
-    // pWindow.close();
   }
 };
 
@@ -131,7 +121,6 @@ onMounted(() => fetchDetailInfoById(route.query.id));
 
 @page {
   size: a4 landscape; /* A4纸，横向打印 */
-  //margin: 5mm 0 30mm; /*去掉页边距*/
   margin: 10mm 0; /* 去掉页边距 */
 }
 
@@ -167,6 +156,5 @@ onMounted(() => fetchDetailInfoById(route.query.id));
     border-top: 1px solid #000;
     border-left: 1px solid #000;
   }
-  //
 }
 </style>

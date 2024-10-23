@@ -262,6 +262,9 @@ const openListenerForm = (listener?, index = -1) => {
   } else {
     listenerForm.value = {} as any;
     editingListenerIndex.value = -1; // 标记为新增
+    listenerForm.value.event = "create";
+    listenerForm.value.listenerType = "classListener";
+    listenerForm.value.class = "com.deogra.app.common.workflow.listener.MulitiInstanceTaskListener";
   }
   if (listener && listener.fields) {
     fieldsListOfListener.value = listener.fields.map((field) => ({

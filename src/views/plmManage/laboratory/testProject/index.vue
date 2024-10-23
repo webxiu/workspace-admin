@@ -5,7 +5,7 @@ import ButtonList from "@/components/ButtonList/index.vue";
 import ContextMenu from "./components/contextMenu.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
-defineOptions({ name: "PlmManageLaboratoryTestReportIndex" });
+defineOptions({ name: "PlmManageLaboratoryTestProjectIndex" });
 
 const {
   columns,

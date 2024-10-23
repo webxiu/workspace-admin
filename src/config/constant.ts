@@ -42,7 +42,9 @@ export const PAGE_CONFIG: PaginationProps = {
   /** 当前页 */
   currentPage: 1,
   /** 分页选择 */
-  pageSizes: [30, 50, 100]
+  pageSizes: [30, 50, 100],
+  /** 最大页码按钮数 */
+  pagerCount: 5
 };
 
 // 单据审批状态
@@ -53,19 +55,19 @@ export enum BillState {
   auditing = 1,
   /** 已审核 */
   audited = 2,
-  /** 重新审核(已驳回) */
+  /** 重新审核 */
   reject = 3,
-  /** 已撤销 */
+  /** 已终止 */
   revoke = 4
 }
 
 // 单据审批状态颜色
-export const BILL_STATUS_COLOR = {
+export const BillState_Color = {
   [BillState.submit]: { name: "待提交", color: "#409eff" },
   [BillState.auditing]: { name: "审核中", color: "#e6a23c" },
   [BillState.audited]: { name: "已审核", color: "#67c23a" },
-  [BillState.reject]: { name: "已驳回", color: "#dc143c" },
-  [BillState.revoke]: { name: "已撤销", color: "#763a96" }
+  [BillState.reject]: { name: "重新审核", color: "#dc143c" },
+  [BillState.revoke]: { name: "已终止", color: "#763a96" }
 };
 
 /** 颜色选择器默认颜色 */

@@ -11,6 +11,7 @@ import { handleTree } from "@/utils/tree";
 import { menuType } from "@/layout/types";
 import { message } from "@/utils/message";
 import { router } from "./index";
+import { toCamelCase } from "@/utils/common";
 import { topRouteList } from "@/config/constant";
 import { transformI18n } from "@/plugins/i18n";
 import { useAppStoreHook } from "@/store/modules/app";
@@ -114,37 +115,23 @@ function addPathMatch() {
 }
 
 /** 1.处理动态路由（后端返回的路由） */
-function handleAsyncRoutes(routeList) {
-  if (routeList.length === 0) {
-    usePermissionStoreHook().handleWholeMenus(routeList);
-  } else {
-    const flatRoutes = formatFlatteningRoutes(addAsyncRoutes(routeList));
-    const fullRoutes = [...flatRoutes, emptyRoute];
-    fullRoutes.map((v: RouteRecordRaw) => {
-      // 防止重复添加路由
-      if (router.options.routes[0].children.findIndex((value) => value.path === v.path) !== -1) {
-        return;
-      } else {
-        // 切记将路由push到routes后还需要使用addRoute，这样路由才能正常跳转
-        router.options.routes[0].children.push(v);
-        // 最终路由进行升序
-        ascending(router.options.routes[0].children);
-        if (!router.hasRoute(v?.name)) router.addRoute(v);
-        const flattenRouters: any = router.getRoutes().find((n) => n.path === "/");
-        router.addRoute(flattenRouters);
-      }
-    });
-    usePermissionStoreHook().handleWholeMenus(routeList);
-  }
+function handleAsyncRoutes(routeList: RouteRecordRaw[]) {
+  const fullRoutes = [...routeList, emptyRoute];
+  fullRoutes.map((v: RouteRecordRaw) => {
+    // 防止重复添加路由
+    if (router.options.routes[0].children.findIndex((value) => value.path === v.path) !== -1) {
+      return;
+    } else {
+      // 切记将路由push到routes后还需要使用addRoute，这样路由才能正常跳转
+      router.options.routes[0].children.push(v);
+      // 最终路由进行升序
+      ascending(router.options.routes[0].children);
+      if (!router.hasRoute(v?.name)) router.addRoute(v);
+      const flattenRouters: any = router.getRoutes().find((n) => n.path === "/");
+      router.addRoute(flattenRouters);
+    }
+  });
   addPathMatch();
-}
-
-/** 2.需要单独一屏显示的路由地址(不会嵌套在导航菜单内, 例如:数据大屏)） */
-function addTopRouteList(v: RouteRecordRaw) {
-  const modulesRoutesKeys = Object.keys(modulesRoutes);
-  const index = modulesRoutesKeys.findIndex((ev) => ev.includes(v.path));
-  v.component = modulesRoutes[modulesRoutesKeys[index]];
-  router.addRoute(v); // 添加动态路由
 }
 
 /** 获取接口菜单 */
@@ -154,34 +141,36 @@ const getAsyncRouter = () => {
   return new Promise<RouteRecordRaw[]>((resolve) => {
     getMenuList({ userId: userInfo.id })
       .then(({ data }) => {
-        const tableColMenu = data.filter((v) => v.menuType === "菜单" && v.webRouter);
+        // 过滤掉5开头的移动端路由
+        const tableColMenu = data.filter((v) => v.menuType === "菜单" && !v.menuCode.startsWith("5"));
         useSettingStoreHook().setTableConfigMenuRoutes(tableColMenu);
         webSocketConnect(userInfo.userCode);
-        const newList2 = data
-          .filter((v) => !!v.webRouter)
+        const routeList = data
+          .filter((v) => !v.menuCode.startsWith("5"))
           .map((item) => {
+            // 菜单路由添加组件
+            if (item.menuType === "菜单") {
+              item.component = getRouteComponent(item.webRouter);
+            }
             const { menuName, webRouter, icon, ...reset } = item;
-            const routerDirs = webRouter?.split("/").filter(Boolean);
-            // 生成驼峰组件名
-            const name = routerDirs.map((dir) => dir.charAt(0).toUpperCase() + dir.slice(1)).join("");
+            const name = toCamelCase(webRouter); // 生成驼峰组件名
             const meta = { title: transformI18n(menuName), icon, keepAlive: true };
-            // 修改菜单标准结构
+            // 修改为菜单标准结构
             return { ...reset, path: webRouter, name, meta, title: transformI18n(menuName), redirect: "" };
           });
 
-        const newList = cloneDeep(newList2).filter((v) => {
-          // 过滤掉需要单独一屏显示的路由地址
+        /** 需要单独一屏显示的路由地址(不会嵌套在导航菜单内, 例如:数据大屏)） */
+        const newList = cloneDeep(routeList).filter((v) => {
           if (topRouteList.includes(v.path)) {
-            addTopRouteList(v);
+            router.addRoute(v);
             return false;
           }
           return true;
         });
-
-        const treeList2 = handleTree(newList2, "menuCode", "parentCode", "children"); // 导航菜单列表(所有动态路由)
-        const treeList = handleTree(newList, "menuCode", "parentCode", "children"); // 用于组件路由菜单(不包括`topRouteList`配置的路由)
-        useAppStoreHook().setAsyncRoutes(treeList2);
-        resolve(treeList);
+        const treeList = handleTree(routeList, "menuCode", "parentCode", "children"); // 导航菜单树列表(所有动态路由)
+        useAppStoreHook().setAsyncRoutes(treeList);
+        usePermissionStoreHook().handleWholeMenus(treeList);
+        resolve(newList);
       })
       .catch(() => {
         message("菜单列表获取失败", { type: "error", duration: 9000 });
@@ -193,32 +182,22 @@ const getAsyncRouter = () => {
 
 /** 初始化路由（`new Promise` 写法防止在异步请求中造成无限循环）*/
 function initRouter() {
-  if (getConfig()?.CachingAsyncRoutes) {
-    // 开启动态路由缓存本地sessionStorage
-    const key = "async-routes";
-    const asyncRouteList = storageSession().getItem(key) as any;
-    if (asyncRouteList && asyncRouteList?.length > 0) {
-      return new Promise((resolve) => {
-        handleAsyncRoutes(asyncRouteList);
-        resolve(router);
-      });
+  const key = "async-routes"; // 开启动态路由缓存本地sessionStorage
+  const cachingEnabled = getConfig()?.CachingAsyncRoutes;
+  const cacheRouteList: RouteRecordRaw[] = storageSession().getItem(key);
+  const asyncRouteList = cachingEnabled ? cacheRouteList : null;
+  return new Promise((resolve) => {
+    if (asyncRouteList && asyncRouteList.length > 0) {
+      handleAsyncRoutes(asyncRouteList);
+      resolve(router);
     } else {
-      return new Promise((resolve) => {
-        getAsyncRouter().then((data) => {
-          handleAsyncRoutes(cloneDeep(data));
-          storageSession().setItem(key, data);
-          resolve(router);
-        });
-      });
-    }
-  } else {
-    return new Promise((resolve) => {
       getAsyncRouter().then((data) => {
         handleAsyncRoutes(cloneDeep(data));
+        if (cachingEnabled) storageSession().setItem(key, data);
         resolve(router);
       });
-    });
-  }
+    }
+  });
 }
 
 /**
@@ -275,6 +254,13 @@ function handleAliveRoute({ name }: ToRouteType, mode?: string) {
         usePermissionStoreHook().cacheOperate({ mode: "add", name });
       }, 100);
   }
+}
+
+// 根据菜单地址获取路由组件(.vue文件)
+function getRouteComponent(path: string) {
+  const modulesRoutesKeys = Object.keys(modulesRoutes);
+  const index = modulesRoutesKeys.findIndex((ev) => ev.includes(path));
+  return modulesRoutes[modulesRoutesKeys[index]];
 }
 
 /** 过滤后端传来的动态路由 重新生成规范路由 */

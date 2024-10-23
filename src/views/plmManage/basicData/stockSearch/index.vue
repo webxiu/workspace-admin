@@ -77,7 +77,6 @@ const {
   columns,
   pagination,
   maxHeight,
-  onSearch,
   onFresh,
   rowClick,
   buttonList,

@@ -2,7 +2,6 @@
   <div class="detail">
     <div class="btns">
       <el-button size="small" type="default" @click="router.push('/plmManage/basicData/bomMgmt/index?menuId=3')">返回</el-button>
-      <!--  && detailInfo.billState !== 2保存 -->
       <el-button size="small" type="primary" @click="submit" v-if="route.query.type !== 'view'">保存</el-button>
       <el-button size="small" plain type="primary" @click="copyBom">复制</el-button>
       <el-button size="small" plain type="success" @click="submitAction" v-if="route.query.type !== 'add'">提交</el-button>

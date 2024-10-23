@@ -15,7 +15,7 @@ export const formConfigs = (optionList?) => {
       labelWidth: 160,
       render: ({ formModel, row }) => {
         return (
-          <el-select v-model={formModel[row.prop]} placeholder="请选择产品分类">
+          <el-select v-model={formModel[row.prop]} placeholder="请选择产品分类" clearable>
             {optionList.map((item) => (
               <el-option key={item.value} label={item.label} value={item.value} />
             ))}

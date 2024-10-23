@@ -12,21 +12,25 @@ import { addDialog } from "@/components/ReDialog";
 import { message, showMessageBox } from "@/utils/message";
 import MaterialMgmt from "@/views/plmManage/basicData/materialMgmt/index.vue";
 
-defineProps({
+const props = defineProps({
+  productCode: { type: String as any, default: "" },
   size: { type: String as any, default: "default" },
   /** 默认值 */
   modelValue: { type: [String, Number], default: "" }
 });
 
 const rowData = ref();
-const emits = defineEmits(["update:modelValue", "checkMaterial"]);
+const emits = defineEmits(["update:modelValue", "select"]);
 
 function onRowClick() {
+  if (!props.productCode) {
+    return message("请选择产品型号", { type: "error" });
+  }
   const { PageUrl, setRouterInfo } = menuPageRouter();
   setRouterInfo(PageUrl.materialMgmt, () => {
     addDialog({
       title: "选择物料",
-      props: { tableHeight: 300, isModal: true },
+      props: { tableHeight: 300, isModal: true, productCode: props.productCode },
       width: "85%",
       draggable: true,
       fullscreenIcon: true,
@@ -36,7 +40,7 @@ function onRowClick() {
         if (!rowData.value) return message("请选择物料", { type: "error" });
         showMessageBox(`确认选择所选物料吗?`).then(() => {
           emits("update:modelValue", rowData.value.id);
-          emits("checkMaterial", rowData.value);
+          emits("select", rowData.value);
           done();
         });
       }

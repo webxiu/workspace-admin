@@ -1,7 +1,7 @@
 import { h, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 
-import { getMenuColumns, setColumn, updateButtonList, editTableRender } from "@/utils/table";
+import { getMenuColumns, setColumn, updateButtonList, tableEditRender } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import {
@@ -78,7 +78,7 @@ export const useConfig = () => {
   });
 
   // 编辑表格
-  const { editCellRender } = editTableRender();
+  const { editCellRender } = tableEditRender();
 
   const getColumnConfig = async (btns) => {
     const nameRender = (data) => editCellRender({ data });

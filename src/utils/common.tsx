@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-09 14:33:55
+ * @Last Modified time: 2024-10-16 14:34:48
  */
 
 import { ElMessage, ElMessageBox, FormRules, dayjs } from "element-plus";
@@ -29,6 +29,15 @@ export function toParse(str) {
 /** 获取数据类型 */
 export function getType(data) {
   return Object.prototype.toString.call(data).slice(8, -1).toLowerCase();
+}
+
+/** 路由地址转驼峰 */
+export function toCamelCase(url: string) {
+  return url
+    .split("/")
+    .filter(Boolean)
+    .map((dir) => dir.charAt(0).toUpperCase() + dir.slice(1))
+    .join("");
 }
 
 /** 时间格日期 */
@@ -403,9 +412,9 @@ export const readXlsx = (file: File, sheetConfig = {}) => {
 export const openInVScode = (vscodeMain, { path }) => {
   path = !path.includes("index") ? `${path}/index` : path;
   const openURL = vscodeMain + __ROOT__ + `/src/views${path}.vue`;
-  window.open(openURL, "在vscode中打开", "width=800,height=600,resizable=yes");
+  const newWindow = window.open(openURL, "在vscode中打开", "width=50,height=50,resizable=yes");
   const timer = setTimeout(() => {
-    window.close();
+    newWindow.close();
     clearTimeout(timer);
-  }, 2000);
+  }, 1000);
 };

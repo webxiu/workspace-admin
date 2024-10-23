@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-07-31 16:21:53
+ * @Last Modified time: 2024-10-16 10:03:35
  */
 
 import {
@@ -90,8 +90,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.billId = values.billId;
-    formData.prefix = values.prefix;
+    Object.assign(formData, values);
     getTableList();
   };
 

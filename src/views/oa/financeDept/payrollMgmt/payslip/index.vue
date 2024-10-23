@@ -27,6 +27,8 @@ const {
   handleSelectionChange
 } = useConfig();
 
+const baseApi = import.meta.env.VITE_BASE_API;
+
 const getSummaries = (param) => {
   const { columns, data } = param;
   const sums: string[] = [];
@@ -101,8 +103,35 @@ const getSummaries = (param) => {
           @row-click="onRowClick"
           @selection-change="handleSelectionChange"
           @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-        />
+        >
+          <template #signatureFilePath="{ row }">
+            <div class="wrap-img-money">
+              <el-image
+                alt="加载失败"
+                v-if="row.signatureFilePath"
+                style="width: 60px; height: 20px"
+                :src="baseApi + row.signatureFilePath"
+                :zoom-rate="1.2"
+                :max-scale="7"
+                :min-scale="0.2"
+                preview-teleported
+                :preview-src-list="[baseApi + row.signatureFilePath]"
+                :initial-index="4"
+                fit="cover"
+              />
+              <div v-else />
+            </div>
+          </template>
+        </pure-table>
       </template>
     </PureTableBar>
   </div>
 </template>
+
+<style scoped>
+.wrap-img-money {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

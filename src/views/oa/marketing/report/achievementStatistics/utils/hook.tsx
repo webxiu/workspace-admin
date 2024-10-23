@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-11 14:47:46
+ * @Last Modified time: 2024-10-10 16:06:53
  */
 
 import {
@@ -136,8 +136,8 @@ export const useConfig = () => {
     columns2.value = setColumn({ columnData: columnData2, operationColumn: false, radioColumn: { width: 50 } });
   };
 
-  const onTagSearch = (values) => {
-    const [startDate, endDate] = values.date.split("~").map((m) => m.trim());
+  const onTagSearch = ({ date = "", ...values }) => {
+    const [startDate, endDate] = date.split("~").map((m) => m.trim());
     formData.startDate = startDate;
     formData.endDate = endDate;
     formData.salePeopleId = values.salePeopleId;

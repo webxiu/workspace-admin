@@ -2,20 +2,15 @@
  * @Author: Hailen
  * @Date: 2023-06-23 09:57:10
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-12 11:03:20
+ * @Last Modified time: 2024-10-10 15:48:58
  */
 
 import type { EChartsOption } from "echarts";
 import { getLineOption } from "@/utils/echarts";
 import regExp from "@/utils/regExp";
 
-export interface AddOrderType {
-  data: Array<any>;
-  xAxis: string[];
-}
-
 // 获取图表配置
-export const getOption = (opeions: AddOrderType) => {
+export const getOption = (opeions: { data: Array<any>; xAxis: string[] }) => {
   const { data, xAxis } = opeions;
   const accessory: number[] = [];
   const machine: number[] = [];
@@ -29,8 +24,8 @@ export const getOption = (opeions: AddOrderType) => {
     }
   });
   const option1: EChartsOption = getLineOption({
-    title: "新增销售订单数量（单位：Pcs）",
-    xAxis: xAxis,
+    title: { text: "新增销售订单数量（单位：Pcs）" },
+    xAxis: { data: xAxis },
     series: [
       { name: "配件", data: accessory },
       { name: "整机", data: machine }

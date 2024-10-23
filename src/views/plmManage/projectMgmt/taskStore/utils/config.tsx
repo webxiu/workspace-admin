@@ -1,5 +1,5 @@
-import { editTableRender, setColumn } from "@/utils/table";
 import { reactive, ref } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import { ElMessage } from "element-plus";
 import { FormRules } from "element-plus";
@@ -46,7 +46,7 @@ export const formConfigs = ({ roleList, _formData, allDeliverTemplates }) => {
   };
 
   // 编辑表格
-  const { editCellRender } = editTableRender();
+  const { editCellRender } = tableEditRender();
 
   const columns: TableColumnList[] = [
     { label: "交付物名称", prop: "name", cellRenderer: (data) => editCellRender({ data }) },

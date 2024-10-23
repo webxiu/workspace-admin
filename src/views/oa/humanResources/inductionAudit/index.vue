@@ -26,12 +26,9 @@ const {
   buttonList,
   onTagSearch,
   onRefresh,
-  onAudit,
-  onDelete,
   onSelect,
   onSelectAll,
   onRowClick,
-  onNodeDetail,
   onSizeChange,
   onCurrentChange
 } = useConfig();
@@ -70,17 +67,7 @@ const {
           @page-size-change="onSizeChange"
           @page-current-change="onCurrentChange"
           @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-        >
-          <template #operation="{ row }">
-            <el-button size="small" @click.stop="onAudit(row)">审核</el-button>
-            <el-button :disabled="![1, 2].includes(row.state)" size="small" @click.stop="onNodeDetail(row)">审核详情</el-button>
-            <el-popconfirm :width="280" :title="`确认删除\n【${row.staffName}】吗?`" @confirm="onDelete([row])">
-              <template #reference>
-                <el-button size="small" type="danger" @click.stop>删除</el-button>
-              </template>
-            </el-popconfirm>
-          </template>
-        </pure-table>
+        />
       </template>
     </PureTableBar>
     <BasicInfo v-if="rowData?.id" :maxHeight="maxHeight" :id="rowData?.id" />

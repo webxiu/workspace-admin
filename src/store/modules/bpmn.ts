@@ -4,7 +4,8 @@ import { store } from "@/store";
 export const useBpmnFlowStore = defineStore({
   id: "bpmn-setting",
   state: () => ({
-    taskLists: []
+    taskLists: [],
+    deptLevels: []
   }),
   getters: {
     getTaskList(state) {
@@ -12,10 +13,12 @@ export const useBpmnFlowStore = defineStore({
     }
   },
   actions: {
-    setTaskList({ key, value }) {
-      if (Reflect.has(this, key)) {
-        this[key] = value;
-      }
+    setBpmnData(obj: Record<string, any>) {
+      Object.keys(obj).forEach((key) => {
+        if (Reflect.has(obj, key)) {
+          this[key] = obj[key];
+        }
+      });
     }
   }
 });

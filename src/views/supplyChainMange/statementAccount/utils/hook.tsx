@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-24 15:27:22
+ * @Last Modified time: 2024-10-16 17:47:52
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -13,10 +13,10 @@ import { PAGE_CONFIG } from "@/config/constant";
 
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
-import { onDownload, downloadFile, getFileNameOnUrlPath, formatDate } from "@/utils/common";
+import { onDownload, downloadFile, getFileNameOnUrlPath, formatDate, commonBackLogic } from "@/utils/common";
 import { setColumn, getMenuColumns, updateButtonList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
-import { Download, Folder, Upload, View, Tickets, Position } from "@element-plus/icons-vue";
+import { Download, Folder, Upload, View, Tickets, Position, Document } from "@element-plus/icons-vue";
 import { getkkViewUrl } from "@/utils/storage";
 import { addDialog } from "@/components/ReDialog";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
@@ -406,6 +406,24 @@ export const useConfig = () => {
     });
   });
 
+  const onBackStatement = wrapFn(rowData, () => {
+    const { statementOAVO } = rowData.value;
+    const { billNo, billState } = statementOAVO || {};
+    if (!billNo || ![StateInfo.audit, StateInfo.audited].includes(billState)) {
+      return message("只有审核中和已审核的单据才能进行回退", { type: "warning" });
+    }
+    commonBackLogic(billNo, getTableList);
+  });
+
+  const onBackInvoice = wrapFn(rowData, () => {
+    const { statementInvoiceOAVO } = rowData.value;
+    const { billNo, billState } = statementInvoiceOAVO || {};
+    if (!billNo || ![StateInfo.audit, StateInfo.audited].includes(billState)) {
+      return message("只有审核中和已审核的单据才能进行回退", { type: "warning" });
+    }
+    commonBackLogic(billNo, getTableList);
+  });
+
   const buttonList = ref<ButtonItemType[]>([
     {
       type: "primary",
@@ -426,6 +444,8 @@ export const useConfig = () => {
     { clickHandler: onView, type: "warning", text: "预览详情", icon: Folder, isDropDown: true },
     { clickHandler: invoiceDetail, type: "warning", text: "发票审批详情", icon: Folder, isDropDown: true },
     { clickHandler: statementDetail, type: "warning", text: "对账单审批详情", icon: Folder, isDropDown: true },
+    { clickHandler: onBackStatement, type: "primary", text: "回退对账单", icon: Tickets, isDropDown: true },
+    { clickHandler: onBackInvoice, type: "primary", text: "回退发票", icon: Document, isDropDown: true },
     { clickHandler: onExport, type: "info", text: "导出", icon: Position, isDropDown: true }
   ]);
 

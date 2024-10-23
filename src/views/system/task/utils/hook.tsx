@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-11 16:40:06
+ * @Last Modified time: 2024-10-16 10:20:04
  */
 
 import { Ref, onMounted, h, reactive, ref } from "vue";
@@ -36,6 +36,7 @@ import {
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { PAGE_CONFIG } from "@/config/constant";
 import { ElMessage } from "element-plus";
+import Cron from "../cron/index.vue";
 
 /** 添加类型 */
 type AddType = "role" | "user";
@@ -134,7 +135,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.taskName = values.taskName;
+    Object.assign(formData, values);
     getTableList();
   };
 
@@ -142,12 +143,12 @@ export const useConfig = () => {
   const getTableList = () => {
     loading.value = true;
     taskScheduleList(formData)
-      .then((res: any) => {
+      .then(({ data }) => {
         loading.value = false;
-        dataList.value = res.data;
-        pagination.total = res.data.length;
-        const curRows = res.data.find((item) => item.id === rowData.value.id) || {};
-        onRowClick(curRows);
+        dataList.value = data.records || [];
+        pagination.total = data.total;
+        const curRows = dataList.value.find((item) => item.id === rowData.value.id);
+        if (curRows) onRowClick(curRows);
       })
       .catch((err) => (loading.value = false));
   };
@@ -222,6 +223,7 @@ export const useConfig = () => {
       taskType: row?.taskType !== undefined ? `${row?.taskType}` : "",
       adviceByQywx: row?.adviceByQywx ?? false,
       adviceByEmail: row?.adviceByEmail ?? false,
+      limitedWorkingDay: row?.limitedWorkingDay ?? false,
       emailAdviceWay: row?.emailAdviceWay ?? undefined
     });
 
@@ -245,13 +247,27 @@ export const useConfig = () => {
       })
       .finally(() => (sLoading.value = false));
 
+    const onSetCronSchedule = () => {
+      const modalIns = addDialog({
+        title: `设置cron表达式`,
+        props: {},
+        width: "760px",
+        draggable: true,
+        fullscreenIcon: true,
+        closeOnClickModal: false,
+        showResetButton: true,
+        hideFooter: true,
+        contentRenderer: () => h(Cron, { ref: formRef, modalIns, formData })
+      });
+    };
+
     addDialog({
       title: `${title}定时任务`,
       props: {
         loading: sLoading,
         formInline: formData,
         formRules: formRules(formData),
-        formConfigs: formConfigs({ statusOptions, dataSourceOptions, pushTypeOptions, taskTypeOption, formData }),
+        formConfigs: formConfigs({ statusOptions, dataSourceOptions, onSetCronSchedule, pushTypeOptions, taskTypeOption, formData }),
         formProps: { labelWidth: "100px" }
       },
       width: "860px",

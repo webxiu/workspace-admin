@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="tsx">
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import { ElMessage } from "element-plus";
 import { ref } from "vue";
@@ -38,7 +38,7 @@ const taskName = ref("");
 const props = defineProps(["disabled"]);
 
 // 编辑表格
-const { editCellRender } = editTableRender();
+const { editCellRender } = tableEditRender();
 
 const columnData: TableColumnList[] = [
   {

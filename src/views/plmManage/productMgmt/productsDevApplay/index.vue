@@ -85,11 +85,12 @@ onMounted(() => {
       </template>
       <template #buttons>
         <ButtonList :buttonList="buttonList" :auto-layout="false" moreActionText="业务操作" />
-        <el-dialog v-model="dialogVisible" title="选择模板" :width="340">
+        <el-dialog v-model="dialogVisible" title="选择模板" :width="440">
           <div>
             <el-form :model="formData" label-position="left" :rules="rules" ref="formRef">
               <el-form-item label="选择模板" required prop="selectedTemplate">
                 <el-cascader
+                style="width: 100%;"
                   v-model="formData.selectedTemplate"
                   :options="templateOpts"
                   :props="{

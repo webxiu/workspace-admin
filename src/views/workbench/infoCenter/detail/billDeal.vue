@@ -49,7 +49,7 @@ import { menuPageRouter } from "@/config/constant";
 import LeaveApply from "@/views/oa/humanResources/leaveApply/detail/index.vue";
 import OvertimeOrder from "@/views/oa/humanResources/overtimeOrder/detail/index.vue";
 import SupplyChainOrdersDetail from "@/views/supplyChainMange/orders/utils/orderDetail.vue";
-import ProductsDevApplay from "@/views/plmManage/productMgmt/productsDevApplay/add/index.vue";
+import ProductsDevApplay from "@/views/plmManage/productMgmt/productsDevApplay/infoCenterDetail/index.vue";
 import SQLDetail from "@/views/system/develop/database/Detail.vue";
 import TestDetail from "@/views/plmManage/laboratory/testReport/Detail.vue";
 import GetOutDetail from "@/views/oa/humanResources/businessRecord/Detail.vue";
@@ -62,6 +62,11 @@ import QuotationDetail from "@/views/oa/marketing/saleManage/quotation/infoCente
 import DeliverDetail from "@/views/plmManage/projectMgmt/projectManage/add/components/deliverDetail/index.vue";
 // import reportDetail from "@/views/plmManage/projectMgmt/projectManage/add/components/reportingDetail/index.vue";
 import DeliverChangeDetail from "@/views/plmManage/projectMgmt/deliveryChange/infoCenterDetail/index.vue";
+import MoldApplyDetail from "@/views/plmManage/moldManage/moldApply/infoCenterDetail/index.vue";
+import DR0ApplyDetail from "@/views/plmManage/productMgmt/DR0Apply/infoCenterDetail/index.vue";
+import HandleMadeApplyDetail from "@/views/oa/marketing/saleManage/handleMake/infoCenterDetail/index.vue";
+import ResignApplyDetail from "@/views/oa/humanResources/resignApply/Detail.vue";
+
 interface Props {
   id: string;
   loading: boolean;
@@ -98,6 +103,7 @@ const isAudit = ref(false);
 const isApproveSubmit = ref(false);
 const saleQuatationRef = ref();
 const DeliverRef = ref();
+const handleMakeRef = ref();
 
 /** 详情内容 */
 const DetailComp = computed(() => {
@@ -109,7 +115,6 @@ const DetailComp = computed(() => {
     /* SQL执行审批 */
     "/sys/sys/sqlexecuteapproval/selectdetailbyid/index": () => <SQLDetail id={props.id} />,
     /* 供应链订单处理 */
-    // "/sup/orderprocessing/edit": () => <SupplyChainOrders id={props.id} authFlag={false} />,
     "/sup/orderprocessing/edit": () => <SupplyChainOrdersDetail fbillno={props.billNo} source="infoCenter" />,
     /* 产品开发申请表 */
     "/plm/pm/productdev/editproductdev/index": () => <ProductsDevApplay id={props.id} />,
@@ -127,18 +132,25 @@ const DetailComp = computed(() => {
     "/plm/pm/projectinfo/edit": () => <PlmManageProjectMgmtProjectManageAddIndex flowInfoData={{ billNo: props.billNo, processDefId: props.processDefId }} />,
     /* 我的工单流程 */
     "/oa/sys/systaskregister": () => <MyWorkOrderDetail type="view" id={props.id} />,
+    /** 报价申请 */
+    "/oa/mk/quoteapply": () => <QuotationDetail id={props.id} ref={saleQuatationRef} rowData={{ ...props }} />,
+    /** 交付物审批 */
+    "/plm/pm/deliverable": () => <DeliverDetail ref={DeliverRef} rowData={{ ...props }} />,
+    /** 交付物变更 */
+    "/plm/pm/deliverchange": () => <DeliverChangeDetail id={props.id} rowData={{ ...props }} />,
+    /** 开模申请 */
+    "/plm/mold/apply": () => <MoldApplyDetail id={props.id} rowData={{ ...props }} />,
+    /** DR0开发申请 */
+    "/plm/prod/dr0": () => <DR0ApplyDetail id={props.id} rowData={{ ...props }} />,
+    /** 手板制作申请 */
+    "/oa/mfg/mc/prototyping": () => <HandleMadeApplyDetail ref={handleMakeRef} id={props.id} rowData={{ ...props }} />,
+    /** 离职申请 */
+    "/oa/hr/resignapply": () => <ResignApplyDetail type="view" id={props.id} />,
+
     /* 入职审核(未添加) */
     "/oa/induction/appr": () => <InductionDetail approveFn={approveFn} id={props.id} />,
     /* 签到补卡(未添加) */
-    "/oa/hr/attendance/replenish": () => <h1>开发中...</h1>,
-    /** 销售报价 */
-    "/oa/mk/xxxxx": () => <QuotationDetail id={props.id} ref={saleQuatationRef} rowData={{ ...props }} />,
-    /** 交付物审批 */
-    "/plm/pm/deliverable": () => <DeliverDetail ref={DeliverRef} rowData={{ ...props }} />,
-    /** 交付物工作汇报审批 */
-    // "/plm/pm/report": () => <ReportDetail ref={DeliverReportRef} rowData={{ ...props }} />,
-    /** 交付物变更 */
-    "/plm/xxxx": () => <DeliverChangeDetail id={props.id} rowData={{ ...props }} />
+    "/oa/hr/attendance/replenish": () => <h1>开发中...</h1>
   }[props.formUrl];
 });
 
@@ -171,6 +183,13 @@ const onSubmit = async () => {
 
   if (props.formUrl === "/oa/mk/xxxxx") {
     if (saleQuatationRef.value) saleQuatationRef.value.submitAction({ ...props, ...formInline });
+    return;
+  }
+
+  if (props.formUrl === "/oa/mfg/mc/prototyping") {
+    if (handleMakeRef.value) {
+      console.log(handleMakeRef.value, "ref===");
+    }
     return;
   }
 
@@ -226,4 +245,3 @@ const onSubmit = async () => {
   margin-right: 0;
 }
 </style>
-@/views/plmManage/projectMgmt/deliveryChange/infoCenterDetail/index.vue

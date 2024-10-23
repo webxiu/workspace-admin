@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-07-05 11:45:27 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-07-05 11:45:27 
+ * @Author: Hailen
+ * @Date: 2023-07-05 11:45:27
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-07-05 11:45:27
  */ -->
 
 <script setup lang="ts">
@@ -16,7 +16,7 @@ defineOptions({ name: "PlmManageBasicDataBomFrontIndex" });
 
 const tableRef = ref<HTMLDivElement>();
 
-const { loading, columns, dataList, onSearch, onFresh, maxHeight, cellDblclick, buttonList, handleTagSearch, onExport } = useConfig();
+const { loading, columns, dataList, onFresh, maxHeight, cellDblclick, buttonList, handleTagSearch } = useConfig();
 </script>
 
 <template>

@@ -2,27 +2,15 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-24 16:08:08
+ * @Last Modified time: 2024-10-21 17:25:27
  */
 
-import { h, nextTick, onMounted, reactive, ref } from "vue";
-import {
-  teamMemberList,
-  teamMemberListByDepId,
-  TeamMemberItemType,
-  addDepGroup,
-  editDepGroup,
-  deleteDepGroup,
-  updateDepGroup
-} from "@/api/workbench/teamManage";
+import { nextTick, onMounted, reactive, ref } from "vue";
+import { TeamMemberItemType } from "@/api/workbench/teamManage";
 
 import { message } from "@/utils/message";
 import { type PaginationProps } from "@pureadmin/table";
-import { addDialog } from "@/components/ReDialog";
 import { ElMessage, ElMessageBox } from "element-plus";
-import editForm, { FormDataItem } from "./form.vue";
-import workForm, { DepInfoItemTree } from "./workForm.vue";
-import { getUserInfo } from "@/utils/storage";
 import { useEleHeight } from "@/hooks";
 import {
   backMaterialInfo,
@@ -37,15 +25,7 @@ import {
 import { useRoute, useRouter } from "vue-router";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { PAGE_CONFIG } from "@/config/constant";
-
-export interface QueryType {
-  page: number;
-  limit: number;
-  staffId?: string;
-  staffName?: string;
-  deptId?: number;
-  groupId?: number;
-}
+import { commonSubmit } from "@/api/systemManage";
 
 /** 组别类型 */
 export interface DepGroupItemTree {
@@ -162,13 +142,12 @@ export const getConfig = async (buttonList) => {
   return columns;
 };
 
-export function useTable(emits, isModal) {
+export function useTable(emits, { isModal, productCode }) {
   const formRef = ref();
   const currentRow: any = ref({});
   const curNodeName = ref("0");
   const curNodeLabel = ref("0");
   const depGroupTree = ref<DepGroupItemTree[]>([]);
-  const depInfoTree = ref<DepInfoItemTree[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref<TeamMemberItemType[]>([]);
   const columns = ref<TableColumnList[]>([]);
@@ -215,7 +194,6 @@ export function useTable(emits, isModal) {
    */
   const onSearch = (rowIndex?) => {
     currentRow.value = {};
-    console.log("rignt data");
     // 处理时间范围
     const { date = "" } = formData;
     if (date) {
@@ -225,7 +203,7 @@ export function useTable(emits, isModal) {
     }
 
     loading.value = true;
-    fetchMaterialList(formData)
+    fetchMaterialList({ ...formData, goodModel: productCode ?? undefined })
       .then((res: any) => {
         const { total, records } = res.data;
         loading.value = false;
@@ -254,23 +232,7 @@ export function useTable(emits, isModal) {
   };
 
   const handleTagSearch = (values) => {
-    console.log(values, "values");
-    // formData.staffId = values.staffId;
-    // Object.keys(values).forEach((el) => {
-    //   formData[el] = values[el];
-    // });
     formData = { ...values, page: 1, limit: PAGE_CONFIG.pageSize };
-    console.log(formData, "准备发送请求");
-
-    // console.log(formData,'')
-    // console.log(values, "values");
-    // formData.staffName = values.staffName;
-    onSearch();
-  };
-
-  const resetForm = (formEl) => {
-    if (!formEl) return;
-    formEl.resetFields();
     onSearch();
   };
 
@@ -284,39 +246,29 @@ export function useTable(emits, isModal) {
     return null;
   }
 
-  // 点击当前组节点
-  const onNodeClick = (data: DepGroupItemTree) => {
-    // if (!data.parentId) {
-    //   formData.deptId = data.id;
-    //   delete formData.groupId;
-    // } else {
-    //   formData.groupId = data.id;
-    //   delete formData.deptId;
-    // }
-    // onSearch("single");
-  };
-
   // 新增分组
   const onAdd = () => {
-    console.log(curNodeName.value, "curNodeName.value");
-    console.log(curNodeLabel.value, "curNodeLabel.value");
-    console.log(route.query, "rrr===query");
-    router.push(
-      `/plmManage/basicData/materialMgmt/add?number=${curNodeName.value}&code=${curNodeLabel.value}&type=add&isNewTag=yes&menuId=${route.query.menuId}`
-    );
+    router.push({
+      path: "/plmManage/basicData/materialMgmt/add",
+      query: { number: curNodeName.value, code: curNodeLabel.value, type: "add", isNewTag: "yes", menuId: route.query.menuId }
+    });
   };
 
   // 查看物料
   const dbClick = (row) => {
     if (isModal) return;
     if (row.state === 2) {
-      router.push(`/plmManage/basicData/materialMgmt/view?id=${row.id}&type=view&isNewTag=yes&menuId=${route.query.menuId}`);
-      return;
+      router.push({
+        path: `/plmManage/basicData/materialMgmt/view`,
+        query: { id: row.id, type: "view", isNewTag: "yes", menuId: route.query.menuId }
+      });
     }
 
     if (row.state === 3) {
-      router.push(`/plmManage/basicData/materialMgmt/edit?id=${row.id}&type=edit&isNewTag=yes&menuId=${route.query.menuId}`);
-      return;
+      router.push({
+        path: `/plmManage/basicData/materialMgmt/edit`,
+        query: { id: row.id, type: "edit", isNewTag: "yes", menuId: route.query.menuId }
+      });
     }
   };
 
@@ -330,7 +282,10 @@ export function useTable(emits, isModal) {
         });
         return;
       }
-      router.push(`/plmManage/basicData/materialMgmt/edit?id=${currentRow.value.id}&type=edit&isNewTag=yes&menuId=${route.query.menuId}`);
+      router.push({
+        path: `/plmManage/basicData/materialMgmt/edit`,
+        query: { id: currentRow.value.id, type: "edit", isNewTag: "yes", menuId: route.query.menuId }
+      });
       return;
     }
     ElMessage({
@@ -430,7 +385,8 @@ export function useTable(emits, isModal) {
           loading.value = true;
           let res: any;
           if (text === "提交") {
-            res = submitMaterialInfo({ id: currentRow.value.id });
+            // res = submitMaterialInfo({ id: currentRow.value.id });
+            res = commonSubmit({ billId: "10007", billNo: currentRow.value.billNo });
           } else if (text === "回退") {
             res = backMaterialInfo({ id: currentRow.value.id });
           } else if (text === "下推") {
@@ -453,65 +409,6 @@ export function useTable(emits, isModal) {
     }
   };
 
-  // 添加、编辑弹窗
-  function openDialog(type: HandleType, row?: DepGroupItemTree) {
-    const titleObj = { add: "新增", edit: "修改" };
-    const title = titleObj[type];
-    const userInfo = getUserInfo();
-    const deptName = GetDeptName(depGroupTree.value, userInfo.deptId);
-    const groupName = type === "add" ? "" : row.title;
-    const groupId = type === "add" ? undefined : row.id;
-    const _formData: FormDataItem = {
-      parentId: "",
-      groupName: groupName,
-      leaderId: row.leaderId,
-      deptName: deptName,
-      groupCode: row.groupCode,
-      deptId: userInfo.deptId,
-      id: groupId
-    };
-    addDialog({
-      title: `${title}分组`,
-      width: "640px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: { type: type, formInline: _formData },
-      contentRenderer: () => h(editForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormDataItem;
-        FormRef.validate((valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要【${title}分组】吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitGroup(type, title, curData, () => {
-                done();
-              });
-            });
-          }
-        });
-      }
-    });
-  }
-
-  // 添加、编辑提交
-  const onSubmitGroup = (type: HandleType, title: string, data: FormDataItem, callback: Function) => {
-    const API = { add: addDepGroup, edit: editDepGroup };
-    API[type]({ ...data, parentId: data.parentId || 0 })
-      .then((res) => {
-        if (!res.data) throw res.message;
-        callback();
-        message(`${title}成功`, { type: "success" });
-      })
-      .catch(console.log);
-  };
-
   // 分页相关
   function handleSizeChange(val: number) {
     formData.limit = val;
@@ -523,55 +420,11 @@ export function useTable(emits, isModal) {
     onSearch();
   }
 
-  // 修改员工岗位
-  async function handleEdit(row: TeamMemberItemType) {
-    const formWorkData = reactive({
-      staffName: row.staffName,
-      roleId: row.roleId,
-      deptId: row.deptId ? `${row.deptId}` : "",
-      groupId: row.groupId ? `${row.groupId}` : "",
-      id: row.id
-    });
-    addDialog({
-      title: "修改岗位",
-      width: "640px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: { row: row, formInline: formWorkData, depInfoTree: depInfoTree.value },
-      contentRenderer: () => h(workForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormDataItem;
-        FormRef.validate((valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要提交修改吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              updateDepGroup(curData)
-                .then((res) => {
-                  done();
-                  onSearch();
-                  message("修改成功", { type: "success" });
-                })
-                .catch(console.log);
-            });
-          }
-        });
-      }
-    });
-  }
-
   // 点击表格行
   const rowClick = (row) => {
-    currentRow.value = row;
     materialMainTable.value?.getTableRef()?.clearSelection();
     materialMainTable.value?.getTableRef()?.toggleRowSelection(row);
-    console.log("row", row);
+    currentRow.value = row;
     emits("selectRow", row);
   };
 
@@ -583,7 +436,6 @@ export function useTable(emits, isModal) {
         return { field: item.prop, title: item.label, width: 160, key: `0-${index}`, hide: false, colspan: 1, rowspan: 1, type: "normal", colGroup: false };
       })
       .filter((item) => item.field && item.field !== "index");
-    // console.log(formData, "formdata");
 
     const headConfig = {
       excel: {

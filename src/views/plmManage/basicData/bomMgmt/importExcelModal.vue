@@ -8,14 +8,7 @@
         <el-option label="组装" value="组装" />
       </el-select>
     </div>
-    <el-table
-      size="small"
-      ref="multipleTableRef"
-      :data="tableData"
-      style="width: 100%; height: 450px"
-      @row-click="onRowClick"
-      @selection-change="handleSelectionChange"
-    >
+    <el-table size="small" ref="multipleTableRef" :data="tableData" style="width: 100%; height: 450px" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column label="序号" type="index" width="60" />
       <el-table-column :key="item.prop" v-for="item in columnsData" :label="item.prop" :property="item.prop" :min-width="item.width" show-overflow-tooltip />
@@ -24,9 +17,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { ElTable } from "element-plus";
-import { onMounted } from "vue";
 
 const multipleTableRef = ref<InstanceType<typeof ElTable>>();
 const multipleSelection = ref<any[]>([]);
@@ -52,10 +44,6 @@ const handleSelectionChange = (val: any[]) => {
   if (typeof props.selectionCallBack === "function") props.selectionCallBack(val);
 };
 
-const onRowClick = (row) => {
-  // multipleTableRef.value?.toggleRowSelection(row, undefined);
-};
-
 const columnsData = [
   { prop: "爆炸图编号", width: 90 },
   { prop: "ERP层次", width: 80 },
@@ -68,9 +56,7 @@ const columnsData = [
   { prop: "单位", width: 50 },
   { prop: "用量", width: 50 },
   { prop: "制造商", width: 80 }
-  // { prop: "备注", width: 160 }
 ];
-// "ERP层次", "材料类型", "物料编码", "物料名称", "规格描述", "单位", "用量", "认证号", "制造商", "备注"];
 
 const setTableData = (v) => {
   console.log(v, "vv");

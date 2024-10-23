@@ -23,6 +23,7 @@
         </template>
         <template #buttons>
           <ButtonList :buttonList="buttonList" :auto-layout="false" moreActionText="业务操作" />
+          <input style="display: none" type="file" accept=".xls,.xlsx" id="importMaterialProp" @change="onChangeFileInput" />
         </template>
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
@@ -69,6 +70,7 @@ const {
   categoryTreeData,
   searchOptions,
   handleNodeClick,
+  onChangeFileInput,
   handleTagSearch,
   curNodeName
 } = useTable();

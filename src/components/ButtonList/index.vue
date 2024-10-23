@@ -24,6 +24,7 @@ const sliceNum = ref(1); // 默认显示的个数 除了更多按钮外
 const parentBox = ref(null);
 const parentBoxWidth = ref("");
 const moreBtnRef = ref(null);
+const uploadRefs = ref([]);
 
 // 初始化按钮数量
 const initBtnNum = debounce(() => {
@@ -88,31 +89,23 @@ const calcBackList = computed<ButtonItemType[]>(() => {
 </script>
 
 <template>
-  <div class="">
-    <div class="wrapper-btn" ref="parentBox">
-      <template v-for="(item, index) in calcFrontList" :key="index">
-        <!-- 处理是上传按钮包裹el-upload -->
-        <el-upload v-if="item.uploadProp" :show-file-list="false" style="margin: 0 12px" v-bind="item.uploadProp">
-          <el-button
-            v-bind="$attrs"
-            :loading="item.loading"
-            :disabled="item.disabled"
-            :dark="item.dark"
-            :icon="item.icon || null"
-            :style="{ width: item.width }"
-            :color="item.color"
-            :auto-insert-space="item['auto-insert-space']"
-            :circle="item.circle"
-            :round="item.round"
-            :size="item.size"
-            @click="item.clickHandler && item.clickHandler(item)"
-            :type="item.type"
-          >
-            {{ item.text }}
-          </el-button>
-        </el-upload>
+  <div class="wrapper-btn" ref="parentBox">
+    <template v-for="(item, index) in calcFrontList" :key="index">
+      <!-- 处理是上传按钮包裹el-upload -->
+      <el-upload
+        v-if="item.uploadProp"
+        :show-file-list="false"
+        style="margin: 0 12px"
+        v-bind="item.uploadProp"
+        :ref="(el) => (uploadRefs[item.text] = el)"
+        :on-change="
+          (...res) => {
+            item.uploadProp.onChange(...res);
+            uploadRefs[item.text].clearFiles();
+          }
+        "
+      >
         <el-button
-          v-else
           v-bind="$attrs"
           :loading="item.loading"
           :disabled="item.disabled"
@@ -129,29 +122,58 @@ const calcBackList = computed<ButtonItemType[]>(() => {
         >
           {{ item.text }}
         </el-button>
-      </template>
+      </el-upload>
+      <el-button
+        v-else
+        v-bind="$attrs"
+        :loading="item.loading"
+        :disabled="item.disabled"
+        :dark="item.dark"
+        :icon="item.icon || null"
+        :style="{ width: item.width }"
+        :color="item.color"
+        :auto-insert-space="item['auto-insert-space']"
+        :circle="item.circle"
+        :round="item.round"
+        :size="item.size"
+        @click="item.clickHandler && item.clickHandler(item)"
+        :type="item.type"
+      >
+        {{ item.text }}
+      </el-button>
+    </template>
 
-      <el-dropdown trigger="click" style="margin-left: 10px" v-show="calcBackList.length" :teleported="false">
-        <el-button type="primary" ref="moreBtnRef" v-bind="$attrs">
-          {{ moreActionText || "业务操作" }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
-        </el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <template v-for="(el, idx) in calcBackList" :key="idx">
-              <!-- 处理是上传按钮包裹el-upload -->
-              <el-upload v-if="el.uploadProp" :show-file-list="false" v-bind="el.uploadProp">
-                <el-dropdown-item :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler && el.clickHandler(el)">
-                  {{ el.text }}
-                </el-dropdown-item>
-              </el-upload>
-              <el-dropdown-item v-else :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler && el.clickHandler(el)">
+    <el-dropdown trigger="click" style="margin-left: 10px" v-show="calcBackList.length" :teleported="false">
+      <el-button type="primary" ref="moreBtnRef" v-bind="$attrs">
+        {{ moreActionText || "业务操作" }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
+      </el-button>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <template v-for="(el, idx) in calcBackList" :key="idx">
+            <!-- 处理是上传按钮包裹el-upload -->
+            <el-upload
+              v-if="el.uploadProp"
+              :show-file-list="false"
+              v-bind="el.uploadProp"
+              :ref="(val) => (uploadRefs[el.text] = val)"
+              :on-change="
+                (...res) => {
+                  el.uploadProp.onChange(...res);
+                  uploadRefs[el.text].clearFiles();
+                }
+              "
+            >
+              <el-dropdown-item :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler && el.clickHandler(el)">
                 {{ el.text }}
               </el-dropdown-item>
-            </template>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-    </div>
+            </el-upload>
+            <el-dropdown-item v-else :disabled="el.disabled" :style="{ color: el.color }" :icon="el.icon" @click="el.clickHandler && el.clickHandler(el)">
+              {{ el.text }}
+            </el-dropdown-item>
+          </template>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
   </div>
 </template>
 

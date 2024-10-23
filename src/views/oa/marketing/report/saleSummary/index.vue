@@ -57,6 +57,7 @@ const { columns, columns2, dataList, dataList2, loading, buttonList, loading2, m
           :data="dataList2"
           :columns="dynamicColumns"
           :paginationSmall="size === 'small'"
+          highlight-current-row
           :show-overflow-tooltip="true"
           @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns2)"
         />

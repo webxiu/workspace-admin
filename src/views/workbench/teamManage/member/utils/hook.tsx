@@ -292,7 +292,7 @@ export function useConfig() {
     const formData = reactive({
       staffName: row.staffName,
       roleId: row.roleId,
-      deptId: row.deptId ?? "",
+      deptId: row.deptId ? row.deptId + "" : "",
       groupId: row.groupId ?? "",
       id: row.id
     });

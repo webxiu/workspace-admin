@@ -51,6 +51,7 @@ export interface PayslipDataItemType {
   YearMonth: string;
   YiFaGongZi: string;
   JiaBanFei0: string;
+  signatureFilePath?: string;
 }
 /** ========================= 财务报表(标准成本) ========================= */
 /** 标准成本列表类型 */

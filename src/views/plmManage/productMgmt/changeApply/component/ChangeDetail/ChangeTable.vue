@@ -2,12 +2,12 @@
 import { Delete, Plus } from "@element-plus/icons-vue";
 
 import { PureTableBar } from "@/components/RePureTableBar";
-import { editTableRender, setColumn } from "@/utils/table";
+import { tableEditRender, setColumn } from "@/utils/table";
 import { message, showMessageBox } from "@/utils/message";
 import { ref, watch } from "vue";
 
 const emits = defineEmits(["change"]);
-const { editCellRender } = editTableRender();
+const { editCellRender } = tableEditRender();
 const cellRenderer = (data) => editCellRender({ data });
 
 const rowsData = ref([]);

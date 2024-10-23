@@ -28,7 +28,6 @@ export const useContextMenu = () => {
 
   const onDelete = (node, fn) => {
     const row = node.data;
-    // console.log(row, "delete row");
     ElMessageBox.confirm(`确认要删除名称为【${row.name}】的分组吗?`, "系统提示", {
       type: "warning",
       draggable: true,
@@ -45,10 +44,6 @@ export const useContextMenu = () => {
         });
       })
       .catch(() => {});
-  };
-
-  const onSearch = () => {
-    console.log("onsearch");
   };
 
   const openDialog = async (type: string, row?) => {

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-11 16:33:45
+ * @Last Modified time: 2024-10-16 10:23:53
  */
 
 import { QueryParamsType, SearchOptionType } from "@/components/BlendedSearch/index.vue";
@@ -88,8 +88,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.salePeopleId = values.salePeopleId;
-    formData.saleStockYear = values.saleStockYear;
+    Object.assign(formData, values);
     onSearch();
   };
   const onSearch = () => {

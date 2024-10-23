@@ -8,11 +8,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useConfig } from "./utils/hook";
-import Content from "@/layout/Content.vue";
+import { useWindowSize } from "@vueuse/core";
 import AddForm from "./component/AddForm/index.vue";
-import { Plus, Delete, Refresh } from "@element-plus/icons-vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import ButtonList from "@/components/ButtonList/index.vue";
+import { Plus, Delete, Refresh } from "@element-plus/icons-vue";
 
 defineOptions({ name: "OperateBookSopInfo" });
 
@@ -35,41 +35,44 @@ const {
   onHandleImg,
   onWorkChange
 } = useConfig();
+const { width } = useWindowSize();
 const evgHeight = computed(() => maxHeight.value / 3 - 26);
 </script>
 
 <template>
-  <Content direction="row">
-    <PureTableBar :columns="columns" style="width: 35%" :show-icon="false">
-      <template #title>
-        <TitleCate name="排位表" :border="false" />
-      </template>
-      <template #buttons>
-        <el-button :icon="Refresh" size="small" title="刷新" @click="onRefresh" />
-        <el-button :icon="Plus" size="small" title="新增" @click="onAdd.call(null, 'sort')" />
-        <el-button :icon="Delete" size="small" title="删除" @click="onDelete.call(null, 'sort')" />
-      </template>
-      <template v-slot="{ size, dynamicColumns }">
-        <pure-table
-          ref="tableRef"
-          border
-          class="position-table"
-          :height="maxHeight"
-          :max-height="maxHeight"
-          row-key="id"
-          :adaptive="true"
-          align-whole="center"
-          :loading="loading"
-          :size="size"
-          :data="dataList"
-          :row-class-name="({ row }) => (rowData?.id === row.id ? 'current-row' : '')"
-          :columns="dynamicColumns"
-          :highlight-current-row="false"
-          @row-click="(row) => onRowClick('sort', row)"
-        />
-      </template>
-    </PureTableBar>
-    <div style="width: 35%">
+  <Row>
+    <Col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+      <PureTableBar :columns="columns" :show-icon="false" :style="{ paddingBottom: width < 1200 ? '8px' : '0' }">
+        <template #title>
+          <TitleCate name="排位表" :border="false" />
+        </template>
+        <template #buttons>
+          <el-button :icon="Refresh" size="small" title="刷新" @click="onRefresh" />
+          <el-button :icon="Plus" size="small" title="新增" @click="onAdd.call(null, 'sort')" />
+          <el-button :icon="Delete" size="small" title="删除" @click="onDelete.call(null, 'sort')" />
+        </template>
+        <template v-slot="{ size, dynamicColumns }">
+          <pure-table
+            ref="tableRef"
+            border
+            class="position-table"
+            :height="width < 1200 ? 200 : maxHeight"
+            :max-height="width < 1200 ? 200 : maxHeight"
+            row-key="id"
+            :adaptive="true"
+            align-whole="center"
+            :loading="loading"
+            :size="size"
+            :data="dataList"
+            :row-class-name="({ row }) => (rowData?.id === row.id ? 'current-row' : '')"
+            :columns="dynamicColumns"
+            :highlight-current-row="false"
+            @row-click="(row) => onRowClick('sort', row)"
+          />
+        </template>
+      </PureTableBar>
+    </Col>
+    <Col :xs="24" :sm="24" :md="12" :lg="7" :xl="7">
       <PureTableBar :columns="columns2" :show-icon="false">
         <template #title>
           <TitleCate name="物料表" :border="false" />
@@ -122,7 +125,7 @@ const evgHeight = computed(() => maxHeight.value / 3 - 26);
           />
         </template>
       </PureTableBar>
-      <PureTableBar :columns="columns4" :show-icon="false">
+      <PureTableBar :columns="columns4" :show-icon="false" :style="{ paddingBottom: width < 991 ? '8px' : '0' }">
         <template #title>
           <TitleCate name="工具参数表" :border="false" />
         </template>
@@ -148,13 +151,13 @@ const evgHeight = computed(() => maxHeight.value / 3 - 26);
           />
         </template>
       </PureTableBar>
-    </div>
-    <div style="width: 30%" class="flex-col flex-1 ui-ov-h">
+    </Col>
+    <Col :xs="24" :sm="24" :md="12" :lg="9" :xl="9">
       <div class="flex align-center pl-8 pr-8">
         <TitleCate name="作业内容" :border="false" />
         <ButtonList :buttonList="buttonList2" :autoLayout="false" />
       </div>
       <AddForm @change="onWorkChange" :row="rowData" @handleImg="onHandleImg" />
-    </div>
-  </Content>
+    </Col>
+  </Row>
 </template>

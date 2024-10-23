@@ -85,6 +85,12 @@ export default {
       component: () => import("@/views/plmManage/productMgmt/productsDevApplay/add/index.vue")
     },
     {
+      path: "/plmManage/productMgmt/productsDevApplay/print/index",
+      name: "PrintProductsDevApplay",
+      meta: { title: "产品开发申请表—打印", keepAlive: true },
+      component: () => import("@/views/plmManage/productMgmt/productsDevApplay/print/index.vue")
+    },
+    {
       path: "/plmManage/productMgmt/productsDevApplay/view/index",
       name: "ViewProductsDevApplay",
       meta: { title: "查看申请表", keepAlive: true },
@@ -155,6 +161,30 @@ export default {
       name: "OperateBookSopInfo",
       meta: { title: "指导书排位表", keepAlive: true },
       component: () => import("@/views/oa/productMkCenter/engineerDept/operateBook/sopInfo/index.vue")
+    },
+    {
+      path: "/plmManage/productMgmt/DR0Apply/add/index",
+      name: "PlmManageProjectMgmtDR0ApplyAddIndex",
+      meta: { title: "DR0开发申请表", keepAlive: true },
+      component: () => import("@/views/plmManage/productMgmt/DR0Apply/add/index.vue")
+    },
+    {
+      path: "/plmManage/productMgmt/DR0Apply/print/index",
+      name: "PlmManageProjectMgmtDR0ApplyPrintIndex",
+      meta: { title: "DR0开发申请表-打印", keepAlive: true },
+      component: () => import("@/views/plmManage/productMgmt/DR0Apply/print/index.vue")
+    },
+    {
+      path: "/oa/marketing/saleManage/handleMake/add/index",
+      name: "OaMarketingHandleMakeAddIndex",
+      meta: { title: "手板制作申请单", keepAlive: true },
+      component: () => import("@/views/oa/marketing/saleManage/handleMake/add/index.vue")
+    },
+    {
+      path: "/oa/marketing/saleManage/handleMake/print/index",
+      name: "OaMarketingHandleMakePrintIndex",
+      meta: { title: "手板制作申请单-打印", keepAlive: true },
+      component: () => import("@/views/oa/marketing/saleManage/handleMake/print/index.vue")
     }
   ]
 } as RouteConfigsTable;

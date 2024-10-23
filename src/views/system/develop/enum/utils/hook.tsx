@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-05-29 18:41:30
+ * @Last Modified time: 2024-10-16 10:20:48
  */
 
 import { Delete, Plus } from "@element-plus/icons-vue";
@@ -23,12 +23,14 @@ import { formConfig1, formConfig2, formRules, formRules2 } from "./config";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
+import { type PaginationProps } from "@pureadmin/table";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { useEleHeight } from "@/hooks";
+import { PAGE_CONFIG } from "@/config/constant";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -39,7 +41,7 @@ export const useConfig = () => {
   const loading2 = ref<boolean>(false);
   const rowData = ref<EnumDictionaryItemType>();
   const optionRows = ref<EnumDictionaryOptionItemType[]>([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const tableRef2 = ref();
   const groupArrsList = ref<TableGroupItemType[]>([]);
 
@@ -48,11 +50,13 @@ export const useConfig = () => {
     { label: "信息编码", value: "optionCode" }
   ]);
 
+  const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
+
   const formData = reactive({
     optionName: "",
     optionCode: "",
     page: 1,
-    limit: 10000
+    limit: PAGE_CONFIG.pageSize
   });
 
   onMounted(() => {
@@ -106,17 +110,19 @@ export const useConfig = () => {
   const getTableList = () => {
     loading.value = true;
     enumDictionaryList(formData)
-      .then((res) => {
+      .then((res: any) => {
         loading.value = false;
-        dataList.value = res.data;
+
+        const data = res.data;
+        dataList.value = data.records;
+        pagination.total = data.total;
       })
       .catch((err) => (loading.value = false));
   };
 
   // 搜索左表
   const onTagSearch = (values) => {
-    formData.optionName = values.optionName;
-    formData.optionCode = values.optionCode;
+    Object.assign(formData, values);
     getTableList();
   };
 
@@ -135,7 +141,9 @@ export const useConfig = () => {
       })
       .catch(console.log);
   };
-  const onCurrentChange = (row: EnumDictionaryItemType) => {
+  const onCurrentChange = (row: EnumDictionaryItemType) => {};
+
+  const rowClick = (row: EnumDictionaryItemType) => {
     if (!row) return;
     rowData.value = row;
     getOptionList(row);
@@ -290,7 +298,7 @@ export const useConfig = () => {
         formConfigs: formConfig2(),
         formProps: { labelWidth: "80px" }
       },
-      width: "560px",
+      width: "460px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
@@ -337,6 +345,18 @@ export const useConfig = () => {
     { clickHandler: onDeleteAll2, type: "danger", text: "批量删除", icon: Delete, isDropDown: false }
   ]);
 
+  // 分页相关
+  function handleSizeChange(val: number) {
+    formData.limit = val;
+    getTableList();
+  }
+
+  function handleCurrentChange(val: number) {
+    formData.page = val;
+    getTableList();
+    dataList2.value = [];
+  }
+
   return {
     tableRef2,
     loading,
@@ -358,6 +378,10 @@ export const useConfig = () => {
     onRefresh2,
     onRowClick2,
     onTagSearch,
+    rowClick,
+    pagination,
+    handleSizeChange,
+    handleCurrentChange,
     onCurrentChange,
     handleSelectionChange2
   };

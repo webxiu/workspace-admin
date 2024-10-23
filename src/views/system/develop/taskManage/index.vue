@@ -108,10 +108,10 @@ const {
           >
             <template #operation="{ row }">
               <div style="text-align: left">
-                <el-button size="small" type="primary" @click.stop="onStart(row)">开始</el-button>
+                <el-button size="small" type="warning" @click.stop="onStart(row)">开始</el-button>
                 <el-popconfirm :width="180" :title="`确定要提交该任务吗?`" @confirm="onSubmit(row)">
                   <template #reference>
-                    <el-button size="small" type="danger" @click.stop> 提交 </el-button>
+                    <el-button size="small" type="primary" @click.stop> 提交 </el-button>
                   </template>
                 </el-popconfirm>
                 <el-popconfirm :width="180" :title="`确定要完成该任务吗?`" @confirm="onFinish(row)">

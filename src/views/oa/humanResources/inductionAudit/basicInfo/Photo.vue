@@ -14,7 +14,7 @@ import { computed } from "vue";
 import { StaffInfoPhotoVOListType } from "@/api/oaManage/humanResources";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 
-const layout = { span: 4 };
+const layout = { span: 4, xs: 12, sm: 12, md: 4, lg: 4, xl: 4 };
 const { VITE_BASE_API } = import.meta.env;
 const props = withDefaults(defineProps<{ srcList?: StaffInfoPhotoVOListType[] }>(), {
   srcList: () => []

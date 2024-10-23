@@ -2,15 +2,15 @@
  * @Author: Hailen
  * @Date: 2024-06-04 15:31:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-25 17:44:34
+ * @Last Modified time: 2024-10-11 11:53:55
  */
 
-import { BILL_STATUS_COLOR, BillState, PAGE_CONFIG } from "@/config/constant";
-import { Delete, Edit, Plus, Position, Printer, RefreshLeft, Select, Tickets } from "@element-plus/icons-vue";
-import { OperateBookItemType, addOperateBook, deleteOperateBook, operateBookList, updateOperateBook } from "@/api/oaManage/productMkCenter";
-import { TableGroupItemType, commonSubmit } from "@/api/systemManage";
+import { BillState, BillState_Color, PAGE_CONFIG } from "@/config/constant";
+import { Delete, Edit, Plus, Position, Printer, RefreshLeft, Select, Switch, Tickets } from "@element-plus/icons-vue";
+import { EsopList, OperateBookItemType, addEsop, changeESOP, deleteEsop, updateEsop } from "@/api/oaManage/productMkCenter";
+import { RendererType, getEnumDictList, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { TableGroupItemType, commonSubmit, roleUserList } from "@/api/systemManage";
 import { formConfigs, formRules } from "./config";
-import { getEnumDictList, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { useRoute, useRouter } from "vue-router";
@@ -29,6 +29,7 @@ import { useEleHeight } from "@/hooks";
 export const useConfig = () => {
   const router = useRouter();
   const route = useRoute();
+  const peRoleList = ref([]);
   const loading = ref<boolean>(false);
   const rowData = ref<OperateBookItemType>();
   const columns = ref<TableColumnList[]>([]);
@@ -70,28 +71,37 @@ export const useConfig = () => {
         billOptions.value = BillStatus;
       })
       .catch(console.log);
+    roleUserList({ roleId: "244" }).then(({ data }) => (peRoleList.value = data || []));
   }
 
   const getColumnConfig = async () => {
+    const PeRoleRender: RendererType = ({ row, column }) => {
+      const item = peRoleList.value.find((f) => f.id === row[column["property"]]);
+      return <span>{item?.userName}</span>;
+    };
     let columnData: TableColumnList[] = [
       { label: "单据编号", prop: "billNo" },
       { label: "作业指导书", prop: "manualName", width: 180 },
-      { label: "生产型号", prop: "productModel" },
+      { label: "产品型号", prop: "productCode" },
+      { label: "文件编号", prop: "fileNumber" },
+      { label: "版本", prop: "ver" },
+      { label: "国家", prop: "country" },
       {
         label: "单据状态",
         prop: "billState",
         align: "center",
         cellRenderer({ row, column }) {
-          const item = BILL_STATUS_COLOR[row[column["property"]]];
+          const item = BillState_Color[row[column["property"]]];
           const billItem = billOptions.value.find((f) => f.optionValue === `${row[column["property"]]}`);
           const styleBox = { color: "#fff", padding: "3px 6px", borderRadius: "4px", background: item.color };
           return <span style={styleBox}>{billItem.optionName}</span>;
         }
       },
+      { label: "PE工程师", prop: "peuserId", cellRenderer: PeRoleRender },
       { label: "创建人", prop: "createUserName" },
       { label: "创建时间", prop: "createDate", width: 160 }
     ];
-    const { columnArrs, groupArrs, buttonArrs } = await getMenuColumns();
+    const { columnArrs, groupArrs, buttonArrs } = await getMenuColumns([{ peuserId: PeRoleRender }]);
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     if (groupArrs?.length) groupArrsList.value = groupArrs;
@@ -101,7 +111,7 @@ export const useConfig = () => {
 
   const getTableList = () => {
     loading.value = true;
-    operateBookList(formData)
+    EsopList(formData)
       .then(({ data }) => {
         dataList.value = data.records || [];
         pagination.total = data.total;
@@ -147,18 +157,22 @@ export const useConfig = () => {
     const formData = reactive({
       id: row.id,
       materialId: row.materialId,
-      productModel: row.productModel,
+      productCode: row.productCode,
+      materialNumber: row.materialNumber,
       manualName: row.manualName,
-      fileCode_test: row.fileCode_test,
-      country_test: row.country_test,
-      version_test: row.version_test
+      fileNumber: row.fileNumber,
+      country: row.country,
+      ver: row.ver ?? "A01",
+      peuserId: row.peuserId,
+      peuserName: row.peuserName
     });
+
     addDialog({
       title: title + "指导书",
       props: {
         formRules: formRules,
         formInline: formData,
-        formConfigs: formConfigs({ formData }),
+        formConfigs: formConfigs({ formData, peRoleList }),
         formProps: { labelWidth: "120px" }
       },
       width: "800px",
@@ -171,7 +185,7 @@ export const useConfig = () => {
         FormRef.validate(async (valid) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(async () => {
-              const reqApi = { add: addOperateBook, edit: updateOperateBook };
+              const reqApi = { add: addEsop, edit: updateEsop };
               const { data } = await reqApi[type](formData);
               if (!data) return message(`${title}失败`, { type: "error" });
               done();
@@ -186,7 +200,7 @@ export const useConfig = () => {
 
   const onDelete = wrapFn(rowData, async () => {
     showMessageBox(`确认要删除指导书【${rowData.value.manualName}】吗?`).then(async () => {
-      const { data } = await deleteOperateBook({ id: rowData.value.id });
+      const { data } = await deleteEsop({ id: rowData.value.id });
       if (!data) return message("删除失败", { type: "error" });
       getTableList();
       message("删除成功");
@@ -224,6 +238,15 @@ export const useConfig = () => {
       return message("当前状态不能进行回退", { type: "error" });
     }
     commonBackLogic(rowData.value.billNo, getTableList);
+  });
+
+  const onChange = wrapFn(rowData, () => {
+    const row = rowData.value;
+    changeESOP({ id: row.id }).then(({ data }) => {
+      if (!data) return message("变更失败", { type: "error" });
+      message("变更成功");
+      getTableList();
+    });
   });
 
   const onDistribute = (item) => {
@@ -269,13 +292,14 @@ export const useConfig = () => {
     });
   });
 
+  // { clickHandler: onBack, type: "primary", text: "回退", icon: RefreshLeft, isDropDown: true },
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus, isDropDown: false },
     { clickHandler: onEdit, type: "success", text: "修改", icon: Edit, isDropDown: false },
     { clickHandler: onDelete, type: "danger", text: "删除", icon: Delete, isDropDown: false },
-    { clickHandler: onSubmit, type: "primary", text: "提交", icon: Select, isDropDown: true },
-    { clickHandler: onBack, type: "primary", text: "回退", icon: RefreshLeft, isDropDown: true },
     { clickHandler: onDistribute, type: "primary", text: "分发", icon: Position, isDropDown: true },
+    { clickHandler: onSubmit, type: "success", text: "提交", icon: Select, isDropDown: true },
+    { clickHandler: onChange, type: "warning", text: "变更", icon: Switch, isDropDown: true },
     { clickHandler: onPrint, type: "default", text: "打印", icon: Printer, isDropDown: true },
     { clickHandler: onAuditDetail, type: "default", text: "审批详情", icon: Tickets, isDropDown: true }
   ]);

@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-08 18:35:50
+ * @Last Modified time: 2024-10-18 11:10:38
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
-import { FormatDataType, SortableCallbackType, editTableRender, moveTableRow, setColumn } from "@/utils/table";
+import { FormatDataType, SortableCallbackType, moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 import {
   MenuColumnItemType,
   TableGroupItemType,
@@ -80,9 +80,11 @@ export const useConfig = () => {
     getTableGroupList();
   });
 
-  const { editCellRender } = editTableRender(({ prop, row }) => {
-    if (prop === "seq") {
-      moveTableRow<MenuColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ prop, row }) => {
+      if (prop === "seq") {
+        moveTableRow<MenuColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+      }
     }
   });
 

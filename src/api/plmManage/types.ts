@@ -1,5 +1,7 @@
 /** ========================= 产品管理 ========================= */
 
+import { UploadFile } from "element-plus";
+
 /** 产品分类管理 - 列表项类型 */
 export interface ProductClassifyManageItemType {
   id: number;
@@ -77,4 +79,40 @@ export interface TemplateDataItemType {
   required: string;
   testStage: string | string[];
   templateType: number;
+}
+
+/** ========================= 模具管理 ========================= */
+
+/** 开模申请 - 列表类型 */
+export interface MoldApplyItemType {
+  id: string;
+  billId: string;
+  billNo: string;
+  billState: number;
+  staffId: number;
+  staffCode: string;
+  staffName: string;
+  deptName: string;
+  roleName: string;
+  startDate: string;
+  applyDate: string;
+  resignationType: string;
+  resignationReason: string;
+  createUserName: string;
+  createDate: string;
+  modifyUserName: string;
+  modifyDate: string;
+  orgId: string;
+}
+
+/** 开模申请 - 附件列表 */
+export interface MoldFileItemType {
+  id: number;
+  billId: string;
+  billNo: string;
+  createDate: string;
+  createUserId: number;
+  orgId: string;
+  filePath: string;
+  fileName: string;
 }

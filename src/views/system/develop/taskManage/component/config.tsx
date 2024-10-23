@@ -114,12 +114,13 @@ export const formConfigs = (options: FormConfigType): FormConfigItemType[] => {
         );
       }
     },
-    {
-      label: "序号",
-      prop: "number",
-      colProp: layout,
-      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
-    },
+    // 2024.09.26隐藏
+    // {
+    //   label: "序号",
+    //   prop: "number",
+    //   colProp: layout,
+    //   render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+    // },
     {
       label: "上级任务",
       prop: "parentBillNo",

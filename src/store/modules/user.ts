@@ -1,4 +1,4 @@
-import { App_INFO, getUserInfo, removeCookie, removeStorage, removeUserInfo, setUserInfo } from "@/utils/storage";
+import { App_INFO, getCookie, getUserInfo, removeCookie, removeStorage, removeUserInfo, setCookie, setUserInfo } from "@/utils/storage";
 import { getLogin, queryUserInfo } from "@/api/user/user";
 import { resetRouter, router } from "@/router";
 
@@ -34,6 +34,7 @@ export const useUserStore = defineStore({
         getLogin(data)
           .then(async (res) => {
             const data = await this.getLoginInfo();
+            if (!getCookie()) setCookie(Date.now());
             resolve(data);
           })
           .catch((error) => reject(error));

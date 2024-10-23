@@ -287,7 +287,6 @@ export const useConfig = () => {
   };
 
   const rowClick = (row) => {
-    console.log("row click", row);
     currentRow.value = row;
   };
 

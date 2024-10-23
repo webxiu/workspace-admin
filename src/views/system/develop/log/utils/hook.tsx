@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-06-20 11:44:01
+ * @Last Modified time: 2024-10-16 10:19:51
  */
 
 import { UserLogItemType, userLogList, userLogExport } from "@/api/systemManage";
@@ -26,6 +26,7 @@ export const useConfig = () => {
     limit: PAGE_CONFIG.pageSize,
     userName: "",
     userCode: "",
+    remark: "",
     startDate: curDate,
     endDate: curDate
   });
@@ -33,7 +34,8 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "员工姓名", value: "userName" },
     { label: "员工工号", value: "userCode" },
-    { label: "查询日期", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "查询日期", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "查询备注", value: "remark" }
   ]);
 
   onMounted(() => {
@@ -82,12 +84,11 @@ export const useConfig = () => {
   };
 
   // 搜索
-  const onTagSearch = (values) => {
-    const dates = values.date ? values.date.split(" ~ ") : [];
+  const onTagSearch = ({ date, ...values }) => {
+    const dates = date ? date.split(" ~ ") : [];
     formData.startDate = dates[0];
     formData.endDate = dates[1];
-    formData.userName = values.userName;
-    formData.userCode = values.userCode;
+    Object.assign(formData, values);
     getTableList();
   };
 

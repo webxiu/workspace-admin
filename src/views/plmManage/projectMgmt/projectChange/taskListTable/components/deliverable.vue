@@ -23,7 +23,7 @@
 
 <script setup lang="tsx">
 import { onMounted, ref } from "vue";
-import { editTableRender, setColumn } from "@/utils/table";
+import { tableEditRender, setColumn } from "@/utils/table";
 import { message } from "@/utils/message";
 import { fetchAllTemplateList } from "@/api/plmManage";
 
@@ -34,7 +34,7 @@ const columns = ref([]);
 const currentRow = ref();
 const allDeliverTemplates = ref([]);
 
-const editCell = editTableRender();
+const editCell = tableEditRender();
 
 const getConfig = () => {
   const columnsData: TableColumnList[] = [

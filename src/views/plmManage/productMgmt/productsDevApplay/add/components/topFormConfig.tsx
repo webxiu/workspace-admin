@@ -3,17 +3,17 @@ import { reactive } from "vue";
 import { useRoute } from "vue-router";
 
 const formRules = reactive<FormRules>({
-  productName: [{ required: true, message: "产品名称为必填项", trigger: "change" }],
-  customerModel: [{ required: true, message: "客户型号为必填项", trigger: "change" }],
-  customerName: [{ required: true, message: "客户名称为必填项", trigger: "change" }],
-  deograModel: [{ required: true, message: "德龙型号为必填项", trigger: "change" }],
+  // productName: [{ required: true, message: "产品名称为必填项", trigger: "change" }],
+  // customerModel: [{ required: true, message: "客户型号为必填项", trigger: "change" }],
+  // customerName: [{ required: true, message: "客户名称为必填项", trigger: "change" }],
+  // deograModel: [{ required: true, message: "德龙型号为必填项", trigger: "change" }],
   devTypeSelect: [{ required: true, message: "开发类型为必填项", trigger: "change" }],
-  saleArea: [{ required: true, message: "销售区域为必填项", trigger: "change" }],
-  referenceModel: [{ required: true, message: "参考机型为必填项", trigger: "change" }],
+  // saleArea: [{ required: true, message: "销售区域为必填项", trigger: "change" }],
+  // referenceModel: [{ required: true, message: "参考机型为必填项", trigger: "change" }],
   productLevelSelect: [{ required: true, message: "产品等级为必填项", trigger: "change" }],
-  applyDeptId: [{ required: true, message: "申请部门为必填项", trigger: "change" }],
-  applyUserCode: [{ required: true, message: "申请人为必填项", trigger: "change" }],
-  applyTime: [{ required: true, message: "申请时间为必填项", trigger: "change" }],
+  // applyDeptId: [{ required: true, message: "申请部门为必填项", trigger: "change" }],
+  // applyUserCode: [{ required: true, message: "申请人为必填项", trigger: "change" }],
+  // applyTime: [{ required: true, message: "申请时间为必填项", trigger: "change" }],
   projectPhaseSelect: [{ required: true, message: "项目阶段为必填项", trigger: "change" }]
 });
 

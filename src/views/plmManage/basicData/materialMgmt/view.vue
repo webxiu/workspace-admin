@@ -1,5 +1,5 @@
 <template>
-  <div style="height: calc(100vh - 120px); overflow: hidden">
+  <div style="height: calc(100vh - 120px); overflow: auto">
     <EditForm
       :loading="loading"
       :formRules="formRules"

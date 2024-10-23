@@ -21,7 +21,7 @@ const { chartRef1, chartRef2, formData, buttonList, activeName, columns, dataLis
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex just-between">
-      <EditForm ref="formRef" class="flex-1" :formConfigs="formConfigs()" :formInline="formData">
+      <EditForm class="flex-1" :formConfigs="formConfigs()" :formInline="formData">
         <ButtonList :buttonList="buttonList" :auto-layout="false" moreActionText="业务操作" />
       </EditForm>
     </div>

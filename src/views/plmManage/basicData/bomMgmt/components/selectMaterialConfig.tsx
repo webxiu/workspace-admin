@@ -8,7 +8,6 @@ import { addDialog } from "@/components/ReDialog";
 import { selectMaterialInfo } from "@/api/plmManage";
 import { setColumn } from "@/utils/table";
 
-const columnsDragDom = ref([]);
 const currentRow = ref({});
 const currentRowArr = ref([]);
 const selectWay = ref("");
@@ -45,9 +44,6 @@ export function useMaterialTable() {
   const materialTableRef = ref();
   const isSingleTrueFlag = ref(false);
   const searchParams = reactive({ number: "", name: "", groupIdList: [], specification: "", selectBOM: false, page: 1, limit: PAGE_CONFIG.pageSize });
-  // onMounted(() => {
-  //   onSearch({ groupIdList: [], name: "", number: "", selectBOM: false });
-  // });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
@@ -85,12 +81,7 @@ export function useMaterialTable() {
   };
 
   const handleSelectAction = (selectType, fn?, isSingleTrue?) => {
-    // console.log(isSingleTrue, "========isSingleTrue");
     isSingleTrueFlag.value = isSingleTrue;
-    // if (isSingleTrue) {
-    //   searchParams.selectBOM = true;
-    //   onSearch(searchParams);
-    // }
     console.log(selectType, "选择的类型");
     selectWay.value = selectType;
     addDialog({
@@ -102,10 +93,6 @@ export function useMaterialTable() {
       contentRenderer: () => h(SelectModal, { isSingleTrue }),
       beforeReset: (done, { options }) => {},
       beforeSure: (done, { options }) => {
-        // console.log(currentRow.value, "rvv");
-        //  formData.FNAME = rowData.FNAME;
-        //  formData.FOPENBANKNAME = rowData.BANK;
-        //  formData.FCNAPS = rowData.FNUMBER;
         if (JSON.stringify(currentRow.value) !== "{}" && selectWay.value === "single") {
           fn(currentRow.value);
           done();

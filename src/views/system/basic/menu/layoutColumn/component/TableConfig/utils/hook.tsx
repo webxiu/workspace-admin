@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-07-04 17:49:02
+ * @Last Modified time: 2024-10-18 11:00:01
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
-import { FormatDataType, SortableCallbackType, editTableRender, moveTableRow, setColumn } from "@/utils/table";
+import { FormatDataType, SortableCallbackType, moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 import { MenuColumnItemType, addBatchMenuColumn, deleteMenuColumn, menuColumnList } from "@/api/systemManage";
 import { TableColumn, TableColumnRenderer } from "@pureadmin/table";
 import { computed, h, onMounted, reactive, ref, watch } from "vue";
@@ -26,6 +26,11 @@ import { useRoute } from "vue-router";
 import { v4 as uuidv4 } from "uuid";
 
 export const useConfig = (props) => {
+  const menuId = computed(() => {
+    const mID = Number(route.query?.itemId as string);
+    const result = Number.isNaN(mID) ? 0 : mID;
+    return result; // 获取菜单ID
+  });
   const tableRef = ref();
   const route = useRoute();
   const loading = ref<boolean>(false);
@@ -52,9 +57,11 @@ export const useConfig = (props) => {
   );
 
   // 编辑表格
-  const { editCellRender } = editTableRender(({ prop, row }) => {
-    if (prop === "seq") {
-      moveTableRow<MenuColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ prop, row }) => {
+      if (prop === "seq") {
+        moveTableRow<MenuColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+      }
     }
   });
 

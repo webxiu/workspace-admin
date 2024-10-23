@@ -6,6 +6,55 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "3864530",
+      "name": "行走",
+      "font_class": "hangzou",
+      "unicode": "e68d",
+      "unicode_decimal": 59021
+    },
+    {
+      "icon_id": "5045867",
+      "name": "更换颜色",
+      "font_class": "genghuanyanse",
+      "unicode": "e690",
+      "unicode_decimal": 59024
+    },
+    {
+      "icon_id": "10742565",
+      "name": "工作交接图标",
+      "font_class": "gongzuojiaojietubiao",
+      "unicode": "e6a4",
+      "unicode_decimal": 59044
+    },
+    {
+      "icon_id": "21471490",
+      "name": "离职申请",
+      "font_class": "lizhishenqing",
+      "unicode": "e6ad",
+      "unicode_decimal": 59053
+    },
+    {
+      "icon_id": "23991623",
+      "name": "离职申请",
+      "font_class": "lizhishenqing1",
+      "unicode": "e777",
+      "unicode_decimal": 59255
+    },
+    {
+      "icon_id": "24429342",
+      "name": "更换",
+      "font_class": "genghuan",
+      "unicode": "e6ae",
+      "unicode_decimal": 59054
+    },
+    {
+      "icon_id": "33279558",
+      "name": "工作交接",
+      "font_class": "gongzuojiaojie",
+      "unicode": "e753",
+      "unicode_decimal": 59219
+    },
+    {
       "icon_id": "26685417",
       "name": "订单统计表@2x",
       "font_class": "a-dingdantongjibiao2x",

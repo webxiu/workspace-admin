@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-14 12:13:18
+ * @Last Modified time: 2024-09-27 13:47:00
  */
 
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
@@ -290,8 +290,9 @@ export const useConfig = () => {
           // 移动判断
           if (curData.parentCode && curData.menuCode === curData.parentCode) {
             return message("项目编号和父级编号不能相同", { type: "error" });
-          } else if (curData.parentCode && parentSelect.value && parentSelect.value?.menuType === "目录") {
-            return message("父级只能为目录", { type: "error" });
+            // 2024-09-27 移除
+            // } else if (curData.parentCode && parentSelect.value && parentSelect.value?.menuType === "目录") {
+            //   return message("父级只能为目录", { type: "error" });
           }
 
           if (valid) {

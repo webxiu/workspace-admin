@@ -18,7 +18,7 @@
           :formatter="(row, column, cellValue, index) => formatter(row, column, cellValue, index, 'top', infoId)"
         >
           <template #header="{ column }"
-            ><span>{{ column.label }}<span style="color: red">*</span></span></template
+            ><span>{{ column.label }}</span></template
           >
         </el-table-column>
       </el-table-column>

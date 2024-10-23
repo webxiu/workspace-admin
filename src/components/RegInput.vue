@@ -5,7 +5,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { message } from "@/utils/message";
-
 /** 正则输入框 */
 const props = defineProps(["modelValue", "pattern", "error", "autoFocus", "autoSelect", "isNumber"]);
 const emits = defineEmits(["update:modelValue", "blur"]);

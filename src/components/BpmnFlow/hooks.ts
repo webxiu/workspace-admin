@@ -50,7 +50,6 @@ export const setTaskForm = (bpmnElement: BpmnTaskEleType, data) => {
   const { id, type } = bpmnElement;
   if (type === "bpmn:UserTask") {
     const { store, setBpmnStore } = useBpmnStore();
-    console.log("任务id", id);
     const saveData = store[BpmnStoreKey.taskForm] ? store[BpmnStoreKey.taskForm][id] : {};
     setBpmnStore(BpmnStoreKey.taskForm, { [id]: { ...saveData, ...data } }, true);
   }

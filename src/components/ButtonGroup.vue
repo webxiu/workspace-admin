@@ -21,9 +21,10 @@ defineProps({
   buttonsConfig: { type: Array as PropType<ButtonOptionType[]>, default: () => [] }
 });
 
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue", "change"]);
 
 const onClick = (item: ButtonOptionType) => {
   emits("update:modelValue", item.value);
+  emits("change", item.value);
 };
 </script>

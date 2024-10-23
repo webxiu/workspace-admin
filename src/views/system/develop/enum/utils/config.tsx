@@ -1,10 +1,8 @@
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import { reactive } from "vue";
-import regExp from "@/utils/regExp";
 
-const GridSpan = 24;
-const layout = { span: GridSpan, xs: 24, sm: 12, md: 12, lg: 12, xl: 12 };
+const layout = { span: 24, xs: 24, sm: 12, md: 12, lg: 12, xl: 12 };
 
 // 修改信息校验
 export const formRules = reactive<FormRules>({
@@ -51,7 +49,7 @@ export const formConfig2 = (): FormConfigItemType[] => {
     {
       label: "序号",
       prop: "displaySeq",
-      colProp: layout,
+      colProp: { span: 24 },
       render: ({ formModel, row }) => (
         <el-input-number v-model={formModel[row.prop]} min={1} controls-position="right" placeholder="请输入序号" clearable style={{ width: "100%" }} />
       )
@@ -59,26 +57,26 @@ export const formConfig2 = (): FormConfigItemType[] => {
     {
       label: "key值",
       prop: "optionName",
-      colProp: layout,
+      colProp: { span: 24 },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入key值" clearable />
-    },
-    {
-      label: "预留1",
-      prop: "reserve1",
-      colProp: layout,
-      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入预留1" clearable />
     },
     {
       label: "value值",
       prop: "optionValue",
-      colProp: layout,
+      colProp: { span: 24 },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入value值" clearable />
     },
     {
       label: "金蝶key",
       prop: "kingdeeValue",
-      colProp: layout,
+      colProp: { span: 24 },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入金蝶key" clearable />
+    },
+    {
+      label: "预留1",
+      prop: "reserve1",
+      colProp: { span: 24 },
+      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入预留1" clearable />
     }
   ];
 };

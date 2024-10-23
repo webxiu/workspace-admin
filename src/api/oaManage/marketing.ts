@@ -313,3 +313,43 @@ export function updateSaleQuotationList(data) {
 export function findByIdSaleQuotationList(data) {
   return http.request("post", "/oa/mk/quotationApplication/getquotationapplicationvodetailsbyid", { data });
 }
+/** DR0申请表 - 分页查询 */
+export function fetchDR0PageList(data) {
+  return http.request("post", "/oa/fin/dr0applicationv2/select", { data });
+}
+/** DR0申请表 - 新增 */
+export function insertDR0PageList(data) {
+  return http.request("post", "/oa/fin/dr0applicationv2/insert", { data });
+}
+/** DR0申请表 - 修改 */
+export function updateDR0PageList(data) {
+  return http.request("post", "/oa/fin/dr0applicationv2/update", { data });
+}
+/** DR0申请表 - 删除 */
+export function deleteDR0PageList(id) {
+  return http.request("post", `/oa/fin/dr0applicationv2/delete/${id}`, { data: {} });
+}
+/** DR0申请表 - 根据id查询单个 */
+export function fetchDR0PageListById(id) {
+  return http.request("get", `/oa/fin/dr0applicationv2/getapplicationbyid/${id}`, { params: {} });
+}
+/** 手板申请单 - 分页查询 */
+export function fetchHandleApplyPageList(data) {
+  return http.request("post", "/oa/mfg/mc/prototyping/selectPrototyping", { data });
+}
+/** 手板申请单 - 新增 */
+export function insertHandleApplyPageList(data) {
+  return http.request("post", "/oa/mfg/mc/prototyping/insertPrototyping", { data });
+}
+/** 手板申请单 - 修改 */
+export function updateHandleApplyPageList(data) {
+  return http.request("put", "/oa/mfg/mc/prototyping/updatePrototyping", { data });
+}
+/** 手板申请单 - 删除 */
+export function deleteHandleApplyPageList(data) {
+  return http.request("delete", `/oa/mfg/mc/prototyping/deletePrototyping`, { params: data });
+}
+/** 手板申请单 - 根据id查询单个 */
+export function fetchHandleApplyPageListById(params) {
+  return http.request("get", `/oa/mfg/mc/prototyping/selectPrototypingById`, { params });
+}

@@ -1,6 +1,6 @@
 <template>
   <div class="kimi-container flex-col">
-    <div ref="msgRef" class="message-cont" :style="{ maxHeight: isFullScreen ? '100%' : '653px' }">
+    <div ref="msgRef" class="message-cont" :style="{ maxHeight: isFullScreen ? '100%' : maxHeight - 164 + 'px' }" v-mainHeight="{ offset: 50 }">
       <div class="flex flex-1 mb-10" :key="item.id" :class="`${item.role}-item`" v-for="(item, index) in historyList">
         <img class="user-role" v-if="['ai'].includes(item.role)" :src="aiImg" />
         <Typeing v-if="replying && index === historyList.length - 1 && ['ai'].includes(item.role)" :message="item.message" @finish="onFinish" />
@@ -31,7 +31,7 @@ import axios from "axios";
 import Typeing from "./Typeing.vue";
 import Markdown from "./Markdown.vue";
 import { message } from "@/utils/message";
-import { useObserElement } from "@/hooks";
+import { useEleHeight, useObserElement } from "@/hooks";
 import aiImg from "@/assets/ai_img.png";
 import { Position } from "@element-plus/icons-vue";
 import { ref, reactive, computed, onMounted } from "vue";
@@ -49,6 +49,7 @@ const userAvatar = useUserStore().userInfo?.avatar;
 const userInfo = computed(() => useUserStoreHook()?.userInfo);
 const { initObserver, sendToBottom } = useObserElement(msgRef, 20);
 const apiKey = atob(import.meta.env.VITE_KIMI_API_KEY);
+const maxHeight = useEleHeight(".app-main > .el-scrollbar", -20);
 
 const defaultMsg = {
   name: "Ai",
@@ -162,6 +163,11 @@ defineExpose({ onClear });
 </script>
 
 <style lang="scss" scoped>
+.mobile {
+  .message-cont {
+    height: 653px !important;
+  }
+}
 .kimi-container {
   width: 100%;
   height: 100%;

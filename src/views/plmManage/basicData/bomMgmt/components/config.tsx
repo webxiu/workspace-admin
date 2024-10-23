@@ -13,10 +13,6 @@ export const formRules = reactive<FormRules>({
   number: [{ required: true, message: "BOM编号为必填项", trigger: "change" }],
   name: [{ required: true, message: "BOM名称为必填项", trigger: "change" }],
   groupId: [{ required: true, message: "BOM分组为必填项", trigger: "change" }]
-  // createUserName: [{ required: true, message: "创建人为必填项", trigger: "change" }],
-  // createDate: [{ required: true, message: "创建时间为必填项", trigger: "change" }],
-  // modifyUserName: [{ required: true, message: "修改人为必填项", trigger: "change" }],
-  // modifyDate: [{ required: true, message: "最后修改时间为必填项", trigger: "change" }]
 });
 
 // 编辑员工信息表单
@@ -35,7 +31,6 @@ export const formConfigs = (selectOpts: any, formData, treeSelectData, fn?): any
     });
   };
 
-  const filterNodeMethod = (value, data) => data.label.includes(value);
   const defaultGroup = [
     {
       label: "父级物料编码",
@@ -110,7 +105,7 @@ export const formConfigs = (selectOpts: any, formData, treeSelectData, fn?): any
       label: "BOM分组",
       labelWidth: 110,
       required: true,
-      prop: "groupId", // groupNumber groupName
+      prop: "groupId",
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return (
@@ -144,8 +139,6 @@ export const formConfigs = (selectOpts: any, formData, treeSelectData, fn?): any
       label: "创建人",
       prop: "createUserName",
       labelWidth: 110,
-      // required: true,
-
       colProp: { span: 6 },
       render: ({ formModel, row }) => {
         return <el-input disabled={isView} size="small" v-model={formModel[row.prop]} readonly />;
@@ -154,8 +147,6 @@ export const formConfigs = (selectOpts: any, formData, treeSelectData, fn?): any
     {
       label: "创建时间",
       prop: "createDate",
-      // required: true,
-
       colProp: { span: 6 },
       labelWidth: 110,
       render: ({ formModel, row }) => {
@@ -166,7 +157,6 @@ export const formConfigs = (selectOpts: any, formData, treeSelectData, fn?): any
       label: "修改人",
       prop: "modifyUserName",
       labelWidth: 110,
-      // required: true,
       colProp: { span: 6 },
       render: ({ formModel, row }) => {
         return <el-input disabled={isView} size="small" v-model={formModel[row.prop]} readonly />;
@@ -176,7 +166,6 @@ export const formConfigs = (selectOpts: any, formData, treeSelectData, fn?): any
       label: "最后修改时间",
       prop: "modifyDate",
       labelWidth: 110,
-      // required: true,
       colProp: { span: 6 },
       render: ({ formModel, row }) => {
         return <el-input disabled={isView} size="small" v-model={formModel[row.prop]} readonly />;

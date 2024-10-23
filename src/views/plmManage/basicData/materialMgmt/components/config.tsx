@@ -444,13 +444,13 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
       labelWidth: 85,
       colProp: { span: 5 },
       render: ({ formModel, row }) => {
-        const onCheckRow = (val) => {
+        const onSelect = (val) => {
           formModel[row.prop] = val.productType;
           formData.goodModel = val.productCode;
         };
         return (
           <el-input disabled={isView} size="small" v-model={formModel[row.prop]} placeholder="请选择" readonly>
-            {{ append: () => <ProductStoreModal disabled={isView} onCheckRow={onCheckRow} /> }}
+            {{ append: () => <ProductStoreModal disabled={isView} onSelect={onSelect} /> }}
           </el-input>
         );
       }
@@ -690,14 +690,266 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
       prop: "file",
       labelWidth: 80,
       colProp: { span: 24 },
-      class: "upload-box",
+      // class: "upload-box",
       render: ({ formModel, row }) => {
         return <MyUpload size="small" v-model={formModel[row.prop]} formData={formData} uploadDisabled={route.query.type === "view"} />;
       }
     }
   ];
 
-  const groupInfo = [...defaultGroup, ...basicProp, ...productProp, ...dateProp];
+  const purchaseProp = [
+    {
+      colProp: { span: 24 },
+      labelWidth: 0,
+      render: () => {
+        return (
+          <el-divider border-style="dashed" content-position="left">
+            采购物料属性
+          </el-divider>
+        );
+      }
+    },
+    {
+      label: "固定提前期",
+      prop: "fFixLeadTime",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "固定提前期单位",
+      prop: "fFixLeadTimeType",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "变动提前期",
+      prop: "fVarLeadTime",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "变动提前期单位",
+      prop: "fVarLeadTimeType",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "",
+      prop: "",
+      colProp: { span: 8 },
+      render: () => {
+        return null;
+      }
+    },
+    {
+      label: "检验提前期",
+      prop: "fCheckLeadTime",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "检验提前期单位",
+      prop: "fCheckLeadTimeType",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "累计提前期",
+      prop: "fAccuLeadTime",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "最大订货量",
+      prop: "fMaxPOQty",
+      colProp: { span: 4 },
+      labelWidth: 110,
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "",
+      prop: "",
+      colProp: { span: 8 },
+      render: () => {
+        return null;
+      }
+    },
+    {
+      label: "最小订货量",
+      prop: "fMinPOQty",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "最小包装量",
+      prop: "fIncreaseQty",
+      colProp: { span: 4 },
+      labelWidth: 110,
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "安全库存",
+      prop: "fPlanSafeStockQty",
+      colProp: { span: 4 },
+      labelWidth: 80,
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    }
+  ];
+
+  const qualityProp = [
+    {
+      colProp: { span: 24 },
+      labelWidth: 0,
+      render: () => {
+        return (
+          <el-divider border-style="dashed" content-position="left">
+            品质物料属性
+          </el-divider>
+        );
+      }
+    },
+    {
+      label: "抽样方案",
+      prop: "fIncSampSchemeId",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "质检方案",
+      prop: "fIncQcSchemeId",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "库存周期复检",
+      prop: "fEnableCyclistQCSTK",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "周期复检提醒",
+      prop: "fEnableCyclistQCSTKEW",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    }
+  ];
+
+  const prodProp = [
+    {
+      colProp: { span: 24 },
+      labelWidth: 0,
+      render: () => {
+        return (
+          <el-divider border-style="dashed" content-position="left">
+            生产物料属性
+          </el-divider>
+        );
+      }
+    },
+    {
+      label: "日产量",
+      prop: "fDailyOutQty",
+      colProp: { span: 4 },
+      labelWidth: 95,
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "标准人数",
+      prop: "fDegStandardPersonCount",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "标准产能/H",
+      prop: "fDegCapacity",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "标准工时",
+      prop: "fPerUnitStandHour",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    },
+    {
+      label: "",
+      prop: "",
+      colProp: { span: 8 },
+      render: () => {
+        return null;
+      }
+    },
+    {
+      label: "标准工时单位",
+      prop: "fStandHourUnitId",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    }
+  ];
+
+  const storeProp = [
+    {
+      colProp: { span: 24 },
+      labelWidth: 0,
+      render: () => {
+        return (
+          <el-divider border-style="dashed" content-position="left">
+            仓库物料属性
+          </el-divider>
+        );
+      }
+    },
+    {
+      label: "最小批发量",
+      prop: "fMinIssueQty",
+      colProp: { span: 4 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled size="small" v-model={formModel[row.prop]} />;
+      }
+    }
+  ];
+
+  const groupInfo = [...defaultGroup, ...basicProp, ...productProp, ...purchaseProp, ...qualityProp, ...prodProp, ...storeProp, ...dateProp];
 
   return groupInfo;
 };

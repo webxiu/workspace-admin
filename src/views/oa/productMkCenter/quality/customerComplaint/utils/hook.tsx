@@ -1,5 +1,6 @@
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
+import { type PaginationProps } from "@pureadmin/table";
 
 import { message } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
@@ -12,16 +13,25 @@ import { addDialog } from "@/components/ReDialog";
 import { formConfigs, formRules } from "./config";
 import EditForm from "@/components/EditForm/index.vue";
 import { useAppStoreHook } from "@/store/modules/app";
+import { importCustomerComplaintList, selectCustomerComplaintList } from "@/api/oaManage/productMkCenter";
+import { PAGE_CONFIG } from "@/config/constant";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<any[]>([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const currentRow = ref();
+  const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
+
+  const formData: any = reactive({
+    page: 1,
+    limit: PAGE_CONFIG.pageSize
+    // date: ""
+  });
 
   const searchOptions: SearchOptionType[] = [
-    { label: "客户型号", value: "customerModel" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "客户型号", value: "customerModel" }
+    // { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
   ];
 
   onMounted(() => {
@@ -103,7 +113,14 @@ export const useConfig = () => {
   };
 
   const getTableList = () => {
-    dataList.value = [];
+    // dataList.value = [];
+    selectCustomerComplaintList(formData).then((res: any) => {
+      if (res.data) {
+        const { total, records } = res.data;
+        pagination.total = total;
+        dataList.value = records;
+      }
+    });
   };
 
   const onExport = async () => {
@@ -139,7 +156,8 @@ export const useConfig = () => {
   };
 
   const onDelAction = () => {
-    if (!currentRow.value) return message("请选择一条记录", { type: "warning" });
+    // if (!currentRow.value) return message("请选择一条记录", { type: "warning" });
+    message("功能未开发", { type: "warning" });
   };
 
   const buttonList = ref<ButtonItemType[]>([
@@ -149,18 +167,18 @@ export const useConfig = () => {
       text: "导入",
       isDropDown: false
     },
-    {
-      clickHandler: onEditAction,
-      type: "warning",
-      text: "修改",
-      isDropDown: false
-    },
-    {
-      clickHandler: onDelAction,
-      type: "danger",
-      text: "删除",
-      isDropDown: false
-    },
+    // {
+    //   clickHandler: onEditAction,
+    //   type: "warning",
+    //   text: "修改",
+    //   isDropDown: false
+    // },
+    // {
+    //   clickHandler: onDelAction,
+    //   type: "danger",
+    //   text: "删除",
+    //   isDropDown: false
+    // },
     {
       clickHandler: onExport,
       type: "default",
@@ -173,16 +191,33 @@ export const useConfig = () => {
 
   const handleTagSearch = (val) => {
     console.log(val, "val...");
+    formData.customerModel = val.customerModel;
+    formData.customerName = val.customerName;
+    getTableList();
   };
 
   const onChangeFileInput = (e) => {
     const file = e.target.files[0];
-    useAppStoreHook().pushPageLoading("loading");
-    readXlsx(file).then((sheetInfo) => {
-      useAppStoreHook().popPageLoading();
-      const sheetList = Object.values(sheetInfo)[0];
-      initData(sheetList);
-    });
+    console.log(file, "file...");
+    const fd = new FormData();
+    fd.append("file", file);
+    importCustomerComplaintList(fd)
+      .then((res) => {
+        if (res.status === 200 || res.data) {
+          message("导入成功", { type: "success" });
+          getTableList();
+        }
+      })
+      .finally(() => {
+        const dom = document.getElementById("importQCCCInput");
+        (dom as any).value = null;
+      });
+    // useAppStoreHook().pushPageLoading("loading");
+    // readXlsx(file).then((sheetInfo) => {
+    //   useAppStoreHook().popPageLoading();
+    //   const sheetList = Object.values(sheetInfo)[0];
+    //   initData(sheetList);
+    // });
   };
 
   const initData = (data = []) => {
@@ -269,14 +304,34 @@ export const useConfig = () => {
     });
   };
 
+  // 分页相关
+  function handleSizeChange(val: number) {
+    formData.limit = val;
+    getTableList();
+  }
+
+  function handleCurrentChange(val: number) {
+    formData.page = val;
+    getTableList();
+  }
+
+  const getMergeImgUlrList = (apiList, resType): any => {
+    const resultArrList = apiList.map((item) => "/api" + item.imageUrl);
+    return resType ? resultArrList[0] : resultArrList;
+  };
+
   return {
     columns,
     handleTagSearch,
     searchOptions,
     rowClick,
+    getMergeImgUlrList,
     onChangeFileInput,
     buttonList,
     dataList,
+    pagination,
+    handleSizeChange,
+    handleCurrentChange,
     maxHeight,
     onExport
   };

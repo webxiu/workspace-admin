@@ -147,11 +147,11 @@ function getRef() {
     .filter((item) => formData.useList.includes(item.userCode))
     .map((item) => {
       return {
-        userId: item.userCode,
+        staffCode: item.userCode,
         deptId: item.deptId,
         staffId: item.id,
-        userName: item.userName,
-        productLine: null,
+        staffName: item.userName,
+        productLine: item.groupName,
         remark: formData.remark,
         overtimeType: formData.overtimeType,
         startDate: formData.startDate,

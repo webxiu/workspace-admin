@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-11 16:48:13
+ * @Last Modified time: 2024-10-16 11:03:33
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -174,12 +174,7 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.userCode = values.userCode;
-    formData.staffName = values.staffName;
-    formData.deptId = values.deptId;
-    formData.status = values.status;
-    formData.date = values.date;
-    formData.employeeType = values.employeeType;
+    Object.assign(formData, values);
     getTableList();
   };
   const onRefresh = () => {

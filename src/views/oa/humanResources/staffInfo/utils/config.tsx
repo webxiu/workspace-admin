@@ -3,12 +3,14 @@ import { Delete, Edit, Loading, Plus } from "@element-plus/icons-vue";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { Ref, h, reactive, ref } from "vue";
 import {
+  AttendanceMachineItemType,
   StaffDeptGroupItemType,
   StaffDeptRoleInfoItemType,
   StaffInfoEducationVOSType,
   StaffInfoFamilyVOSType,
   StaffInfoItemType,
   StaffInfoWorkVOSType,
+  fetchMachine,
   getInductionAuditRoleInfo,
   getInductionAuditRoleInfoByDeptId,
   getStaffDeptGroup
@@ -118,29 +120,33 @@ const LoadingIcon = () => (
 );
 
 /** 教育经历 */
-export const educationColumns = setColumn({
-  columnData: [
-    { label: "开始时间", prop: "startTime" },
-    { label: "截止时间", prop: "endTime" },
-    { label: "学校名称", prop: "schoolName" },
-    { label: "学历", prop: "education" },
-    { label: "专业", prop: "major" },
-    { label: "备注", prop: "remark" }
-  ],
-  operationColumn: { width: 120 }
-});
+export const educationColumns = (type: "view" | "edit") => {
+  return setColumn({
+    columnData: [
+      { label: "开始时间", prop: "startTime" },
+      { label: "截止时间", prop: "endTime" },
+      { label: "学校名称", prop: "schoolName" },
+      { label: "学历", prop: "education" },
+      { label: "专业", prop: "major" },
+      { label: "备注", prop: "remark" }
+    ],
+    operationColumn: { width: 120, hide: type === "view" }
+  });
+};
 
 /** 家庭关系 */
-export const foFamilyColumns = setColumn({
-  columnData: [
-    { label: "关系", prop: "relation" },
-    { label: "姓名", prop: "name" },
-    { label: "工作单位", prop: "workUnit" },
-    { label: "职业", prop: "profession" },
-    { label: "联系电话", prop: "contactNumber" }
-  ],
-  operationColumn: { width: 120 }
-});
+export const foFamilyColumns = (type: "view" | "edit") => {
+  return setColumn({
+    columnData: [
+      { label: "关系", prop: "relation" },
+      { label: "姓名", prop: "name" },
+      { label: "工作单位", prop: "workUnit" },
+      { label: "职业", prop: "profession" },
+      { label: "联系电话", prop: "contactNumber" }
+    ],
+    operationColumn: { width: 120, hide: type === "view" }
+  });
+};
 
 /** 工作经历 */
 export const workColumns = setColumn({
@@ -168,17 +174,25 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
   const sLoading = ref<boolean>(false);
   const groupList = ref<StaffDeptGroupItemType[]>([]);
   const roleList = ref<StaffDeptRoleInfoItemType[]>([]);
+  const machineList = ref<AttendanceMachineItemType[]>([]);
   const optionList = ref([]);
   const levelOptions = ref([]);
-  const exmpetAttendanceOptions = ref([]);
+  const exmpetAttendanceOptions = ref([
+    { optionName: "是", optionValue: true },
+    { optionName: "否", optionValue: false }
+  ]);
 
-  getEnumDictList(["DegreeType", "EmployeeLevel", "ExmpetAttendance"])
+  getEnumDictList(["DegreeType", "EmployeeLevel"])
     .then((res) => {
       optionList.value = res.DegreeType;
       levelOptions.value = res.EmployeeLevel;
-      exmpetAttendanceOptions.value = res.ExmpetAttendance;
     })
     .catch(console.log);
+
+  // 获取考勤机数据
+  fetchMachine({}).then(({ data }) => {
+    machineList.value = data || [];
+  });
 
   const onDeptChange = (deptId, isFirst) => {
     if (!isFirst) {
@@ -804,6 +818,20 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
       )
     },
     {
+      label: "考勤机",
+      prop: "machineId",
+      colProp: layout,
+      render: ({ formModel, row }) => {
+        return (
+          <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
+            {machineList.value.map((item) => (
+              <el-option key={item.id} label={item.attMachineName} value={item.id} />
+            ))}
+          </el-select>
+        );
+      }
+    },
+    {
       label: "",
       prop: "",
       colProp: lineLayout,
@@ -1014,7 +1042,7 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
       render: ({ formModel, row }) => {
         return (
           <div class="staff-record-table ui-w-100">
-            <PureTableBar columns={educationColumns} show-icon={false}>
+            <PureTableBar columns={educationColumns("edit")} show-icon={false}>
               {(props) => (
                 <pure-table
                   border
@@ -1061,7 +1089,7 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
       render: ({ formModel, row }) => {
         return (
           <div class="staff-record-table ui-w-100">
-            <PureTableBar columns={foFamilyColumns} show-icon={false}>
+            <PureTableBar columns={foFamilyColumns("edit")} show-icon={false}>
               {(props) => (
                 <pure-table
                   border

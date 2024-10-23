@@ -1,13 +1,7 @@
 import { ElMessage, ElMessageBox } from "element-plus";
-import { editTableRender, setColumn } from "@/utils/table";
-import {
-  enumDictionaryOptionAdd,
-  enumDictionaryOptionDelete,
-  enumDictionaryOptionList,
-  enumDictionaryOptionSelectMax,
-  enumDictionaryOptionUpdate
-} from "@/api/systemManage";
+import { enumDictionaryOptionAdd, enumDictionaryOptionDelete, enumDictionaryOptionSelectMax, enumDictionaryOptionUpdate } from "@/api/systemManage";
 import { onMounted, reactive, ref } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
@@ -24,8 +18,10 @@ export const useColorTable = (props) => {
   const searchOptions = reactive<SearchOptionType[]>([{ label: "颜色名称", value: "goodColor" }]);
 
   // 编辑表格
-  const { editCellRender } = editTableRender(({ index, prop, row }) => {
-    editRowIds.value.push(row.id);
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ index, prop, row }) => {
+      editRowIds.value.push(row.id);
+    }
   });
 
   const getColumnConfig = () => {

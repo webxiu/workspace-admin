@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 import { ref } from "vue";
 const dataList = ref([]);
 const columns = ref([]);
@@ -33,8 +33,10 @@ const dataModel = defineModel({ default: [] });
 const props = defineProps(["type"]);
 
 // 编辑表格
-const { editCellRender } = editTableRender(({ index, prop }) => {
-  dataModel.value = dataList.value;
+const { editCellRender } = tableEditRender({
+  editFinish: ({ index, prop }) => {
+    dataModel.value = dataList.value;
+  }
 });
 
 const columnData: TableColumnList[] = [

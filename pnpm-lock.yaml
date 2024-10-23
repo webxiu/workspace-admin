@@ -182,6 +182,9 @@ importers:
       vue3-count-to:
         specifier: ^1.1.2
         version: 1.1.2(vue@3.4.35(typescript@5.0.4))
+      vue3-cron-plus-picker:
+        specifier: ^1.0.2
+        version: 1.0.2
       vue3-tree-org:
         specifier: ^4.2.2
         version: 4.2.2(vue@3.4.35(typescript@5.0.4))
@@ -6204,6 +6207,9 @@ packages:
     peerDependencies:
       vue: '>= 3 < 4'
 
+  vue3-cron-plus-picker@1.0.2:
+    resolution: {integrity: sha512-SUVmAb2qSPMuAm5GIU0wQZyUawiiL3OKEy1HAZs94eZz+neKF+wEPNP4wICWMU78u4LzeCNni2Njnhf8bsqkcw==}
+
   vue3-tree-org@4.2.2:
     resolution: {integrity: sha512-AG2SykyD6dw0jIyqBm8iuF9j9GWli6KrwudxR1RjULCCBTDFsoNm7MmP/weKT7wowN/sPk+e2RsnvEJMw2OJMw==}
     peerDependencies:
@@ -7311,7 +7317,7 @@ snapshots:
       '@types/node': 20.5.1
       chalk: 4.1.2
       cosmiconfig: 8.3.6(typescript@5.5.4)
-      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.0.4))(ts-node@10.9.2(@types/node@20.5.1)(typescript@5.5.4))(typescript@5.5.4)
+      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.0.4))(ts-node@10.9.2(@types/node@20.14.14)(typescript@5.0.4))(typescript@5.5.4)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -9287,7 +9293,7 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.0.4))(ts-node@10.9.2(@types/node@20.5.1)(typescript@5.5.4))(typescript@5.5.4):
+  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.0.4))(ts-node@10.9.2(@types/node@20.14.14)(typescript@5.0.4))(typescript@5.5.4):
     dependencies:
       '@types/node': 20.5.1
       cosmiconfig: 8.3.6(typescript@5.5.4)
@@ -13202,6 +13208,8 @@ snapshots:
       core-js: 3.38.0
       vue: 3.4.35(typescript@5.0.4)
       vue-count-to: 1.0.13
+
+  vue3-cron-plus-picker@1.0.2: {}
 
   vue3-tree-org@4.2.2(vue@3.4.35(typescript@5.0.4)):
     dependencies:

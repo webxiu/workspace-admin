@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="tsx">
-import { editTableRender, getEnumDictList, setColumn } from "@/utils/table";
+import { tableEditRender, getEnumDictList, setColumn } from "@/utils/table";
 import { message } from "@/utils/message";
 import { onMounted, ref, h, watchEffect } from "vue";
 import { addDialog } from "@/components/ReDialog";
@@ -82,7 +82,9 @@ const setStartDate = (row) => {
 };
 
 const getConfig = () => {
-  const { editCellRender } = editTableRender(({ row }) => {});
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ row }) => {}
+  });
 
   const stateColor = {
     STATUS_WAITING: "#ffbf00",

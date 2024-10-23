@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-14 11:26:00
+ * @Last Modified time: 2024-10-10 09:04:01
  */
 
 import {
@@ -204,18 +204,13 @@ export const useConfig = () => {
   /** 点击节点 */
   const nodeClick = (data, node) => {
     currentMenuId.value = data.id.split("m")[1];
-
     if (!data.children) {
-      const elTableRef = rightTableRef.value.menuBtnRef?.getTableRef();
-
       rightTableRef.value.loading = true;
+      const elTableRef = rightTableRef.value.menuBtnRef?.getTableRef();
       getBtnListByMenuId({ menuId: data.id.split("m")[1], roleId: rowData.value.id })
         .then((res) => {
           if (res.data) {
             rightTableRef.value.dataList = res.data;
-
-            console.log(node, "node....");
-
             rightTableRef.value.dataList.forEach((item) => {
               if (item.hasRight) {
                 setTimeout(() => {

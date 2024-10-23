@@ -1,7 +1,7 @@
 import { h, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 
-import { setColumn, editTableRender, usePageSelect } from "@/utils/table";
+import { setColumn, tableEditRender, usePageSelect } from "@/utils/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { exportInStoreList, fetchInStoreList } from "@/api/supplyChain";
 import {
@@ -39,7 +39,7 @@ export const useConfig = ({ selectRowsCallBack, dataListRight }) => {
   const tableRef = ref(null);
   // const beforeTaskList: any = ref([]);
   // 编辑表格
-  const { editCellRender } = editTableRender();
+  const { editCellRender } = tableEditRender();
 
   const route = useRoute();
 

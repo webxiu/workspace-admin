@@ -42,7 +42,7 @@
 import { cloneDeep } from "@pureadmin/utils";
 import { ref, reactive, Ref, watch, computed } from "vue";
 import UploadButton from "@/components/UploadButton.vue";
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { Plus, Delete } from "@element-plus/icons-vue";
 import type { TabsPaneContext, UploadFiles } from "element-plus";
@@ -81,7 +81,7 @@ const maxHeight = ref(420);
 const loading = ref(false);
 const activeKey = ref("anGuiDetails");
 const cycleOptions = ref([]);
-const { editCellRender } = editTableRender();
+const { editCellRender } = tableEditRender();
 const emits = defineEmits(["change"]);
 
 const cellRenderer = (data) => editCellRender({ data });

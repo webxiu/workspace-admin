@@ -2,13 +2,14 @@
  * @Author: Hailen
  * @Date: 2023-07-13 10:10:59
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-25 18:11:31
+ * @Last Modified time: 2024-10-23 11:04:56
  */
 
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken, CustomParamsSerializer } from "axios";
 import { PureHttpError, PureHttpRequestConfig, PureHttpResponse, RequestMethods } from "./types.d";
 
 import NProgress from "../progress";
+import { getUrlParameters } from "../common";
 import { message } from "@/utils/message";
 import { stringify } from "qs";
 import { useAppStoreHook } from "@/store/modules/app";

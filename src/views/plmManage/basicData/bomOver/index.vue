@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-07-05 11:45:27 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-07-05 11:45:27 
+ * @Author: Hailen
+ * @Date: 2023-07-05 11:45:27
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-07-05 11:45:27
  */ -->
 
 <script setup lang="ts">
@@ -27,7 +27,7 @@ const searchOptions: SearchOptionType[] = [
   }
 ];
 
-const { loading, columns, dataList, onSearch, onFresh, maxHeight, buttonList, handleTagSearch, cellDblclick, onExport } = useConfig();
+const { loading, columns, dataList, onFresh, maxHeight, buttonList, handleTagSearch, cellDblclick, onExport } = useConfig();
 </script>
 
 <template>

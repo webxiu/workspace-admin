@@ -1,5 +1,5 @@
-import { editTableRender, setColumn } from "@/utils/table";
 import { onMounted, ref } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 export const useSourceTable = () => {
   const maxHeight = ref(300);
@@ -10,8 +10,8 @@ export const useSourceTable = () => {
 
   const getConfig = () => {
     // 编辑表格
-    const editTable1 = editTableRender();
-    const editTable2 = editTableRender();
+    const editTable1 = tableEditRender();
+    const editTable2 = tableEditRender();
 
     const columnsData: TableColumnList[] = [
       { label: "责任角色", prop: "roleName" },

@@ -11,6 +11,7 @@ export default [
   },
   {
     path: "/app/qywx/workspace/suppliercomplaint/index",
+    name: "WorkspaceSuppliercomplaint",
     meta: { title: "工作台投诉建议", rank: 104, showLink: false },
     redirect: "/supplierComplaint"
   },
@@ -29,11 +30,12 @@ export default [
   {
     path: "/redirect",
     component: Layout,
+    name: "Redirect",
     meta: { title: $t("status.hsLoad"), showLink: false, rank: 102 },
     children: [
       {
         path: "/redirect/:path(.*)",
-        name: "Redirect",
+        name: "RedirectPage",
         component: () => import("@/layout/redirect.vue")
       }
     ]

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-09 16:29:35
+ * @Last Modified time: 2024-10-10 16:24:14
  */
 
 import * as echarts from "echarts";
@@ -69,7 +69,7 @@ export const useConfig = () => {
     columns.value = setColumn({ columnData, operationColumn: false, dragSelector: ".customer-ratio" });
   };
 
-  function onTagSearch({ date }) {
+  function onTagSearch({ date = "" }) {
     const [startTime, endTime] = date.split("~").map((m) => m.trim());
     formData.start = startTime;
     formData.end = endTime;

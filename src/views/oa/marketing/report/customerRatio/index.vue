@@ -56,12 +56,9 @@ const { chartRef1, columns, dataList, loading, maxHeight, buttonList, searchOpti
       </PureTableBar>
     </Col>
     <Col>
-      <div
-        ref="chartRef1"
-        v-loading="loading"
-        :style="{ minHeight: maxHeight + 40 + 'px', height: maxHeight + 40 + 'px', width: '100%' }"
-        class="border-line m-2"
-      />
+      <div class="border-line ui-h-100">
+        <div ref="chartRef1" v-loading="loading" :style="{ height: '600px', width: '100%' }" />
+      </div>
     </Col>
   </Row>
 </template>

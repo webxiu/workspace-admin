@@ -2,26 +2,16 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-02-23 18:23:37
+ * @Last Modified time: 2024-10-21 17:25:00
  */
 
-import { Ref, h, nextTick, onMounted, reactive, ref } from "vue";
-import {
-  teamMemberList,
-  teamMemberListByDepId,
-  TeamMemberItemType,
-  addDepGroup,
-  editDepGroup,
-  deleteDepGroup,
-  updateDepGroup
-} from "@/api/workbench/teamManage";
+import { h, onMounted, reactive, ref } from "vue";
+import { TeamMemberItemType, addDepGroup, editDepGroup, updateDepGroup } from "@/api/workbench/teamManage";
 
 import { message } from "@/utils/message";
 import { type PaginationProps } from "@pureadmin/table";
 import { addDialog } from "@/components/ReDialog";
 import { ElMessage, ElMessageBox } from "element-plus";
-import editForm, { FormDataItem } from "./form.vue";
-import workForm, { DepInfoItemTree } from "./workForm.vue";
 import { getUserInfo } from "@/utils/storage";
 import { useEleHeight } from "@/hooks";
 import {
@@ -38,15 +28,7 @@ import {
 import { useRoute, useRouter } from "vue-router";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { PAGE_CONFIG } from "@/config/constant";
-
-export interface QueryType {
-  page: number;
-  limit: number;
-  staffId?: string;
-  staffName?: string;
-  deptId?: number;
-  groupId?: number;
-}
+import { commonSubmit } from "@/api/systemManage";
 
 /** 组别类型 */
 export interface DepGroupItemTree {
@@ -138,7 +120,6 @@ export function useTable(contextMenuRef) {
   const curNodeName = ref("0");
   const curNodeLabel = ref();
   const depGroupTree = ref<DepGroupItemTree[]>([]);
-  const depInfoTree = ref<DepInfoItemTree[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref<TeamMemberItemType[]>([]);
   const columns = ref<TableColumnList[]>([]);
@@ -363,7 +344,8 @@ export function useTable(contextMenuRef) {
           } else if (text === "回退") {
             res = backBomData({ id: currentRow.value.id });
           } else if (text === "提交") {
-            res = submitBomData({ id: currentRow.value.id });
+            // res = submitBomData({ id: currentRow.value.id });
+            res = commonSubmit({ billId: "10008", billNo: currentRow.value.billNo });
           } else if (text === "打印") {
             loading.value = false;
             router.push(`/plmManage/basicData/bomMgmt/print?id=${currentRow.value.id}&menuId=${route.query.menuId}`);
@@ -385,65 +367,6 @@ export function useTable(contextMenuRef) {
     }
   };
 
-  // 添加、编辑弹窗
-  function openDialog(type: HandleType, row?: DepGroupItemTree) {
-    const titleObj = { add: "新增", edit: "修改" };
-    const title = titleObj[type];
-    const userInfo = getUserInfo();
-    const deptName = GetDeptName(depGroupTree.value, userInfo.deptId);
-    const groupName = type === "add" ? "" : row.title;
-    const groupId = type === "add" ? undefined : row.id;
-    const _formData: FormDataItem = {
-      parentId: "",
-      groupName: groupName,
-      leaderId: row.leaderId,
-      deptName: deptName,
-      groupCode: row.groupCode,
-      deptId: userInfo.deptId,
-      id: groupId
-    };
-    addDialog({
-      title: `${title}分组`,
-      width: "640px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: { type: type, formInline: _formData },
-      contentRenderer: () => h(editForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormDataItem;
-        FormRef.validate((valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要【${title}分组】吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitGroup(type, title, curData, () => {
-                done();
-              });
-            });
-          }
-        });
-      }
-    });
-  }
-
-  // 添加、编辑提交
-  const onSubmitGroup = (type: HandleType, title: string, data: FormDataItem, callback: Function) => {
-    const API = { add: addDepGroup, edit: editDepGroup };
-    API[type]({ ...data, parentId: data.parentId || 0 })
-      .then((res) => {
-        if (!res.data) throw res.message;
-        callback();
-        message(`${title}成功`, { type: "success" });
-      })
-      .catch(console.log);
-  };
-
   // 分页相关
   function handleSizeChange(val: number) {
     formData.limit = val;
@@ -453,49 +376,6 @@ export function useTable(contextMenuRef) {
   function handleCurrentChange(val: number) {
     formData.page = val;
     onSearch();
-  }
-
-  // 修改员工岗位
-  async function handleEdit(row: TeamMemberItemType) {
-    const formWorkData = reactive({
-      staffName: row.staffName,
-      roleId: row.roleId,
-      deptId: row.deptId ? `${row.deptId}` : "",
-      groupId: row.groupId ? `${row.groupId}` : "",
-      id: row.id
-    });
-    addDialog({
-      title: "修改岗位",
-      width: "640px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: { row: row, formInline: formWorkData, depInfoTree: depInfoTree.value },
-      contentRenderer: () => h(workForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormDataItem;
-        FormRef.validate((valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要提交修改吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              updateDepGroup(curData)
-                .then((res) => {
-                  done();
-                  onSearch();
-                  message("修改成功", { type: "success" });
-                })
-                .catch(console.log);
-            });
-          }
-        });
-      }
-    });
   }
 
   // 点击表格行
@@ -511,7 +391,6 @@ export function useTable(contextMenuRef) {
         return { field: item.prop, title: item.label, width: 160, key: `0-${index}`, hide: false, colspan: 1, rowspan: 1, type: "normal", colGroup: false };
       })
       .filter((item) => item.field && item.field !== "index");
-    // console.log(formData, "formdata");
 
     const headConfig = {
       excel: {
@@ -574,10 +453,8 @@ export function useTable(contextMenuRef) {
     resetForm,
     fetchLeftData,
     buttonList,
-    openDialog,
     categoryTreeData,
     onNodeClick,
-    handleEdit,
     rowClick,
     onExport,
     handleSizeChange,

@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-07-05 11:45:27 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-07-05 11:45:27 
+ * @Author: Hailen
+ * @Date: 2023-07-05 11:45:27
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-07-05 11:45:27
  */ -->
 
 <script setup lang="ts">
@@ -79,7 +79,12 @@ const {
             @page-size-change="onSizeChange"
             @page-current-change="onCurrentChange"
             @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-          />
+          >
+            <template #limitedWorkingDay="{ row }">
+              <span v-if="typeof row.limitedWorkingDay === 'boolean'">{{ row.limitedWorkingDay ? "是" : "否" }}</span>
+              <span v-else />
+            </template>
+          </pure-table>
         </template>
       </PureTableBar>
       <PureTableBar :columns="columns2" style="width: 25%" @refresh="onRefresh2" @change-column="setUserMenuColumns">

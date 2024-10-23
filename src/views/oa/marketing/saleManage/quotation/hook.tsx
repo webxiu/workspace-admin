@@ -1,4 +1,3 @@
-import { deleteMachine, fetchMachine, registerMachine, updateMachine } from "@/api/oaManage/humanResources";
 import {
   deleteSaleQuotationList,
   fetchSaleQuotationList,

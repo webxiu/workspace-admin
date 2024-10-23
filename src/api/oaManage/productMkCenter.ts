@@ -202,54 +202,58 @@ export function deletePanasonicQrcode(params) {
 /** ========================= 作业指导书 ========================= */
 
 /** 列表 */
-export function operateBookList(data) {
+export function EsopList(data) {
   return http.request<TablePagingResType<OperateBookItemType>>("post", "/oa/mfg/eng/ESOPManual/selectManualAll", { data, headers: { hideLoading: true } });
 }
 /** 新增 */
-export function addOperateBook(data) {
+export function addEsop(data) {
   return http.request<boolean>("post", "/oa/mfg/eng/ESOPManual/insert", { data });
 }
 /** 修改 */
-export function updateOperateBook(data) {
+export function updateEsop(data) {
   return http.request<boolean>("post", "/oa/mfg/eng/ESOPManual/update", { data });
 }
 /** 删除 */
-export function deleteOperateBook(data) {
+export function deleteEsop(data) {
   return http.request<boolean>("post", "/oa/mfg/eng/ESOPManual/delete", { data });
 }
 /** 分发-获取工位关联列表 */
-export function distributeOperateBook(data) {
+export function distributeEsop(data) {
   return http.request<DistributeOperateBookResType>("post", "/oa/mfg/eng/ManualDistribute/selectConfiguration", { data, headers: { hideLoading: true } });
 }
 /** 分发-保存(新增/修改) */
-export function updateDistribute(data) {
+export function updateEsopDistribute(data) {
   return http.request<boolean>("post", "/oa/mfg/eng/ManualDistribute/insertOrUpdate", { data });
 }
 /** 分发 */
-export function submitDistribute(params) {
+export function submitEsopDistribute(params) {
   return http.request<boolean>("get", "/oa/mfg/eng/ManualDistribute/distribute", { params });
+}
+/** 变更 */
+export function changeESOP(params) {
+  return http.request<boolean>("get", "/oa/mfg/eng/ESOPManual/changeESOP", { params });
 }
 
 // ==== 详情 ====
 
 /** 作业指导书工位列表 */
-export function operateBookStationList(params) {
+export function esopStationList(params) {
   return http.request<OperateBookStationItemType[]>("post", "/oa/mfg/eng/ESOPManual/selectManualDetail", { params });
 }
 /** 添加工位 */
-export function addOperateBookStation(data) {
+export function addEsopStation(data) {
   return http.request<boolean>("post", "/oa/mfg/eng/ESOPManual/insertDetail", { data, headers: { "Content-Type": "multipart/form-data" } });
 }
 /** 修改工位 */
-export function updateOperateBookStation(data) {
+export function updateEsopStation(data) {
   return http.request<boolean>("post", "/oa/mfg/eng/ESOPManual/updateDetail", { data, headers: { "Content-Type": "multipart/form-data" } });
 }
 /** 工位排序 */
-export function sortOperateBookStation(data) {
+export function sortEsopStation(data) {
   return http.request<boolean>("post", "/oa/mfg/eng/ESOPManual/updateOrSaveWorkStation", { data });
 }
 /** 删除工位 */
-export function deleteOperateBookStation(params) {
+export function deleteEsopStation(params) {
   return http.request<boolean>("delete", "/oa/mfg/eng/ESOPManual/deleteDetail", { params });
 }
 /** 物料表: 获取物料列表 */
@@ -257,7 +261,7 @@ export function getMaterialChildList(params) {
   return http.request<MaterialChildItemType[]>("get", "/oa/mfg/eng/ESOPManual/getChildrenMaterial", { params });
 }
 /** 打印指导书列表数据 */
-export function printOperateBookStation(params) {
+export function printEsopStation(params) {
   return http.request<PrintOperateBookStationResType>("get", "/oa/mfg/eng/ESOPManual/printingManualAll", { params });
 }
 
@@ -289,4 +293,14 @@ export function exportTabletManage(data) {
 /** 列表 */
 export function productLineList(data) {
   return http.request<ProductLineItemType[]>("get", "/oa/mfg/eng/ManualDistribute/getProductionLineManual", { data });
+}
+
+/** 客诉台账查询 */
+export function selectCustomerComplaintList(data) {
+  return http.request("post", "/oa/mk/customercomplaints/select", { data });
+}
+
+/** 客诉台账导入 */
+export function importCustomerComplaintList(data) {
+  return http.request("post", "/oa/mk/customercomplaints/importbyexcel", { data, headers: { "Content-Type": "multipart/form-data" } });
 }

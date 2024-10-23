@@ -1,7 +1,7 @@
 <template>
   <div class="flex-1 sop-images">
     <div class="flex flex-1 align-center mb-20 pr-10 sort-item" v-for="(item, index) in dataList" :key="item.id">
-      <div style="margin-right: 10px">{{ index + 1 }}</div>
+      <div class="sop-index">{{ index + 1 }}</div>
       <el-form-item :prop="'imgList.' + index + '.file'" :rules="[{ required: true, message: '请上传图片', trigger: 'blur' }]">
         <el-upload
           v-model:file-list="item.file"
@@ -132,20 +132,32 @@ function onPreview(uploadFile) {
 }
 </script>
 <style lang="scss">
-.upload-sop-step {
-  min-width: 140px;
-  height: 73px;
-}
+.sop-images {
+  .sop-index {
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    margin-right: 10px;
+    color: #fff;
+    background: #173e5b80;
+  }
+  .upload-sop-step {
+    min-width: 140px;
+    height: 73px;
+  }
 
-.upload-sop-step .el-upload--picture-card,
-.upload-sop-step .el-upload-list__item {
-  width: 140px;
-  height: 73px;
-  margin: 0;
-  transition: none !important;
-}
+  .upload-sop-step .el-upload--picture-card,
+  .upload-sop-step .el-upload-list__item {
+    width: 140px;
+    height: 73px;
+    margin: 0;
+    transition: none !important;
+  }
 
-.el-upload-list--picture-card > :nth-child(2) {
-  display: none;
+  .el-upload-list--picture-card > :nth-child(2) {
+    display: none;
+  }
 }
 </style>

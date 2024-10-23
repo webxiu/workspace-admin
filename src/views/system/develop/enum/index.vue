@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-08-14 11:07:31 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-08-14 11:07:31 
+ * @Author: Hailen
+ * @Date: 2023-08-14 11:07:31
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-08-14 11:07:31
  */ -->
 
 <script setup lang="ts">
@@ -32,7 +32,11 @@ const {
   onRefresh,
   onRefresh2,
   onRowClick2,
+  rowClick,
   onTagSearch,
+  pagination,
+  handleSizeChange,
+  handleCurrentChange,
   onCurrentChange,
   handleSelectionChange2
 } = useConfig();
@@ -65,7 +69,11 @@ const {
             highlight-current-row
             :show-overflow-tooltip="true"
             @current-change="onCurrentChange"
+            @row-click="rowClick"
             @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
+            :pagination="pagination"
+            @page-size-change="handleSizeChange"
+            @page-current-change="handleCurrentChange"
           >
             <template #operation="{ row }">
               <el-button size="small" @click.stop="onEdit(row)">修改</el-button>

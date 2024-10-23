@@ -17,7 +17,7 @@ import {
 } from "@/api/oaManage/humanResources";
 import { PureTableBar } from "@/components/RePureTableBar";
 import AddModal from "./addModel.vue";
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 import { Plus, Delete } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
 import { dayjs } from "element-plus";
@@ -125,16 +125,18 @@ const getOptionList = (deptId) => {
     deptId,
     userState: "A",
     deptIdList: [deptId + ""]
-  } as any).then(({ data }) => {
+  }).then(({ data }) => {
     if (!data?.records) return;
     optionsData.value.deptUserInfoList = data.records || [];
   });
 };
 
 // 编辑表格
-const { editCellRender } = editTableRender(({ index, prop, row }) => {
-  if (["startDate", "startTime", "endDate", "endTime"].includes(prop)) {
-    onEditCell({ prop, index, value: row[prop], row });
+const { editCellRender } = tableEditRender({
+  editFinish: ({ index, prop, row }) => {
+    if (["startDate", "startTime", "endDate", "endTime"].includes(prop)) {
+      onEditCell({ prop, index, value: row[prop], row });
+    }
   }
 });
 const getColumnConfig = () => {

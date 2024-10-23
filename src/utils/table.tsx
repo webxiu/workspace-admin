@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-25 15:49:52
+ * @Last Modified time: 2024-10-18 11:20:47
  */
 
 import dayjs from "dayjs";
@@ -14,7 +14,7 @@ import Sortable, { MoveEvent } from "sortablejs";
 import RegInput from "@/components/RegInput.vue";
 import { getUrlParameters, onDownload } from "@/utils/common";
 import PriceTag from "@iconify-icons/ep/price-tag";
-import { clone, cloneDeep } from "@pureadmin/utils";
+import { clone, cloneDeep, deviceDetection } from "@pureadmin/utils";
 import { TableColumnRenderer } from "@pureadmin/table";
 import { message, showMessageBox } from "@/utils/message";
 import { getRouterInfo, removeRouterInfo } from "@/utils/storage";
@@ -47,6 +47,7 @@ export interface SortableCallbackType {
 export type RendererType = (data: TableColumnRenderer) => VNode;
 
 const moveRowName = reactive({ fromName: "", toName: "" });
+const isMobile = deviceDetection();
 
 /** 行拖拽(需要等列配置加载完成在初始化) */
 export const rowDrop = (dataList: Ref<any>, prefixSelector: string, callback?: (v: SortableCallbackType) => void) => {
@@ -250,6 +251,7 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
           align: "left",
           headerAlign: "center",
           ...item,
+          fixed: isMobile ? false : item.fixed, // 移动端移除固定
           columnKey: item.prop,
           prop: isDragColumn ? (index: number) => columnsDrag.value[index]?.prop as string : item.prop
         };
@@ -628,13 +630,23 @@ interface RowColRowType {
   colIndex: number;
   row: Record<string, any>;
 }
+/** 表格编辑配置渲染类型 */
+interface TableEditOptionType {
+  /** 编辑前回调 (需要返回值, 返回false则不触发编辑)*/
+  editBefore?: (data: CallBackParamType) => boolean;
+  /** 编辑完成回调 */
+  editFinish?: (data: CallBackParamType) => void;
+  /** 自定义渲染函数 */
+  customRender?: (data: CustomCellParamType) => JSX.Element;
+}
 
 /**
  * 表格单元格编辑渲染函数
  * @param callback 编辑完成回调
  * @param customRender 自定义渲染函数
  */
-export function editTableRender(callback?: (data: CallBackParamType) => void, customRender?: (data: CustomCellParamType) => JSX.Element) {
+export function tableEditRender(options: TableEditOptionType = {}) {
+  const { editFinish, customRender, editBefore } = options;
   const editMap = ref({}); // 记录编辑行列及编辑状态
 
   // 记录编辑单元格行列索引和行数据
@@ -645,7 +657,7 @@ export function editTableRender(callback?: (data: CallBackParamType) => void, cu
   // 编辑完成还原单元格
   const onFinish = (data: CallBackParamType) => {
     editMap.value[data.index].editable = false;
-    if (typeof callback === "function") callback(data);
+    if (typeof editFinish === "function") editFinish(data);
   };
 
   // 编辑渲染函数
@@ -740,7 +752,8 @@ export function editTableRender(callback?: (data: CallBackParamType) => void, cu
     }
 
     function onClickEdit() {
-      rowEditMap({ colIndex: column["rawColumnKey"], rowIndex: index, row });
+      const res = typeof editBefore === "function" ? editBefore({ index, prop, row, column }) : true;
+      if (res) rowEditMap({ colIndex: column["rawColumnKey"], rowIndex: index, row });
     }
 
     let cellValue = row[column.columnKey]; // 单元格取值
@@ -1312,8 +1325,12 @@ interface OptionKey {
   ChangeBeforeUnit: "ChangeBeforeUnit";
   /** 检验提前期单位 */
   CheckBeforeUnit: "CheckBeforeUnit";
-  /** 免考勤 */
-  ExmpetAttendance: "ExmpetAttendance";
+  /** 手板类别 */
+  HandleCategory: "HandleCategory";
+  /** 手板一般测试要求 */
+  NormalTestRequire: "NormalTestRequire";
+  /** 国家代码 */
+  CountryCode: "CountryCode";
 }
 
 export type OptionKeys = ValueOf<OptionKey>;

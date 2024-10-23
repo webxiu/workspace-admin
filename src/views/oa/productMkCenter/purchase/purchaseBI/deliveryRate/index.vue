@@ -93,13 +93,13 @@ const getChartData = async () => {
       const dateTitle = dayjs(formData.date).format("YYYY年MM月");
 
       const _option: echarts.EChartsOption = getLineOption({
-        title: `${dateTitle}采购达成率(单位: %)`,
-        xAxis: xAxis,
+        title: { text: `${dateTitle}采购达成率(单位: %)` },
+        xAxis: { data: xAxis },
         series: series1
       });
       const _option2: echarts.EChartsOption = getLineOption({
-        title: `${dateTitle}采购笔数(单位: Pcs)`,
-        xAxis: xAxis,
+        title: { text: `${dateTitle}采购笔数(单位: Pcs)` },
+        xAxis: { data: xAxis },
         series: series2
       });
       chartInstance1.value.setOption(_option, true);

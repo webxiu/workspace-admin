@@ -1,9 +1,5 @@
+import { AttendanceMachineItemType, fetchMachine, getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
 import { Ref, reactive, ref } from "vue";
-
-import { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { FormRules } from "element-plus";
-import { getEnumDictList } from "@/utils/table";
-import { getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
 
 export const formRules = (flag: Ref<boolean>) => {
   return {
@@ -19,7 +15,16 @@ export const formRules = (flag: Ref<boolean>) => {
 
 export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
   const postSelectValues = ref([]);
-  const exmpetAttendanceOptions = ref([]);
+  const exmpetAttendanceOptions = ref([
+    { optionName: "是", optionValue: true },
+    { optionName: "否", optionValue: false }
+  ]);
+  const machineList = ref<AttendanceMachineItemType[]>([]);
+
+  // 获取考勤机数据
+  fetchMachine({}).then(({ data }) => {
+    machineList.value = data || [];
+  });
 
   const changeDept = (deptId) => {
     getInductionAuditRoleInfoByDeptId({ deptId }).then((res: any) => {
@@ -29,10 +34,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     });
   };
 
-  getEnumDictList(["ExmpetAttendance"])
-    .then((res) => (exmpetAttendanceOptions.value = res.ExmpetAttendance))
-    .catch(console.log);
-
   if (_formData.value.deptId) {
     changeDept(_formData.value.deptId);
   }
@@ -41,7 +42,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "编号",
       prop: "staffId",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入" />;
@@ -50,7 +50,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "姓名",
       prop: "staffName",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入" />;
@@ -59,7 +58,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "性别",
       prop: "sex",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return (
@@ -73,7 +71,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "身份证号码",
       prop: "idCard",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入" />;
@@ -82,7 +79,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "家庭住址",
       prop: "currentStayAddress",
-      labelWidth: 110,
       colProp: { span: 16 },
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入" />;
@@ -91,7 +87,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "入厂日期",
       prop: "startDate",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return (
@@ -102,7 +97,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "加入企业微信",
       prop: "isCreateQYWechat",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return (
@@ -116,7 +110,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "部门",
       prop: "deptId",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return (
@@ -137,7 +130,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "岗位",
       prop: "roleId",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return (
@@ -152,7 +144,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "联系电话",
       prop: "phone",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入" />;
@@ -161,7 +152,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "公司",
       prop: "laborServiceCompany",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入" />;
@@ -170,7 +160,6 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
     {
       label: "免考勤",
       prop: "exmpetAttendance",
-      labelWidth: 110,
       colProp: { span: 8 },
       render: ({ formModel, row }) => (
         <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
@@ -181,10 +170,23 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
       )
     },
     {
+      label: "考勤机",
+      prop: "machineId",
+      colProp: { span: 8 },
+      render: ({ formModel, row }) => {
+        return (
+          <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
+            {machineList.value.map((item) => (
+              <el-option key={item.id} label={item.attMachineName} value={item.id} />
+            ))}
+          </el-select>
+        );
+      }
+    },
+    {
       label: "备注",
       prop: "remark",
-      labelWidth: 110,
-      colProp: { span: 16 },
+      colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return <el-input type="textarea" autosize v-model={formModel[row.prop]} placeholder="请输入" />;
       }

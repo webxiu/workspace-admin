@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-13 14:54:24
+ * @Last Modified time: 2024-10-18 11:01:09
  */
 
 import {
@@ -10,14 +10,14 @@ import {
   MaterialItemType,
   OperateBookStationItemType,
   ToolParamItemType,
-  addOperateBookStation,
-  deleteOperateBookStation,
-  operateBookStationList,
-  sortOperateBookStation,
-  updateOperateBookStation
+  addEsopStation,
+  deleteEsopStation,
+  esopStationList,
+  sortEsopStation,
+  updateEsopStation
 } from "@/api/oaManage/productMkCenter";
 import { MessageBox, Printer } from "@element-plus/icons-vue";
-import { OptionsType, editTableRender, getEnumDictList, setColumn } from "@/utils/table";
+import { OptionsType, getEnumDictList, setColumn, tableEditRender } from "@/utils/table";
 import { h, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
@@ -111,78 +111,82 @@ export const useConfig = () => {
   }
 
   // 编辑表格(使用)
-  const editTable1 = editTableRender();
-  const editTable2 = editTableRender(null, ({ editMap, index, row, column, callback }) => {
-    const isEdit = editMap.value[index]?.editable;
-    const colIndex = editMap.value[index]?.colIndex;
-    if (isEdit) {
-      if (["materialNumber"].includes(column.property)) {
-        if (colIndex === column.rawColumnKey) {
-          const onMaterialChange = (data) => {
-            if (typeof data === "object") {
-              row["materialId"] = data.id;
-              row["materialName"] = data.name;
-              row["materialNumber"] = data.number;
-              row["specification"] = data.specification;
-            } else {
-              row["materialId"] = null;
-              row["materialNumber"] = data;
-            }
-            callback({ index });
-          };
-          return (
-            <ChildMaterialModal
-              v-model={row[column.property]}
-              materialId={row["materialId"]}
-              id={formData.id}
-              onChange={onMaterialChange}
-              onBlur={() => callback({ index })}
-            />
-          );
+  const editTable1 = tableEditRender();
+  const editTable2 = tableEditRender({
+    customRender: ({ editMap, index, row, column, callback }) => {
+      const isEdit = editMap.value[index]?.editable;
+      const colIndex = editMap.value[index]?.colIndex;
+      if (isEdit) {
+        if (["materialNumber"].includes(column.property)) {
+          if (colIndex === column.rawColumnKey) {
+            const onMaterialChange = (data) => {
+              if (typeof data === "object") {
+                row["materialId"] = data.id;
+                row["materialName"] = data.name;
+                row["materialNumber"] = data.number;
+                row["specification"] = data.specification;
+              } else {
+                row["materialId"] = null;
+                row["materialNumber"] = data;
+              }
+              callback({ index });
+            };
+            return (
+              <ChildMaterialModal
+                v-model={row[column.property]}
+                materialId={row["materialId"]}
+                id={formData.id}
+                onChange={onMaterialChange}
+                onBlur={() => callback({ index })}
+              />
+            );
+          }
+        } else if (["unit"].includes(column.property)) {
+          if (colIndex === column.rawColumnKey) {
+            return (
+              <el-select
+                v-model={row[column.property]}
+                size="small"
+                clearable
+                placeholder="请选择"
+                onChange={() => callback({ index })}
+                onBlur={() => callback({ index })}
+              >
+                {materialList.value.map((item) => (
+                  <el-option key={item.optionValue} label={item.optionName} value={item.optionName} />
+                ))}
+              </el-select>
+            );
+          }
+        } else if (colIndex === column.rawColumnKey) {
+          return <RegInput v-model={row[column.columnKey]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
         }
-      } else if (["unit"].includes(column.property)) {
-        if (colIndex === column.rawColumnKey) {
-          return (
-            <el-select
-              v-model={row[column.property]}
-              size="small"
-              clearable
-              placeholder="请选择"
-              onChange={() => callback({ index })}
-              onBlur={() => callback({ index })}
-            >
-              {materialList.value.map((item) => (
-                <el-option key={item.optionValue} label={item.optionName} value={item.optionName} />
-              ))}
-            </el-select>
-          );
-        }
-      } else if (colIndex === column.rawColumnKey) {
-        return <RegInput v-model={row[column.columnKey]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
       }
+      return <span>{row[column.columnKey]}</span>;
     }
-    return <span>{row[column.columnKey]}</span>;
   });
-  const editTable3 = editTableRender(null, ({ editMap, index, prop, row, column, callback }) => {
-    const isEdit = editMap.value[index]?.editable;
-    const colIndex = editMap.value[index]?.colIndex;
-    if (isEdit) {
-      if (["deptName"].includes(column.property)) {
-        if (colIndex === column.rawColumnKey) {
-          const onDeptChange = (data) => {
-            row[column.property] = data.name;
-            row["deptId"] = data.id;
-            callback({ index });
-          };
-          return <DeptModal v-model={row[column.property]} onChange={onDeptChange} onBlur={() => callback({ index })} />;
+  const editTable3 = tableEditRender({
+    customRender: ({ editMap, index, prop, row, column, callback }) => {
+      const isEdit = editMap.value[index]?.editable;
+      const colIndex = editMap.value[index]?.colIndex;
+      if (isEdit) {
+        if (["deptName"].includes(column.property)) {
+          if (colIndex === column.rawColumnKey) {
+            const onDeptChange = (data) => {
+              row[column.property] = data.name;
+              row["deptId"] = data.id;
+              callback({ index });
+            };
+            return <DeptModal v-model={row[column.property]} onChange={onDeptChange} onBlur={() => callback({ index })} />;
+          }
+        } else if (colIndex === column.rawColumnKey) {
+          return <RegInput v-model={row[column.columnKey]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
         }
-      } else if (colIndex === column.rawColumnKey) {
-        return <RegInput v-model={row[column.columnKey]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
       }
+      return <span>{row[column.columnKey]}</span>;
     }
-    return <span>{row[column.columnKey]}</span>;
   });
-  const editTable4 = editTableRender();
+  const editTable4 = tableEditRender();
 
   const getColumnConfig = async () => {
     const columnData: TableColumnList[] = [
@@ -200,9 +204,9 @@ export const useConfig = () => {
         )
       },
       { label: "作业内容", prop: "workContent", minWidth: 180 },
-      { label: "人数(人)", prop: "workerCount", align: "center", minWidth: 90 },
-      { label: "S/T(秒)", prop: "manHour", align: "center", minWidth: 90 },
-      { label: "产能(PCS)", prop: "capacity", align: "center", minWidth: 90 }
+      { label: "人数(人)", prop: "workerCount", align: "center", minWidth: 70 },
+      { label: "S/T(秒)", prop: "manHour", align: "center", minWidth: 70 },
+      { label: "产能(PCS)", prop: "capacity", align: "center", minWidth: 80 }
     ];
     const columnData2: TableColumnList[] = [
       {
@@ -220,18 +224,18 @@ export const useConfig = () => {
       },
       { label: "物料名称", prop: "materialName", minWidth: 100 },
       { label: "物料规格描述", prop: "specification", minWidth: 140 },
-      { label: "用量", prop: "qty", width: 80, align: "center" },
-      { label: "单位", prop: "unit", width: 90, align: "center" }
+      { label: "用量", prop: "qty", align: "center", width: 55 },
+      { label: "单位", prop: "unit", align: "center", width: 55 }
     ];
     const columnData3: TableColumnList[] = [
       { label: "确认项目", prop: "confirm" },
-      { label: "确认频率/数量", prop: "confirmFrequency" },
-      { label: "确认部门", prop: "deptName", minWidth: 120 },
+      { label: "确认频率/数量", prop: "confirmFrequency", align: "center", minWidth: 110 },
+      { label: "确认部门", prop: "deptName", minWidth: 100 },
       { label: "管理方法", prop: "manageMethod", minWidth: 160 }
     ];
     const columnData4: TableColumnList[] = [
       { label: "工具", prop: "tool" },
-      { label: "数量", prop: "quantity", align: "center" },
+      { label: "数量", prop: "quantity", align: "center", minWidth: 55 },
       { label: "标准设定参数", prop: "standardParam" }
     ];
 
@@ -274,7 +278,7 @@ export const useConfig = () => {
       id: item.isNew ? undefined : item.id
     }));
     // 提交排序
-    sortOperateBookStation({ id: formData.id, workStationDTOs }).then(({ data }) => {
+    sortEsopStation({ id: formData.id, workStationDTOs }).then(({ data }) => {
       if (!data) return message("排序失败", { type: "error" });
       message("排序成功", { type: "success" });
       getTableList();
@@ -284,7 +288,7 @@ export const useConfig = () => {
   function getTableList() {
     if (!formData.id) return;
     loading.value = true;
-    operateBookStationList(formData)
+    esopStationList(formData)
       .then(({ data = [] }) => {
         loading.value = false;
         dataList.value = data;
@@ -402,7 +406,7 @@ export const useConfig = () => {
   }
 
   function onDeleteSortList(id) {
-    deleteOperateBookStation({ id }).then(({ data }) => {
+    deleteEsopStation({ id }).then(({ data }) => {
       if (!data) return message("删除失败", { type: "error" });
       message("删除成功", { type: "success" });
       getTableList();
@@ -564,7 +568,7 @@ export const useConfig = () => {
 
     fd.append("param", JSON.stringify(param));
     const title = workStationId ? "修改" : "新增";
-    const reqApi = workStationId ? updateOperateBookStation : addOperateBookStation;
+    const reqApi = workStationId ? updateEsopStation : addEsopStation;
     showMessageBox(`确认保存作业【${newRowData.workContent}】${title}内容吗?`).then(() => {
       reqApi(fd).then(({ data }) => {
         if (!data) return message(`${title}失败`, { type: "error" });
@@ -579,16 +583,22 @@ export const useConfig = () => {
       return message("请选择一条排位表数据", { type: "error" });
     }
     const formRef = ref();
+    const pageIndex = dataList.value.findIndex((f) => f.id === rowData.value?.id);
     addDialog({
       title: "打印指导书",
-      props: { materialId: formData.id, itemInfo: rowData.value },
+      props: {
+        materialId: formData.id,
+        itemInfo: rowData.value,
+        pageIndex: pageIndex + 1,
+        totalPage: dataList.value.length
+      },
       width: "80%",
       class: "sop-print",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      hideItem: ["ok"],
       cancelButtonText: "关闭",
+      okButtonText: "打印",
       contentRenderer: () => h(Print, { ref: formRef }),
       beforeSure: () => formRef.value.onPrint()
     });

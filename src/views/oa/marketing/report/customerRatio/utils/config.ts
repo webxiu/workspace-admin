@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2023-06-23 09:57:10
  * @Last Modified by: Hailen
- * @Last Modified time: 2023-09-13 15:35:49
+ * @Last Modified time: 2024-10-10 16:28:35
  */
 
-import { ECHARTSTHEME } from "@/views/oa/utils/common";
 import type { EChartsOption } from "echarts";
+import { getPidOption } from "@/utils/echarts";
 
 /** 金额元转万元 */
 export const fmtMoney = (num) => Number(num) / 10000;
@@ -16,7 +16,7 @@ export const fmtMoney = (num) => Number(num) / 10000;
  * @param data 数据
  * @param name 名称字段
  */
-export const getChartData = (nameField: string, data) => {
+export const getSeriesData = (nameField: string, data) => {
   const chartData = [];
   const total = data.table[0]?.total || 0;
   const otherObj = data.echarts?.reduce(
@@ -36,7 +36,7 @@ export const getChartData = (nameField: string, data) => {
   return chartData;
 };
 
-export interface AddOrderType<T> {
+interface EchartOptionType<T> {
   /** 名称字段 */
   nameField: string;
   /** 图表表头 */
@@ -45,43 +45,24 @@ export interface AddOrderType<T> {
   data: T;
 }
 
-// 暂无数据时绘制提示文本
-const noDataText = [{ type: "text", top: "50%", left: "45%", cursor: "default", style: { text: "暂无数据", font: "16px Microsoft YaHei", fill: "#969799" } }];
-
 /**
  * 获取图表配置
  * @param opeions
  * @returns
  */
-export const getOption = <T extends object>(opeions: AddOrderType<T>) => {
+export const getOption = <T extends object>(opeions: EchartOptionType<T>) => {
   const { nameField, title, data } = opeions;
-  const seriesData = getChartData(nameField, data);
-  const option: EChartsOption = {
-    title: { text: title, top: "3%", left: "center" },
+  const seriesData = getSeriesData(nameField, data);
+  const option2: EChartsOption = getPidOption({
+    title: { text: title },
     tooltip: {
       formatter: (param) => {
-        return `${param.marker}${param.name}: ${param.percent}% <div style="margin-left: 14px">销售额: ${param.data.sale.toFixed(2)}万元</div>`;
-      },
-      ...ECHARTSTHEME.tooltip,
-      trigger: "item"
+        return `${param.marker}${param.name}: ${param.percent}%
+        <div style="margin-left: 14px">销售额: ${param.data.sale.toFixed(2)}万元</div>`;
+      }
     },
-    legend: { top: "10%", left: "center" },
-    grid: { top: "50%", bottom: "50%" },
-    color: ECHARTSTHEME.barColors,
-    graphic: { elements: seriesData?.length > 0 ? [] : noDataText },
-    series: [
-      seriesData.length > 0
-        ? {
-            name: title,
-            type: "pie",
-            radius: "50%",
-            data: seriesData,
-            label: {
-              formatter: (param) => `${param.name} (${param.percent}%)`
-            }
-          }
-        : { itemStyle: { opacity: 0 } }
-    ]
-  };
-  return option;
+    series: [{ name: "客户占比", data: seriesData }]
+  });
+
+  return option2;
 };

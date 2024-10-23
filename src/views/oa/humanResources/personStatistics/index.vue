@@ -30,9 +30,9 @@ const {
 </script>
 
 <template>
-  <div class="ui-h-100 flex-col flex-1 main main-content">
-    <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
+  <Row>
+    <Col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+      <PureTableBar :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <TitleCate :name="groupArrsList[0]?.groupName" :border="false" style="margin: 4px 0" />
         </template>
@@ -60,7 +60,9 @@ const {
           </pure-table>
         </template>
       </PureTableBar>
-      <PureTableBar :columns="columns2" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
+    </Col>
+    <Col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+      <PureTableBar :columns="columns2" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <TitleCate :name="groupArrsList[1]?.groupName" :border="false" />
         </template>
@@ -91,6 +93,6 @@ const {
           </pure-table>
         </template>
       </PureTableBar>
-    </div>
-  </div>
+    </Col>
+  </Row>
 </template>

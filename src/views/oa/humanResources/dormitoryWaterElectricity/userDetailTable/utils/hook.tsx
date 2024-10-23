@@ -337,15 +337,13 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "姓名", value: "userName" },
     { label: "工号", value: "userCode" },
-    { label: "年月", value: "date", type: "month", format: "YYYY-MM" }
+    { label: "年月", value: "yearAndMonth", type: "month", format: "YYYY-MM" }
   ]);
 
-  const queryParams = reactive<QueryParamsType>({ date: dayjs().format("YYYY-MM") });
+  const queryParams = reactive<QueryParamsType>({ yearAndMonth: dayjs().format("YYYY-MM") });
 
   const onTagSearch = (values) => {
-    formData.userCode = values.userCode;
-    formData.userName = values.userName;
-    formData.yearAndMonth = values.date;
+    Object.assign(formData, values);
     onSearch();
   };
 

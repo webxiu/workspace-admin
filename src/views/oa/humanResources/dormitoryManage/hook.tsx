@@ -32,11 +32,15 @@ import {
   addUserDormitory,
   updateUserDormitory,
   deleteBuliding,
-  deleteZoom
+  deleteZoom,
+  fetchAllBuliding,
+  fetchDormitoryAllBuliding
 } from "@/api/oaManage/humanResources";
+import * as CommonUtils from "@/utils/common";
 
 import { PAGE_CONFIG } from "@/config/constant";
 import { message, showMessageBox } from "@/utils/message";
+import axios from "axios";
 
 export const useActionHook = (fn, fn2) => {
   const columns = ref<TableColumnList[]>([]);
@@ -139,6 +143,18 @@ export const useActionHook = (fn, fn2) => {
   };
 
   const openDialog = async (type: string, row?) => {
+    const buildList = ref([]);
+    const allZoomList = ref([]);
+    const filterZoomList = ref([]);
+
+    if (type === "change") {
+      fetchAllBuliding({}).then((res: any) => {
+        if (res.data) {
+          buildList.value = res.data;
+        }
+      });
+    }
+
     const titleObj = {
       add: "导入",
       edit: "修改",
@@ -174,7 +190,10 @@ export const useActionHook = (fn, fn2) => {
       buildingId: type === "addZoom" ? currentBuilding.value.name : undefined,
       dormitoryCode: row?.dormitoryCode ?? "",
       floorNo: row?.floorNo ?? "",
-      id: type === "editZoom" ? row?.id : undefined
+      id: type === "editZoom" ? row?.id : undefined,
+      dormitoryRank: row?.dormitoryRank,
+      dormitorySex: row?.dormitorySex,
+      remark: row?.remark
     });
 
     const editBuildingFormData = reactive({
@@ -216,8 +235,25 @@ export const useActionHook = (fn, fn2) => {
       editZoom: formRules5
     };
 
+    const changeBuilds = (val) => {
+      const findBuildId = buildList.value.find((el) => el.name === val)?.id;
+      fetchDormitoryAllBuliding({ buildingCode: findBuildId }).then((res: any) => {
+        if (res.data) {
+          allZoomList.value = res.data;
+          addFormData1.floorNo = undefined;
+        }
+      });
+    };
+
+    const changeFloors = (val) => {
+      // 过滤房间
+      const filterZooms = allZoomList.value.filter((item) => item.floor === val)[0]?.value;
+      filterZoomList.value = filterZooms;
+      addFormData1.dormitoryCode = undefined;
+    };
+
     const formConfigMap = {
-      change: formConfigs1(),
+      change: formConfigs1({ buildList, changeBuilds, allZoomList, changeFloors, filterZoomList }),
       leave: formConfigs(),
       insert: formConfigs2(insertFormData),
       addBuilding: formConfigs3(addBuildingFormData),
@@ -232,8 +268,8 @@ export const useActionHook = (fn, fn2) => {
       insert: "380px",
       addBuilding: "500px",
       editBuilding: "300px",
-      addZoom: "300px",
-      editZoom: "300px"
+      addZoom: "400px",
+      editZoom: "400px"
     };
 
     addDialog({
@@ -316,11 +352,13 @@ export const useActionHook = (fn, fn2) => {
   };
 
   const onDownload = () => {
-    downloadDataToExcel({
-      dataList: [],
-      columns: getColumnConfig().filter((item) => ["工号", "姓名", "金额"].includes(item.label)),
-      sheetName: "绩效管理模板"
-    });
+    return axios({
+      method: "get",
+      responseType: "blob",
+      url: `${import.meta.env.VITE_PUBLIC_PATH}template/宿舍管理模版.xlsx`
+    })
+      .then(({ data }) => CommonUtils.onDownload(data, "宿舍管理模版.xlsx"))
+      .catch(() => {});
   };
 
   const validYearAndMonth = () => {

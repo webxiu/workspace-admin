@@ -193,7 +193,7 @@ export const useHome = () => {
       body: () => <FasterEntry style={{ height: "300px" }} entryList={entryList.value} loading={entryLoading.value} onClick={onFastClick} />
     },
     { icon: Clock, name: "时间", body: () => <DateTime style={{ minHeight: "308px" }} /> },
-    { icon: Calendar, name: "日历", body: () => <MyCalendar style={{ maxHeight: "336px" }} /> }
+    { icon: Calendar, name: "日历", body: () => <MyCalendar /> }
   ];
 
   return { maxHeight, homeList, kimiChatRef, isFullScreen, onFullScreen, onClearChat };

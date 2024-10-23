@@ -43,7 +43,7 @@
 import { ref, onMounted, h, reactive, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { message, showMessageBox } from "@/utils/message";
-import { setColumn, getEnumDictList, moveTableRow, editTableRender } from "@/utils/table";
+import { setColumn, getEnumDictList, moveTableRow, tableEditRender } from "@/utils/table";
 import {
   menuButtonList,
   MenuButtonItemType,
@@ -104,9 +104,11 @@ const onSave = () => {
 };
 
 // 编辑表格
-const { editCellRender } = editTableRender(({ prop, row }) => {
-  if (prop === "btnSort") {
-    moveTableRow<MenuButtonItemType>(dataList, row, "btnSort", "", ({ newArr }) => (dataList.value = newArr));
+const { editCellRender } = tableEditRender({
+  editFinish: ({ prop, row }) => {
+    if (prop === "btnSort") {
+      moveTableRow<MenuButtonItemType>(dataList, row, "btnSort", "", ({ newArr }) => (dataList.value = newArr));
+    }
   }
 });
 

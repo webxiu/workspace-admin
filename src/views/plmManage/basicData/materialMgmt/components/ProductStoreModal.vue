@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2024-06-05 15:12:21 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2024-06-05 15:12:21 
+ * @Author: Hailen
+ * @Date: 2024-06-05 15:12:21
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2024-06-05 15:12:21
  */ -->
 
 <script setup lang="ts">
@@ -19,15 +19,15 @@ defineProps({
 });
 
 const rowData = ref();
-const emits = defineEmits(["update:modelValue", "checkRow"]);
+const emits = defineEmits(["update:modelValue", "select"]);
 
 function onRowClick() {
   const { PageUrl, setRouterInfo } = menuPageRouter();
   setRouterInfo(PageUrl.productStore, () => {
     addDialog({
-      title: "选择成品",
+      title: "选择产品",
       props: { tableHeight: 300, isModal: true },
-      width: "85%",
+      width: "700px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
@@ -38,7 +38,7 @@ function onRowClick() {
         showMessageBox(`确认选择产品型号【${row.productCode}】吗?`).then(() => {
           row.productType = row.productType.split("-")[1].trim();
           emits("update:modelValue", row.productType);
-          emits("checkRow", row);
+          emits("select", row);
           done();
         });
       }

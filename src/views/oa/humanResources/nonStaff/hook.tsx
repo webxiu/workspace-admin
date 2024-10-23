@@ -121,38 +121,50 @@ export const useMachine = () => {
     const formRef = ref();
     const formLoading = ref(false);
     const flag = ref(false);
-    const _formData = ref({
-      id: row?.id ?? "",
-      sex: row?.sex,
-      staffName: row?.staffName ?? "",
-      idCard: row?.idCard ?? "",
-      currentStayAddress: row?.currentStayAddress ?? "",
-      startDate: row?.startDate,
-      phone: row?.phone ?? "",
-      staffId: row?.staffId ?? "",
-      deptId: type === "add" ? undefined : row.deptId + "",
-      roleId: type === "add" ? undefined : row.roleId,
-      isCreateQYWechat: type === "add" ? "" : undefined,
-      laborServiceCompany: row?.laborServiceCompany ?? "",
-      remark: row?.remark ?? "",
-      exmpetAttendance: row?.exmpetAttendance
+    const _formData: any = ref({});
+
+    await fetchNoStaffUser({ page: 1, limit: 30, staffId: row?.staffId }).then((res: any) => {
+      if (res.data) {
+        const result = res.data.records[0] || {};
+        _formData.value.id = result?.id ?? "";
+        _formData.value.sex = result?.sex;
+        _formData.value.staffName = result?.staffName ?? "";
+        _formData.value.idCard = result?.idCard ?? "";
+        _formData.value.currentStayAddress = result?.currentStayAddress ?? "";
+        _formData.value.startDate = result?.startDate;
+        _formData.value.phone = result?.phone ?? "";
+        _formData.value.staffId = result?.staffId ?? "";
+        _formData.value.deptId = type === "add" ? undefined : result.deptId + "";
+        _formData.value.roleId = type === "add" ? undefined : result.roleId;
+        _formData.value.isCreateQYWechat = result?.wxOpenId ? true : false;
+        _formData.value.laborServiceCompany = result?.laborServiceCompany ?? "";
+        _formData.value.remark = result?.remark ?? "";
+        _formData.value.exmpetAttendance = result?.exmpetAttendance ?? false;
+        _formData.value.machineId = result?.machineId;
+      }
     });
 
     const changeQYWX = (val) => (flag.value = val);
 
-    const calcConfigArr =
-      type === "add"
-        ? formConfigs({ treeSelectData, _formData, changeQYWX })
-        : formConfigs({ treeSelectData, _formData, changeQYWX }).filter((item) => {
-            if (!row?.wxOpenId) {
-              return item;
-            }
-            return !["isCreateQYWechat"].includes(item.prop);
-          });
+    const calcConfigArr = formConfigs({ treeSelectData, _formData, changeQYWX });
+    // type === "add"
+    //   ? formConfigs({ treeSelectData, _formData, changeQYWX })
+    //   : formConfigs({ treeSelectData, _formData, changeQYWX }).filter((item) => {
+    //       if (!row?.wxOpenId) {
+    //         return item;
+    //       }
+    //       return !["isCreateQYWechat"].includes(item.prop);
+    //     });
 
     addDialog({
       title: `${title}`,
-      props: { loading: formLoading, formInline: _formData, formRules: formRules(flag), formConfigs: calcConfigArr },
+      props: {
+        loading: formLoading,
+        formInline: _formData,
+        formRules: formRules(flag),
+        formConfigs: calcConfigArr,
+        labelWidth: 110
+      },
       width: "1000px",
       draggable: true,
       fullscreenIcon: true,

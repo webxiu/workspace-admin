@@ -1,8 +1,8 @@
 import { Delete, Plus } from "@element-plus/icons-vue";
 import { FormRules, UploadProps } from "element-plus";
-import { editTableRender, setColumn } from "@/utils/table";
 import { message, showMessageBox } from "@/utils/message";
 import { reactive, ref } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import ChangeTable from "./ChangeTable.vue";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";

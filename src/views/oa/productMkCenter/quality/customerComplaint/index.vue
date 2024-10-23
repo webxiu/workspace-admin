@@ -5,7 +5,20 @@ import ButtonList from "@/components/ButtonList/index.vue";
 
 defineOptions({ name: "OaProductMkCenterPurchaseQualityCustomerComplaintIndex" });
 
-const { columns, dataList, buttonList, handleTagSearch, searchOptions, rowClick, onChangeFileInput, maxHeight } = useConfig();
+const {
+  columns,
+  dataList,
+  buttonList,
+  handleTagSearch,
+  pagination,
+  handleSizeChange,
+  handleCurrentChange,
+  searchOptions,
+  rowClick,
+  onChangeFileInput,
+  getMergeImgUlrList,
+  maxHeight
+} = useConfig();
 </script>
 
 <template>
@@ -35,10 +48,49 @@ const { columns, dataList, buttonList, handleTagSearch, searchOptions, rowClick,
             @row-click="rowClick"
             :columns="dynamicColumns"
             :paginationSmall="size === 'small'"
+            :pagination="pagination"
+            @page-size-change="handleSizeChange"
+            @page-current-change="handleCurrentChange"
             highlight-current-row
             :default-expand-all="false"
             :show-overflow-tooltip="true"
-          />
+          >
+            <template #defectImageList="{ row }">
+              <div class="wrap-img">
+                <el-image
+                  v-if="row.defectImageList?.length"
+                  style="width: 40px; height: 20px"
+                  :src="getMergeImgUlrList(row.defectImageList, 'first')"
+                  :zoom-rate="1.2"
+                  :max-scale="7"
+                  :min-scale="0.2"
+                  preview-teleported
+                  :preview-src-list="getMergeImgUlrList(row.defectImageList, null)"
+                  :initial-index="4"
+                  fit="cover"
+                />
+                <div v-else />
+              </div>
+            </template>
+
+            <template #analysisImageList="{ row }">
+              <div class="wrap-img">
+                <el-image
+                  v-if="row.analysisImageList?.length"
+                  style="width: 24px; height: 24px"
+                  :src="getMergeImgUlrList(row.analysisImageList, 'first')"
+                  :zoom-rate="1.2"
+                  :max-scale="7"
+                  :min-scale="0.2"
+                  preview-teleported
+                  :preview-src-list="getMergeImgUlrList(row.analysisImageList, null)"
+                  :initial-index="4"
+                  fit="cover"
+                />
+                <div v-else />
+              </div>
+            </template>
+          </pure-table>
         </template>
       </PureTableBar>
     </div>
@@ -49,5 +101,11 @@ const { columns, dataList, buttonList, handleTagSearch, searchOptions, rowClick,
   .el-form-item--small {
     margin-bottom: 8px !important;
   }
+}
+
+.wrap-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

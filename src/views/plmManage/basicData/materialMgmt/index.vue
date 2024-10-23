@@ -81,6 +81,8 @@ interface Props {
   isModal?: boolean;
   /** 表格高度 */
   tableHeight?: number;
+  /** 产品库物料型号 */
+  productCode?: string;
 }
 
 defineOptions({ name: "PlmManageBasicDataMaterialMgmtIndex" });
@@ -106,7 +108,7 @@ const {
   onSelectionChange,
   handleNodeClick,
   handleTagSearch
-} = useTable(emits, props.isModal);
+} = useTable(emits, props);
 
 const categoryTreeData = ref([]);
 const loadingStatus = ref<LoadingType>({ loading: false, text: "" });

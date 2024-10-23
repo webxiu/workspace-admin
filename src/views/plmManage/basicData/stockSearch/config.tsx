@@ -12,8 +12,6 @@ import { message } from "@/utils/message";
 import { type PaginationProps } from "@pureadmin/table";
 import { addDialog } from "@/components/ReDialog";
 import { ElMessage, ElMessageBox } from "element-plus";
-import editForm, { FormDataItem } from "./form.vue";
-import workForm, { DepInfoItemTree } from "./workForm.vue";
 import { getUserInfo } from "@/utils/storage";
 import { useEleHeight } from "@/hooks";
 import {
@@ -62,15 +60,7 @@ export interface DepGroupItemTree {
 export type HandleType = "add" | "edit";
 
 const columnsDragDom = ref([]);
-/**
- * 
- *  const { stockNoLineName = "" } = formData;
-    if (stockNoLineName) {
-      const [fnumber, fname] = stockNoLineName.split("-").map((item) => item.trim());
-      formData.stock = fnumber;
-      formData.stockName = fname;
-    }
- */
+
 let formData = reactive({
   page: 1,
   limit: PAGE_CONFIG.pageSize,
@@ -82,7 +72,6 @@ let formData = reactive({
 
 export const getConfig = async (buttonList) => {
   const columnsDrag: TableColumnList[] = [
-    // { label: "选择" },
     { label: "序号", prop: "index" },
     { label: "物料编码", prop: "fmaterialnumber" },
     { label: "物料名称", prop: "fmaterialname" },
@@ -94,7 +83,6 @@ export const getConfig = async (buttonList) => {
   ];
 
   let columns: TableColumnList[] = [
-    // { label: "", align: "center", width: 62, fixed: true, cellRenderer: () => <el-radio label="&nbsp;" size="large" /> },
     { label: "序号", type: "index", width: 65, fixed: true, cellRenderer: ({ $index }) => <span>{(formData.page - 1) * formData.limit + $index + 1}</span> },
     { label: "物料编码", fixed: true, prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 200 },
     { label: "物料名称", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 240, fixed: true },
@@ -125,7 +113,6 @@ export function useTable() {
   const curNodeName = ref("0");
   const curNodeLabel = ref();
   const depGroupTree = ref<DepGroupItemTree[]>([]);
-  const depInfoTree = ref<DepInfoItemTree[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref<TeamMemberItemType[]>([]);
   const columns = ref<TableColumnList[]>([]);
@@ -317,65 +304,6 @@ export function useTable() {
     }
   };
 
-  // 添加、编辑弹窗
-  function openDialog(type: HandleType, row?: DepGroupItemTree) {
-    const titleObj = { add: "新增", edit: "修改" };
-    const title = titleObj[type];
-    const userInfo = getUserInfo();
-    const deptName = GetDeptName(depGroupTree.value, userInfo.deptId);
-    const groupName = type === "add" ? "" : row.title;
-    const groupId = type === "add" ? undefined : row.id;
-    const _formData: FormDataItem = {
-      parentId: "",
-      groupName: groupName,
-      leaderId: row.leaderId,
-      deptName: deptName,
-      groupCode: row.groupCode,
-      deptId: userInfo.deptId,
-      id: groupId
-    };
-    addDialog({
-      title: `${title}分组`,
-      width: "640px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: { type: type, formInline: _formData },
-      contentRenderer: () => h(editForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormDataItem;
-        FormRef.validate((valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要【${title}分组】吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitGroup(type, title, curData, () => {
-                done();
-              });
-            });
-          }
-        });
-      }
-    });
-  }
-
-  // 添加、编辑提交
-  const onSubmitGroup = (type: HandleType, title: string, data: FormDataItem, callback: Function) => {
-    const API = { add: addDepGroup, edit: editDepGroup };
-    API[type]({ ...data, parentId: data.parentId || 0 })
-      .then((res) => {
-        if (!res.data) throw res.message;
-        callback();
-        message(`${title}成功`, { type: "success" });
-      })
-      .catch(console.log);
-  };
-
   // 分页相关
   function handleSizeChange(val: number) {
     formData.limit = val;
@@ -385,49 +313,6 @@ export function useTable() {
   function handleCurrentChange(val: number) {
     formData.page = val;
     onSearch();
-  }
-
-  // 修改员工岗位
-  async function handleEdit(row: TeamMemberItemType) {
-    const formWorkData = reactive({
-      staffName: row.staffName,
-      roleId: row.roleId,
-      deptId: row.deptId ? `${row.deptId}` : "",
-      groupId: row.groupId ? `${row.groupId}` : "",
-      id: row.id
-    });
-    addDialog({
-      title: "修改岗位",
-      width: "640px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: { row: row, formInline: formWorkData, depInfoTree: depInfoTree.value },
-      contentRenderer: () => h(workForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline as FormDataItem;
-        FormRef.validate((valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要提交修改吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              updateDepGroup(curData)
-                .then((res) => {
-                  done();
-                  onSearch();
-                  message("修改成功", { type: "success" });
-                })
-                .catch(console.log);
-            });
-          }
-        });
-      }
-    });
   }
 
   // 点击表格行
@@ -443,7 +328,6 @@ export function useTable() {
         return { field: item.prop, title: item.label, width: 160, key: `0-${index}`, hide: false, colspan: 1, rowspan: 1, type: "normal", colGroup: false };
       })
       .filter((item) => item.field && item.field !== "index");
-    // console.log(formData, "formdata");
 
     const headConfig = {
       excel: {
@@ -454,8 +338,6 @@ export function useTable() {
       page: 1,
       limit: 100000
     };
-
-    // console.log(headConfig, "header");
 
     exportStockList(headConfig)
       .then((res: any) => {
@@ -490,9 +372,7 @@ export function useTable() {
     onSearch,
     onFresh,
     resetForm,
-    openDialog,
     onNodeClick,
-    handleEdit,
     rowClick,
     buttonList,
     onExport,

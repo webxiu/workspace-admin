@@ -66,29 +66,25 @@ const getChartData = async () => {
       }
 
       const _option: echarts.EChartsOption = getLineOption({
-        title: "成本降低率(单位: %)",
-        xAxis: xAxis,
+        title: { text: "成本降低率(单位: %)" },
+        xAxis: { data: xAxis },
         series: series1
       });
-      const _option2: echarts.EChartsOption = getLineOption(
-        {
-          title: "采购成本税额(单位: 万元)",
-          xAxis: xAxis,
-          series: series2
-        },
-        {
-          dataZoom: [
-            { type: "slider", height: 10 },
-            { type: "inside", height: 10 }
-          ],
-          grid: {
-            top: "22%",
-            left: "3%",
-            right: "4%",
-            bottom: "3%"
-          }
+      const _option2: echarts.EChartsOption = getLineOption({
+        title: { text: "采购成本税额(单位: 万元)" },
+        xAxis: { data: xAxis },
+        series: series2,
+        dataZoom: [
+          { type: "slider", height: 10 },
+          { type: "inside", height: 10 }
+        ],
+        grid: {
+          top: "22%",
+          left: "3%",
+          right: "4%",
+          bottom: "3%"
         }
-      );
+      });
       chartInstance1.value.setOption(_option, true);
       chartInstance2.value.setOption(_option2, true);
       tableRef.value?.setDataList({ list: data, menuCols }, "月");

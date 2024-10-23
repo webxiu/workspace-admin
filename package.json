@@ -1,6 +1,6 @@
 {
   "name": "workspace-web",
-  "version": "2024.0.334",
+  "version": "2024.0.367",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=4096 vite",
@@ -88,6 +88,7 @@
     "vue-router": "^4.2.2",
     "vue-types": "^5.1.0",
     "vue3-count-to": "^1.1.2",
+    "vue3-cron-plus-picker": "^1.0.2",
     "vue3-tree-org": "^4.2.2",
     "x2js": "^3.4.2",
     "xcrud-vue3": "^0.0.12",

@@ -26,7 +26,7 @@
 
 <script setup lang="tsx">
 import { onMounted, ref } from "vue";
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 import { fetchAllTemplateList } from "@/api/plmManage";
 import { message } from "@/utils/message";
 
@@ -39,7 +39,7 @@ const allDeliverTemplates = ref([]);
 const props = defineProps(["currentTaskRow"]);
 
 const getConfig = () => {
-  const { editCellRender } = editTableRender();
+  const { editCellRender } = tableEditRender();
 
   const columnData: TableColumnList[] = [
     { label: "交付物名称", prop: "name", cellRenderer: (data) => editCellRender({ data }) },

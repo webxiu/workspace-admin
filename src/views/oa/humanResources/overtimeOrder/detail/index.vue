@@ -6,7 +6,7 @@
  */ -->
 
 <script setup lang="tsx">
-import { onMounted, h, reactive, ref } from "vue";
+import { onMounted, h, reactive, ref, computed, watch } from "vue";
 import {
   modifyOvertimeDetailList,
   OvertimeOrderItemType,
@@ -14,13 +14,15 @@ import {
   updateUserOvertime,
   saveUserOvertime,
   OvertimeOrderEditOptionItemType,
-  deptUserInfo
+  deptUserInfo,
+  generateOvertimeOrderList,
+  getStaffDeptGroup
 } from "@/api/oaManage/humanResources";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { message, showMessageBox } from "@/utils/message";
 import AddModal from "./addModel.vue";
-import { setColumn, editTableRender } from "@/utils/table";
-import { Plus, Delete } from "@element-plus/icons-vue";
+import { setColumn, tableEditRender } from "@/utils/table";
+import { Plus, Delete, Setting } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
 import { getUserInfo } from "@/utils/storage";
 import { AuditState } from "../utils/hook";
@@ -51,7 +53,13 @@ const formData = reactive({
   billNo: "保存后自动生成",
   deptId: 0,
   createUserName: userInfo.userName, // 原获取方式从serverData中获取
-  createDate: currentTime
+  createDate: currentTime,
+  autoOvertimeType: "",
+  startDate: dayjs(new Date()).format("YYYY-MM-DD"),
+  endDate: dayjs(new Date()).format("YYYY-MM-DD"),
+  startTime: "",
+  autoGroupId: "",
+  endTime: ""
 });
 const optionsData = ref<OvertimeOrderEditOptionItemType>({
   optionList: [],
@@ -62,6 +70,8 @@ const optionsData = ref<OvertimeOrderEditOptionItemType>({
 const deleteIdList = ref([]);
 const deptOptions = ref([]);
 const userStore = useUserStore();
+const topFormRef = ref();
+const groupList = ref([]);
 
 onMounted(() => {
   getUserDeptList();
@@ -74,7 +84,7 @@ const getUserDeptList = () => {
     modifyOvertimeDetailList({ id: props.id }).then((res: any) => {
       if (res.data) {
         const row = res.data[0] || {};
-        getDeptUserList({ userCode: row.userId, userName: row.userName, deptId: row.deptId }).then((res) => {
+        getDeptUserList({ userCode: row.staffCode, userName: row.staffName, deptId: row.deptId }).then((res) => {
           if (res.data) {
             queryUserDeptList({ userId: res.data[0]?.id }).then((res: any) => {
               if (res.data) {
@@ -102,6 +112,17 @@ const getUserDeptList = () => {
   });
 };
 
+watch(
+  () => formData.deptId,
+  (newVal) => {
+    getStaffDeptGroup({ deptId: newVal }).then((res) => {
+      if (res.data) {
+        groupList.value = res.data;
+      }
+    });
+  }
+);
+
 const changeDept = (val) => {
   dataList.value = [];
   getOptionList(val);
@@ -128,17 +149,19 @@ const getOptionList = (deptId) => {
 };
 
 // 编辑表格
-const { editCellRender } = editTableRender(({ index, prop, row }) => {
-  if (["startDate", "startTime", "endDate", "endTime"].includes(prop)) {
-    onEditCell({ prop, index, value: row[prop], row });
+const { editCellRender } = tableEditRender({
+  editFinish: ({ index, prop, row }) => {
+    if (["startDate", "startTime", "endDate", "endTime"].includes(prop)) {
+      onEditCell({ prop, index, value: row[prop], row });
+    }
   }
 });
 
 const getColumnConfig = () => {
   const isEdit = props.type !== "view";
   const columnData: TableColumnList[] = [
-    { label: "工号", prop: "userId", minWidth: 70 },
-    { label: "姓名", prop: "userName", minWidth: 80 },
+    { label: "工号", prop: "staffCode", minWidth: 70 },
+    { label: "姓名", prop: "staffName", minWidth: 80 },
     { label: "生产线", prop: "productLine", minWidth: 65 },
     {
       label: "加班类型",
@@ -228,6 +251,40 @@ const onAdd = () => {
   openDialog();
 };
 
+// 生成加班数据
+const onGenerate = () => {
+  const reqParams: any = { deptId: formData.deptId };
+  if (formData.autoGroupId) reqParams.groupId = formData.autoGroupId;
+  topFormRef.value.validate((valid) => {
+    if (valid) {
+      generateOvertimeOrderList(reqParams).then((res: any) => {
+        if (res.data) {
+          const setDateList = res.data.map((item) => ({
+            ...item,
+            startDate: formData.startDate,
+            startTime: formData.startTime,
+            overtimeType: formData.autoOvertimeType,
+            endDate: formData.endDate,
+            endTime: formData.endTime,
+            staffId: optionsData.value.userInfoList.find((el) => el.userName === item.staffName)?.id
+          }));
+
+          addUserOvertime({ overTimeApplyDTOList: [setDateList[0]] })
+            .then((res) => {
+              if (res.data) {
+                const { days, hours } = res.data[0] || {};
+                dataList.value = setDateList.map((item) => ({ ...item, days, hours }));
+              }
+            })
+            .catch(() => {
+              dataList.value = setDateList.map((item) => ({ ...item, days: 0, hours: 0 }));
+            });
+        }
+      });
+    }
+  });
+};
+
 const updateUserBack = (data) => {
   optionsData.value.userInfoList = data;
 };
@@ -255,7 +312,14 @@ const openDialog = () => {
               .then((res) => {
                 if (res.data) {
                   const { days, hours, productLine } = res.data[0];
-                  const calcDataHours = overTimeApplyDTOList.map((item) => ({ id: uuidv4(), isNew: true, ...item, days, hours, productLine }));
+                  const calcDataHours = overTimeApplyDTOList.map((item) => ({
+                    id: uuidv4(),
+                    isNew: true,
+                    ...item,
+                    days,
+                    hours,
+                    productLine: item.productLine
+                  }));
                   done();
                   dataList.value = [...dataList.value, ...calcDataHours];
                   // message("添加成功");
@@ -274,7 +338,7 @@ const openDialog = () => {
 // 删除
 const onDelete = (row: OvertimeOrderItemType) => {
   dataList.value = dataList.value.filter((item) => {
-    if (item?.userId === row.userId) {
+    if (item?.staffCode === row.staffCode) {
       row.id && deleteIdList.value.push(row.id);
       return false;
     }
@@ -303,9 +367,9 @@ const onSave = () => {
   for (let i = 0; i < dataList.value.length; i++) {
     const item = dataList.value[i];
     if (!item.days) {
-      return message(`请输入${item.userName}的加班天数`, { type: "error" });
+      return message(`请输入${item.staffName}的加班天数`, { type: "error" });
     } else if (!item.hours) {
-      return message(`请输入${item.userName}的加班时长`, { type: "error" });
+      return message(`请输入${item.staffName}的加班时长`, { type: "error" });
     }
   }
   return new Promise((resolve, reject) => {
@@ -358,12 +422,44 @@ const onSave = () => {
   });
 };
 
+const changeStartDate = (val) => (formData.endDate = val);
+
+const disabledDate = (time) => {
+  return time.getTime() < dayjs(formData.startDate).valueOf();
+};
+
+const makeRange = (start: number, end: number, type?: string) => {
+  const result: number[] = [];
+  for (let i = start; i < end; i++) {
+    result.push(i);
+  }
+  return result;
+};
+
+const disabledHours = () => {
+  if (formData.startTime) {
+    const startDevideHour = formData.startTime.split(":")[0];
+    return makeRange(0, +startDevideHour);
+  }
+};
+
+const changeOvertimeType = (type) => {
+  const dynamicTime = {
+    周末加班: { startTime: "08:00", endTime: "22:00" },
+    节日加班: { startTime: "08:00", endTime: "22:00" },
+    工作日加班: { startTime: "18:00", endTime: "22:00" }
+  };
+
+  formData.startTime = dynamicTime[type]?.startTime;
+  formData.endTime = dynamicTime[type]?.endTime;
+};
+
 defineExpose({ onSave });
 </script>
 <template>
   <div class="ui-h-100 flex-1 main main-content">
-    <div class="bill-table" v-loading="loading">
-      <el-form :inline="true" :model="formData">
+    <div class="bill-table auto-overtime" v-loading="loading">
+      <el-form ref="topFormRef" size="small" :inline="true" :model="formData" label-width="70px">
         <el-form-item label="单据编号">
           <el-input v-model="formData.billNo" placeholder="单据编号" style="min-width: 160px" readonly />
         </el-form-item>
@@ -371,12 +467,85 @@ defineExpose({ onSave });
           <el-input v-model="formData.createUserName" placeholder="创建人" style="min-width: 160px" readonly />
         </el-form-item>
         <el-form-item label="创建时间">
-          <el-input v-model="formData.createDate" placeholder="创建时间" style="min-width: 180px" readonly />
+          <el-input v-model="formData.createDate" placeholder="创建时间" style="min-width: 160px" readonly />
         </el-form-item>
+        <br v-if="type === 'add'" />
+
         <el-form-item label="部门">
-          <el-select v-model="formData.deptId" placeholder="请选择" @change="changeDept">
+          <el-select v-model="formData.deptId" placeholder="请选择" @change="changeDept" style="width: 160px">
             <el-option v-for="item in deptOptions" :key="item.deptId" :label="item.deptName" :value="item.deptId" />
           </el-select>
+        </el-form-item>
+
+        <!-- 自动生成相关数据 -->
+        <el-form-item label="组别" v-if="type === 'add'" prop="autoGroupId">
+          <el-select v-model="formData.autoGroupId" placeholder="请选择组别" style="width: 160px" clearable>
+            <el-option v-for="item in groupList" :label="item.groupName" :value="item.id" :key="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          label="加班类型"
+          v-if="type === 'add'"
+          prop="autoOvertimeType"
+          :rules="{ required: true, trigger: ['submit', 'change'], message: '请选择加班类型' }"
+        >
+          <el-select v-model="formData.autoOvertimeType" placeholder="请选择加班类型" @change="changeOvertimeType" style="width: 160px">
+            <el-option v-for="item in optionsData.optionList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+          </el-select>
+        </el-form-item>
+        <br />
+        <el-form-item
+          label="开始日期"
+          prop="startDate"
+          v-if="type === 'add'"
+          :rules="{ required: true, trigger: ['submit', 'change'], message: '请选择开始日期' }"
+        >
+          <el-date-picker
+            style="width: 160px"
+            v-model="formData.startDate"
+            @change="changeStartDate"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择开始日期"
+          />
+        </el-form-item>
+        <el-form-item
+          label="开始时间"
+          prop="startTime"
+          v-if="type === 'add'"
+          :rules="{ required: true, trigger: ['submit', 'change'], message: '请选择开始时间' }"
+        >
+          <el-time-picker style="width: 160px" v-model="formData.startTime" value-format="HH:mm" format="HH:mm" placeholder="请选择开始时间" />
+        </el-form-item>
+        <el-form-item
+          label="结束日期"
+          prop="endDate"
+          v-if="type === 'add'"
+          :rules="{ required: true, trigger: ['submit', 'change'], message: '请选择结束日期' }"
+        >
+          <el-date-picker
+            style="width: 160px"
+            v-model="formData.endDate"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择结束日期"
+            :disabled-date="disabledDate"
+          />
+        </el-form-item>
+        <el-form-item
+          label="结束时间"
+          prop="endTime"
+          v-if="type === 'add'"
+          :rules="{ required: true, trigger: ['submit', 'change'], message: '请选择结束时间' }"
+        >
+          <el-time-picker
+            style="width: 160px"
+            v-model="formData.endTime"
+            format="HH:mm"
+            value-format="HH:mm"
+            placeholder="请选择结束时间"
+            :disabled-hours="disabledHours"
+          />
         </el-form-item>
       </el-form>
       <el-divider :style="{ margin: '0px' }" />
@@ -384,6 +553,7 @@ defineExpose({ onSave });
         <template #title>
           <div class="flex">
             <el-button @click="onAdd" type="primary" :icon="Plus" :disabled="isDisabled || type === 'view'">添加人员</el-button>
+            <el-button @click="onGenerate" type="success" :icon="Setting" v-if="type === 'add'">自动生成</el-button>
           </div>
         </template>
         <template v-slot="{ size, dynamicColumns }">
@@ -404,7 +574,7 @@ defineExpose({ onSave });
             :show-overflow-tooltip="true"
           >
             <template #operation="{ row }">
-              <el-popconfirm :width="280" :title="`确认删除\n【${row.userName}】的加班单吗?`" @confirm="onDelete(row)">
+              <el-popconfirm :width="280" :title="`确认删除\n【${row.staffName}】的加班单吗?`" @confirm="onDelete(row)">
                 <template #reference>
                   <el-button size="small" :icon="Delete" type="danger" @click.stop :disabled="isDisabled">删除</el-button>
                 </template>
@@ -421,6 +591,12 @@ defineExpose({ onSave });
 .info-select_radio {
   .el-radio {
     margin-right: 0;
+  }
+}
+
+.auto-overtime {
+  .el-form-item--small {
+    margin-bottom: 8px !important;
   }
 }
 </style>

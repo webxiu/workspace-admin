@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-05-22 14:21:15
+ * @Last Modified time: 2024-10-16 10:20:10
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -37,7 +37,7 @@ enum StatusText {
   revoke = "已撤销",
   finish = "已完毕",
   stop = "已终止",
-  reject = "已驳回"
+  reject = "重新审核"
 }
 
 export const useConfig = () => {
@@ -133,8 +133,7 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.billNo = values.billNo || "";
-    formData.state = values.state || "";
+    Object.assign(formData, values);
     getTableList();
   };
   const onRefresh = () => {

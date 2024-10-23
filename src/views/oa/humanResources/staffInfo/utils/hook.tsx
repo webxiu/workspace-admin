@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-25 16:31:47
+ * @Last Modified time: 2024-10-16 10:38:26
  */
 
 import {
@@ -239,11 +239,7 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.staffId = values.staffId;
-    formData.staffName = values.staffName;
-    formData.state = values.state;
-    formData.leaveofficeDate = values.leaveofficeDate;
-    formData.laborServiceCompany = values.laborServiceCompany;
+    Object.assign(formData, values);
     getTableList();
   };
 

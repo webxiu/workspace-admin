@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-03-15 16:49:20
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-06-17 17:27:11
+ * @Last Modified time: 2024-10-09 11:43:39
  */
 
 import { computed, reactive, ref } from "vue";
@@ -176,6 +176,7 @@ export const formConfigs = ({ _formData, buttonsList, groupsList, onChangeBtn, o
       label: "按钮预览",
       prop: "",
       colProp: { span: 12 },
+      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: () => (
         <el-button type={_formData.btnType} size={_formData.btnSize} icon={IconConf[_formData.btnIcon]}>
           {_formData.btnName}

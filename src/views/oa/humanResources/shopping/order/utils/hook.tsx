@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-07-04 17:40:02
+ * @Last Modified time: 2024-10-18 10:58:00
  */
 
 import { OrderManageItemType, orderManageList, exportOrderManage, changeOrderState } from "@/api/oaManage/humanResources";
@@ -12,7 +12,7 @@ import { addDialog } from "@/components/ReDialog";
 
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
-import { setColumn, getExportConfig, editTableRender, getMenuColumns, updateButtonList, usePageSelect } from "@/utils/table";
+import { setColumn, getExportConfig, tableEditRender, getMenuColumns, updateButtonList, usePageSelect } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { type PaginationProps } from "@pureadmin/table";
 import { message, showMessageBox } from "@/utils/message";
@@ -63,8 +63,10 @@ export const useConfig = () => {
   });
 
   // 编辑表格
-  const { editCellRender } = editTableRender(({ prop, row }) => {
-    onEditCell({ prop, value: row[prop], row });
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ prop, row }) => {
+      onEditCell({ prop, value: row[prop], row });
+    }
   });
 
   const getOptionList = () => {
@@ -134,10 +136,7 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.billNo = values.billNo;
-    formData.userName = values.userName;
-    formData.commodityName = values.commodityName;
-    formData.state = values.state;
+    Object.assign(formData, values);
     getTableList();
   };
 

@@ -1,59 +1,79 @@
 <template>
-  <div>
-    <div class="top_zoom">
-      <div class="search_zoom">
+  <div class="ui-h-100 main-content">
+    <div class="top_zoom flex flex-wrap">
+      <div class="flex-1">
         <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="请输入姓名" searchField="userName" />
       </div>
-      <div style="display: flex">
-        <div>
-          <ButtonList moreActionText="宿舍楼管理" :buttonList="buttonList" :auto-layout="false" />
-        </div>
-        <div>
-          <ButtonList moreActionText="房间管理" :buttonList="buttonList2" :auto-layout="false" />
-        </div>
-      </div>
+      <ButtonList moreActionText="宿舍楼管理" :buttonList="buttonList" :auto-layout="false" />
+      <ButtonList moreActionText="房间管理" :buttonList="buttonList2" :auto-layout="false" />
     </div>
     <div class="tab-outer">
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane v-for="item in allBuildings" :key="item.id" :label="item.name" :name="item.id" />
       </el-tabs>
       <div class="center-content">
-        <el-table :data="tableData" style="width: 80%; height: calc(100vh - 232px)" v-loading="loading">
-          <el-table-column prop="floor" label="楼层" align="center" width="60" />
+        <el-table :data="tableData" height="calc(100vh - 232px)" style="width: 80%" v-loading="loading">
+          <el-table-column prop="floor" label="楼层" align="center" width="55" />
           <el-table-column prop="value" label="房间">
             <template #default="{ row }">
               <!-- D栋 -->
               <div v-if="isD.includes('D')" style="display: flex; flex-wrap: wrap; padding: 20px 0">
                 <div class="roomItem" v-for="item in row.value" :key="item.id" :style="{ marginRight: 'auto' }">
-                  <el-tag round :type="currentId === item.id ? 'danger' : ''" effect="dark" @click="clickTag(item)" class="tag-name">{{
-                    item.dormitoryCode + "-" + item.num
-                  }}</el-tag>
+                  <el-tooltip placement="top" :show-after="500">
+                    <el-tag round :type="currentId === item.id ? 'danger' : ''" effect="dark" @click="clickTag(item)" class="tag-name">{{
+                      item.dormitoryCode + "-" + item.num
+                    }}</el-tag>
+                    <template #content>
+                      <div>
+                        <div>宿舍房间：{{ item.buildingGroup + "-" + item.dormitoryCode }}</div>
+                        <div>宿舍职级：{{ item.dormitoryRank }}</div>
+                        <div>宿舍性别：{{ item.dormitorySex }}</div>
+                        <div>备注：{{ item.remark }}</div>
+                      </div>
+                    </template>
+                  </el-tooltip>
                 </div>
               </div>
               <!-- 非D栋:每隔12个换行 -->
               <div v-else style="display: flex; flex-wrap: wrap" v-for="(_, index) in Math.ceil(row.value.length / RoomLimit)" :key="index">
                 <div class="roomItem" v-for="item in splitList(row.value, index)" :key="item.id" :style="{ padding: '4px 0', marginRight: '3%' }">
-                  <el-tag round :type="currentId === item.id ? 'danger' : ''" effect="dark" @click="clickTag(item)" class="tag-name">
-                    {{ item.dormitoryCode + "-" + item.num }}
-                  </el-tag>
+                  <el-tooltip placement="top" :show-after="500">
+                    <el-tag round :type="currentId === item.id ? 'danger' : ''" effect="dark" @click="clickTag(item)" class="tag-name">
+                      {{ item.dormitoryCode + "-" + item.num }}
+                    </el-tag>
+                    <template #content>
+                      <div>
+                        <div>宿舍房间：{{ item.buildingGroup + "-" + item.dormitoryCode }}</div>
+                        <div>宿舍职级：{{ item.dormitoryRank }}</div>
+                        <div>宿舍性别：{{ item.dormitorySex }}</div>
+                        <div>备注：{{ item.remark }}</div>
+                      </div>
+                    </template>
+                  </el-tooltip>
                 </div>
               </div>
             </template>
           </el-table-column>
         </el-table>
-        <div class="right" v-loading="loading2">
-          <div>
+        <div class="right flex-1" v-loading="loading2">
+          <div class="ui-ovx-a">
+            <div class="zoom-level" v-if="userList.length">
+              <div>宿舍职级：{{ currentRoom.dormitoryRank }}</div>
+              <div>宿舍性别：{{ currentRoom.dormitorySex }}</div>
+            </div>
             <div class="zoom-info">入住信息</div>
-            <div v-if="userList.length">
-              <div class="btns-top" v-for="item in userList" :key="item.id">
-                <el-button size="small" type="primary" @click="onLeave(item)">搬离</el-button>
-                <el-button size="small" type="warning" @click="changeZoom(item)">搬迁</el-button>
-                <el-button size="small" type="danger" @click="editUser(item)">修改</el-button>
-                <div class="dis-group">
-                  <div class="dis-item">姓名：{{ item.staffName }}</div>
-                  <div class="dis-item">工号：{{ item.staffId }}</div>
-                  <div class="dis-item">部门：{{ item.deptName }}</div>
-                  <div class="dis-item">入住时间：{{ item.moveInDate }}</div>
+            <div v-if="userList.length" class="p-2">
+              <div class="btns-top flex-col" v-for="item in userList" :key="item.id">
+                <div class="flex">
+                  <el-button size="small" type="primary" @click="onLeave(item)">搬离</el-button>
+                  <el-button size="small" type="warning" @click="changeZoom(item)">搬迁</el-button>
+                  <el-button size="small" type="danger" @click="editUser(item)">修改</el-button>
+                </div>
+                <div class="dis-group flex-col">
+                  <div class="dis-item no-wrap">姓名：{{ item.staffName }}</div>
+                  <div class="dis-item no-wrap">工号：{{ item.staffId }}</div>
+                  <div class="dis-item no-wrap">部门：{{ item.deptName }}</div>
+                  <div class="dis-item no-wrap">入住时间：{{ item.moveInDate }}</div>
                 </div>
               </div>
             </div>
@@ -92,11 +112,15 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useActionHook } from "./hook";
 import { showMessageBox } from "@/utils/message";
 import ButtonList from "@/components/ButtonList/index.vue";
+import { getEnumDictList } from "@/utils/table";
+import { getDeptOptions } from "@/utils/requestApi";
 
 defineOptions({ name: "OaHumanResourcesDormitoryManageIndex" });
 const searchOptions = reactive([
   { label: "姓名", value: "userName" },
-  { label: "工号", value: "userCode" }
+  { label: "工号", value: "userCode" },
+  { label: "部门", value: "deptId", children: [] },
+  { label: "在职状态", value: "state", children: [] }
 ]);
 
 // 每行房间数量
@@ -264,7 +288,7 @@ const handleTagSearch = (values) => {
       })
       .finally(() => (loading.value = false));
   } else {
-    fetchDormitoryAllBuliding({ buildingCode: activeName.value, ...values })
+    fetchDormitoryAllBuliding({ buildingCode: activeName.value, ...searchData.value })
       .then((res: any) => {
         if (res.data) {
           tableData.value = res.data.filter((item) => item.value?.length);
@@ -278,15 +302,26 @@ const handleTagSearch = (values) => {
   }
 };
 
+const fetchOpts = () => {
+  getEnumDictList(["EmployeeStatus"]).then((res) => {
+    searchOptions[3].children = res.EmployeeStatus?.map((item) => ({ label: item.optionName, value: item.optionValue }));
+  });
+
+  getDeptOptions().then((data) => {
+    searchOptions[2].children = data;
+  });
+};
 onMounted(() => {
+  fetchOpts();
   getAllBuildings();
 });
 </script>
 
 <style scoped lang="scss">
+.mobile .tab-outer .el-table {
+  width: 60% !important;
+}
 .top_zoom {
-  display: flex;
-  justify-content: space-between;
   margin-top: 15px;
 }
 
@@ -311,10 +346,18 @@ onMounted(() => {
     overflow: auto;
 
     .zoom-info {
-      padding: 8px 0;
-      margin-bottom: 16px;
+      padding: 0 0 8px;
+      margin: 0 0 8px 8px;
       font-size: 14px;
       font-weight: bold;
+    }
+
+    .zoom-level {
+      display: flex;
+      justify-content: space-between;
+      // padding: 8px 0;
+      margin: 0 0 0 8px;
+      font-size: 14px;
     }
 
     .dis-group {
@@ -323,7 +366,7 @@ onMounted(() => {
       font-size: 13px;
 
       .dis-item {
-        margin: 5px;
+        margin: 0 5px;
       }
     }
   }

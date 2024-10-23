@@ -1,12 +1,13 @@
-import { addDialog } from "@/components/ReDialog";
-import { message } from "@/utils/message";
-import { setColumn } from "@/utils/table";
-import { h, onMounted, reactive, ref, watch } from "vue";
-import { groupFormConfgs, groupFormRules, taskFormConfgs, taskFormRules } from "./config";
-import EditForm from "@/components/EditForm/index.vue";
 import { fetchPersonNameProjectPartData, fetchPersonRoleProjectPartData, fetchTaskStoreList } from "@/api/plmManage";
+import { groupFormConfgs, groupFormRules, taskFormConfgs, taskFormRules } from "./config";
+import { h, onMounted, reactive, ref, watch } from "vue";
+
+import EditForm from "@/components/EditForm/index.vue";
+import { addDialog } from "@/components/ReDialog";
 import { getInductionAuditRoleInfo } from "@/api/oaManage/humanResources";
+import { message } from "@/utils/message";
 import { roleUserList } from "@/api/systemManage";
+import { setColumn } from "@/utils/table";
 import { v4 as uuidv4 } from "uuid";
 
 export const useTaskTable = (props) => {
@@ -333,11 +334,11 @@ export const useTaskTable = (props) => {
     currentRow.value = row;
   };
 
-  const buttonList = ref<ButtonItemType[]>([
+  const buttonList2 = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增" },
     { clickHandler: onEdit, type: "warning", text: "修改" },
     { clickHandler: onDelete, type: "danger", text: "删除" }
   ]);
 
-  return { maxHeight, dataList, columns, buttonList, setDataList, rowClick };
+  return { maxHeight, dataList, columns, buttonList2, setDataList, rowClick };
 };

@@ -1,8 +1,8 @@
 <template>
-  <div class="hailen-calendar">
+  <div class="hx-calendar">
     <div class="calendar-header">
-      <el-button @click="lastYear" text size="small" :icon="DArrowLeft" title="上一年" />
-      <el-button @click="lastMonth" text size="small" :icon="ArrowLeft" title="上一月" />
+      <el-button @click="lastYear" text size="small" :icon="DArrowLeft" title="上一年" style="margin-left: 0" />
+      <el-button @click="lastMonth" text size="small" :icon="ArrowLeft" title="上一月" style="margin-left: 0" />
       <el-date-picker
         v-model="dateMonth"
         type="month"
@@ -16,8 +16,8 @@
       />
 
       <el-button @click="onToday" type="primary" size="small">今天</el-button>
-      <el-button @click="nextMonth" text size="small" :icon="ArrowRight" title="下一月" />
-      <el-button @click="nextYear" text size="small" :icon="DArrowRight" title="下一年" />
+      <el-button @click="nextMonth" text size="small" :icon="ArrowRight" title="下一月" style="margin-left: 0" />
+      <el-button @click="nextYear" text size="small" :icon="DArrowRight" title="下一年" style="margin-left: 0" />
     </div>
     <div class="calendar-body">
       <div class="week-item">
@@ -254,12 +254,14 @@ $weekColor: #57a3dc;
 $color: var(--el-text-color-primary);
 $borderColor: var(--el-card-border-color);
 
-.hailen-calendar {
+.hx-calendar {
   background: var(--el-fill-color-blank);
   border-top: 1px solid $borderColor;
   border-left: 1px solid $borderColor;
-  display: flex;
   flex-direction: column;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 
   .calendar-header {
     display: flex;
@@ -270,7 +272,8 @@ $borderColor: var(--el-card-border-color);
     border-right: 1px solid $borderColor;
     height: 42px;
     .calendar-month {
-      width: 120px;
+      width: 100px;
+      text-align: center;
       border: none;
       font-size: 18px;
       box-shadow: none;

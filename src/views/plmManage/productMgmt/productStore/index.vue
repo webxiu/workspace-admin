@@ -27,6 +27,7 @@ const {
   onCurrentChange,
   searchOptions,
   onFresh,
+  getMergeImgUlrList,
   pagination,
   handleTagSearch
 } = useConfig(emits, props.isModal);
@@ -64,8 +65,34 @@ const {
           @row-dblclick="rowDbClick"
           @row-click="rowClick"
           @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-        />
+        >
+          <template #productImgs="{ row }">
+            <div class="wrap-img-prod">
+              <el-image
+                v-if="row.pmProductImageVOS?.length"
+                style="width: 40px; height: 20px"
+                :src="getMergeImgUlrList(row.pmProductImageVOS, 'first')"
+                :zoom-rate="1.2"
+                :max-scale="7"
+                :min-scale="0.2"
+                preview-teleported
+                :preview-src-list="getMergeImgUlrList(row.pmProductImageVOS, null)"
+                :initial-index="4"
+                fit="cover"
+              />
+              <div v-else />
+            </div>
+          </template>
+        </pure-table>
       </template>
     </PureTableBar>
   </div>
 </template>
+
+<style scoped lang="scss">
+.wrap-img-prod {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

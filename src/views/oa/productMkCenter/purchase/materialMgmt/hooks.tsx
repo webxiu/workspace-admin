@@ -15,9 +15,8 @@ import { useEleHeight } from "@/hooks";
 import { message } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
 import EditForm from "@/components/EditForm/index.vue";
-import { dayjs, ElMessageBox } from "element-plus";
+import { ElMessageBox } from "element-plus";
 import { formConfigs, formRules } from "./config";
-import { useAppStoreHook } from "@/store/modules/app";
 
 export const useTable = () => {
   const dataList = ref([]);
@@ -105,14 +104,8 @@ export const useTable = () => {
       { label: "旧物料编码", prop: "oldCode" }
     ];
 
-    const { device } = useAppStoreHook();
     const { columnArrs, buttonArrs } = await getMenuColumns();
-    const [menuCols] = columnArrs.map((item) => {
-      if (device === "mobile") {
-        return { fixed: false, ...item };
-      }
-      return item;
-    });
+    const [menuCols] = columnArrs;
 
     if (menuCols?.length) {
       columnData = menuCols;

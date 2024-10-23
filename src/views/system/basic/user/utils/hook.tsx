@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-21 14:56:37
+ * @Last Modified time: 2024-10-16 10:05:03
  */
 
 import {
@@ -71,6 +71,8 @@ export const useConfig = () => {
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
   const groupArrsList = ref<TableGroupItemType[]>([]);
   const userTableRef = ref();
+  const loading2 = ref<boolean>(false);
+  const loading3 = ref<boolean>(false);
 
   const formData = reactive<UserInfoReqType>({
     page: 1,
@@ -185,10 +187,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.userName = values.userName;
-    formData.userCode = values.userCode;
-    formData.userState = values.userState;
-    formData.deptId = values.deptId;
+    Object.assign(formData, values);
     formData.deptIdList = [];
     if (values.deptId) {
       const result = getTreeArrItem(deptOptions.value, "value", values.deptId);
@@ -301,11 +300,14 @@ export const useConfig = () => {
   };
 
   const getRightDeptList = (row) => {
-    queryUserDeptList({ userId: row.id }).then((res: any) => {
-      if (res.data) {
-        dataList3.value = res.data;
-      }
-    });
+    loading3.value = true;
+    queryUserDeptList({ userId: row.id })
+      .then((res: any) => {
+        if (res.data) {
+          dataList3.value = res.data;
+        }
+      })
+      .finally(() => (loading3.value = false));
   };
 
   // 获取右侧分组列表
@@ -326,9 +328,12 @@ export const useConfig = () => {
   // 获取右侧分组列表
   const getRoleList = (row: UserInfoItemType) => {
     if (!row?.id) return;
-    userInfoRole({ page: 1, limit: 10000, id: row.id }).then((res) => {
-      dataList2.value = res.data;
-    });
+    loading2.value = true;
+    userInfoRole({ page: 1, limit: 10000, id: row.id })
+      .then((res) => {
+        dataList2.value = res.data;
+      })
+      .finally(() => (loading2.value = false));
   };
 
   // 新增角色
@@ -648,12 +653,18 @@ export const useConfig = () => {
 
   return {
     tableRef2,
+    loading2,
+    loading3,
     columns,
     columns2,
     dataList,
+    columns3,
+    dataList3,
+    buttonList3,
     dataList2,
     maxHeight,
     queryParams,
+    userTableRef,
     searchOptions,
     buttonList,
     buttonList2,
@@ -667,17 +678,13 @@ export const useConfig = () => {
     onRowClick,
     onSizeChange,
     onSetMainRole,
-    onCurrentChange,
     onDelete2,
     onRowClick2,
-    handleSelectionChange2,
-    columns3,
-    dataList3,
-    buttonList3,
     onRefresh3,
     onRowClick3,
-    userTableRef,
+    onSetMainDept,
+    onCurrentChange,
     handleSelectionChange3,
-    onSetMainDept
+    handleSelectionChange2
   };
 };

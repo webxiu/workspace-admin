@@ -78,9 +78,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.staffName = values.staffName;
-    formData.staffCode = values.staffCode;
-    formData.yearMonth = values.yearMonth;
+    Object.assign(formData, values);
     onSearch();
   };
 

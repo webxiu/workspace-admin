@@ -1,5 +1,7 @@
 <template>
-  <HxCalendar />
+  <div class="flex ui-h-100">
+    <HxCalendar />
+  </div>
 </template>
 
 <script lang="ts" setup>

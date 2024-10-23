@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-24 15:09:09
+ * @Last Modified time: 2024-10-12 10:08:42
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -221,7 +221,7 @@ export const useConfig = () => {
     } else if (row.billState === 2) {
       return { background: "#227700", color: "#fff" }; // 已审核
     } else if (row.billState === 3) {
-      return { background: "#F1108CBF", color: "#fff" }; // 已驳回
+      return { background: "#F1108CBF", color: "#fff" }; // 重新审核
     }
     return {};
   };

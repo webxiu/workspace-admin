@@ -34,6 +34,12 @@
       <el-form-item v-if="['用户', '角色'].includes(formData.personFrom)" :label="formData.personFrom">
         <ApprovalWay type="审批方式" :personFrom="formData.personFrom" :formData="formData.taskUsers" @add="updateTask" @delete="updateTask" />
       </el-form-item>
+      <!-- 截止层级 -->
+      <el-form-item v-if="['部门递归'].includes(formData.personFrom)" label="截止层级">
+        <el-select v-model="formData.deptLevel" placeholder="请选择" clearable filterable style="width: 160px">
+          <el-option v-for="item in flowStore.deptLevels" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+        </el-select>
+      </el-form-item>
       <!-- 抄送方式 -->
       <el-form-item label="抄送方式">
         <el-radio-group v-model="formData.carbonPersonFrom">
@@ -131,7 +137,8 @@ const formData = reactive({
   notifyObjectRoleId: "",
   notifyTaskUsers: { 用户: [], 角色: [] },
   notifyOpportunity: "",
-  finishAdviceWay: []
+  finishAdviceWay: [],
+  deptLevel: undefined
 });
 
 onMounted(() => {
@@ -202,7 +209,8 @@ const saveData = (tList: FlowTaskManageItemType[]) => {
       notifyOpportunity: item.notifyOpportunity,
       finishAdviceWay: item.finishAdviceWay,
       notifyObjectPersons: result3.userId,
-      notifyObjectRoleId: result3.roleId
+      notifyObjectRoleId: result3.roleId,
+      deptLevel: formData.personFrom === "部门递归" ? formData.deptLevel : undefined
       // uelexpr: "",
       // uelmark: ""
     };
@@ -235,7 +243,8 @@ const getTableData = (taskId) => {
       notifyObjectRoleId: "",
       notifyTaskUsers: { 用户: [], 角色: [] },
       notifyOpportunity: "",
-      finishAdviceWay: ""
+      finishAdviceWay: "",
+      deptLevel: undefined
     };
     taskLists.value.push(oItem);
   }

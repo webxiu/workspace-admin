@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-06-17 17:27:44
+ * @Last Modified time: 2024-10-16 10:03:29
  */
 
 import { DataAuthItemType, DataAuthMenuItemType, dataAuthList, dataAuthMenuList, dataAuthMenuUpdate } from "@/api/systemManage";
@@ -90,7 +90,7 @@ export const useConfig = () => {
 
   // 搜索左表
   const onTagSearch = (values) => {
-    formData.roleName = values.roleName;
+    Object.assign(formData, values);
     getTableList();
   };
 

@@ -1,5 +1,5 @@
-import { editTableRender, setColumn } from "@/utils/table";
 import { onMounted, ref, watch } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import { ElMessage } from "element-plus";
 import { fetchTestProjectList } from "@/api/plmManage/laboratory";
@@ -11,8 +11,10 @@ export const useModalTableProject = (modelProjectList) => {
   const allProjectList: any = ref({});
 
   // 编辑表格
-  const { editCellRender } = editTableRender(({ index, prop }) => {
-    modelProjectList.value = dataList.value;
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ index, prop }) => {
+      modelProjectList.value = dataList.value;
+    }
   });
 
   const getColumnConfig = () => {

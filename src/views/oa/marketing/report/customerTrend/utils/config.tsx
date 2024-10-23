@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-06-23 09:57:10
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-12 17:21:35
+ * @Last Modified time: 2024-10-10 10:28:53
  */
 
 import { ECHARTSTHEME } from "@/views/oa/utils/common";
@@ -64,8 +64,8 @@ export const getOption = (opeions: ChartOptionType) => {
   });
 
   const option: EChartsOption = getLineOption({
-    title: `${curYear}客户趋势(单位:万元)`,
-    xAxis: xAxis,
+    title: { text: `${curYear}客户趋势(单位:万元)` },
+    xAxis: { data: xAxis },
     series: series
   });
   return option;

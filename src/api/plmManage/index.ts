@@ -1,7 +1,8 @@
-import { ProductClassifyManageItemType } from "./types";
+import { MoldApplyItemType, MoldFileItemType, ProductClassifyManageItemType } from "./types";
+
 import { http } from "@/utils/http";
 
-export type { ProductClassifyManageItemType };
+export type { ProductClassifyManageItemType, MoldApplyItemType, MoldFileItemType };
 
 /** ========================= PLM ========================= */
 /** 基础数据 -  查询物料列表 */
@@ -265,12 +266,12 @@ export function deleteProductStoreList(params) {
 
 /** 项目管理 -  产品库 - 修改列表 */
 export function updateProductStoreList(params) {
-  return http.request("post", "/plm/pm/productinfo/updateproduct", { data: params });
+  return http.request("post", "/plm/pm/productinfo/updateproduct", { data: params }, { headers: { "Content-Type": "multipart/form-data" } });
 }
 
 /** 项目管理 -  产品库 - 新增列表 */
 export function insertProductStoreList(params) {
-  return http.request("post", "/plm/pm/productinfo/insertproduct", { data: params });
+  return http.request("post", "/plm/pm/productinfo/insertproduct", { data: params }, { headers: { "Content-Type": "multipart/form-data" } });
 }
 
 /** 项目管理 -  产品分类管理 - 导出列表 */
@@ -486,6 +487,11 @@ export function deletefetchRightValueInfo(params) {
 /** 项目管理 -  产品开发类型库 - 右侧值列表数据项新增 */
 export function addFetchRightValueInfo(params) {
   return http.request("post", "/plm/pm/producttype/inserttypesetting", { data: params });
+}
+
+/** 项目管理 -  产品开发类型库 - 右侧值列表数据项统一保存 */
+export function saveFetchRightValueInfo(params) {
+  return http.request("post", "/plm/pm/producttype/updatev2", { data: params });
 }
 
 /** 项目管理 -  产品开发类型库 - 左侧所有类型获取 */
@@ -891,4 +897,27 @@ export function deleteMaterialPicture(params) {
 /** 基础数据 - 项目管理批量查询项目负责人  */
 export function fetchAllProjectUserList(params) {
   return http.request("post", "/sys/sys/userrole/selectUserByRoleIds", { data: params });
+}
+
+/** ========================= 模具管理 ========================= */
+
+/** 开模申请 - 列表 */
+export function moldApplyList(data) {
+  return http.request<TablePagingResType<MoldApplyItemType>>("post", "/plm/plm/ModelOpening/selectModelOpening", { data });
+}
+/** 开模申请 - 新增 */
+export function addMoldApply(data) {
+  return http.request<boolean>("post", "/plm/plm/ModelOpening/insertModelOpening", { data, headers: { "Content-Type": "multipart/form-data" } });
+}
+/** 开模申请 - 编辑 */
+export function editMoldApply(data) {
+  return http.request<boolean>("put", "/plm/plm/ModelOpening/updateModelOpening", { data, headers: { "Content-Type": "multipart/form-data" } });
+}
+/** 开模申请 - 删除 */
+export function deleteMoldApply(data) {
+  return http.request<boolean>("delete", "/plm/plm/ModelOpening/deleteModelOpening", { data });
+}
+/** 开模申请 - 打印 */
+export function printMoldApply(data) {
+  return http.request<MoldApplyItemType>("post", "/plm/plm/ModelOpening/xxxx", { data });
 }

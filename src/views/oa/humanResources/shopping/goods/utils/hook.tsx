@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-10 18:13:47
+ * @Last Modified time: 2024-10-16 10:37:54
  */
 
 import {
@@ -192,13 +192,7 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.billNo = values.billNo;
-    formData.commodityName = values.commodityName;
-    formData.brandId = values.brandId;
-    formData.classifyId = values.classifyId;
-    formData.state = values.state;
-    formData.minOfficialPrice = values.minOfficialPrice;
-    formData.maxOfficialPrice = values.maxOfficialPrice;
+    Object.assign(formData, values);
     getTableList();
   };
 

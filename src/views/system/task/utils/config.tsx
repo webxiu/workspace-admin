@@ -30,7 +30,7 @@ const GridSpan = 24;
 const layout = { span: GridSpan, xs: 24, sm: 12, md: 12, lg: 12, xl: 12 };
 
 // 修改参数名称
-export const formConfigs = ({ statusOptions, dataSourceOptions, pushTypeOptions, taskTypeOption, formData }): Ref<FormConfigItemType[]> => {
+export const formConfigs = ({ statusOptions, onSetCronSchedule, dataSourceOptions, pushTypeOptions, taskTypeOption, formData }): Ref<FormConfigItemType[]> => {
   const formConfs = [
     {
       label: "任务标识",
@@ -75,7 +75,11 @@ export const formConfigs = ({ statusOptions, dataSourceOptions, pushTypeOptions,
       prop: "cronSchedule",
       colProp: layout,
       render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入定时表达式" clearable />;
+        return (
+          <el-input v-model={formModel[row.prop]} placeholder="请输入定时表达式" clearable>
+            {{ append: () => <el-button onClick={onSetCronSchedule}>设置</el-button> }}
+          </el-input>
+        );
       }
     },
     {
@@ -132,7 +136,7 @@ export const formConfigs = ({ statusOptions, dataSourceOptions, pushTypeOptions,
     {
       label: "企业微信通知",
       prop: "adviceByQywx",
-      colProp: layout,
+      colProp: { span: 8 },
       render: ({ formModel, row }) => {
         return <el-switch v-model={formModel[row.prop]} active-value={true} inactive-value={false} />;
       }
@@ -140,8 +144,14 @@ export const formConfigs = ({ statusOptions, dataSourceOptions, pushTypeOptions,
     {
       label: "邮件通知",
       prop: "adviceByEmail",
-      colProp: layout,
+      colProp: { span: 8 },
       render: ({ formModel, row }) => <el-switch onChange={onChangeEmail} v-model={formModel[row.prop]} active-value={true} inactive-value={false} />
+    },
+    {
+      label: "限定工作日",
+      prop: "limitedWorkingDay",
+      colProp: { span: 8 },
+      render: ({ formModel, row }) => <el-switch v-model={formModel[row.prop]} active-value={true} inactive-value={false} />
     },
     {
       label: "邮件通知方式",

@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="tsx">
-import { editTableRender, setColumn } from "@/utils/table";
+import { tableEditRender, setColumn } from "@/utils/table";
 import { onMounted, ref } from "vue";
 
 const dataList = ref([]);
@@ -47,8 +47,8 @@ const maxHeight = ref(590);
 
 const getConfig = () => {
   // 编辑表格
-  const editTable1 = editTableRender();
-  const editTable2 = editTableRender();
+  const editTable1 = tableEditRender();
+  const editTable2 = tableEditRender();
 
   const columnsData: TableColumnList[] = [
     { label: "责任角色", prop: "roleName" },

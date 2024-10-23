@@ -2,6 +2,7 @@
 @import "./variables";
 @import "./transition";
 @import "./element-plus";
+@import "./mobile";
 @import "./sidebar";
 @import "./dark";
 
@@ -58,4 +59,34 @@
 /** 设置滚动条宽度 */
 .menu-tree-popover {
   @include scrollBar(16px, rgba(133, 143, 255, 0.3), var(--scrollbar-bg-color), rgba(196, 0, 0, 0.5), 10px);
+}
+
+// 单选框禁用样式改为只读样式
+.el-radio-group.readonly {
+  // 标题样式
+  .el-radio__input.is-disabled + span.el-radio__label {
+    color: var(--el-text-color-regular);
+    border-color: var(--el-color-primary);
+    cursor: default;
+  }
+  // 圆圈样式
+  .el-radio__input.is-disabled .el-radio__inner {
+    background: var(--el-radio-input-bg-color);
+    cursor: default;
+  }
+  .el-radio__input.is-disabled.is-checked {
+    // 选中标题样式
+    + span.el-radio__label {
+      color: var(--el-color-primary);
+    }
+    // 选中圆圈样式
+    .el-radio__inner {
+      border-color: var(--el-color-primary);
+      background: var(--el-color-primary);
+    }
+    // 选中圆圈中心点样式
+    .el-radio__inner::after {
+      background-color: var(--el-color-white);
+    }
+  }
 }

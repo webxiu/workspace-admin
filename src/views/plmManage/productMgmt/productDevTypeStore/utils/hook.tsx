@@ -6,12 +6,12 @@ import {
   fetchGroupNameOptionList,
   fetchLeftTypeTreeList,
   fetchRightValueList,
-  fetchSelectList,
   getBOMTableRowSelectOptions,
+  saveFetchRightValueInfo,
   updateProductDevTypeInfo
 } from "@/api/plmManage";
 import { formConfigs, formConfigs1, formRules, formRules1 } from "./config";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { getMenuColumns, setColumn, tableEditRender, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 
 import EditForm from "@/components/EditForm/index.vue";
@@ -28,6 +28,7 @@ export const useConfig = () => {
   const loading2 = ref<boolean>(false);
   const dataList = ref([]);
   const dataList2: any = ref([]);
+  const delRows: any = ref([]);
   const productDevValueOptions = ref([]);
   const groupNameOptions = ref([]);
   const productCategoryIdList = ref([]);
@@ -80,10 +81,13 @@ export const useConfig = () => {
     return columnData;
   };
 
-  const getColumnConfig2 = async () => {
-    let columnData: TableColumnList[] = [{ label: "要求描述", prop: "valueAll" }];
+  // 编辑表格
+  const { editCellRender } = tableEditRender();
 
-    const { columnArrs, buttonArrs } = await getMenuColumns();
+  const getColumnConfig2 = async () => {
+    const reqRender = (data) => editCellRender({ type: "input", data, isEdit: true });
+    let columnData: TableColumnList[] = [{ label: "要求描述", prop: "valueAll", cellRenderer: reqRender }];
+    const { columnArrs, buttonArrs } = await getMenuColumns([{ valueAll: reqRender }]);
     const menuCols = columnArrs[1];
     if (menuCols?.length) {
       columnData = menuCols;
@@ -92,7 +96,7 @@ export const useConfig = () => {
       columns2.value = columnData;
     }
     updateButtonList(buttonList2, buttonArrs[1]);
-    columns2.value = setColumn({ columnData, operationColumn: false });
+    columns2.value = setColumn({ columnData, operationColumn: false, dragSelector: ".pm-value-table", isDragRow: true, dataList: dataList2 });
     return columnData;
   };
 
@@ -131,7 +135,7 @@ export const useConfig = () => {
       ElMessage({ message: "请选择一个类型", type: "warning" });
       return;
     }
-    openDialog("add", true);
+    dataList2.value.push({ valueAll: "", typeId: currentLeftRow.value.id, isDelete: false });
   };
 
   const openDialog = async (type: string, isRight?, row?) => {
@@ -219,27 +223,50 @@ export const useConfig = () => {
   const onDelete2 = () => {
     const row = currentRightRow.value;
     if (JSON.stringify(row) != "{}") {
-      ElMessageBox.confirm(`确认要删除值为【${row.valueAll}】的记录吗?`, "系统提示", {
-        type: "warning",
-        draggable: true,
-        cancelButtonText: "取消",
-        confirmButtonText: "确定",
-        dangerouslyUseHTMLString: true
-      })
-        .then(() => {
-          loading2.value = true;
-          deletefetchRightValueInfo({ id: row.id }).then((res) => {
-            if (res.data) {
-              ElMessage({ message: `删除成功`, type: "success" });
-              leftRowDbClick(currentLeftRow.value);
-            }
-          });
-        })
-        .catch(() => {})
-        .finally(() => (loading2.value = false));
+      // ElMessageBox.confirm(`确认要删除值为【${row.valueAll}】的记录吗?`, "系统提示", {
+      //   type: "warning",
+      //   draggable: true,
+      //   cancelButtonText: "取消",
+      //   confirmButtonText: "确定",
+      //   dangerouslyUseHTMLString: true
+      // })
+      //   .then(() => {
+      //     loading2.value = true;
+      //     deletefetchRightValueInfo({ id: row.id }).then((res) => {
+      //       if (res.data) {
+      //         ElMessage({ message: `删除成功`, type: "success" });
+      //         leftRowDbClick(currentLeftRow.value);
+      //       }
+      //     });
+      //   })
+      //   .catch(() => {})
+      //   .finally(() => (loading2.value = false));
+
+      dataList2.value[currentRightRow.value.index].isDelete = true;
+      delRows.value.push(dataList2.value[currentRightRow.value.index]);
+      dataList2.value.splice(currentRightRow.value.index, 1);
+      currentRightRow.value = {};
     } else {
       ElMessage({ message: "请选择值记录", type: "warning" });
     }
+  };
+
+  const onSave2 = () => {
+    const filterDelRows = delRows.value.filter((el) => el.id);
+    const sendAfterSortList = [...dataList2.value, ...filterDelRows].map((item, idx) => ({ ...item, sort: idx + 1 }));
+    console.log(sendAfterSortList, "sendAfterSortList==");
+    saveFetchRightValueInfo(sendAfterSortList).then((res) => {
+      if (res.data) {
+        message("保存成功", { type: "success" });
+        leftRowDbClick(currentLeftRow.value);
+        delRows.value = [];
+      }
+    });
+  };
+
+  const rowClassName = ({ row, rowIndex }) => {
+    row.index = rowIndex;
+    return "";
   };
 
   const leftRowDbClick = (row) => {
@@ -249,9 +276,9 @@ export const useConfig = () => {
     loading2.value = true;
 
     fetchRightValueList({ typeId: row.id })
-      .then((res) => {
+      .then((res: any) => {
         if (res.data) {
-          dataList2.value = res.data;
+          dataList2.value = res.data.map((el) => ({ ...el, isDelete: el.isDelete ?? false }));
         }
       })
       .finally(() => (loading2.value = false));
@@ -264,7 +291,8 @@ export const useConfig = () => {
 
   const buttonList2 = ref<ButtonItemType[]>([
     { clickHandler: onAdd2, type: "primary", text: "新增值" },
-    { clickHandler: onDelete2, type: "warning", text: "删除值" }
+    { clickHandler: onDelete2, type: "warning", text: "删除值" },
+    { clickHandler: onSave2, type: "success", text: "保存" }
   ]);
 
   const rightRowClick = (row) => (currentRightRow.value = row);
@@ -285,6 +313,7 @@ export const useConfig = () => {
     onAdd,
     onAdd2,
     onEdit,
+    rowClassName,
     onDelete2,
     leftRowDbClick
   };

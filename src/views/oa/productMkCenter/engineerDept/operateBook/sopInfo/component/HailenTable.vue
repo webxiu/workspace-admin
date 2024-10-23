@@ -57,7 +57,7 @@ export default defineComponent({
     }
     // 渲染表内容
     function renderTbody(dataList: Recordable[], columns: TableColumnType[]) {
-      if (!dataList?.length) return <el-empty description="暂无数据" image-size={48} />;
+      if (!dataList?.length) return <el-empty description="暂无数据" image-size={42} />;
       return dataList.map((row, idx) => {
         return (
           <div class="xh_row">
@@ -107,7 +107,7 @@ $line: #111;
     align-items: stretch;
     width: 100%;
     border-bottom: 1px solid $line;
-
+    flex: 1;
     .xh_cell {
       box-sizing: border-box;
       flex: 1;
@@ -119,6 +119,7 @@ $line: #111;
         justify-content: center;
         width: 100%;
         height: 100%;
+        line-height: 1.2em;
       }
 
       &:last-child {
@@ -130,9 +131,19 @@ $line: #111;
   .xh_tbody {
     flex: 1;
     overflow-y: auto;
-
+    display: flex;
+    flex-direction: column;
     .xh_row:last-child {
       border-bottom: none;
+    }
+  }
+  :deep(.el-empty) {
+    padding: 5px 0;
+  }
+  :deep(.el-empty__description) {
+    margin-top: 5px;
+    p {
+      font-size: 12px;
     }
   }
 }

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-09 16:33:43
+ * @Last Modified time: 2024-10-16 10:24:12
  */
 
 import { SaleStatisticsItemType, exportSaleStatistics, saleStatisticsList, saleStatisticsOptionList } from "@/api/oaManage/marketing";
@@ -111,10 +111,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    console.log("values", values);
-    formData.saleStockYear = values.saleStockYear;
-    formData.salePeopleId = values.salePeopleId;
-    formData.customcerGroupId = values.customcerGroupId;
+    Object.assign(formData, values);
     getTableList();
   };
 

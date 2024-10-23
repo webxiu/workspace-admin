@@ -5,6 +5,7 @@ import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import SelectUser from "./selectUser/index.vue";
 import { addDialog } from "@/components/ReDialog";
+import { getEnumDictList } from "@/utils/table";
 
 const formRules = reactive<FormRules>({
   staffName: [{ required: true, message: "姓名为必填项", trigger: "change" }],
@@ -99,13 +100,19 @@ const formConfigs = () => [
   }
 ];
 
-const formConfigs1 = () => [
+const formConfigs1 = ({ buildList, changeBuilds, allZoomList, changeFloors, filterZoomList }) => [
   {
     label: "栋",
     labelWidth: 80,
     prop: "buildingCode",
     render: ({ formModel, row }) => {
-      return <el-input v-model={formModel[row.prop]} placeholder="请输入楼栋" />;
+      return (
+        <el-select v-model={formModel[row.prop]} placeholder="请选择楼栋" onChange={changeBuilds}>
+          {buildList.value?.map((el) => (
+            <el-option label={el.name} key={el.name} value={el.name} />
+          ))}
+        </el-select>
+      );
     }
   },
   {
@@ -113,7 +120,13 @@ const formConfigs1 = () => [
     labelWidth: 80,
     prop: "floorNo",
     render: ({ formModel, row }) => {
-      return <el-input v-model={formModel[row.prop]} placeholder="请输入楼层" />;
+      return (
+        <el-select v-model={formModel[row.prop]} placeholder="请选择楼层" onChange={changeFloors}>
+          {allZoomList.value?.map((el) => (
+            <el-option label={el.floor + "层"} key={el.floor} value={el.floor} />
+          ))}
+        </el-select>
+      );
     }
   },
   {
@@ -121,7 +134,13 @@ const formConfigs1 = () => [
     labelWidth: 80,
     prop: "dormitoryCode",
     render: ({ formModel, row }) => {
-      return <el-input v-model={formModel[row.prop]} placeholder="请输入房间号" />;
+      return (
+        <el-select v-model={formModel[row.prop]} placeholder="请选择房间号">
+          {filterZoomList.value?.map((el) => (
+            <el-option label={el.dormitoryCode} key={el.dormitoryCode} value={el.dormitoryCode} />
+          ))}
+        </el-select>
+      );
     }
   }
 ];
@@ -162,7 +181,7 @@ const formConfigs2 = (formData) => {
       }
     },
     {
-      label: "入住人员",
+      label: "入住人员",  
       labelWidth: 100,
       prop: "checkInUser",
       render: ({ formModel, row }) => {
@@ -268,24 +287,68 @@ const formConfigs4 = () => [
   }
 ];
 
-const formConfigs5 = () => [
-  {
-    label: "楼层",
-    labelWidth: 80,
-    prop: "floorNo",
-    render: ({ formModel, row }) => {
-      return <el-input v-model={formModel[row.prop]} placeholder="请输入楼层" />;
+const formConfigs5 = () => {
+  const dormitorySexOpts = ref([]);
+  const dormitoryRankOpts = ref([]);
+  getEnumDictList(["GenderType", "EmployeeLevel"]).then((res) => {
+    dormitorySexOpts.value = res.GenderType;
+    dormitoryRankOpts.value = res.EmployeeLevel;
+  });
+  return [
+    {
+      label: "楼层",
+      labelWidth: 80,
+      prop: "floorNo",
+      render: ({ formModel, row }) => {
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入楼层" />;
+      }
+    },
+    {
+      label: "房间号",
+      labelWidth: 80,
+      prop: "dormitoryCode",
+      render: ({ formModel, row }) => {
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入房间号" />;
+      }
+    },
+    {
+      label: "宿舍职级",
+      labelWidth: 80,
+      prop: "dormitoryRank",
+      render: ({ formModel, row }) => {
+        return (
+          <el-select v-model={formModel[row.prop]} style={{ width: "100%" }}>
+            {dormitoryRankOpts.value.map((el) => (
+              <el-option key={el.optionValue} label={el.optionName} value={el.optionValue} />
+            ))}
+          </el-select>
+        );
+      }
+    },
+    {
+      label: "宿舍性别",
+      labelWidth: 80,
+      prop: "dormitorySex",
+      render: ({ formModel, row }) => {
+        return (
+          <el-select v-model={formModel[row.prop]} style={{ width: "100%" }}>
+            {dormitorySexOpts.value.map((el) => (
+              <el-option key={el.optionValue} label={el.optionName} value={el.optionValue} />
+            ))}
+          </el-select>
+        );
+      }
+    },
+    {
+      label: "备注",
+      labelWidth: 80,
+      prop: "remark",
+      render: ({ formModel, row }) => {
+        return <el-input type="textarea" v-model={formModel[row.prop]} />;
+      }
     }
-  },
-  {
-    label: "房间号",
-    labelWidth: 80,
-    prop: "dormitoryCode",
-    render: ({ formModel, row }) => {
-      return <el-input v-model={formModel[row.prop]} placeholder="请输入房间号" />;
-    }
-  }
-];
+  ];
+};
 
 export {
   formConfigs,

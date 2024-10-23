@@ -7,44 +7,50 @@
         </div>
         <div class="page line-a">
           <div class="b1 sop-header">
-            <div class="make-left">
+            <div class="header-left">
               <div class="top">
                 <img :src="logo" width="80" height="80" alt="" />
                 <div class="name">
-                  <span class="mr-6">{{ printList.productModel }}</span
+                  <span class="mr-6">{{ printList.productCode }}</span
                   ><span>{{ printList.manualName }}</span>
                 </div>
               </div>
               <div class="bottom">
-                <div>MES:xx_Mex</div>
+                <!-- <div>MES:xx_Mex</div> -->
                 <div>制作日期:{{ formatDate(printList.createDate, "YYYY年MM月DD日") }}</div>
-                <div>页次: {{ index + 1 }} / {{ printList?.workStationVOS?.length }}</div>
-                <div>版本：xx_A4</div>
+                <div>页次: {{ getPageCount(index, printList?.workStationVOS) }}</div>
+                <div>版本：{{ printList.ver }}</div>
               </div>
+              <img src="@/assets/images/controlled_document.png" alt="受控文件" class="control-img" />
             </div>
-            <div class="make-right line-r">
+            <div class="header-right line-r">
               <div class="create-info line-a">
                 <div class="item1 text-center vertical-text line-r line-b text-space">决裁</div>
                 <div class="item2 line-r text-center">日期</div>
                 <div class="item3 text-center line-r line-b text-space">制作</div>
                 <div class="item4 text-center line-r line-b text-space">审核</div>
-                <div class="item5 text-center line-b text-space">批准</div>
-                <div class="item6 text-center line-r line-b">{{ printList.createUserName }}</div>
-                <div class="item7 text-center line-r line-b">{{ printList.auditing }}</div>
-                <div class="item8 text-center line-b">{{ printList.approveName }}</div>
-                <div class="item9 text-center line-r">{{ formatDate(printList.createDate, "YYYY-MM-DD") }}</div>
-                <div class="item10 text-center line-r">{{ formatDate(printList?.auditingDate, "YYYY-MM-DD") }}</div>
-                <div class="item11 text-center">{{ formatDate(printList?.approveDate, "YYYY-MM-DD") }}</div>
+                <div class="item5 text-center line-r line-b text-space">批准</div>
+                <div class="item4 text-center line-r line-b text-space">审核</div>
+                <div class="item6 text-center line-b text-space">受控</div>
+                <div class="item7 text-center line-r line-b">{{ printList.createUserName }}</div>
+                <div class="item8 text-center line-r line-b">{{ printList.auditing }}</div>
+                <div class="item9 text-center line-r line-b">{{ printList.approveName }}</div>
+                <div class="item10 text-center line-b">{{ printList.controlledName }}</div>
+
+                <div class="item11 text-center line-r">{{ formatDate(printList.createDate, "YYYY-MM-DD") }}</div>
+                <div class="item12 text-center line-r">{{ formatDate(printList?.auditingDate, "YYYY-MM-DD") }}</div>
+                <div class="item13 text-center line-r">{{ formatDate(printList?.approveDate, "YYYY-MM-DD") }}</div>
+                <div class="item14 text-center">{{ formatDate(printList?.controlledDate, "YYYY-MM-DD") }}</div>
               </div>
             </div>
           </div>
           <div class="sop-desc b1 line-a">
             <div class="desc-item line-r">生产机型/国家:</div>
-            <div class="desc-item line-r fw-700">{{ printList?.productModel }}（xx_国）</div>
+            <div class="desc-item line-r fw-700">{{ printList?.productCode }}{{ printList.country ? `（${printList.country}）` : "" }}</div>
             <div class="desc-item line-r">工位名称:</div>
-            <div class="desc-item line-r fw-700">{{ item.workContent }}</div>
+            <div class="desc-item line-r fw-700">{{ item.workContent }}（{{ getPageCount(index, printList?.workStationVOS) }}）</div>
             <div class="desc-item line-r">文件编号:</div>
-            <div class="desc-item line-r fw-700">xx_D-WI-010-D03</div>
+            <div class="desc-item line-r fw-700">{{ printList.fileNumber }}</div>
             <div class="desc-item line-r">S/T:</div>
             <div class="desc-item fw-700">{{ item.manHour }}</div>
           </div>
@@ -61,15 +67,15 @@
                   </div>
                   <div class="tool ml-4">
                     <div class="cate-title">使用工具及治具:</div>
-                    <div class="cate-content" v-html="item.contentVO.withToolFixture" />
+                    <div class="cate-content" v-html="item.contentVO?.withToolFixture" />
                   </div>
                   <div class="content ml-4">
                     <div class="cate-title">作业内容:</div>
-                    <div class="cate-content" v-html="item.contentVO.jobContent" />
+                    <div class="cate-content" v-html="item.contentVO?.jobContent" />
                   </div>
                   <div class="note ml-4 color-f00">
                     <div class="cate-title">注意事项:</div>
-                    <div class="cate-content" v-html="item.contentVO.precautions" />
+                    <div class="cate-content" v-html="item.contentVO?.precautions" />
                   </div>
                 </div>
                 <div class="p-4">
@@ -98,19 +104,19 @@ import { message } from "@/utils/message";
 import logo from "@/assets/images/logo.png";
 import ReferImage from "./component/ReferImage.vue";
 import HailenTable, { TableColumnType } from "./component/HailenTable.vue";
-import { printOperateBookStation, PrintOperateBookStationResType } from "@/api/oaManage/productMkCenter";
+import { printEsopStation, PrintOperateBookStationResType } from "@/api/oaManage/productMkCenter";
 import { formatDate } from "@/utils/common";
 
 const printRef = ref();
-const props = defineProps<{ materialId?: string; itemInfo?: any }>();
+const props = defineProps<{ materialId?: string; itemInfo?: any; pageIndex?: number; totalPage?: number }>();
 const printList = ref<PrintOperateBookStationResType>();
 
 const columns: TableColumnType[] = [
-  { label: "序号", prop: "", type: "index", width: 40 },
-  { label: "名称", prop: "materialName", width: 100 },
-  { label: "物料编号", prop: "materialNumber", width: 110 },
+  { label: "序号", prop: "", type: "index", width: 32 },
+  { label: "名称", prop: "materialName", width: 80 },
+  { label: "物料编号", prop: "materialNumber", width: 80 },
   { label: "物料规格描述", prop: "specification" },
-  { label: "用量", prop: "qty", width: 50, render: ({ row }) => <span>{`${row.qty}${row.unit || ""}`}</span> }
+  { label: "用量", prop: "qty", width: 32, render: ({ row }) => <span>{`${row.qty}${row.unit || ""}`}</span> }
 ];
 const columns2: TableColumnType[] = [
   { label: "确认项目", prop: "confirm", align: "left" },
@@ -126,9 +132,16 @@ const columns3: TableColumnType[] = [
 
 watch(props, (val) => getPrintList(val.materialId), { immediate: true });
 
+// 获取页码
+function getPageCount(index: number, total: any[]) {
+  const { pageIndex, totalPage } = props;
+  if (pageIndex && totalPage) return `${pageIndex}/${totalPage}`;
+  return `${index + 1}/${total.length}`;
+}
+
 function getPrintList(id) {
   if (!id) return message("物料id不存在", { type: "error" });
-  printOperateBookStation({ id: id }).then(({ data }) => {
+  printEsopStation({ id: id }).then(({ data }) => {
     if (!data) return;
     if (props.itemInfo) data.workStationVOS = [props.itemInfo];
     printList.value = data || ({} as any);
@@ -247,16 +260,17 @@ $small-size: 12px;
 /** 头部内容 */
 .sop-header {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 1fr 351px;
   font-size: 12px;
   overflow: hidden;
 
-  .make-left {
+  .header-left {
     box-sizing: border-box;
     display: grid;
     grid-template-rows: 1fr 28px;
     grid-template-columns: 1fr;
     padding: 10px 10px 0;
+    position: relative;
 
     .top {
       display: grid;
@@ -277,6 +291,13 @@ $small-size: 12px;
       place-items: center start;
       font-size: 10px;
     }
+    .control-img {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      width: 169px;
+    }
   }
 
   .text-center {
@@ -284,19 +305,19 @@ $small-size: 12px;
     place-items: center;
   }
 
-  .make-right {
+  .header-right {
     display: grid;
     grid-template-columns: 1fr;
     margin: $gap $gap 0 0;
 
     .create-info {
       display: grid;
-      grid-template-columns: 36px 1fr 1fr 1fr;
+      grid-template-columns: 36px 1fr 1fr 1fr 1fr;
       grid-template-rows: 20px 1fr 26px;
       grid-template-areas:
-        "item1 item3 item4 item5"
-        "item1 item6 item7 item8"
-        "item2 item9 item10 item11";
+        "item1 item3 item4 item5 item6"
+        "item1 item7 item8 item9 item10"
+        "item2 item11 item12 item13 item14";
 
       margin-bottom: $gap;
       border-right: none;
@@ -319,8 +340,8 @@ $small-size: 12px;
     /** 文件编号 */
     minmax(80px, 1fr)
     180px
-    103px
-    102px;
+    77px
+    77px;
   margin-right: $gap;
   overflow: hidden;
   font-size: $small-size;
@@ -376,7 +397,7 @@ $small-size: 12px;
 
     .operate-cate {
       display: grid;
-      grid-template-rows: auto 50px 1fr minmax(110px, auto);
+      grid-template-rows: auto auto 1fr minmax(110px, auto);
       grid-template-columns: minmax(0, 1fr);
       overflow: hidden;
 

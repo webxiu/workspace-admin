@@ -15,12 +15,18 @@ defineOptions({ name: "SystemBasicUserIndex" });
 
 const {
   tableRef2,
+  loading2,
+  loading3,
   columns,
   columns2,
   dataList,
+  columns3,
+  dataList3,
+  buttonList3,
   dataList2,
   maxHeight,
   queryParams,
+  userTableRef,
   searchOptions,
   buttonList,
   buttonList2,
@@ -34,18 +40,14 @@ const {
   onRowClick,
   onSizeChange,
   onSetMainRole,
-  onCurrentChange,
   onDelete2,
   onRowClick2,
-  handleSelectionChange2,
-  columns3,
-  dataList3,
-  buttonList3,
   onRefresh3,
   onRowClick3,
-  handleSelectionChange3,
   onSetMainDept,
-  userTableRef
+  onCurrentChange,
+  handleSelectionChange3,
+  handleSelectionChange2
 } = useConfig();
 </script>
 
@@ -103,6 +105,7 @@ const {
               align-whole="center"
               :size="size"
               :data="dataList2"
+              :loading="loading2"
               :columns="dynamicColumns"
               :paginationSmall="size === 'small'"
               :show-overflow-tooltip="true"
@@ -145,6 +148,7 @@ const {
               align-whole="center"
               :size="size"
               :data="dataList3"
+              :loading="loading3"
               :columns="dynamicColumns"
               :paginationSmall="size === 'small'"
               :show-overflow-tooltip="true"

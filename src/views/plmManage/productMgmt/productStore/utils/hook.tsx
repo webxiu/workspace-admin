@@ -14,6 +14,7 @@ import { utils, write } from "xlsx";
 import { saveAs } from "file-saver";
 import { cloneDeep } from "@pureadmin/utils";
 import { getProductClassifyList } from "@/views/plmManage/productMgmt/classify/utils/hook";
+import { Plus } from "@element-plus/icons-vue";
 
 export const useConfig = (emits, isModal) => {
   const columns = ref<TableColumnList[]>([]);
@@ -44,6 +45,8 @@ export const useConfig = (emits, isModal) => {
     limit: PAGE_CONFIG.pageSize
   });
 
+  const deleteFileIds = ref<Array<number | string>>([]);
+
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "公司品牌", value: "corporateBrand", children: [] },
     { label: "产品类别", value: "productType", children: [] },
@@ -58,14 +61,25 @@ export const useConfig = (emits, isModal) => {
     {
       label: "产品型号",
       labelWidth: 100,
+      colProp: { span: 12 },
       prop: "productCode",
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="自动生成" disabled />;
       }
     },
+    // {
+    //   label: "客户型号",
+    //   colProp: { span: 12 },
+    //   labelWidth: 100,
+    //   prop: "customerModel",
+    //   render: ({ formModel, row }) => {
+    //     return <el-input v-model={formModel[row.prop]} placeholder="请输入" />;
+    //   }
+    // },
     {
       label: "公司品牌",
       labelWidth: 100,
+      colProp: { span: 12 },
       prop: "corporateBrand",
       render: ({ formModel, row }) => {
         return (
@@ -79,6 +93,7 @@ export const useConfig = (emits, isModal) => {
     },
     {
       label: "产品分类",
+      colProp: { span: 12 },
       labelWidth: 100,
       prop: "productType",
       render: ({ formModel, row }) => {
@@ -93,12 +108,13 @@ export const useConfig = (emits, isModal) => {
     },
     {
       label: "产品级别",
+      colProp: { span: 12 },
       labelWidth: 100,
       prop: "productLevel",
       render: ({ formModel, row }) => {
         const productLevelArr = [];
-        for (let i = 0; i < 9; i++) {
-          productLevelArr.push({ optionName: `${i + 1}`, optionValue: `${i + 1}` });
+        for (let i = 0; i <= 9; i++) {
+          productLevelArr.push({ optionName: `${i}`, optionValue: `${i}` });
         }
         const sortArr = productLevelArr.sort((a, b) => b.optionValue - a.optionValue);
         return (
@@ -112,6 +128,7 @@ export const useConfig = (emits, isModal) => {
     },
     {
       label: "项目码",
+      colProp: { span: 12 },
       labelWidth: 100,
       prop: "projectCode",
       render: ({ formModel, row }) => {
@@ -120,6 +137,7 @@ export const useConfig = (emits, isModal) => {
     },
     {
       label: "外观结构码",
+      colProp: { span: 12 },
       labelWidth: 100,
       prop: "appearanceStructureCode",
       render: ({ formModel, row }) => {
@@ -127,6 +145,7 @@ export const useConfig = (emits, isModal) => {
         for (let i = 65; i <= 90; i++) {
           appearanceStructureCodeArr.push({ optionName: String.fromCharCode(i), optionValue: String.fromCharCode(i) });
         }
+        appearanceStructureCodeArr.push({ optionName: "-", optionValue: "-" });
         return (
           <el-select v-model={formModel[row.prop]} placeholder="请选择" style={{ width: "100%" }} filterable>
             {appearanceStructureCodeArr.map((item) => (
@@ -138,6 +157,7 @@ export const useConfig = (emits, isModal) => {
     },
     {
       label: "功能性能码",
+      colProp: { span: 12 },
       labelWidth: 100,
       prop: "functionalPerformanceCode",
       render: ({ formModel, row }) => {
@@ -153,8 +173,39 @@ export const useConfig = (emits, isModal) => {
           </el-select>
         );
       }
+    },
+    {
+      label: "图片",
+      labelWidth: 100,
+      prop: "productImgs",
+      colProp: { span: 24 },
+      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      render: ({ formModel, row }) => {
+        return (
+          <el-upload
+            multiple
+            onRemove={onRemoveFiles}
+            auto-upload={false}
+            v-model:file-list={formModel[row.prop]}
+            accept=".jpg,.png,.jpeg,.bmp,.gif"
+            list-type="picture-card"
+            style={{ width: "100%" }}
+          >
+            <el-icon>
+              <Plus />
+            </el-icon>
+          </el-upload>
+        );
+      }
     }
   ];
+
+  const onRemoveFiles = (file) => {
+    // TODO: 删除时提供已存在文件的标识如id等，新上传的文件直接回进行删除
+    if (file.virtualPath) {
+      deleteFileIds.value.push(file.id);
+    }
+  };
 
   onMounted(() => {
     getColumnConfig(buttonList);
@@ -173,6 +224,12 @@ export const useConfig = (emits, isModal) => {
       { label: "功能性能码", prop: "functionalPerformanceCode" }
     ];
 
+    const modalColumnsData: TableColumnList[] = [{ label: "产品型号", prop: "productCode" }];
+
+    if (isModal) {
+      columns.value = setColumn({ columnData: JSON.parse(JSON.stringify(modalColumnsData)), operationColumn: false });
+      return modalColumnsData;
+    }
     const { columnArrs, buttonArrs } = await getMenuColumns();
     const [menuCols] = columnArrs;
     if (menuCols?.length) {
@@ -280,6 +337,8 @@ export const useConfig = (emits, isModal) => {
       corporateBrand: row?.corporateBrand?.split("-")[0]?.trim(),
       productType: row?.productType?.split("-")[0]?.trim(),
       projectCode: row?.projectCode,
+      productImgs: row?.pmProductImageVOS?.map((el) => ({ ...el, url: "/api" + el.virtualPath })) || [],
+      // customerModel: row?.customerModel,
       appearanceStructureCode: row?.appearanceStructureCode,
       functionalPerformanceCode: row?.functionalPerformanceCode
     });
@@ -288,9 +347,9 @@ export const useConfig = (emits, isModal) => {
       const calcProdNo =
         (newVal.corporateBrand ?? "") +
         (newVal.productType ?? "") +
-        (newVal.productLevel ?? "") +
+        (+newVal.productLevel > 0 ? newVal.productLevel : "") +
         (newVal.projectCode ?? "") +
-        (newVal.appearanceStructureCode ?? "") +
+        (newVal.appearanceStructureCode && newVal.appearanceStructureCode !== "-" ? newVal.appearanceStructureCode : "") +
         (newVal.functionalPerformanceCode ?? "");
       _formData.productCode = calcProdNo;
     });
@@ -302,8 +361,9 @@ export const useConfig = (emits, isModal) => {
         formRules: formRules,
         formConfigs: formConfigs({ classList, brandList })
       },
-      width: "400px",
+      width: "800px",
       draggable: true,
+      destroyOnClose: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       contentRenderer: () => h(EditForm, { ref: formRef }),
@@ -336,10 +396,21 @@ export const useConfig = (emits, isModal) => {
     const classifyName = dataCopy.productType + " - " + originClassList.value.find((item) => item.categoryNo === dataCopy.productType)?.categoryName;
     dataCopy.productType = classifyName;
 
+    delete dataCopy.productImgs;
+    if (type === "add") delete dataCopy.id;
+    if (deleteFileIds.value.length) dataCopy.deleteImagesIds = deleteFileIds.value;
+    const reqParams = new FormData();
+    Object.keys(dataCopy).forEach((el) => {
+      reqParams.append(el, dataCopy[el]);
+    });
+    if (data.productImgs.length) {
+      data.productImgs.filter((el) => el.raw).forEach((el) => reqParams.append("files", el.raw));
+    }
     const API = { add: insertProductStoreList, edit: updateProductStoreList };
-    API[type](dataCopy)
+    API[type](reqParams)
       .then((res) => {
         if (res.status === 200 || res.data) {
+          deleteFileIds.value = [];
           callback();
           message(`${title}成功`);
         }
@@ -407,7 +478,6 @@ export const useConfig = (emits, isModal) => {
   };
 
   const rowClick = (row) => {
-    console.log("row click", row);
     currentRow.value = row;
     emits("selectRow", row);
   };
@@ -462,6 +532,11 @@ export const useConfig = (emits, isModal) => {
     currentRow.value = row;
   };
 
+  const getMergeImgUlrList = (apiList, resType): any => {
+    const resultArrList = apiList.map((item) => "/api" + item.virtualPath);
+    return resType ? resultArrList[0] : resultArrList;
+  };
+
   return {
     loading,
     columns,
@@ -470,6 +545,7 @@ export const useConfig = (emits, isModal) => {
     searchOptions,
     buttonList,
     pagination,
+    getMergeImgUlrList,
     onSearch,
     onFresh,
     onAdd,

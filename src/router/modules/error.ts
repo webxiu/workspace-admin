@@ -3,6 +3,7 @@ import { $t } from "@/plugins/i18n";
 export default {
   path: "/error",
   redirect: "/error/403",
+  name: "Error",
   meta: { title: $t("menus.hsabnormal"), icon: "InformationLine", showLink: false, rank: 9999 },
   children: [
     {

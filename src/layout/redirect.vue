@@ -3,7 +3,7 @@ import { unref } from "vue";
 import { useRouter } from "vue-router";
 
 defineOptions({
-  name: "Redirect"
+  name: "RedirectPage"
 });
 
 const { currentRoute, replace } = useRouter();

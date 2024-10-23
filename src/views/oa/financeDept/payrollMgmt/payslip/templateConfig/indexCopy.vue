@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { fetchMoneyTemplateList, saveMoneyTemplateConfig } from "@/api/oaManage/financeDept";
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -11,7 +11,7 @@ const currentRow: any = ref({});
 const columns = ref<TableColumnList[]>([]);
 
 // 编辑表格
-const { editCellRender } = editTableRender();
+const { editCellRender } = tableEditRender();
 
 const getConfig = () => {
   const fieldTypeOption = [

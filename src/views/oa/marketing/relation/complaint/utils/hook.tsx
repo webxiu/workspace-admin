@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-24 15:21:51
+ * @Last Modified time: 2024-10-16 10:23:30
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -138,14 +138,11 @@ export const useConfig = () => {
   };
 
   // 搜索
-  const onTagSearch = (values) => {
-    const dates = values.date ? values.date.split(" ~ ") : [];
+  const onTagSearch = ({ date, ...values }) => {
+    const dates = date ? date.split(" ~ ") : [];
     formData.startDate = dates[0];
     formData.endDate = dates[1];
-    formData.title = values.title || "";
-    formData.billNo = values.billNo || "";
-    formData.state = values.state || "";
-    formData.marketState = values.marketState || "";
+    Object.assign(formData, values);
     getTableList();
   };
   const onRefresh = () => getTableList();

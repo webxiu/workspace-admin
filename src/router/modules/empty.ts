@@ -7,6 +7,7 @@ const Layout = () => import("@/layout/index.vue");
 export default {
   path: "/error/empty",
   component: Layout,
+  name: "ErrorEmpty",
   meta: { title: "", showLink: false },
   redirect: "/error/empty/index",
   children: [

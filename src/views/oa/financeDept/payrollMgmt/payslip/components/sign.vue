@@ -5,12 +5,14 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 const signDataInfo = reactive({ imgStr: "", timeStr: "" });
+const baseApi = import.meta.env.VITE_BASE_API;
 
 const getImages = () => {
   getMoneySignImages({ payslipId: (route.query.gzmbNo as string) + (route.query.payslipId as string) }).then((res: any) => {
     if (res.data) {
-      const hasDotFlag = res.data.image1?.indexOf(",") > 0;
-      signDataInfo.imgStr = hasDotFlag ? res.data.image1 + res.data?.image2 : res.data.image1 + "," + res.data?.image2;
+      // const hasDotFlag = res.data.image1?.indexOf(",") > 0;
+      // signDataInfo.imgStr = hasDotFlag ? res.data.image1 + res.data?.image2 : res.data.image1 + "," + res.data?.image2;
+      signDataInfo.imgStr = baseApi + res.data.signatureFilePath;
       signDataInfo.timeStr = res.data.inDate;
     }
   });

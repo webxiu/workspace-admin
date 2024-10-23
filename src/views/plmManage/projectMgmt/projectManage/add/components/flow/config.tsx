@@ -1,13 +1,13 @@
 import { ElMessage, FormRules } from "element-plus";
-import { editTableRender, setColumn } from "@/utils/table";
 import { reactive, ref } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import ProjectBeforeTask from "./projectBeforeTask.vue";
 import ProjectRelationPos from "./projectRelationPos.vue";
 import dayjs from "dayjs";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
-import { roleUserList } from "@/api/systemManage";
 import { getkkViewUrl } from "@/utils/storage";
+import { roleUserList } from "@/api/systemManage";
 
 export const formRules = reactive<FormRules>({
   name: [{ required: true, message: "任务名称为必填项", trigger: "submit" }],
@@ -95,7 +95,7 @@ export const formConfigs = ({
   };
 
   // 编辑表格
-  const { editCellRender } = editTableRender();
+  const { editCellRender } = tableEditRender();
 
   const columns: TableColumnList[] = [
     { label: "交付物名称", prop: "name", cellRenderer: (data) => editCellRender({ data, isEdit: !isReadOnly }) },

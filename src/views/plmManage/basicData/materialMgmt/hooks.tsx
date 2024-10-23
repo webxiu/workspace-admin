@@ -2,13 +2,12 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import {
   addMaterialInfo,
   fetchMaterialList,
-  fetchSelectList,
   getBOMTableRowSelectOptions,
   getMaterialGroupTreeData,
   updateMaterialInfo,
   uploadMaterialImg
 } from "@/api/plmManage";
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref } from "vue";
 
 import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
@@ -22,7 +21,7 @@ export const useConfig = (props) => {
   const nowDay = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const route = useRoute();
   const router = useRouter();
-
+  const newHistoryData: any = ref({});
   const formRef = ref();
   const loading = ref(false);
   const opts: any = ref({});
@@ -280,6 +279,35 @@ export const useConfig = (props) => {
         formData["manufacturingShop"] = result["manufacturingShop"] + "";
       }
       formData.nation = "V0";
+
+      /** 采购物料属性 */
+      formData.fFixLeadTime = result.materialOtherVO?.fFixLeadTime;
+      formData.fFixLeadTimeType = result.materialOtherVO?.fFixLeadTimeType;
+      formData.fVarLeadTime = result.materialOtherVO?.fVarLeadTime;
+      formData.fVarLeadTimeType = result.materialOtherVO?.fVarLeadTimeType;
+      formData.fCheckLeadTime = result.materialOtherVO?.fCheckLeadTime;
+      formData.fCheckLeadTimeType = result.materialOtherVO?.fCheckLeadTimeType;
+      formData.fAccuLeadTime = result.materialOtherVO?.fAccuLeadTime;
+      formData.fMaxPOQty = result.materialOtherVO?.fMaxPOQty;
+      formData.fMinPOQty = result.materialOtherVO?.fMinPOQty;
+      formData.fIncreaseQty = result.materialOtherVO?.fIncreaseQty;
+      formData.fPlanSafeStockQty = result.materialOtherVO?.fPlanSafeStockQty;
+
+      /** 品质物料属性 */
+      formData.fIncSampSchemeId = result.materialOtherVO?.fIncSampSchemeId;
+      formData.fIncQcSchemeId = result.materialOtherVO?.fIncQcSchemeId;
+      formData.fEnableCyclistQCSTK = result.materialOtherVO?.fEnableCyclistQCSTK;
+      formData.fEnableCyclistQCSTKEW = result.materialOtherVO?.fEnableCyclistQCSTKEW;
+
+      /** 生产物料属性 */
+      formData.fDailyOutQty = result.materialOtherVO?.fDailyOutQty;
+      formData.fDegStandardPersonCount = result.materialOtherVO?.fDegStandardPersonCount;
+      formData.fDegCapacity = result.materialOtherVO?.fDegCapacity;
+      formData.fPerUnitStandHour = result.materialOtherVO?.fPerUnitStandHour;
+      formData.fStandHourUnitId = result.materialOtherVO?.fStandHourUnitId;
+
+      /** 仓库物料属性 */
+      formData.fMinIssueQty = result.materialOtherVO?.fMinIssueQty;
     };
 
     const reqId = route.query.viewId ? route.query.viewId : route.query.id;
@@ -307,19 +335,9 @@ export const useConfig = (props) => {
   };
 
   onMounted(() => {
-    // initList();
+    newHistoryData.value = props.historyData;
+    initList();
   });
-
-  const newHistoryData: any = ref({});
-
-  watch(
-    () => props.historyData,
-    (newVal) => {
-      newHistoryData.value = newVal;
-      initList();
-    },
-    { immediate: true, deep: true }
-  );
 
   return { loading, formData, formRef, opts, submit };
 };

@@ -30,7 +30,7 @@ const {
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <PureTableBar :columns="columns" class="flex-1" @refresh="onSearch" @change-column="setUserMenuColumns">
       <template #title>
-        <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="姓名" searchField="applyUserName" />
+        <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="单据编号" searchField="billNo" />
       </template>
       <template #buttons>
         <ButtonList moreActionText="业务操作" :buttonList="buttonList" :auto-layout="false" />

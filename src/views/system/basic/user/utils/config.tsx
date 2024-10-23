@@ -9,7 +9,7 @@ const layout = { span: GridSpan, xs: 24, sm: 12, md: 12, lg: 12, xl: 12 };
 // 编辑员工信息校验
 export const formRules = reactive<FormRules>({
   userCode: [{ required: true, message: "员工工号为必填项", trigger: "blur" }],
-  userName: [{ required: true, message: "员工名称为必填项", trigger: "blur" }],
+  userName: [{ required: true, message: "员工姓名为必填项", trigger: "blur" }],
   deptId: [{ required: true, message: "部门为必选项", trigger: "blur" }],
   mobile: [
     { required: true, message: "移动电话为必填项", trigger: "blur" },
@@ -34,11 +34,11 @@ export const formConfigs = ({ type, stateOptions, deptOptions }): FormConfigItem
       }
     },
     {
-      label: "员工名称",
+      label: "员工姓名",
       prop: "userName",
       colProp: layout,
       render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入员工名称" clearable />;
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入员工姓名" clearable />;
       }
     },
     {

@@ -11,10 +11,10 @@ import { RefreshLeft } from "@element-plus/icons-vue";
 import { message, showMessageBox } from "@/utils/message";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { ref, reactive, onMounted, watch, computed } from "vue";
-import { operateBookList } from "@/api/oaManage/productMkCenter";
-import { setColumn, editTableRender, CellOptionType } from "@/utils/table";
-import { BillState, BILL_STATUS_COLOR, PAGE_CONFIG } from "@/config/constant";
-import { distributeOperateBook, DistributeOperateBookItemType, updateDistribute, submitDistribute } from "@/api/oaManage/productMkCenter";
+import { EsopList } from "@/api/oaManage/productMkCenter";
+import { setColumn, tableEditRender, CellOptionType } from "@/utils/table";
+import { BillState, BillState_Color, PAGE_CONFIG } from "@/config/constant";
+import { distributeEsop, DistributeOperateBookItemType, updateEsopDistribute, submitEsopDistribute } from "@/api/oaManage/productMkCenter";
 
 interface Props {
   lineName?: string;
@@ -44,8 +44,8 @@ onMounted(() => {
 });
 
 // 编辑表格
-const editCell_1 = editTableRender();
-const editCell_2 = editTableRender();
+const editCell_1 = tableEditRender();
+const editCell_2 = tableEditRender();
 
 const getColumnConfig = async () => {
   const columnData: TableColumnList[] = [
@@ -78,7 +78,7 @@ const getTableList = () => {
   return new Promise<boolean>((resolve, reject) => {
     // if (!formData.manualId) return message("请选择指导书", { type: "warning" });
     loading.value = true;
-    distributeOperateBook(formData)
+    distributeEsop(formData)
       .then(({ data }) => {
         response.value = data;
         loading.value = false;
@@ -97,7 +97,7 @@ const getTableList = () => {
 // 查询指导书
 function remoteMethod(keyword = "") {
   sLoading.value = true;
-  operateBookList({ manualName: keyword, page: 1, limit: PAGE_CONFIG.pageSize })
+  EsopList({ manualName: keyword, page: 1, limit: PAGE_CONFIG.pageSize })
     .then(({ data }) => (treeOptions.value = data.records || []))
     .finally(() => (sLoading.value = false));
 }
@@ -114,7 +114,7 @@ function onChange(id) {
  */
 function onDistribute(cleanFlag = 0) {
   return new Promise<any>((resolve, reject) => {
-    submitDistribute({ primaryId: response.value.id, cleanFlag }).then((res) => {
+    submitEsopDistribute({ primaryId: response.value.id, cleanFlag }).then((res) => {
       if (!res.data) return reject(res);
       resolve(res);
     });
@@ -141,7 +141,7 @@ function getRef(callback) {
   const params = { ...response.value, manualDistributeDetail: tabetList };
   showMessageBox(`${msgTip}确认要提交${props.lineName}指导书分发吗?`).then(async () => {
     try {
-      await updateDistribute(params);
+      await updateEsopDistribute(params);
       await getTableList();
       const { data } = await onDistribute(0);
       if (data) {
@@ -191,7 +191,7 @@ defineExpose({ getRef });
               <div class="flex just-between align-center border-line-top">
                 <span style="width: 66px; margin-right: 20px">
                   <el-tag v-if="item.billState === BillState.audited" type="success" size="small" effect="dark">已审核</el-tag>
-                  <el-tag v-else size="small" effect="dark" type="danger">{{ BILL_STATUS_COLOR[item.billState]?.name }}</el-tag>
+                  <el-tag v-else size="small" effect="dark" type="danger">{{ BillState_Color[item.billState]?.name }}</el-tag>
                 </span>
                 <span class="ellipsis mr-30" style="flex: 1; max-width: 400px" :title="item.manualName">{{ item.manualName }}</span>
                 <span class="ellipsis" style="width: 120px" :title="item.productModel">{{ item.productModel }}</span>

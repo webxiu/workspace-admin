@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-09 18:38:12
+ * @Last Modified time: 2024-10-18 10:59:37
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
@@ -11,8 +11,8 @@ import { FormatDataType, ItemKey } from "@/utils/form";
 import { SplitChar, formConfigs, formRules, formatConfigs, formatRules, hideList, inputList, pasteConfigs, slotsList } from "./config";
 import { computed, h, onMounted, reactive, ref } from "vue";
 import { copyText, debounce, readClipboard } from "@/utils/common";
-import { editTableRender, moveTableRow, setColumn } from "@/utils/table";
 import { message, showMessageBox } from "@/utils/message";
+import { moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessageBox } from "element-plus";
@@ -51,9 +51,11 @@ export const useConfig = () => {
   });
 
   // 编辑表格
-  const { editCellRender } = editTableRender(({ prop, row }) => {
-    if (prop === "seq") {
-      moveTableRow<FormColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+  const { editCellRender } = tableEditRender({
+    editFinish: ({ prop, row }) => {
+      if (prop === "seq") {
+        moveTableRow<FormColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+      }
     }
   });
 

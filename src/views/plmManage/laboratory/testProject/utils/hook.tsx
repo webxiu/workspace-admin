@@ -36,8 +36,17 @@ export const useTestProjectConfig = () => {
   const nodeItem = ref<{ label: string; id: string }>();
   const contextMenuRef = ref<InstanceType<typeof ContextMenu>>();
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const formData = reactive({ page: 1, typeId: "", limit: PAGE_CONFIG.pageSize });
-  const searchOptions = reactive<SearchOptionType[]>([{ label: "创建人", value: "createUserName" }]);
+  const formData = reactive({
+    createUserName: "淡淡的",
+    projectName: "斯蒂芬",
+    page: 1,
+    typeId: "",
+    limit: PAGE_CONFIG.pageSize
+  });
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "创建人", value: "createUserName" },
+    { label: "项目名称", value: "projectName" }
+  ]);
 
   onMounted(() => {
     getColumnConfig();
@@ -92,7 +101,8 @@ export const useTestProjectConfig = () => {
   };
 
   const onTagSearch = (values = {}) => {
-    Object.assign(formData, values);
+    formData.createUserName = values.createUserName;
+    formData.projectName = values.projectName;
     getTableList();
   };
 

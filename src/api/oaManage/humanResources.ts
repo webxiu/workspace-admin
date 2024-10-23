@@ -25,7 +25,10 @@ import {
   OvertimeOrderItemType,
   PerformanceManageItemType,
   PersonFlowStatisticsDetailItemType,
+  ResignApplyApproveNodeItemType,
+  ResignApplyItemType,
   StaffAnalysisType,
+  StaffChangeItemType,
   StaffDeptGroupItemType,
   StaffDeptRoleInfoItemType,
   StaffInfoEducationVOListType,
@@ -39,7 +42,8 @@ import {
   StaffInfoWorkVOListType,
   StaffInfoWorkVOSType,
   StatisticsPeopleDetailItemType,
-  TimeSettingItemType
+  TimeSettingItemType,
+  UserBasicInfoItemType
 } from "./types/humanResources";
 import { DeptInfoTreeOptionType, UserInfoItemType, UserInfoReqType } from "@/api/systemManage/types";
 
@@ -87,7 +91,11 @@ export type {
   StatisticsPeopleDetailItemType,
   PersonFlowStatisticsDetailItemType,
   AttendanceMachineItemType,
-  NoStaffItemType
+  NoStaffItemType,
+  StaffChangeItemType,
+  ResignApplyItemType,
+  UserBasicInfoItemType,
+  ResignApplyApproveNodeItemType
 };
 
 /** OA管理:人事行政部 */
@@ -281,7 +289,7 @@ export function permissionCheck(params) {
 }
 /** 人事档案: 获取修改详情 */
 export function getStaffDetail(params) {
-  return http.request<StaffInfoItemType>("get", "/oa/hr/staffinfo/selectbyedit", { params, headers: { hideLoading: true } });
+  return http.request<StaffInfoItemType>("get", "/oa/hr/staffinfo/selectbyedit", { params });
 }
 /** 人事档案: 获取部门下的组别信息 */
 export function getStaffDeptGroup(data) {
@@ -393,7 +401,7 @@ export function getInductionAuditRoleInfo(data) {
 }
 /** 入职审核: 获取部门下的岗位别信息 */
 export function getInductionAuditRoleInfoByDeptId(data) {
-  return http.request("get", "/sys/sys/roleinfo/getRoleInfoByDeptId", { params: data, headers: { hideLoading: true } });
+  return http.request<StaffDeptRoleInfoItemType[]>("get", "/sys/sys/roleinfo/getRoleInfoByDeptId", { params: data, headers: { hideLoading: true } });
 }
 /** 入职审核: 提交审核 */
 export function submitInductionAudit(data) {
@@ -469,6 +477,10 @@ export function saveHolidaySetting(data) {
 /** 加班单: 表格数据 */
 export function overtimeOrderList(data) {
   return http.request<TablePagingResType<OvertimeOrderItemType>>("post", "/oa/hr/overtimeapply/selectPage", { data });
+}
+/** 加班单: 自动生成 */
+export function generateOvertimeOrderList(data) {
+  return http.request("get", "/oa/hr/overtimeapply/getrecentovertimeapply", { params: data });
 }
 /** 加班单: 删除 */
 export function deleteOvertimeOrder(params) {
@@ -662,7 +674,7 @@ export function deleteZoom(data) {
 
 /** 宿舍管理: 宿舍人员查询 */
 export function fetchDormitoryAllUser(data) {
-  return http.request("get", "/oa/hr/dormitorymanagement/selectstaffbydormitory", { params: data });
+  return http.request("get", "/oa/hr/dormitorymanagement/selectstaffbydormitory", { params: data, headers: { hideLoading: true } });
 }
 
 /** 宿舍管理: 修改人员的入住日期*/
@@ -950,9 +962,69 @@ export function personFlowStatisticsDetail(params) {
   });
 }
 
+/** ========================= 人事异动 ========================= */
+
+/**  人事异动 列表 */
+export function staffChangeList(data) {
+  return http.request<TablePagingResType<StaffChangeItemType>>("post", "/oa/hr/StaffTransfer/selectTransfer", { data });
+}
+/**  人事异动 新增 */
+export function addStaffChange(data) {
+  return http.request<boolean>("post", "/oa/hr/StaffTransfer/insert", { data });
+}
+/**  人事异动 修改 */
+export function updateStaffChange(data) {
+  return http.request<boolean>("put", "/oa/hr/StaffTransfer/updateTransfer", { data });
+}
+/**  人事异动 删除 */
+export function deleteStaffChange(params) {
+  return http.request<boolean>("delete", "/oa/hr/StaffTransfer/deleteTransfer", { params });
+}
+/**  人事异动 详情 */
+export function getUserBasicInfo(params) {
+  return http.request<UserBasicInfoItemType[]>("get", "/oa/hr/StaffTransfer/queryBeforeInsert", { params, headers: { hideLoading: true } });
+}
+/**  人事异动 单据详情 */
+export function staffChangeBillDetail(params) {
+  return http.request<boolean>("get", "/oa/hr/StaffTransfer/selectTransferByBillNo", { params });
+}
+
+/** ========================= 离职申请 ========================= */
+
+/**  离职申请 - 列表 */
+export function resignApplyList(data) {
+  return http.request<TablePagingResType<ResignApplyItemType>>("post", "/oa/hr/StaffResign/selectStaffResign", { data });
+}
+/**  离职申请 - 新增 */
+export function addResignApply(data) {
+  return http.request<boolean>("post", "/oa/hr/StaffResign/insert", { data });
+}
+/**  离职申请 - 修改 */
+export function updateResignApply(data) {
+  return http.request<boolean>("put", "/oa/hr/StaffResign/update", { data });
+}
+/**  离职申请 - 删除 */
+export function deleteResignApply(params) {
+  return http.request<boolean>("delete", "/oa/hr/StaffResign/deleteStaffResign", { params });
+}
+
+/**  离职申请 - 获取详情 */
+export function detailResignApply(params) {
+  return http.request<ResignApplyItemType>("get", "/oa/hr/StaffResign/getStaffResignById", { params, headers: { hideLoading: true } });
+}
+/**  离职申请 - 审批信息 */
+export function approveResignApply(params) {
+  return http.request<ResignApplyApproveNodeItemType[]>("get", "/oa/hr/StaffResign/getApprove", { params, headers: { hideLoading: true } });
+}
+
 /** ========================= 数据大屏 ========================= */
 
 /** 数据大屏 - 审批数据 */
 export function approvalData(data) {
   return http.request<ApprovalDataType>("post", "/sys/sys/approvalMonitor/getpageapprovaldatasbysystemsource", { data });
+}
+
+/** 补签卡数据获取 */
+export function supplementaryCard(data) {
+  return http.request("post", "/sys/sys/qywxReissue/selectList", { data });
 }

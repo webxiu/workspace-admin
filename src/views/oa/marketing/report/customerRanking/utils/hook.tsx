@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-11 14:47:52
+ * @Last Modified time: 2024-10-16 10:23:44
  */
 
 import {
@@ -133,8 +133,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.salePeopleId = values.salePeopleId;
-    formData.saleStockYear = values.saleStockYear;
+    Object.assign(formData, values);
     getTableList();
   };
   const onRefresh = () => getTableList();

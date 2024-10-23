@@ -28,15 +28,24 @@ export interface PanasonicQrcodeItemType {
 export interface OperateBookItemType {
   id: string;
   materialId: number;
-  productModel: string;
-  billId: string;
+  materialNumber: string;
   billNo: string;
+  billId: string;
   billState: number;
+  createUserName: string;
+  createDate: string;
+  auditing: string;
+  auditingDate: string;
+  approveName: string;
+  approveDate: string;
   manualName: string;
-  workStationVOs: any[];
-  fileCode_test: string;
-  country_test: number;
-  version_test: string;
+  ver: string;
+  fileNumber: string;
+  country: string;
+  productCode: string;
+  workStationVOS: string;
+  peuserId: string;
+  peuserName: string;
 }
 /** 工位列表类型 */
 export interface OperateBookStationItemType {
@@ -155,16 +164,23 @@ export interface MaterialChildItemType {
 export interface PrintOperateBookStationResType {
   id: string;
   materialId: number;
-  productModel: string;
+  materialNumber: string;
   billNo: string;
+  billId: string;
   billState: number;
   createUserName: string;
   createDate: string;
   auditing: string;
   auditingDate: string;
   approveName: string;
+  controlledName: string;
+  controlledDate: string;
   approveDate: string;
   manualName: string;
+  ver: string;
+  fileNumber: string;
+  country: string;
+  productCode: string;
 
   workStationVOS: {
     id: string;

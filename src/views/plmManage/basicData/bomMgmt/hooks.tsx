@@ -4,17 +4,16 @@ import {
   exportProjectBomTableData,
   fetchBomDetailData,
   fetchBomLeftTreeData,
-  fetchSelectList,
   insertBomTableData,
   pushDownBomData,
   submitBomData,
   updateBomTableData
 } from "@/api/plmManage";
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import dayjs from "dayjs";
-import { debounce } from "@/utils/common";
+import { debounce, downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { getUserInfo } from "@/utils/storage";
 import { useMaterialTable } from "./components/selectMaterialConfig";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
@@ -36,10 +35,6 @@ export const useConfig = () => {
   const nowDay = dayjs().format("YYYY-MM-DD HH:mm:ss");
   const detailInfo: any = ref({});
   const tableList = ref([]);
-
-  const itemUnitOptions: any = ref([]);
-  const dosageTypeOptions: any = ref([]);
-  const issueTypeOptions: any = ref([]);
 
   const formData = reactive({
     materialNumber: "",
@@ -152,9 +147,11 @@ export const useConfig = () => {
   };
 
   const exportDetail = () => {
-    exportProjectBomTableData({ id: route.query.id }).then((res) => {
+    exportProjectBomTableData({ id: route.query.id }).then((res: any) => {
       if (res.data) {
-        window.open("/api" + res.data, "_blank");
+        const fileName = getFileNameOnUrlPath(res.data);
+        const resFileName = fileName.split("_").slice(1).join("_");
+        downloadFile(res.data, resFileName);
       }
     });
   };
@@ -199,8 +196,6 @@ export const useConfig = () => {
           ...data
         };
 
-        // console.log(reqData, "请求参数");
-        // const typeApi = { add: insertBomTableData, edit: updateBomTableData };
         const typeApi = route.query.type === "add" ? insertBomTableData : updateBomTableData;
 
         typeApi(reqData)
@@ -213,7 +208,7 @@ export const useConfig = () => {
               })
                 .then(() => {})
                 .catch(() => {
-                  router.push("/plmManage/basicData/bomMgmt/index?menuId=" + route.query.menuId); ///plmManage/basicData/bomMgmt/index
+                  router.push("/plmManage/basicData/bomMgmt/index?menuId=" + route.query.menuId);
                 });
             }
           })

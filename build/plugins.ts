@@ -2,7 +2,6 @@ import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import { cdn } from "./cdn";
 import { configCompressPlugin } from "./compress";
 import { genScssMultipleScopeVars } from "../src/layout/theme";
-import legacy from "@vitejs/plugin-legacy";
 import removeConsole from "vite-plugin-remove-console";
 import { resolve } from "path";
 import svgLoader from "vite-svg-loader";
@@ -11,6 +10,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { viteBuildInfo } from "./info";
 import { viteMockServe } from "vite-plugin-mock";
 import vue from "@vitejs/plugin-vue";
+import legacy from "@vitejs/plugin-legacy";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 
 export function getPluginsList(command: string, VITE_CDN: boolean, VITE_COMPRESSION: ViteCompression) {

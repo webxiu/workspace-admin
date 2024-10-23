@@ -26,7 +26,12 @@ const props = defineProps({
 
 const route = useRoute();
 const router = useRouter();
-const isCurrent = computed(() => route.fullPath.indexOf(props.item.path) > -1);
+const isCurrent = computed(() => {
+  if (route.path === "/workbench/home") {
+    return route.fullPath.indexOf(props.item.path) > -1;
+  }
+  return route.query.from?.indexOf(props.item.path) > -1;
+});
 
 const getsubMenuIconStyle = computed((): CSSProperties => {
   return {

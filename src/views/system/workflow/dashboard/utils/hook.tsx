@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2023-10-10 11:06:43
+ * @Last Modified time: 2024-10-12 10:29:59
  */
 
 import {
@@ -46,11 +46,11 @@ export const useConfig = () => {
   });
 
   const statusColor = {
-    未审核: "rgba(230, 162, 60, 1)",
+    未审核: "rgba(0, 150, 136, 1)",
     已审核: "#67c23a",
     审核中: "#409eff",
     已通过: "#67c23a",
-    已驳回: "#f56c6c",
+    重新审核: "#f56c6c",
     已撤销: "#881798",
     通过后撤销: "#E74856",
     已删除: "#C50F1F"
@@ -67,7 +67,7 @@ export const useConfig = () => {
   const wechatOptions = [
     { label: "审核中", value: "1" },
     { label: "已通过", value: "2" },
-    { label: "已驳回", value: "3" },
+    { label: "重新审核", value: "3" },
     { label: "已撤销", value: "4" },
     { label: "通过后撤销", value: "6" },
     { label: "已删除", value: "7" }

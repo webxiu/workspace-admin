@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-14 10:48:10
+ * @Last Modified time: 2024-10-16 10:02:57
  */
 
 import { BudgetManageItemType, budgetManageList, exportBudgetManage, importBudgetManage, saveBudgetManage } from "@/api/businessCenter";
@@ -84,8 +84,7 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.deptId = values.deptId;
-    formData.budgetYear = values.budgetYear;
+    Object.assign(formData, values);
     getTableList();
   };
 

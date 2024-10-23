@@ -1,7 +1,7 @@
 import { onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 
-import { downloadDataToExcel, getMenuColumns, setColumn, editTableRender } from "@/utils/table";
+import { downloadDataToExcel, getMenuColumns, setColumn, tableEditRender } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 
 import { PAGE_CONFIG } from "@/config/constant";
@@ -42,7 +42,7 @@ export const useApiList = () => {
     onSearch();
   });
   // 编辑表格
-  const { editCellRender } = editTableRender();
+  const { editCellRender } = tableEditRender();
 
   const fetchOptions = () => {
     getBOMTableRowSelectOptions({ optioncode: "PermissionType" }).then((res) => {
@@ -74,10 +74,7 @@ export const useApiList = () => {
   };
 
   const onTagSearch = (values) => {
-    formData.remark = values.remark;
-    formData.className = values.className;
-    formData.methodName = values.methodName;
-    formData.permissionType = values.permissionType;
+    Object.assign(formData, values);
     onSearch();
   };
   const onSearch = () => {

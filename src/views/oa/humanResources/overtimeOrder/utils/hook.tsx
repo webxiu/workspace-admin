@@ -5,7 +5,7 @@
  * @Last Modified time: 2024-08-24 15:21:10
  */
 
-import { OvertimeOrderItemType, overtimeOrderList, exportLeaveApply, submitOvertime, deleteOvertimeOrder } from "@/api/oaManage/humanResources";
+import { OvertimeOrderItemType, overtimeOrderList, deleteOvertimeOrder, exportOvertimeOrder } from "@/api/oaManage/humanResources";
 import { onMounted, h, reactive, ref } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import Detail from "../detail/index.vue";
@@ -45,16 +45,16 @@ export const useConfig = () => {
   const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize,
-    userName: "",
-    userId: "",
+    staffName: "",
+    staffCode: "",
     deptId: "",
     deptIdList: [],
     date: ""
   });
 
   const searchOptions = reactive<SearchOptionType[]>([
-    { label: "姓名", value: "userName" },
-    { label: "工号", value: "userId" },
+    { label: "姓名", value: "staffName" },
+    { label: "工号", value: "staffCode" },
     { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
     { label: "部门", value: "deptId", children: [] }
   ]);
@@ -78,8 +78,8 @@ export const useConfig = () => {
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
       { label: "单据编号", prop: "billNo", fixed: true, minWidth: 140 },
-      { label: "工号", prop: "userId", fixed: true, sortable: true, minWidth: 80 },
-      { label: "姓名", prop: "userName", fixed: true, minWidth: 100 },
+      { label: "工号", prop: "staffCode", fixed: true, sortable: true, minWidth: 80 },
+      { label: "姓名", prop: "staffName", fixed: true, minWidth: 100 },
       { label: "部门", prop: "deptName", fixed: true, sortable: true, minWidth: 120 },
       { label: "生产线", prop: "productLine", sortable: true },
       { label: "加班类型", prop: "overtimeType", sortable: true, minWidth: 140 },
@@ -111,8 +111,8 @@ export const useConfig = () => {
 
   const handleTagSearch = (values) => {
     formData.date = values.date;
-    formData.userId = values.userId;
-    formData.userName = values.userName;
+    formData.staffCode = values.staffCode;
+    formData.staffName = values.staffName;
     formData.deptId = values.deptId;
     formData.deptIdList = [];
     if (values.deptId) {
@@ -157,7 +157,7 @@ export const useConfig = () => {
     addDialog({
       title: `${title}加班单`,
       props: { id: row?.priId, type },
-      width: "1200px",
+      width: "1400px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
@@ -206,8 +206,16 @@ export const useConfig = () => {
 
   // 导出
   const onExport = () => {
+    if (formData.date) {
+      const [startDate, endDate] = formData.date.split("~").map((el) => el.trim());
+      formData["startDate"] = startDate;
+      formData["endDate"] = endDate;
+    } else {
+      formData["startDate"] = undefined;
+      formData["endDate"] = undefined;
+    }
     const headConfig = getExportConfig("加班单", columns.value, { ...formData, limit: 200000 });
-    exportLeaveApply(headConfig)
+    exportOvertimeOrder(headConfig)
       .then((res) => {
         if (!res.data) return message("导出失败", { type: "error" });
         const fileName = getFileNameOnUrlPath(res.data);

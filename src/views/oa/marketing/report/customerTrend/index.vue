@@ -72,7 +72,7 @@ const {
     </Col>
     <Col>
       <div v-loading="loading2">
-        <div ref="chartRef1" :style="{ height: chartHeight + 40 + 'px' }" class="border-line m-2 p-4" />
+        <div ref="chartRef1" :style="{ minHeight: '430px', height: chartHeight + 40 + 'px' }" class="border-line m-2 p-4" />
         <PureTableBar :columns="columns2" class="flex-1" :showIcon="false">
           <template v-slot="{ size, dynamicColumns }">
             <pure-table

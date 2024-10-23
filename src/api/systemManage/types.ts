@@ -277,10 +277,10 @@ export interface DetartMenuOptionType {
 /** ========================= 用户管理(基础信息) ========================= */
 /** 用户管理列表请求类型 */
 export interface UserInfoReqType {
-  deptId: string;
+  deptId: string | number;
   limit: number;
   page: number;
-  deptIdList: string[];
+  deptIdList: (string | number)[];
   userCode?: string;
   userName?: string;
   userState: string;
@@ -292,7 +292,7 @@ export interface UserInfoItemType {
   userCode: string;
   userName: string;
   createDate: string;
-  deptId: number;
+  deptId: number | string;
   userState: string;
   mobile: string;
   wxOpenid: string;
@@ -772,6 +772,7 @@ export interface FlowTaskManageItemType {
   notifyObjectPersons: string;
   notifyObjectRoleId: string;
   finishAdviceWay: string;
+  deptLevel: number;
   /** 审批方式 */
   taskUsers: {
     用户?: { id: number; userCode: string; userName: string }[];
@@ -992,6 +993,7 @@ export interface TaskScheduleItemType {
   createDate: string;
   adviceByQywx: boolean;
   adviceByEmail: boolean;
+  limitedWorkingDay?: boolean;
   emailAdviceWay: boolean;
 }
 

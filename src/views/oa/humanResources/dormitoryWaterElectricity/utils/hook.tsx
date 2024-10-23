@@ -114,11 +114,10 @@ export const useConfig = () => {
     return columnData;
   };
 
-  const onTagSearch = (values) => {
-    formData.buildingName = values.buildingName;
-    formData.dormitoryCode = values.dormitoryCode;
-    formData.year = values.curDate?.split("-")[0];
-    formData.month = values.curDate?.split("-")[1];
+  const onTagSearch = ({ curDate, ...values }) => {
+    formData.year = curDate?.split("-")[0];
+    formData.month = curDate?.split("-")[1];
+    Object.assign(formData, values);
     onSearch();
   };
 

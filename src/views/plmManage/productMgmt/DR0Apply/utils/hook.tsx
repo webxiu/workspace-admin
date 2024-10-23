@@ -6,14 +6,17 @@ import { h, onMounted, reactive, ref } from "vue";
 import EditForm from "@/components/EditForm/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
-import { message } from "@/utils/message";
+import { message, showMessageBox } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 import { type PaginationProps } from "@pureadmin/table";
 import { PAGE_CONFIG } from "@/config/constant";
 import { utils, write } from "xlsx";
 import { saveAs } from "file-saver";
 import { getDeptOptions } from "@/utils/requestApi";
-import { userInfoList } from "@/api/systemManage";
+import { commonBack, commonSubmit, userInfoList } from "@/api/systemManage";
+import { useRouter } from "vue-router";
+import { deleteDR0PageList, fetchDR0PageList } from "@/api/oaManage/marketing";
+import NodeDetailList from "@/components/NodeDetailList/index.vue";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -29,6 +32,8 @@ export const useConfig = () => {
   const surfaceOpts = ref([]);
   const voltageOpts = ref([]);
   const productColorOpts = ref([]);
+  const statusList = ref([]);
+  const router = useRouter();
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 45);
 
   const formRules = reactive<FormRules>({
@@ -47,6 +52,7 @@ export const useConfig = () => {
     { label: "产品等级", value: "productLevel", children: [] },
     { label: "客户", value: "customer" },
     { label: "申请部门", value: "applyDeptName", children: [] },
+    { label: "产品名称", value: "productName" },
     { label: "申请人", value: "applyUserName" },
     { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
   ]);
@@ -457,15 +463,15 @@ export const useConfig = () => {
 
   const getColumnConfig = async (buttonList) => {
     let columnData: TableColumnList[] = [
-      { label: "产品名称", prop: "productName" },
-      { label: "开发类型", prop: "devType" },
-      { label: "参考机型", prop: "simpleModel" },
-      { label: "产品等级", prop: "productLevel" },
-      { label: "客户", prop: "customer" },
-      { label: "描述", prop: "description" },
-      { label: "申请部门", prop: "applyDeptName" },
-      { label: "申请人", prop: "applyUserName" },
-      { label: "申请日期", prop: "applyDate" }
+      { label: "单据编号", prop: "billNo", width: 140 },
+      { label: "产品名称", prop: "productName", width: 140 },
+      { label: "开发类型", prop: "developmentType", width: 140 },
+      { label: "参考机型", prop: "referenceModel", width: 140 },
+      { label: "产品等级", prop: "productGrade", width: 140 },
+      { label: "客户", prop: "customer", width: 140 },
+      { label: "申请部门", prop: "deptName", width: 140 },
+      { label: "申请人", prop: "userName", width: 140 },
+      { label: "申请日期", prop: "applyDate", width: 140 }
     ];
 
     const { columnArrs, buttonArrs } = await getMenuColumns();
@@ -479,45 +485,47 @@ export const useConfig = () => {
   };
 
   const onSearch = () => {
-    // fetchProductStoreList(formData).then((res: any) => {
-    //   if (res.data) {
-    //     const data = res.data;
-    //     console.log(data, "data...");
-    //     dataList.value = data.records;
-    //     pagination.total = data.total;
-    //   }
-    // });
-    console.log(formData, "formData===");
-    dataList.value = [];
+    fetchDR0PageList(formData).then((res: any) => {
+      if (res.data) {
+        const data = res.data;
+        dataList.value = data.records;
+        pagination.total = data.total;
+      }
+    });
   };
 
   const fetchOpts = () => {
-    getBOMTableRowSelectOptions({ optioncode: "DR0DevType,DR0ProductLevel,ProductColors,DR0Surface,DR0Voltage,DR0AuthRequire,DR0Part" }).then((res) => {
-      if (res.data) {
-        const findRes = res.data.find((item) => item.optionCode === "DR0DevType")?.optionList || [];
-        devTypeOpts.value = findRes;
-        searchOptions[0].children = findRes.map((item) => ({ label: item.optionName, value: item.optionValue }));
+    getBOMTableRowSelectOptions({ optioncode: "DR0DevType,DR0ProductLevel,ProductColors,DR0Surface,DR0Voltage,DR0AuthRequire,DR0Part,BillStatus" }).then(
+      (res) => {
+        if (res.data) {
+          const findRes = res.data.find((item) => item.optionCode === "DR0DevType")?.optionList || [];
+          devTypeOpts.value = findRes;
+          searchOptions[0].children = findRes.map((item) => ({ label: item.optionName, value: item.optionValue }));
 
-        const findRes1 = res.data.find((item) => item.optionCode === "DR0ProductLevel")?.optionList || [];
-        productLevel.value = findRes1;
-        searchOptions[2].children = findRes1.map((item) => ({ label: item.optionName, value: item.optionValue }));
+          const findRes1 = res.data.find((item) => item.optionCode === "DR0ProductLevel")?.optionList || [];
+          productLevel.value = findRes1;
+          searchOptions[2].children = findRes1.map((item) => ({ label: item.optionName, value: item.optionValue }));
 
-        const findRes2 = res.data.find((item) => item.optionCode === "ProductColors")?.optionList || [];
-        productColorOpts.value = findRes2;
+          const findRes2 = res.data.find((item) => item.optionCode === "ProductColors")?.optionList || [];
+          productColorOpts.value = findRes2;
 
-        const findRes3 = res.data.find((item) => item.optionCode === "DR0Surface")?.optionList || [];
-        surfaceOpts.value = findRes3;
+          const findRes3 = res.data.find((item) => item.optionCode === "DR0Surface")?.optionList || [];
+          surfaceOpts.value = findRes3;
 
-        const findRes4 = res.data.find((item) => item.optionCode === "DR0Voltage")?.optionList || [];
-        voltageOpts.value = findRes4;
+          const findRes4 = res.data.find((item) => item.optionCode === "DR0Voltage")?.optionList || [];
+          voltageOpts.value = findRes4;
 
-        const findRes5 = res.data.find((item) => item.optionCode === "DR0AuthRequire")?.optionList || [];
-        authRequireOpts.value = findRes5;
+          const findRes5 = res.data.find((item) => item.optionCode === "DR0AuthRequire")?.optionList || [];
+          authRequireOpts.value = findRes5;
 
-        const findRes6 = res.data.find((item) => item.optionCode === "DR0Part")?.optionList || [];
-        accessoryOpts.value = findRes6;
+          const findRes6 = res.data.find((item) => item.optionCode === "DR0Part")?.optionList || [];
+          accessoryOpts.value = findRes6;
+
+          const findRes7 = res.data.find((item) => item.optionCode === "BillStatus")?.optionList || [];
+          statusList.value = findRes7;
+        }
       }
-    });
+    );
 
     getDeptOptions().then((data: any) => {
       searchOptions[4].children = data;
@@ -532,12 +540,13 @@ export const useConfig = () => {
 
   const handleTagSearch = (values) => {
     formData.productName = values.productName;
-    formData.devType = values.devType;
-    formData.productLevel = values.productLevel;
-    formData.simpleModel = values.simpleModel;
+    formData.billNo = values.billNo;
+    formData.developmentType = values.devType;
+    formData.productGrade = values.productLevel;
+    formData.referenceModel = values.simpleModel;
     formData.customer = values.customer;
-    formData.applyDeptName = values.applyDeptName;
-    formData.applyUserName = values.applyUserName;
+    formData.applyDepartment = values.applyDeptName;
+    formData.userName = values.applyUserName;
 
     if (values.date) {
       const [startDate, endDate] = values.date.split("~").map((item) => item.trim());
@@ -551,12 +560,14 @@ export const useConfig = () => {
   };
 
   const onAdd = () => {
-    openDialog("add");
+    // openDialog("add");
+    router.push("/plmManage/productMgmt/DR0Apply/add/index");
   };
 
   const onEdit = () => {
     currentId.value = currentRow.value.id;
-    openDialog("edit", currentRow.value);
+    // openDialog("edit", currentRow.value);
+    router.push("/plmManage/productMgmt/DR0Apply/add/index?id=" + currentId.value + "&innerId=" + currentRow.value.functionalities[0]?.id);
   };
 
   const openDialog = async (type: string, row?) => {
@@ -647,6 +658,13 @@ export const useConfig = () => {
     })
       .then(() => {
         console.log(row, "del row..");
+        deleteDR0PageList(row.id).then((res) => {
+          if (res.data) {
+            message("删除成功", { type: "success" });
+            currentRow.value = null;
+            onSearch();
+          }
+        });
       })
       .catch(() => {});
   };
@@ -660,6 +678,15 @@ export const useConfig = () => {
     }
   };
 
+  const beforeOnPrint = () => {
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      message("请选择一条记录", { type: "warning" });
+      return;
+    } else {
+      router.push("/plmManage/productMgmt/DR0Apply/print/index?id=" + currentRow.value.id);
+    }
+  };
+
   const beforeOnDelete = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
       message("请选择一条记录", { type: "warning" });
@@ -670,7 +697,6 @@ export const useConfig = () => {
   };
 
   const rowClick = (row) => {
-    console.log("row click", row);
     currentRow.value = row;
   };
 
@@ -678,6 +704,55 @@ export const useConfig = () => {
     console.log("row db click", row);
     currentRow.value = row;
     onEdit();
+  };
+
+  const beforeOnSubmit = () => {
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      return message("请选择一条记录", { type: "warning" });
+    } else {
+      const { billNo, id } = currentRow.value;
+      showMessageBox(`确认要提交【${billNo}】吗?`).then(() => {
+        commonSubmit({ id, billId: "10012" }).then(({ data }) => {
+          if (data) {
+            message("提交成功");
+            onSearch();
+          }
+        });
+      });
+    }
+  };
+
+  const beforeOnRevoke = () => {
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      return message("请选择一条记录", { type: "warning" });
+    } else {
+      const { billNo } = currentRow.value;
+      showMessageBox(`确认要撤销【${billNo}】吗?`).then(() => {
+        commonBack({ comment: "", backToActivityId: "startEvent1", billNo }).then(({ data }) => {
+          if (data) {
+            message("撤销成功");
+            onSearch();
+          }
+        });
+      });
+    }
+  };
+
+  const beforeOnViewDetail = () => {
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      return message("请选择一条记录", { type: "warning" });
+    } else {
+      addDialog({
+        title: "查看审批详情",
+        width: "900px",
+        draggable: true,
+        fullscreenIcon: true,
+        closeOnClickModal: true,
+        hideFooter: true,
+        contentRenderer: ({ options }) =>
+          h(NodeDetailList, { options, billNo: currentRow.value.billNo, billType: "dr0DevApply", billState: currentRow.value.status })
+      });
+    }
   };
 
   const clickHandler = ({ text }) => {
@@ -691,8 +766,20 @@ export const useConfig = () => {
       case "修改":
         beforeOnEdit();
         break;
+      case "打印":
+        beforeOnPrint();
+        break;
       case "删除":
         beforeOnDelete();
+        break;
+      case "提交":
+        beforeOnSubmit();
+        break;
+      case "撤销":
+        beforeOnRevoke();
+        break;
+      case "审批详情":
+        beforeOnViewDetail();
         break;
 
       default:
@@ -704,6 +791,10 @@ export const useConfig = () => {
     { clickHandler, type: "primary", text: "新增" },
     { clickHandler, type: "warning", text: "修改" },
     { clickHandler, type: "danger", text: "删除" },
+    { clickHandler, type: "primary", text: "提交", isDropDown: true },
+    { clickHandler, type: "primary", text: "撤销", isDropDown: true },
+    { clickHandler, type: "primary", text: "审批详情", isDropDown: true },
+    { clickHandler, type: "primary", text: "打印", isDropDown: true },
     { clickHandler, type: "primary", text: "导出", isDropDown: true }
   ]);
 
@@ -734,6 +825,7 @@ export const useConfig = () => {
     rowClick,
     maxHeight,
     searchOptions,
+    statusList,
     onSearch,
     onFresh,
     pagination,

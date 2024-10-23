@@ -57,14 +57,14 @@ const showErrMsg = (key) => {
 };
 
 const validateFields = () => {
-  if (!title.value) {
-    showErrMsg("title");
-    return;
-  }
-  if (!Object.values(topTableRef.value.tableData[0]).every((item) => item)) {
-    showErrMsg("date");
-    return;
-  }
+  // if (!title.value) {
+  //   showErrMsg("title");
+  //   return;
+  // }
+  // if (!Object.values(topTableRef.value.tableData[0]).every((item) => item)) {
+  //   showErrMsg("date");
+  //   return;
+  // }
   /** 基本信息验证 异步放最后 */
   topFormRef.value.formRef?.getRef()?.validate((valid) => {
     if (!valid) {
@@ -185,9 +185,10 @@ const initAllValue = () => {
 };
 
 const printAction = () => {
-  if (devSheetRef.value) {
-    Print(devSheetRef.value);
-  }
+  // if (devSheetRef.value) {
+  //   Print(devSheetRef.value);
+  // }
+  router.push("/plmManage/productMgmt/productsDevApplay/print/index");
 };
 
 onMounted(() => {
@@ -204,48 +205,18 @@ onMounted(() => {
       <el-button v-if="!route.query.id" type="primary" @click="validateFields()">保存</el-button>
       <!-- v-if="route.query.id" -->
       <el-button type="info" @click="printAction">打印</el-button>
-      <el-button @click="router.push('/plmManage/productMgmt/productsDevApplay/index')">返回</el-button>
+      <el-button @click="router.back()">返回</el-button>
     </el-affix>
 
     <div class="add-page" ref="devSheetRef">
       <div class="title">
-        <div>产品开发申请表-</div>
-        <div v-if="!route.query.id && !infoCenterDeal">
-          <el-input v-model="title" placeholder="请输入名字" />
-        </div>
-        <span v-else>{{ title }}</span>
+        <div>产品开发申请表</div>
       </div>
       <TopForm ref="topFormRef" :infoId="id" />
       <TopTable ref="topTableRef" :infoId="id" />
       <FileUpload ref="fileUploadRef" :infoId="id" />
       <CenterTable ref="centerTableRef" />
       <FooterTable ref="footerTableRef" />
-      <div class="footer-text">
-        <div class="txt">备注：“*”项为必填。表单上关于基本功能的描述行列如有不足,请联系IT资讯部</div>
-        <div class="right-tbs">
-          <div class="dev">
-            <el-row justify="center" class="row-title">技术研发中心</el-row>
-            <el-row justify="center">
-              <el-col :span="12" style="text-align: center; border: 1px solid black; border-top: 0">&nbsp;</el-col>
-              <el-col :span="12" style="text-align: center; border: 1px solid black; border-top: 0; border-left: 0">&nbsp;</el-col>
-            </el-row>
-          </div>
-          <div class="fin">
-            <el-row justify="center" class="row-title">财务</el-row>
-            <el-row justify="center">
-              <el-col :span="24" style="text-align: center; border: 1px solid black; border-top: 0">&nbsp;</el-col>
-            </el-row>
-          </div>
-          <div class="sale">
-            <el-row justify="center" class="row-title">市场营销中心</el-row>
-            <el-row justify="center">
-              <el-col :span="8" style="text-align: center; border: 1px solid black; border-top: 0">&nbsp;</el-col>
-              <el-col :span="8" style="text-align: center; border: 1px solid black; border-top: 0; border-left: 0">&nbsp;</el-col>
-              <el-col :span="8" style="text-align: center; border: 1px solid black; border-top: 0; border-left: 0">&nbsp;</el-col>
-            </el-row>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

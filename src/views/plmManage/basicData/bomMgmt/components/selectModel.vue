@@ -63,12 +63,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive } from "vue";
+import { onMounted } from "vue";
 import { ref } from "vue";
 import { useMaterialTable } from "./selectMaterialConfig";
 import { Search } from "@element-plus/icons-vue";
 import { PureTableBar } from "@/components/RePureTableBar";
-import { fetchBomLeftTreeData, getMaterialGroupTreeData } from "@/api/plmManage";
+import { getMaterialGroupTreeData } from "@/api/plmManage";
 
 const {
   columns,
@@ -79,7 +79,6 @@ const {
   handleCurrentChange,
   onSearch,
   materialTableRef,
-  isSingleTrueFlag,
   pagination,
   rowClick,
   handleSelectionChange
@@ -97,13 +96,11 @@ const onEnterAction = () => onSearch({ ...searchParams, deptId: curNodeName.valu
 const btnClickSearch = () => onSearch({ ...searchParams, deptId: curNodeName.value });
 
 const getTreeData = () => {
-  // loading.value = true;
   getMaterialGroupTreeData({}).then((res: any) => {
     if (res.data) {
       leftTreeData.value = res.data;
     }
   });
-  //   .finally(() => (loading.value = false));
 };
 
 const onNodeClick = (treeItem) => {

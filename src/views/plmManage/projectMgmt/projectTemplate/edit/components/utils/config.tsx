@@ -1,7 +1,7 @@
 import { ElMessage, FormRules } from "element-plus";
 import { reactive, ref } from "vue";
 
-import { editTableRender } from "@/utils/table";
+import { tableEditRender } from "@/utils/table";
 
 export const formRules = reactive<FormRules>({
   taskName: [{ required: true, message: "任务名称为必填项", trigger: "submit" }],
@@ -45,7 +45,7 @@ export const formConfigs = ({ roleList, _formData, allDeliverTemplates }) => {
   };
 
   // 编辑表格
-  const { editCellRender } = editTableRender();
+  const { editCellRender } = tableEditRender();
 
   const columns: TableColumnList[] = [
     { label: "", align: "center", width: 40, cellRenderer: () => <el-radio label="&nbsp;" size="small" /> },

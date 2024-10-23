@@ -1,4 +1,5 @@
 import { RequestMethods } from "@/utils/http/types";
+import { RouteRecordRaw } from "vue-router";
 import { http } from "@/utils/http";
 
 type ResultDataType = {
@@ -21,6 +22,7 @@ export interface UserMenuItem {
   appDetailUrl: string;
   createDate: string;
   createrId: number;
+  component: RouteRecordRaw["component"];
   /** 前端路由 */
   webRouter: string;
   /** 是否启用 */

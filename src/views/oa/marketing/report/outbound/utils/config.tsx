@@ -2,18 +2,16 @@
  * @Author: Hailen
  * @Date: 2023-06-23 09:57:10
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-12 12:08:32
+ * @Last Modified time: 2024-10-10 16:54:26
  */
 
 import ButtonGroup, { ButtonOptionType } from "@/components/ButtonGroup.vue";
 import type { EChartsOption, SeriesOption } from "echarts";
 
-import { ECHARTSTHEME } from "@/views/oa/utils/common";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import RangePickerYear from "@/components/RangePickerYear";
 import dayjs from "dayjs";
 import { getLineOption } from "@/utils/echarts";
-import regExp from "@/utils/regExp";
 
 const buttonsConfig: ButtonOptionType[] = [
   // { label: "日", value: "日" },
@@ -51,15 +49,9 @@ export const formConfigs = (): FormConfigItemType[] => {
   ];
 };
 
-export interface AddOrderType {
-  data: Array<any>;
-  xAxis: string[];
-}
-
 // 获取图表配置
-export const getOption = (opeions: AddOrderType) => {
+export const getOption = (opeions: { data: Array<any>; xAxis: string[] }) => {
   const { data, xAxis } = opeions;
-
   const outMoneyList = data.filter((item) => item.Item === "销售出库金额");
   const outNumList = data.filter((item) => item.Item === "销售出库数量");
 
@@ -83,14 +75,14 @@ export const getOption = (opeions: AddOrderType) => {
 
   // 图表1
   const option1: EChartsOption = getLineOption({
-    title: "销售出库金额（单位：万元）",
-    xAxis: xAxis,
+    title: { text: "销售出库金额（单位：万元）" },
+    xAxis: { data: xAxis },
     series: seriesMoney
   });
   // 图表2
   const option2: EChartsOption = getLineOption({
-    title: "销售出库数量（单位：万Pcs）",
-    xAxis: xAxis,
+    title: { text: "销售出库数量（单位：万Pcs）" },
+    xAxis: { data: xAxis },
     series: seriesNum
   });
   return { option1, option2 };

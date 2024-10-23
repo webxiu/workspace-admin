@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-10-05 14:07:10 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-10-05 14:07:10 
+ * @Author: Hailen
+ * @Date: 2023-10-05 14:07:10
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-10-05 14:07:10
  */ -->
 
 <script setup lang="ts">
@@ -46,7 +46,7 @@ const {
             @tagSearch="handleTagSearch"
             :searchOptions="searchOptions"
             placeholder="请输入姓名"
-            searchField="userName"
+            searchField="staffName"
           />
         </template>
         <template #buttons>
@@ -83,7 +83,7 @@ const {
                 <el-button size="small" @click.stop="onSubmit(row)" :disabled="![AuditState.submit, AuditState.reAudit].includes(row.billState)">
                   提交
                 </el-button>
-                <el-popconfirm :width="280" :title="`确认删除\n【${row.userName}】的加班单吗?`" @confirm="onDelete(row)">
+                <el-popconfirm :width="280" :title="`确认删除\n【${row.staffName}】的加班单吗?`" @confirm="onDelete(row)">
                   <template #reference>
                     <el-button size="small" type="danger" :disabled="![AuditState.submit, AuditState.reAudit].includes(row.billState)" @click.stop>
                       删除

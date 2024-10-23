@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-24 15:20:58
+ * @Last Modified time: 2024-10-16 10:37:16
  */
 
 import { dayjs } from "element-plus";
@@ -21,23 +21,14 @@ import NodeDetailList from "@/components/NodeDetailList/index.vue";
 
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
-import { message, showMessageBox } from "@/utils/message";
+import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { setColumn, getMenuColumns, updateButtonList, usePageSelect } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { formRules, formConfigs, TemporaryFlag } from "./config";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { getDeptTreeData } from "@/api/systemManage";
-import { PAGE_CONFIG } from "@/config/constant";
-
-import { Delete } from "@element-plus/icons-vue";
-
-// 状态
-const StatusKey = {
-  "0": { name: "待提交", color: "#409eff" },
-  "1": { name: "审核中", color: "#e6a23c" },
-  "2": { name: "已审核", color: "#67c23a" },
-  "3": { name: "重新审核", color: "#DC143C" }
-};
+import { PAGE_CONFIG, BillState, BillState_Color } from "@/config/constant";
+import { Delete, SetUp, Tickets, CircleClose } from "@element-plus/icons-vue";
 
 export const useConfig = () => {
   const tableRef = ref();
@@ -141,7 +132,7 @@ export const useConfig = () => {
         prop: "state",
         sortable: true,
         cellRenderer: ({ row, column }) => {
-          const stateObj = StatusKey[row[column["property"]]];
+          const stateObj = BillState_Color[row[column["property"]]];
           return (
             <span class="br-4 color-fff" style={{ background: stateObj?.color, padding: "4px 6px" }}>
               {stateObj?.name}
@@ -163,7 +154,7 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, selectionColumn: { hide: false }, formData, operationColumn: { minWidth: 220, align: "left" } });
+    columns.value = setColumn({ columnData, selectionColumn: { hide: false }, formData, operationColumn: { hide: true } });
   };
 
   const getTableList = () => {
@@ -183,19 +174,17 @@ export const useConfig = () => {
   };
 
   // 搜索
-  const onTagSearch = (values) => {
-    formData.state = values.state === "-1" ? "" : values.state;
-    formData.staffName = values.staffName;
-    formData.temporaryFlag = values.temporaryFlag;
+  const onTagSearch = ({ state, ...values }) => {
+    formData.state = state === "-1" ? "" : state;
+    Object.assign(formData, values);
     getTableList();
   };
   const onRefresh = () => getTableList();
 
   // 审核
-  const onAudit = (row: InductionAuditItemType) => {
-    if (row.state === 2) {
-      return message("此单据已审核", { type: "error" });
-    }
+  const onAudit = wrapFn(rowData, () => {
+    const row = rowData.value;
+    if (row.state === BillState.audited) return message("此单据已审核", { type: "error" });
     const formRef = ref();
     const formData = reactive({
       staffId: row?.staffId ?? "",
@@ -215,7 +204,6 @@ export const useConfig = () => {
       machineId: row?.machineId ?? "",
       id: row?.id ?? ""
     });
-
     addDialog({
       title: `审核-登记人：${row.staffName}`,
       props: {
@@ -251,29 +239,36 @@ export const useConfig = () => {
         });
       }
     });
-  };
+  });
 
   // 批量删除
-  const onDeleteAll = () => {
-    const len = rowsData.value.length;
-    if (!len) return message("请勾选需要删除的记录", { type: "error" });
-    showMessageBox(`确认要删除选中的${len}条记录吗?`).then(() => {
+  const onDeleteAll = wrapFn(
+    rowsData,
+    () => {
       onDelete(rowsData.value);
-    });
-  };
+    },
+    "请勾选需要删除的记录"
+  );
 
   // 单个删除
-  const onDelete = (rows: InductionAuditItemType[]) => {
-    deleteInductionAudit(rows)
-      .then((res) => {
-        if (res.data) {
-          getTableList();
-          message("删除成功");
-        } else {
-          message("删除失败", { type: "error" });
-        }
-      })
-      .catch(console.log);
+  const onDelete = wrapFn(rowData, () => {
+    onSubmitDelete([rowData.value]);
+  });
+
+  // 提交删除
+  const onSubmitDelete = (rows: InductionAuditItemType[]) => {
+    showMessageBox(`确认要删除选中记录吗?`).then(() => {
+      deleteInductionAudit(rows)
+        .then((res) => {
+          if (res.data) {
+            getTableList();
+            message("删除成功");
+          } else {
+            message("删除失败", { type: "error" });
+          }
+        })
+        .catch(console.log);
+    });
   };
 
   const onRowClick = (row: InductionAuditItemType) => {
@@ -300,7 +295,11 @@ export const useConfig = () => {
     getTableList();
   }
 
-  const onNodeDetail = (row) => {
+  const onAuditDetail = wrapFn(rowData, () => {
+    const row = rowData.value;
+    if (![BillState.auditing, BillState.audited].includes(row.state)) {
+      return message("只有审核中和已审核的单据才能查看", { type: "error" });
+    }
     addDialog({
       title: "查看审批详情",
       width: "900px",
@@ -310,9 +309,14 @@ export const useConfig = () => {
       hideFooter: true,
       contentRenderer: ({ options }) => h(NodeDetailList, { options, billNo: row.billNo, billType: "staffCheck", billState: row.state })
     });
-  };
+  });
 
-  const buttonList = ref<ButtonItemType[]>([{ clickHandler: onDeleteAll, type: "danger", text: "批量删除", icon: Delete, isDropDown: false }]);
+  const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onAudit, type: "primary", text: "审核", icon: SetUp, isDropDown: false },
+    { clickHandler: onAuditDetail, type: "success", text: "审核详情", icon: Tickets, isDropDown: false },
+    { clickHandler: onDelete, type: "warning", text: "删除", icon: Delete, isDropDown: true },
+    { clickHandler: onDeleteAll, type: "danger", text: "批量删除", icon: CircleClose, isDropDown: true }
+  ]);
 
   return {
     tableRef,
@@ -327,12 +331,9 @@ export const useConfig = () => {
     buttonList,
     onTagSearch,
     onRefresh,
-    onAudit,
-    onDelete,
     onSelect,
     onSelectAll,
     onRowClick,
-    onNodeDetail,
     onSizeChange,
     onCurrentChange
   };

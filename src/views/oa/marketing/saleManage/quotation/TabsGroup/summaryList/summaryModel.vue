@@ -22,7 +22,7 @@
 
 <script setup lang="tsx">
 import { onMounted, ref, watch } from "vue";
-import { setColumn, editTableRender } from "@/utils/table";
+import { setColumn, tableEditRender } from "@/utils/table";
 import { fixed2AndAddcomma } from "@/utils/common";
 
 const dataList = ref([]);
@@ -31,7 +31,7 @@ const maxHeight = ref(372);
 const props = defineProps(["type", "setFormData", "topFormData", "valid"]);
 
 // 编辑表格
-const { editCellRender } = editTableRender();
+const { editCellRender } = tableEditRender();
 
 const getColumnsConfig = () => {
   const columnData: TableColumnList[] = [

@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 
-import { editTableRender, setColumn } from "@/utils/table";
 import { h, onMounted, ref, watch } from "vue";
+import { setColumn, tableEditRender } from "@/utils/table";
 
 import { ElMessage } from "element-plus";
 import ImportBOMPriceExcelModal from "./importBOMPriceExcelModal.vue";
@@ -149,9 +149,9 @@ export const useTabGroup = (tabConfig?) => {
   const clearDataList2 = () => (dataList2.value = []);
 
   // 编辑表格
-  const editCell_1 = editTableRender();
-  const editCell_2 = editTableRender();
-  const editCell_3 = editTableRender();
+  const editCell_1 = tableEditRender();
+  const editCell_2 = tableEditRender();
+  const editCell_3 = tableEditRender();
 
   const getColumnConfig = () => {
     const editFlag = tabConfig.props?.valid?.bomDetails;

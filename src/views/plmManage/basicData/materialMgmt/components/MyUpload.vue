@@ -43,7 +43,7 @@ const dialogImageUrl = ref("");
 const dialogVisible = ref(false);
 const disabled = ref(false);
 const fileList = ref([]);
-const fileModel = defineModel({ local: true, default: null });
+const fileModel = defineModel();
 const route = useRoute();
 
 const props = defineProps(["formData", "uploadDisabled"]);
@@ -51,7 +51,6 @@ const { VITE_BASE_API } = import.meta.env;
 
 watchEffect(() => {
   if (props.formData.imageUrl) {
-    // VITE_VIRTUAL_PATH
     fileList.value = [{ name: props.formData.imageName, url: VITE_BASE_API + props.formData.imageUrl }];
   }
 });

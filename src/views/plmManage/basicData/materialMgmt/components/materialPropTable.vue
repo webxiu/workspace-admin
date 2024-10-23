@@ -17,7 +17,7 @@
   </div>
 </template>
 <script setup lang="tsx">
-import { CellOptionType, editTableRender, setColumn } from "@/utils/table";
+import { CellOptionType, tableEditRender, setColumn } from "@/utils/table";
 import { onMounted, ref } from "vue";
 
 const maxHeight = ref("77vh");
@@ -26,9 +26,11 @@ const columns = ref([]);
 const materialPropEnumList = ref([]);
 
 // 编辑表格
-const { editCellRender } = editTableRender(({ prop, index, row }) => {
-  const value = row[prop];
-  dataList.value[index][prop] = value;
+const { editCellRender } = tableEditRender({
+  editFinish: ({ prop, index, row }) => {
+    const value = row[prop];
+    dataList.value[index][prop] = value;
+  }
 });
 
 // 获取对应枚举

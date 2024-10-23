@@ -1,9 +1,8 @@
-import ButtonList, { LoadingType } from "@/components/ButtonList/index.vue";
-import { h, reactive, ref } from "vue";
+import ButtonList from "@/components/ButtonList/index.vue";
+import { reactive } from "vue";
 
 import { FormRules } from "element-plus";
 import MyUpload from "./MyUpload.vue";
-import { fetchSelectList } from "@/api/plmManage";
 
 // 编辑员工信息校验
 export const formRules = reactive<FormRules>({
@@ -25,12 +24,6 @@ export const formConfigs = (selectOpts: any, fn?): any[] => {
   const buttonList = [
     { clickHandler, type: "primary", text: "保存" },
     { clickHandler, type: "primary", text: "刷新" }
-    // { clickHandler, type: "primary", text: "下推" },
-    // { clickHandler, type: "primary", text: "冻结" },
-    // { clickHandler, type: "primary", text: "启用" },
-    // { clickHandler, type: "primary", text: "正查" },
-    // { clickHandler, type: "primary", text: "反查" },
-    // { clickHandler, type: "primary", text: "履历" }
   ];
   const defaultGroup = [
     {

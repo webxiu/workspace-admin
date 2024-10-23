@@ -121,17 +121,12 @@ const addMaterial = () => {
         .then((res) => {
           console.log(res.data, "新增成功");
           if (res.data) {
-            // ElMessage({
-            //   message: "操作成功",
-            //   type: "success"
-            // });
             ElMessageBox.confirm("保存成功,继续操作或返回？", "温馨提示", {
               confirmButtonText: "继续",
               cancelButtonText: "返回",
               type: "success"
             })
               .then(() => {
-                // done();
                 if (route.query.type !== "edit") {
                   router.push(
                     `/plm/bd/materialAdd?id=${res.data}&type=view&number=${route.query.number}&code=${route.query.code}&isNewTag=yes&menuId=${route.query.menuId}`

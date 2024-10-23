@@ -61,9 +61,11 @@ const SelectGroup = (row) => {
     row.selectValue
   ) : (
     <el-select v-model={row.selectValue}>
-      {row.productDevTypeSettingList.map((item) => {
-        return <el-option key={item.id} label={item.valueAll} value={item.valueAll} />;
-      })}
+      {row.productDevTypeSettingList
+        .sort((a, b) => a.sort - b.sort)
+        .map((item) => {
+          return <el-option key={item.id} label={item.valueAll} value={item.valueAll} />;
+        })}
     </el-select>
   );
 };
@@ -72,8 +74,8 @@ const formTypeMap = {
   1: InputTextArea,
   2: CheckBoxGroup,
   3: InputGroups,
-  4: RadioGroup,
-  5: SelectGroup
+  4: SelectGroup,
+  5: RadioGroup
 };
 
 const formInitValueMap = {

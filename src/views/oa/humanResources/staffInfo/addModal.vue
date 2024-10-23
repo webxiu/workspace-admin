@@ -24,7 +24,7 @@ const loading = ref<boolean>(false);
 const formData = ref({
   temporaryFlag: props.temporaryFlag,
   ...props.row,
-  exmpetAttendance: props.row.exmpetAttendance ? `${props.row.exmpetAttendance}` : "0",
+  exmpetAttendance: props.row.exmpetAttendance ? props.row.exmpetAttendance : false,
   startDate: formatDate(props.row?.startDate, "YYYY-MM-DD"),
   birthDate: formatDate(props.row.birthDate, "YYYY-MM-DD"),
   leaveofficeDate: formatDate(props.row.leaveofficeDate, "YYYY-MM-DD"),

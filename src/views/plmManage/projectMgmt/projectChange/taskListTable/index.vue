@@ -1,7 +1,7 @@
 <template>
   <div class="task-list">
     <div style="margin-bottom: 6px">
-      <ButtonList moreActionText="更多操作" :buttonList="buttonList" :auto-layout="false" />
+      <ButtonList moreActionText="更多操作" :buttonList="buttonList2" :auto-layout="false" />
     </div>
     <pure-table
       border
@@ -27,7 +27,7 @@ import { useTaskTable } from "./hook";
 
 const props = defineProps(["formTopData", "taskTreeData"]);
 
-const { maxHeight, dataList, columns, buttonList, setDataList, rowClick } = useTaskTable(props);
+const { maxHeight, dataList, columns, buttonList2, setDataList, rowClick } = useTaskTable(props);
 
 defineExpose({ setDataList });
 </script>

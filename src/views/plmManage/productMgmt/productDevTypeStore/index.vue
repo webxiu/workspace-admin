@@ -19,6 +19,7 @@ const {
   maxHeight,
   buttonList2,
   onSearch,
+  rowClassName,
   onFresh,
   onAdd,
   onAdd2,
@@ -85,7 +86,8 @@ onMounted(() => {
               :height="maxHeight"
               :max-height="maxHeight"
               row-key="id"
-              class="bill-manage"
+              class="pm-value-table"
+              :row-class-name="rowClassName"
               :adaptive="true"
               align-whole="left"
               :loading="loading2"

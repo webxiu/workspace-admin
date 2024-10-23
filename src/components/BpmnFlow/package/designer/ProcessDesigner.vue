@@ -155,7 +155,7 @@ const props = withDefaults(
 );
 const emits = defineEmits(["element-click", "destroy", "init-finished", "saveProcess", "commandStack-changed", "input", "change", "canvas-viewbox-changed"]);
 const { setBpmnStore } = useBpmnStore<{ saveProcess: Function }>();
-const { setTaskList } = useBpmnFlowStore();
+const { setBpmnData } = useBpmnFlowStore();
 
 const bpmnRef = ref();
 const bpmnModeler = ref();
@@ -517,7 +517,7 @@ const previewProcessJson = () => {
 };
 // 打开新的流程或者重新绘制
 const resetProcess = () => {
-  setTaskList({ key: "taskLists", value: [] });
+  setBpmnData({ taskLists: [] });
 };
 
 // 流程配置说明

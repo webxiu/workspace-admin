@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-08-01 15:18:40
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-21 14:36:42
+ * @Last Modified time: 2024-10-18 11:01:21
  */
 
 import { Delete, Download, Edit, MessageBox, Postcard, Upload } from "@element-plus/icons-vue";
@@ -14,7 +14,7 @@ import {
   productScheduleList,
   saveProroductSchedule
 } from "@/api/oaManage/productMkCenter";
-import { RendererType, downloadDataToExcel, editTableRender, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { RendererType, downloadDataToExcel, getMenuColumns, setColumn, tableEditRender, updateButtonList } from "@/utils/table";
 import { deepEqual, onDownload } from "@/utils/common";
 import { formConfigs, formRules } from "./config";
 import { h, onMounted, reactive, ref } from "vue";
@@ -69,22 +69,24 @@ export const useConfig = () => {
       });
   });
 
-  const editTable = editTableRender(null, ({ editMap, index, row, column, callback }) => {
-    const isEdit = editMap.value[index]?.editable;
-    const colIndex = editMap.value[index]?.colIndex;
-    if (isEdit && colIndex === column.rawColumnKey) {
-      return (
-        <RegInput
-          v-model={row[column.columnKey]}
-          autoFocus={true}
-          autoSelect={true}
-          isNumber={true}
-          pattern={regExp.number3}
-          onBlur={() => callback({ index })}
-        />
-      );
+  const editTable = tableEditRender({
+    customRender: ({ editMap, index, row, column, callback }) => {
+      const isEdit = editMap.value[index]?.editable;
+      const colIndex = editMap.value[index]?.colIndex;
+      if (isEdit && colIndex === column.rawColumnKey) {
+        return (
+          <RegInput
+            v-model={row[column.columnKey]}
+            autoFocus={true}
+            autoSelect={true}
+            isNumber={true}
+            pattern={regExp.number3}
+            onBlur={() => callback({ index })}
+          />
+        );
+      }
+      return <span>{row[column.columnKey]}</span>;
     }
-    return <span>{row[column.columnKey]}</span>;
   });
 
   const getColumnConfig = async (dynamicList: TableColumnList[]) => {
