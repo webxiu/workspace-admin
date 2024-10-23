@@ -34,7 +34,7 @@ export const useUserStore = defineStore({
         getLogin(data)
           .then(async (res) => {
             const data = await this.getLoginInfo();
-            if (!getCookie()) setCookie(Date.now());
+            if (!getCookie()) setCookie(Date.now().toString());
             resolve(data);
           })
           .catch((error) => reject(error));
