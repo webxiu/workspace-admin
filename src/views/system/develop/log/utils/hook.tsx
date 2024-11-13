@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:19:51
+ * @Last Modified time: 2024-10-31 17:33:08
  */
 
 import { UserLogItemType, userLogList, userLogExport } from "@/api/systemManage";
@@ -34,7 +34,7 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "员工姓名", value: "userName" },
     { label: "员工工号", value: "userCode" },
-    { label: "查询日期", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "查询日期", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
     { label: "查询备注", value: "remark" }
   ]);
 
@@ -84,10 +84,7 @@ export const useConfig = () => {
   };
 
   // 搜索
-  const onTagSearch = ({ date, ...values }) => {
-    const dates = date ? date.split(" ~ ") : [];
-    formData.startDate = dates[0];
-    formData.endDate = dates[1];
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     getTableList();
   };

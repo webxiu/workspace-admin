@@ -28,7 +28,7 @@ export const useConfig = () => {
 
   const getColumnConfig = async () => {
     const transferTypeRender: RendererType = ({ row, column }) => {
-      const value = row[column.columnKey] as string;
+      const value = row[column["property"]] as string;
       const typeStr = value.slice(0, 2);
       if (typeStr === "其他") return <span>{typeStr}</span>;
       return <span>{value}</span>;
@@ -112,8 +112,8 @@ export const useConfig = () => {
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         const { other, ...reset } = FormRef.formData;
-        if (![BillState.submit, BillState.reject].includes(row.billState)) {
-          return message("只有待提交和重新审核的单据才能修改", { type: "error" });
+        if (type === "edit" && ![BillState.submit, BillState.reject].includes(row.billState)) {
+          return message("只能提交【待提交/重新审核】的记录", { type: "error" });
         }
         if (reset.resignationType === "其他") {
           reset.resignationType = reset.resignationType + (other ?? "");

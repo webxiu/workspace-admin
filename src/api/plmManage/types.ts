@@ -86,22 +86,24 @@ export interface TemplateDataItemType {
 /** 开模申请 - 列表类型 */
 export interface MoldApplyItemType {
   id: string;
-  billId: string;
   billNo: string;
   billState: number;
-  staffId: number;
-  staffCode: string;
-  staffName: string;
-  deptName: string;
-  roleName: string;
-  startDate: string;
-  applyDate: string;
-  resignationType: string;
-  resignationReason: string;
+  billId: string;
+  productId: string;
+  productCode: string;
+  productName: string;
+  modelOpeningDate: string;
+  trialDate: string;
+  modelType: string;
+  draftModelQuantity: number;
+  dataProvides: string;
+  createUserId: string;
   createUserName: string;
   createDate: string;
+  modifyUserId: string;
   modifyUserName: string;
   modifyDate: string;
+  plmBillFiles: MoldFileItemType[];
   orgId: string;
 }
 
@@ -111,8 +113,8 @@ export interface MoldFileItemType {
   billId: string;
   billNo: string;
   createDate: string;
-  createUserId: number;
+  createUserId: string;
   orgId: string;
-  filePath: string;
   fileName: string;
+  filePath: string;
 }

@@ -110,7 +110,6 @@ export const useConfig = () => {
       contentRenderer: () => h(EditForm, { ref: formRef }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        console.log("formData", formData);
         FormRef.validate(async (valid) => {
           if (valid) {
             showMessageBox(`确认${title}吗?`).then(() => {

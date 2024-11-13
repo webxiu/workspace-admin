@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-06-17 17:26:03
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-07-27 16:41:02
+ * @Last Modified time: 2024-11-07 17:48:49
  */
 
 import { useEleHeight } from "@/hooks";
@@ -25,6 +25,7 @@ import {
   exportTabletManage,
   TabletManageItemType
 } from "@/api/oaManage/productMkCenter";
+import { Question } from "@/config/elements";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -92,6 +93,13 @@ export const useConfig = () => {
     const { columnArrs, buttonArrs } = await getMenuColumns([{ productionLine: cellRenderer1 }]);
     const [data] = columnArrs;
     if (data?.length) columnData = data;
+    columnData.forEach((item) => {
+      if (item.prop === "tabletsID") {
+        item.headerRenderer = ({ column }) => {
+          return <Question label={column.label} tipMsg="设备ID: 连接指导书服务自动注册" />;
+        };
+      }
+    });
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
   };
@@ -122,10 +130,6 @@ export const useConfig = () => {
       })
       .catch(() => (loading.value = false));
   };
-
-  function onAdd() {
-    openDialog("add");
-  }
 
   const onEdit = wrapFn(rowData, () => {
     openDialog("edit", rowData.value);
@@ -185,9 +189,9 @@ export const useConfig = () => {
     });
   };
 
-  /** 暂时不做删除 */
+  /** 删除 */
   const onDelete = wrapFn(rowData, () => {
-    showMessageBox("确认删除吗").then(() => {
+    showMessageBox(`确认删除平板ID【${rowData.value.tabletsID}】吗?`).then(() => {
       deleteTabletManage({ id: rowData.value?.id })
         .then((res) => {
           if (!res.data) return message("删除失败", { type: "error" });
@@ -223,8 +227,6 @@ export const useConfig = () => {
     formData.page = val;
     getTableList();
   }
-
-  // { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
 
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onEdit, type: "success", text: "修改", isDropDown: false },

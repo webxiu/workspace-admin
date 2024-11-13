@@ -1,4 +1,4 @@
-import { ElMessage, FormRules } from "element-plus";
+import { dayjs, ElMessage, FormRules } from "element-plus";
 import { addSafeCertificate, delSafeCertificate, exportSafeCertificate, fetchSafeCertificate, updateSafeCertificate } from "@/api/oaManage/humanResources";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
@@ -7,6 +7,8 @@ import { message, showMessageBox } from "@/utils/message";
 import EditForm from "@/components/EditForm/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { useEleHeight } from "@/hooks";
+import { fixed2AndAddcomma } from "@/utils/common";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -20,12 +22,13 @@ export const useConfig = () => {
     projectName: [{ required: true, message: "项目名称为必填项", trigger: "submit" }],
     companyName: [{ required: true, message: "第三方公司名称为必填项", trigger: "submit" }],
     dateOfCertificate: [{ required: true, message: "证书日期为必填项", trigger: "submit" }],
+    year: [{ required: true, message: "年度为必填项", trigger: "submit" }],
     effectiveDate: [{ required: true, message: "有效日期为必填项", trigger: "submit" }],
     money: [{ required: true, message: "金额为必填项", trigger: "submit" }],
     remark: [{ required: true, message: "备注为必填项", trigger: "submit" }]
   });
 
-  const formData = reactive({ page: 1, limit: 10000 });
+  const formData: any = reactive({ page: 1, limit: 10000 });
 
   const formConfigs = () => [
     {
@@ -42,6 +45,14 @@ export const useConfig = () => {
       prop: "companyName",
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入第三方公司名称" />;
+      }
+    },
+    {
+      label: "年度",
+      labelWidth: 120,
+      prop: "year",
+      render: ({ formModel, row }) => {
+        return <el-date-picker style={{ width: "100%" }} v-model={formModel[row.prop]} type="year" placeholder="请选择" valueFormat="YYYY" format="YYYY" />;
       }
     },
     {
@@ -65,7 +76,7 @@ export const useConfig = () => {
       labelWidth: 120,
       prop: "money",
       render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入金额" />;
+        return <el-input-number class="ui-w-100" controls={false} v-model={formModel[row.prop]} placeholder="请输入金额" />;
       }
     },
     {
@@ -87,6 +98,7 @@ export const useConfig = () => {
     let columnData: TableColumnList[] = [
       { label: "项目名称", prop: "projectName" },
       { label: "公司名称", prop: "companyName", minWidth: 140 },
+      { label: "年度", prop: "year" },
       { label: "证书日期", prop: "dateOfCertificate" },
       { label: "有效日期", prop: "effectiveDate", sortable: true },
       { label: "金额", prop: "money" },
@@ -96,7 +108,7 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, operationColumn: false });
+    columns.value = setColumn({ columnData, operationColumn: false, radioColumn: { width: 80 } });
     return columnData;
   };
 
@@ -108,7 +120,6 @@ export const useConfig = () => {
         loading.value = false;
         dataList.value = data;
 
-        console.log(idx, "idx");
         if (typeof idx === "number" && idx >= 0) {
           currentRow.value = dataList.value[idx];
         } else {
@@ -126,19 +137,27 @@ export const useConfig = () => {
   };
 
   const openDialog = async (type: string, row?) => {
-    const titleObj = { add: "新增", edit: "修改" };
+    const titleObj = { add: "新增", edit: "修改", renew: "续费" };
     const title = titleObj[type];
     const formRef = ref();
 
     const _formData = reactive({
       companyName: row?.companyName ?? "",
       dateOfCertificate: row?.dateOfCertificate ?? "",
+      year: row?.year ? row?.year + "" : "",
       effectiveDate: row?.effectiveDate ?? "",
       id: row?.id ?? "",
       money: row?.money ?? "",
       projectName: row?.projectName ?? "",
       remark: row?.remark ?? ""
     });
+
+    if (type === "renew") {
+      _formData.year = dayjs(_formData.year).add(1, "year").format("YYYY");
+      _formData.dateOfCertificate = dayjs(_formData.dateOfCertificate).add(1, "year").format("YYYY-MM-DD");
+      _formData.effectiveDate = dayjs(_formData.effectiveDate).add(1, "year").format("YYYY-MM-DD");
+      _formData.id = undefined;
+    }
 
     addDialog({
       title: `${title}`,
@@ -171,7 +190,7 @@ export const useConfig = () => {
   };
 
   const onSubmitChange = (type: string, title: string, data, callback) => {
-    const API = { add: addSafeCertificate, edit: updateSafeCertificate };
+    const API = { add: addSafeCertificate, renew: addSafeCertificate, edit: updateSafeCertificate };
     API[type](data)
       .then((res) => {
         if (res.data) {
@@ -260,19 +279,105 @@ export const useConfig = () => {
     currentRow.value = row;
   };
 
+  const onRenew = () => {
+    if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      ElMessage({ message: "请选择一条记录", type: "warning" });
+      return;
+    } else {
+      openDialog("renew", currentRow.value);
+    }
+  };
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增" },
     { clickHandler: editHandle, type: "warning", text: "修改" },
     { clickHandler: delHandle, type: "danger", text: "删除" },
+    { clickHandler: onRenew, type: "info", text: "续费", isDropDown: true },
     { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
   ]);
+
+  // { label: "项目名称", prop: "projectName" },
+  // { label: "公司名称", prop: "companyName", minWidth: 140 },
+  // { label: "年度", prop: "year" },
+  // { label: "证书日期", prop: "dateOfCertificate" },
+  // { label: "有效日期", prop: "effectiveDate", sortable: true },
+  // { label: "金额", prop: "money" },
+  // { label: "备注", prop: "remark" }
+
+  const getSummaries = (param) => {
+    const { columns, data } = param;
+    console.log(data, "data==");
+    const sums: string[] = [];
+    columns.forEach((column, index) => {
+      if (index === 0) {
+        sums[index] = "合计";
+        return;
+      }
+
+      if (column.property === "money") {
+        const values = data.map((item) => Number(item[column.property])).filter((el) => !isNaN(el));
+        if (!values.every((value) => Number.isNaN(value))) {
+          const curTotal = values.reduce((prev, curr) => {
+            const value = Number(curr);
+            if (!Number.isNaN(value)) {
+              return prev + curr;
+            } else {
+              return 0;
+            }
+          }, 0);
+          sums[index] = fixed2AndAddcomma(curTotal);
+        }
+      } else {
+        sums[index] = "";
+      }
+    });
+
+    return sums;
+  };
+
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "年份", value: "year", type: "year", format: "YYYY" },
+    { label: "公司名称", value: "companyName" },
+    { label: "证书日期", value: "caDate", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "有效日期", value: "effectDate", type: "daterange", format: "YYYY-MM-DD" }
+  ]);
+
+  const handleTagSearch = (val) => {
+    formData["projectName"] = val.projectName;
+    formData["year"] = val.year;
+    formData["companyName"] = val.companyName;
+
+    // 证书日期
+    if (val.caDate) {
+      const [startCaDate, endCaDate] = val.caDate.split("~").map((el) => el.trim());
+      formData.startCaDate = startCaDate;
+      formData.endCaDate = endCaDate;
+    } else {
+      formData.startCaDate = undefined;
+      formData.endCaDate = undefined;
+    }
+
+    // 有效日期
+    if (val.effectDate) {
+      const [startEffectDate, endEffectDate] = val.effectDate.split("~").map((el) => el.trim());
+      formData.startEffectDate = startEffectDate;
+      formData.endEffectDate = endEffectDate;
+    } else {
+      formData.startEffectDate = undefined;
+      formData.endEffectDate = undefined;
+    }
+    onSearch();
+  };
 
   return {
     loading,
     columns,
     dataList,
     maxHeight,
+    handleTagSearch,
+    searchOptions,
     buttonList,
+    getSummaries,
     rowDbClick,
     rowClick,
     onSearch

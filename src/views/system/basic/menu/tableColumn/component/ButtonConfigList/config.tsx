@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-03-15 16:49:20
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-09 11:43:39
+ * @Last Modified time: 2024-11-06 11:52:51
  */
 
 import { computed, reactive, ref } from "vue";
@@ -155,14 +155,7 @@ export const formConfigs = ({ _formData, buttonsList, groupsList, onChangeBtn, o
       prop: "isDropDown",
       colProp: { span: 12 },
       slots: {
-        label: () => (
-          <span>
-            是否收起
-            <el-tooltip placement="top" content="是否收起至下拉选项中, 默认展开">
-              <Question />
-            </el-tooltip>
-          </span>
-        )
+        label: ({ label }) => <Question label={label} tipMsg="是否收起至下拉选项中, 默认展开" />
       },
       render: ({ formModel, row }) => (
         <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">

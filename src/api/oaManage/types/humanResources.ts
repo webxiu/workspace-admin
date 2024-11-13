@@ -93,6 +93,7 @@ export interface AttendanceSummaryItemType {
   actualAttendanceDay: string;
   restOverTime: number;
   specialOverTime: number;
+  absentCount: number;
   overTimeSum: number;
   yearMonthTime: string;
   signature: string;
@@ -194,6 +195,7 @@ export interface StaffInfoItemType {
   groupId: string;
   position: string;
   roleId: string;
+  isPoorPeople: number;
   sex: string;
   education: string;
   marital: string;
@@ -413,6 +415,7 @@ export interface InductionAuditItemType {
   sex: string;
   age: string;
   isStay: string;
+  isPoorPeople: number;
   nation: string;
   education: string;
   drivingLicence: string;
@@ -954,6 +957,10 @@ export interface OvertimeOrderItemType {
   isNew?: boolean;
   staffCode?: string;
   staffName?: string;
+  lunchStartTime?: string;
+  lunchEndTime?: string;
+  dinnerStartTime?: string;
+  dinnerEndTime?: string;
 }
 /** 加班单: 详情列表类型 */
 export interface OvertimeDetailItemType {

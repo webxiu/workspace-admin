@@ -42,7 +42,7 @@ export const useTestReportConfig = () => {
 
   const getColumnConfig = async () => {
     const transferTypeRender: RendererType = ({ row, column }) => {
-      const value = row[column.columnKey] as string;
+      const value = row[column["property"]] as string;
       return <span>{value.slice(0, 2)}</span>;
     };
     let columnData: TableColumnList[] = [

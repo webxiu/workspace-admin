@@ -1,8 +1,10 @@
 import { FormRules, UploadProps } from "element-plus";
 
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
+import HxModalInput from "@/components/HxModalInput/index.vue";
+import { PageUrl } from "@/config/constant";
 import { Plus } from "@element-plus/icons-vue";
-import ProductModeModal from "@/views/oa/productMkCenter/engineerDept/operateBook/ProductModeModal.vue";
+import { fetchProductStoreList } from "@/api/plmManage";
 import { reactive } from "vue";
 
 // 编辑员工信息校验
@@ -39,14 +41,26 @@ export const formConfigs = ({ type }): FormConfigItemType[] => {
       prop: "productCode",
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
-        const onSelect = (val) => {
-          formModel.productId = val.id;
-          formModel[row.prop] = val.productCode;
-        };
+        const onSelect = (val) => (formModel.productId = val.id);
         return (
-          <el-input v-model={formModel[row.prop]} placeholder="请选择产品型号" readonly>
-            {{ append: () => <ProductModeModal onSelect={onSelect} /> }}
-          </el-input>
+          <HxModalInput
+            title="选择产品"
+            placeholder="请选择产品型号"
+            valueKey={row.prop}
+            v-model={formModel[row.prop]}
+            readonly={true}
+            showButton={true}
+            onSelect={onSelect}
+            componentProp={{
+              searchConfig: [{ label: "产品型号", value: "productCode" }],
+              maxHeight: 520,
+              columns: [
+                { label: "产品型号", prop: "productCode", headerAlign: "center" },
+                { label: "产品类别", prop: "productType", headerAlign: "center" }
+              ],
+              api: fetchProductStoreList
+            }}
+          />
         );
       }
     },

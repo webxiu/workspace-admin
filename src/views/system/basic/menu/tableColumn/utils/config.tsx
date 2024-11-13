@@ -2,12 +2,13 @@
  * @Author: Hailen
  * @Date: 2024-03-15 16:49:20
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-12 18:32:25
+ * @Last Modified time: 2024-11-09 15:55:30
  */
 
-import { FormatKey, OptionsType } from "@/utils/table";
+import { FormatKey, OptionsType, getEnumDictList } from "@/utils/table";
 import { Ref, reactive, ref } from "vue";
 
+import { BillState_Color } from "@/config/constant";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import { Plus } from "@element-plus/icons-vue";
@@ -121,14 +122,7 @@ export const formGroupConfigs = (): FormConfigItemType[] => {
       prop: "groupCode",
       colProp: { span: 12 },
       slots: {
-        label: () => (
-          <span>
-            分组编号
-            <el-tooltip placement="top" content="分组编号最小的为主表格(默认表格), 其余表格按顺序对应">
-              <Question />
-            </el-tooltip>
-          </span>
-        )
+        label: ({ label }) => <Question label={label} tipMsg="分组编号最小的为主表格(默认表格), 其余表格按顺序对应" />
       },
       render: ({ formModel, row }) => (
         <el-input-number v-model={formModel[row.prop]} min={1} max={100} controls-position="right" placeholder="请输入分组编号" style="width: 100%" />
@@ -186,7 +180,8 @@ export const typeOptions = [
   { optionName: "默认", optionValue: FormatKey.default },
   { optionName: "数字", optionValue: FormatKey.number },
   { optionName: "日期", optionValue: FormatKey.date },
-  { optionName: "标签", optionValue: FormatKey.tag }
+  { optionName: "标签", optionValue: FormatKey.tag },
+  { optionName: "单据状态", optionValue: FormatKey.bill }
 ];
 /** 日期类型 */
 export const dateOptions = [
@@ -240,12 +235,13 @@ export const predefineColors = [
 ];
 
 // 表单配置
-export const formConfigs2 = ({ formData, addSpecs }): Ref<FormConfigItemType[]> => {
+export const formConfigs2 = ({ formData, addSpecs, onChangeType }): Ref<FormConfigItemType[]> => {
   const configFn = (): FormConfigItemType[] => [
     {
       label: "格式化类型",
       prop: "type",
       colProp: { span: 8 },
+      slots: { label: ({ label }) => <Question label={label} tipMsg="单据状态数值来自枚举字典(BillStatus)配置" /> },
       render: ({ formModel, row }) => {
         return (
           <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择" onChange={onChange}>
@@ -266,14 +262,7 @@ export const formConfigs2 = ({ formData, addSpecs }): Ref<FormConfigItemType[]> 
       hide: formData.type !== FormatKey.date,
       colProp: { span: 18 },
       slots: {
-        label: () => (
-          <span>
-            日期类型
-            <el-tooltip placement="top" content="数据必须是时间格式(时间戳、日期字符串)">
-              <Question />
-            </el-tooltip>
-          </span>
-        )
+        label: ({ label }) => <Question label={label} tipMsg="数据必须是时间格式(时间戳、日期字符串)" />
       },
       render: ({ formModel, row }) => (
         <el-radio-group v-model={formModel[row.prop]}>
@@ -326,7 +315,7 @@ export const formConfigs2 = ({ formData, addSpecs }): Ref<FormConfigItemType[]> 
     {
       label: "上下边距",
       prop: "paddingV",
-      hide: formData.type !== FormatKey.tag,
+      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "100px",
       render: ({ formModel, row }) => (
@@ -336,7 +325,7 @@ export const formConfigs2 = ({ formData, addSpecs }): Ref<FormConfigItemType[]> 
     {
       label: "左右边距",
       prop: "paddingH",
-      hide: formData.type !== FormatKey.tag,
+      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "80px",
       render: ({ formModel, row }) => (
@@ -346,7 +335,7 @@ export const formConfigs2 = ({ formData, addSpecs }): Ref<FormConfigItemType[]> 
     {
       label: "圆角",
       prop: "borderRadius",
-      hide: formData.type !== FormatKey.tag,
+      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "60px",
       render: ({ formModel, row }) => (
@@ -356,29 +345,22 @@ export const formConfigs2 = ({ formData, addSpecs }): Ref<FormConfigItemType[]> 
     {
       label: "样式",
       prop: "style",
-      hide: formData.type !== FormatKey.tag,
+      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "60px",
       slots: {
-        label: () => (
-          <el-tooltip placement="top" content="扩展CSS原生样式(如: font-size: 14px; margin: 0px), 多个样式使用分号(;)隔开">
-            <span>
-              <span>样式</span>
-              <Question />
-            </span>
-          </el-tooltip>
-        )
+        label: ({ label }) => <Question label={label} tipMsg="扩展CSS原生样式(如: font-size: 14px; margin: 0px), 多个样式使用分号(;)隔开" />
       },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入(选填)" style="width: 120px" controls-position="right" />
     },
     // 换行
     { label: "", prop: "", colProp: { span: 24 }, labelWidth: "0px", style: { margin: "0" }, render: () => null },
-    { label: "标签状态", prop: "specs", hide: formData.type !== FormatKey.tag, colProp: { span: 24 }, render: () => null },
+    { label: "标签状态", prop: "specs", hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type), colProp: { span: 24 }, render: () => null },
     {
       label: "",
       prop: "",
       colProp: { span: 24 },
-      hide: formData.type !== FormatKey.tag,
+      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
       render: () => (
         <el-button onClick={addSpecs} type="primary" icon={Plus}>
           新增一条
@@ -388,7 +370,8 @@ export const formConfigs2 = ({ formData, addSpecs }): Ref<FormConfigItemType[]> 
   ];
 
   const newConf = ref(configFn());
-  function onChange() {
+  function onChange(value) {
+    onChangeType(value);
     newConf.value = configFn();
   }
   return newConf;

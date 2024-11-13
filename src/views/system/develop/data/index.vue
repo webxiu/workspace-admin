@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-07-05 11:45:27 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-07-05 11:45:27 
+ * @Author: Hailen
+ * @Date: 2023-07-05 11:45:27
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-07-05 11:45:27
  */ -->
 
 <script setup lang="ts">
@@ -30,7 +30,10 @@ const {
   onRefresh3,
   onTagSearch,
   onRowClick,
-  onRowClick2
+  onRowClick2,
+  pagination,
+  onSizeChange,
+  onCurrentChange
 } = useConfig();
 </script>
 
@@ -38,9 +41,7 @@ const {
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
       <PureTableBar :columns="columns" style="width: 25%" @refresh="onRefresh" @change-column="setUserMenuColumns">
-        <template #title>
-          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入查询内容" searchField="tableName" class="ml-2" />
-        </template>
+        <template #title />
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
             border
@@ -64,7 +65,7 @@ const {
       </PureTableBar>
       <PureTableBar :columns="columns2" style="width: 40%" @refresh="onRefresh2" @change-column="setUserMenuColumns">
         <template #title>
-          <TitleCate :name="groupArrsList[1]?.groupName" :border="false" />
+          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入表名或备注" searchField="searchContent" />
         </template>
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
@@ -78,8 +79,11 @@ const {
             :loading="loading2"
             :size="size"
             :data="dataList2"
-            :columns="dynamicColumns"
+            :pagination="pagination"
+            @page-size-change="onSizeChange"
+            @page-current-change="onCurrentChange"
             :paginationSmall="size === 'small'"
+            :columns="dynamicColumns"
             highlight-current-row
             :show-overflow-tooltip="true"
             @row-click="onRowClick2"

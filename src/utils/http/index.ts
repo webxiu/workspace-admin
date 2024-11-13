@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-13 10:10:59
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-23 11:04:56
+ * @Last Modified time: 2024-11-13 15:34:48
  */
 
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken, CustomParamsSerializer } from "axios";
@@ -39,7 +39,7 @@ const defaultConfig: AxiosRequestConfig = {
  * 508: token不合法
  * 509: 身份验证异常
  */
-const STATUS_CODE = [401, 403, 405, 502, 504, 508, 509];
+const STATUS_CODE = [401, 403, 404, 405, 502, 504, 508, 509];
 
 class PureHttp {
   constructor() {

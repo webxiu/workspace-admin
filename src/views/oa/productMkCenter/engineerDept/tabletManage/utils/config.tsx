@@ -29,16 +29,7 @@ export const formConfigs = ({ productLineOption, positionOption }): FormConfigIt
       label: "平板编号",
       prop: "tabletsCode",
       colProp: layout,
-      slots: {
-        label: () => (
-          <span>
-            平板编号
-            <el-tooltip placement="top" content="平板编号以P开头命名">
-              <Question />
-            </el-tooltip>
-          </span>
-        )
-      },
+      slots: { label: ({ label }) => <Question label={label} tipMsg="平板编号以P开头命名" /> },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
     },
     {

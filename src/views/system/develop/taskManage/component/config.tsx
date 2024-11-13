@@ -82,7 +82,7 @@ export const formConfigs = (options: FormConfigType): FormConfigItemType[] => {
     },
     {
       label: "责任人",
-      prop: "responsibleMan",
+      prop: "responsibleUserCode",
       colProp: layout,
       render: ({ formModel, row }) => {
         return (

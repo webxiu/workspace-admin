@@ -6,6 +6,7 @@
       </div>
       <ButtonList moreActionText="宿舍楼管理" :buttonList="buttonList" :auto-layout="false" />
       <ButtonList moreActionText="房间管理" :buttonList="buttonList2" :auto-layout="false" />
+      <input style="display: none" type="file" accept=".xls,.xlsx" id="imporZoomUserInput" @change="onChangeFileInput" />
     </div>
     <div class="tab-outer">
       <el-tabs v-model="activeName" @tab-click="handleClick">
@@ -157,6 +158,8 @@ const fetchCurTabTables = (id) => {
     })
     .finally(() => (loading.value = false));
 };
+const tableData = ref([]);
+
 const {
   currentId,
   userList,
@@ -164,6 +167,7 @@ const {
   loading2,
   buttonList,
   buttonList2,
+  onChangeFileInput,
   activeName,
   currentBuilding,
   currentRoom,
@@ -172,11 +176,10 @@ const {
   setPaneProps,
   clickTag,
   changeZoom
-} = useActionHook(getAllBuildings, fetchCurTabTables);
+} = useActionHook(getAllBuildings, fetchCurTabTables, tableData);
 
 const allBuildings = ref([]);
 const modalTime = ref("");
-const tableData = ref([]);
 const searchData: any = ref({});
 const currentUserItem: any = ref({});
 

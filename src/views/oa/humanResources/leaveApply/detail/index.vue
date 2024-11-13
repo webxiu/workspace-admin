@@ -127,7 +127,7 @@ const getOptionList = (deptId) => {
     deptIdList: [deptId + ""]
   }).then(({ data }) => {
     if (!data?.records) return;
-    optionsData.value.deptUserInfoList = data.records || [];
+    (optionsData.value as any).deptUserInfoList = data.records || [];
   });
 };
 

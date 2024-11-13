@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:20:17
+ * @Last Modified time: 2024-11-06 16:27:22
  */
 
 import { CustomPropsType, getFormColumns } from "@/utils/form";
@@ -513,8 +513,8 @@ export const useConfig = () => {
     for (const key in elements) {
       const element = elements[key].element;
       if (element.type === "bpmn:StartEvent") {
-        // 1.开始节点id设置默认值
-        const sId = "startEvent1";
+        // 1.开始节点id设置默认值(确保唯一)
+        const sId = "startEvent1_" + Math.round(Math.random() * 10000);
         const modeling = store.bpmnModeler.get("modeling");
         modeling.updateProperties(element, { id: sId, di: { id: `${sId}_di` } });
       } else if (element?.type === "bpmn:UserTask") {

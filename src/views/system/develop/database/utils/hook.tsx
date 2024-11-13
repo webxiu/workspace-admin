@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:18:54
+ * @Last Modified time: 2024-11-09 14:32:07
  */
 import { onMounted, h, reactive, ref } from "vue";
 
@@ -14,7 +14,7 @@ import EditForm from "@/components/EditForm/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { type PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import { StatusType, BillStatus, formConfigs, formRules, lookFormConfigs } from "./config";
+import { formConfigs, formRules } from "./config";
 import {
   DbMaintenanceItemType,
   dbMaintenanceList,
@@ -27,7 +27,7 @@ import {
 } from "@/api/systemManage";
 
 import { Plus, Edit, Delete, Position, Pointer, Warning, View } from "@element-plus/icons-vue";
-import { PAGE_CONFIG } from "@/config/constant";
+import { BillState, PAGE_CONFIG, BillState_Color } from "@/config/constant";
 import Detail from "../Detail.vue";
 import { ElMessage } from "element-plus";
 import { commonBackLogic } from "@/utils/common";
@@ -83,7 +83,7 @@ export const useConfig = () => {
         label: "单据状态",
         prop: "billState",
         cellRenderer({ row }) {
-          const statusObj = BillStatus[row.billState];
+          const statusObj = BillState_Color[row.billState];
           return <span style={{ background: statusObj.color, padding: "4px 6px", color: "#fff", borderRadius: "4px" }}>{statusObj.name}</span>;
         }
       },
@@ -131,8 +131,8 @@ export const useConfig = () => {
 
   const onEdit = wrapFn(rowData, () => {
     const row: DbMaintenanceItemType = rowData.value;
-    if (![StatusType.pending, StatusType.rebut].includes(row.billState)) {
-      return message("必须是【待提交/驳回重审】状态才可以修改", { type: "error" });
+    if (![BillState.submit, BillState.reject].includes(row.billState)) {
+      return message("只能修改【待提交/重新审核】的记录", { type: "error" });
     }
     openDialog("edit", row);
   });
@@ -207,13 +207,13 @@ export const useConfig = () => {
   };
 
   const onSubmit = wrapFn(rowData, () => {
-    const row: DbMaintenanceItemType = rowData.value;
-    if (![StatusType.pending, StatusType.rebut].includes(row.billState)) {
-      return message("只能提交【待提交/驳回重审】的记录", { type: "error" });
+    const { billState, id } = rowData.value;
+    if (![BillState.submit, BillState.reject].includes(billState)) {
+      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
     }
     showMessageBox(`确定要提交该申请单吗?`)
       .then(() => {
-        commonSubmit({ id: row.id, billId: "10035" }, { dbKey: "sysmaster" })
+        commonSubmit({ id: id, billId: "10035" }, { dbKey: "sysmaster" })
           .then((res) => {
             if (res.data) {
               message("提交成功");
@@ -227,7 +227,7 @@ export const useConfig = () => {
 
   const onExcute = wrapFn(rowData, () => {
     const row: DbMaintenanceItemType = rowData.value;
-    if (![StatusType.audited].includes(row.billState)) {
+    if (![BillState.audited].includes(row.billState)) {
       return message("只能执行【已审批】的记录", { type: "error" });
     } else if (row.isExecute === 1) {
       return message("SQL已经执行过,不能再次执行", { type: "error" });
@@ -260,8 +260,8 @@ export const useConfig = () => {
 
   const onDelete = wrapFn(rowData, () => {
     const row: DbMaintenanceItemType = rowData.value;
-    if (![StatusType.pending, StatusType.rebut].includes(row.billState)) {
-      return message("只能删除【待提交/驳回重审】的记录", { type: "error" });
+    if (![BillState.submit, BillState.reject].includes(row.billState)) {
+      return message("只能删除【待提交/重新审核】的记录", { type: "error" });
     }
     showMessageBox(`确定要删除该申请单吗?`)
       .then(() => {

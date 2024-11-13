@@ -21,6 +21,12 @@ import {
   OutboundSummaryItemType,
   ProductRatioItemType,
   ProductRatioResType,
+  QuoteApplyBillItemType,
+  QuoteApplyItemType,
+  QuoteApplyMaterialItemType,
+  QuoteBomItemType,
+  QuotePurchaseItemType,
+  QuoteSaleItemType,
   SaleNumberSummaryOptionType,
   SaleStatisticsItemType,
   SaleStatisticsOptionType,
@@ -55,7 +61,13 @@ export type {
   DonateRecordOptionType,
   CustomerOptionDataType,
   CustomerRankingOptionType,
-  SaleNumberSummaryOptionType
+  SaleNumberSummaryOptionType,
+  QuoteApplyItemType,
+  QuoteApplyBillItemType,
+  QuoteApplyMaterialItemType,
+  QuoteSaleItemType,
+  QuotePurchaseItemType,
+  QuoteBomItemType
 };
 
 /** ========================= 客户投诉(OA管理:市场营销中心) ========================= */
@@ -352,4 +364,100 @@ export function deleteHandleApplyPageList(data) {
 /** 手板申请单 - 根据id查询单个 */
 export function fetchHandleApplyPageListById(params) {
   return http.request("get", `/oa/mfg/mc/prototyping/selectPrototypingById`, { params });
+}
+
+/** ========================= 报价申请单 ========================= */
+
+/** 报价申请单 - 列表 */
+export function quoteApplyList(data) {
+  return http.request<TablePagingResType<QuoteApplyItemType>>("post", "/oa/sys/quoterequest/getquoterequestlist", { data });
+}
+/** 报价申请单 - 新增 */
+export function addQuoteApply(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/insertsale", { data });
+}
+/** 报价申请单 - 修改 */
+export function updateQuoteApply(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/updatesale", { data });
+}
+/** 报价申请单 - 批量删除 */
+export function deleteQuoteApply(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/deletesale", { data });
+}
+/** 报价申请单 - 导出 */
+export function exportQuoteApply(data) {
+  return http.request<string>("post", "/oa/sys/quoterequest/export", { data });
+}
+/** 报价申请单 - 客户列表 */
+export function customListQuoteApply(data) {
+  return http.request<Array<{ customerId: string; customerName: string }>>("post", "/oa/sys/quoterequest/getlistkingcustomervo", {
+    data,
+    headers: { hideLoading: true }
+  });
+}
+/** 报价申请单 - 金蝶物料单号列表 */
+export function kingDeeSaleList(data) {
+  return http.request<TablePagingResType<QuoteApplyBillItemType>>("post", "/oa/sys/quoterequest/getlistkingsalevo", { data, headers: { hideLoading: true } });
+}
+
+/** ========================= 销售报价单 ========================= */
+
+/** 销售报价单 - 列表 */
+export function quoteSaleList(data) {
+  return http.request<TablePagingResType<QuoteSaleItemType>>("post", "/oa/hr/purchasequotation/selectlist", { data });
+}
+/** 销售报价单 - 新增 */
+export function addQuoteSale(data) {
+  return http.request<boolean>("post", "/oa/hr/purchasequotation/insert", { data });
+}
+/** 销售报价单 - 修改 */
+export function updateQuoteSale(data) {
+  return http.request<boolean>("post", "/oa/hr/purchasequotation/update", { data });
+}
+/** 销售报价单 - 删除 */
+export function deleteQuoteSale(data) {
+  return http.request<boolean>("post", "/oa/hr/purchasequotation/delete", { data });
+}
+/** 销售报价单 - 导出 */
+export function exportQuoteSale(data) {
+  return http.request<string>("post", "/oa/hr/purchasequotation/export", { data });
+}
+/** 销售报价单 - 详情 */
+export function detailQuoteSale(data) {
+  return http.request<QuoteSaleItemType>("post", "/oa/hr/purchasequotation/selectbyid", { data, headers: { hideLoading: true } });
+}
+/** 销售报价单 - 生成询价数据 */
+export function submitQuoteSale(data) {
+  return http.request<boolean>("post", "/oa/hr/purchasequotation/materialinquiry", { data });
+}
+/** 销售报价单 - 历史订单 */
+export function historyQuoteSale(params) {
+  return http.request<boolean>("get", "/oa/hr/purchasequotation/getorderbymaterialcode", { params });
+}
+/** 销售报价单 - 导入BOM */
+export function importQuoteSale(data) {
+  return http.request<boolean>("post", "/oa/hr/purchasequotation/xxxximport", { data }, { headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** ========================= 采购询价单 ========================= */
+
+/** 采购询价单 - 列表 */
+export function quotePurchaseList(data) {
+  return http.request<TablePagingResType<QuotePurchaseItemType>>("post", "/oa/hr/purchaseinquiry/selectlist", { data });
+}
+/** 采购询价单 - 新增 */
+export function addQuotePurchase(data) {
+  return http.request<boolean>("post", "/oa/hr/purchaseinquiry/createinquiry", { data });
+}
+/** 采购询价单 - 修改 */
+export function updateQuotePurchase(data) {
+  return http.request<boolean>("post", "/oa/hr/purchaseinquiry/updateinquiry", { data });
+}
+/** 采购询价单 - 删除 */
+export function deleteQuotePurchase(data) {
+  return http.request<boolean>("post", "/oa/hr/purchaseinquiry/deleteinquiry", { data });
+}
+/** 采购询价单 - 导出 */
+export function exportQuotePurchase(data) {
+  return http.request<string>("post", "/oa/hr/purchaseinquiry/export", { data });
 }

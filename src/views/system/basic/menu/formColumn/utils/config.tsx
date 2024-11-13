@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-03-15 16:49:20
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-14 15:30:42
+ * @Last Modified time: 2024-11-06 13:37:12
  */
 
 import { Ref, ref } from "vue";
@@ -68,19 +68,6 @@ export const formRules = (name): FormRules => ({
     }
   ]
 });
-
-// 问号图标
-export const LabelQuestion = (props) => {
-  const { label, ...reset } = props;
-  return (
-    <span>
-      {label}
-      <el-tooltip placement="top" {...reset}>
-        <Question />
-      </el-tooltip>
-    </span>
-  );
-};
 
 // 添加配置
 export const formConfigs = (type = "table"): FormConfigItemType[] => {
@@ -210,7 +197,7 @@ export const formatConfigs = ({ formData, rowData }): Ref<FormConfigItemType[]> 
       colProp: { span: 12 },
       hide: false,
       slots: {
-        label: ({ label }) => <LabelQuestion label={label} content="每行分为24格, 当配置的表单项超过24格, 则换行显示" />
+        label: ({ label }) => <Question label={label} tipMsg="每行分为24格, 当配置的表单项超过24格, 则换行显示" />
       },
       render: ({ formModel, row }) => {
         return (
@@ -274,7 +261,7 @@ export const formatConfigs = ({ formData, rowData }): Ref<FormConfigItemType[]> 
       hide: formData.itemType !== ItemKey.date,
       colProp: { span: 12 },
       slots: {
-        label: ({ label }) => <LabelQuestion label={label} content="数据必须是时间格式(时间戳、日期字符串)" />
+        label: ({ label }) => <Question label={label} tipMsg="数据必须是时间格式(时间戳、日期字符串)" />
       },
       render: ({ formModel, row }) => (
         <el-select v-model={formModel[row.prop]} filterable placeholder="请选择" clearable class="ui-w-100">
@@ -304,7 +291,7 @@ export const formatConfigs = ({ formData, rowData }): Ref<FormConfigItemType[]> 
       hide: ![ItemKey.select, ItemKey.treeSelect].includes(formData.itemType),
       colProp: { span: 12 },
       slots: {
-        label: ({ label }) => <LabelQuestion label={label} content="配置接口地址, 请求方式、名称字段、值字段必填" />
+        label: ({ label }) => <Question label={label} tipMsg="配置接口地址, 请求方式、名称字段、值字段必填" />
       },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入接口地址" clearable />
     },
@@ -352,7 +339,7 @@ export const formatConfigs = ({ formData, rowData }): Ref<FormConfigItemType[]> 
       prop: "optionCode",
       hide: ![ItemKey.select, ItemKey.radio].includes(formData.itemType),
       slots: {
-        label: ({ label }) => <LabelQuestion label={label} content="同时配置接口地址和枚举字典, 使用枚举字典数据" />
+        label: ({ label }) => <Question label={label} tipMsg="同时配置接口地址和枚举字典, 使用枚举字典数据" />
       },
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
@@ -475,7 +462,7 @@ export const formatConfigs = ({ formData, rowData }): Ref<FormConfigItemType[]> 
       colProp: { span: 12 },
       hide: false,
       slots: {
-        label: ({ label }) => <LabelQuestion label={label} content="扩展CSS原生样式(如: font-size: 14px; margin: 0px), 多个样式使用分号(;)隔开" />
+        label: ({ label }) => <Question label={label} tipMsg="扩展CSS原生样式(如: font-size: 14px; margin: 0px), 多个样式使用分号(;)隔开" />
       },
       render: ({ formModel, row }) => (
         <el-input

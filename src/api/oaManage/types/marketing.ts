@@ -348,3 +348,172 @@ export interface CustomerRankingOptionType {
     optionValue: number;
   }[];
 }
+
+/** ========================= 报价申请 ========================= */
+
+/** 报价申请列表类型 */
+export interface QuoteApplyItemType {
+  id: string;
+  billNo: string;
+  billState: number;
+  createDate: string;
+  createUserId: number;
+  productCode: string;
+  customerName: string;
+  isRepeatOrder: boolean;
+  referenceBillNo: string;
+  referenceMaterialCode: string;
+  processRequirements: string;
+  createUserName: string;
+  powerCableRequirements: string;
+  packagingRequirements: string;
+  quoteQuantity: string;
+  quoteQuantityMoney: string;
+  quoteQuantityLists: string[];
+  quoteQuantityMoneyLists: string[];
+  currencys: string;
+  currencyLists: string[];
+  orgId: string;
+}
+/** 参考单号列表类型 */
+export interface QuoteApplyBillItemType {
+  materialVOS: QuoteApplyMaterialItemType[];
+  FID: string;
+  FDATE: string;
+  FBILLNO: string;
+  FSALERID: string;
+  FCUSTID: string;
+}
+/** 参考物料编码列表类型 */
+export interface QuoteApplyMaterialItemType {
+  FMATERIALID: string;
+  FNUMBER: string;
+  FNAME: string;
+  FCREATEDATE: string;
+}
+
+/** ========================= 销售报价单 ========================= */
+
+/** 销售报价单列表类型 */
+export interface QuoteSaleItemType {
+  billNo: string;
+  billState: number;
+  createDate: string;
+  createUserId: number;
+  createUserName: string;
+  id: string;
+  lastOrderDate: string;
+  lastOrderExchangeRate: number;
+  lastOrderGrossMargin: number;
+  lastOrderPrice: number;
+  lastOrderQuantity: number;
+  materialBomLists: QuoteBomItemType[];
+  mkQuoteRequestVO: {
+    billNo: string;
+    billState: number;
+    createDate: string;
+    createUserId: number;
+    createUserName: string;
+    currencyLists: string[];
+    currencys: string;
+    customerName: string;
+    id: string;
+    isRepeatOrder: boolean;
+    orgId: string;
+    packagingRequirements: string;
+    powerCableRequirements: string;
+    processRequirements: string;
+    productCode: string;
+    quoteQuantity: string;
+    quoteQuantityLists: string[];
+    quoteQuantityMoney: string;
+    quoteQuantityMoneyLists: string[];
+    referenceBillNo: string;
+    referenceMaterialCode: string;
+  };
+  orgId: string;
+  packMaterialBomLists: QuoteBomItemType[];
+  quotationRequestId: string;
+  variableCost: VariableCostItemType[];
+}
+
+/** 报价单BOM信息列表类型 */
+export interface QuoteBomItemType {
+  baseDenominator: number;
+  baseNumerator: number;
+  isPacked: boolean;
+  createDate: string;
+  createUserId: number;
+  id: string;
+  materialAmount: number;
+  materialCode: string;
+  materialName: string;
+  materialProperty: string;
+  materialUnitPrice: number;
+  orgId: string;
+  priceSource: string;
+  purchaseDate: string;
+  quotationId: string;
+  specification: string;
+  valuationUnit: string;
+  valuationUnitQuantity: number;
+  verificationState: number;
+  uuid?: string;
+  isNew?: boolean;
+}
+
+/** 变量成本列表类型 */
+export interface VariableCostItemType {
+  category: string;
+  companyGrossMargin: number;
+  createDate: string;
+  createUserId: number;
+  domesticPrice: number;
+  exportPrice: number;
+  id: string;
+  incomeRatio: number;
+  laborCost: number;
+  manufacturingCost: number;
+  moq: number;
+  orgId: string;
+  packagingCost: number;
+  quotationId: string;
+  rawMaterialCost: number;
+  totalUnitCost: number;
+  unitContributionMargin: number;
+}
+
+/** ========================= 采购询价单 ========================= */
+
+/** 采购询价单列表类型 */
+export interface QuotePurchaseItemType {
+  id: string;
+  inquiryNo: string;
+  billNo: string;
+  billState: number;
+  inquiryDate: string;
+  purchaser: string;
+  materialCode: string;
+  materialName: string;
+  materialSpec: string;
+  priceType: string;
+  purchasePrice: number;
+  quotationNo: string;
+  applicationNo: string;
+  orgId: string;
+  createDate: string;
+  createUserId: number;
+  createUserName: string;
+  mkPurchaseInquiryPriceVOS: QuotePurchaseStairItemType[];
+}
+
+/** 采购询价单价类型-阶梯列表类型 */
+export interface QuotePurchaseStairItemType {
+  id: string;
+  inquiryId: string;
+  purchasePrice: number;
+  minQuantity: number;
+  maxQuantity: number;
+  createDate: string;
+  createUserId: number;
+}

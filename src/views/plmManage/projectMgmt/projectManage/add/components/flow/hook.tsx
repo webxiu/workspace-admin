@@ -33,10 +33,8 @@ import { message } from "@/utils/message";
 import { setColumn } from "@/utils/table";
 import { useRoute } from "vue-router";
 import { useUserStoreHook } from "@/store/modules/user";
-import HandleMakeSheet from "./handleMakeSheet/index.vue";
-import DesignInputSheet from "./designInputSheet/index.vue";
 
-export const useFlow = (props) => {
+export const useFlow = (props, cbs?) => {
   const currentTreeRow: any = ref({});
   const currentTemplateId = ref("");
   const dataList = ref([]);
@@ -429,10 +427,10 @@ export const useFlow = (props) => {
         number: data.number,
         sort: type === "add" ? data.sort : undefined,
         description: data.description,
-        start: data.start ? (data.start + " " + route.query.time + ":00").substring(0, 19) : undefined,
-        end: data.end ? (data.end + " " + route.query.time + ":00").substring(0, 19) : undefined,
-        realStart: data.realStart ? (data.realStart + " " + route.query.time + ":00").substring(0, 19) : undefined,
-        realEnd: data.realEnd ? (data.realEnd + " " + route.query.time + ":00").substring(0, 19) : undefined
+        start: data.start ? data.start : undefined,
+        end: data.end ? data.end : undefined,
+        realStart: data.realStart ? data.realStart : undefined,
+        realEnd: data.realEnd ? data.realEnd : undefined
       },
       taskDeliverables: data.deliverablesTemplateVOS.map((item) => ({
         deliverableId: item.deliverableTemplateId,
@@ -600,72 +598,6 @@ export const useFlow = (props) => {
     }
   };
 
-  // 产品设计输入表
-  const openInputSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow) => {
-    const inputSheetRef = ref();
-    addDialog({
-      title: `产品设计输入表`,
-      width: "1500px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: {},
-      contentRenderer: () => h(DesignInputSheet, { ref: inputSheetRef }),
-      beforeSure: (done, { options }) => {
-        const modalRef = inputSheetRef.value;
-        modalRef.formRef.getRef().validate(async (valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要保存吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            })
-              .then(() => {
-                console.log(modalRef.formData, "收集数据");
-                message("接口未完善", { type: "warning" });
-              })
-              .catch(console.log);
-          }
-        });
-      }
-    });
-  };
-
-  // 手板清单制作模版
-  const openHandleMake = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow) => {
-    const handleRef = ref();
-    addDialog({
-      title: `手板制作申请单`,
-      width: "1200px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      props: {},
-      contentRenderer: () => h(HandleMakeSheet, { ref: handleRef }),
-      beforeSure: (done, { options }) => {
-        const modalRef = handleRef.value;
-        modalRef.formRef.getRef().validate(async (valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要保存吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            })
-              .then(() => {
-                console.log(modalRef.formData, "收集数据");
-                message("接口未完善", { type: "warning" });
-              })
-              .catch(console.log);
-          }
-        });
-      }
-    });
-  };
-
   const onEditDeliver = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
     const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
     const curUserId = useUserStoreHook().userInfo.id;
@@ -682,16 +614,57 @@ export const useFlow = (props) => {
       if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能上传交付物", { type: "error" });
     }
 
-    if (row.deliverableTemplateId == "10") {
-      // 手板制作模版
-      openHandleMake(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow);
-      return;
-    }
-
-    if (row.deliverableTemplateId == "2") {
-      // 产品设计输入表
-      openInputSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow);
-      return;
+    switch (row.deliverableTemplateId) {
+      case "2":
+        // 产品设计输入表
+        cbs.openInputSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow);
+        return;
+      case "10":
+        // 手板制作申请单模版
+        cbs.openHandleMake(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow);
+        return;
+      case "15":
+        // ID外观图&效果图
+        cbs.onEditDeliver3(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "16":
+        // ID设计评审点检表
+        cbs.onEditDeliver4(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "17":
+        // 结构设计点检表
+        cbs.onEditDeliver5(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "18":
+        // 手板评审表
+        cbs.onEditDeliver6(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "19":
+        // 失效模式清单
+        cbs.onEditDeliver7(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "20":
+        // 评审记录表
+        cbs.openAuditRecordSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "12":
+        // 试产申请单
+        cbs.openTryApplySheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "22":
+        // 模具设计评审表
+        cbs.moldDesignAuditSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "23":
+        // 试模通知书
+        cbs.tryMoldNotice(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "24":
+        // 零部件打样申请表
+        cbs.partSampleApply(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      default:
+        break;
     }
 
     const calcTaskName = fetchDetailFormData?.projectTaskGroupVoList
@@ -904,7 +877,7 @@ export const useFlow = (props) => {
   };
 
   const clickDeliverName = (item) => {
-    if (["10", "2"].includes(item.deliverableTemplateId)) {
+    if (["2", "10", "14", "15", "16", "17", "18", "19", "20", "12", "22", "23", "24"].includes(item.deliverableTemplateId)) {
       // 手板制作模版、产品设计输入表
       return;
     }
@@ -923,20 +896,6 @@ export const useFlow = (props) => {
       cancelButtonText: "关闭",
       hideItem: ["ok"],
       contentRenderer: () => h(DeliverModelList),
-      beforeSure: (done, { options }) => done()
-    });
-  };
-
-  const clickDeliverName2 = (item) => {
-    console.log(item.generalTemplateVO?.remark, "item.generalTemplateVO?.remark");
-    addDialog({
-      title: `查看【${item.deliverableName}】信息`,
-      width: "800px",
-      draggable: true,
-      fullscreenIcon: true,
-      hideItem: ["ok"],
-      contentRenderer: () =>
-        h(item.generalTemplateVO?.remark ? <div style={{ whiteSpace: "pre-line" }}>{item.generalTemplateVO?.remark}</div> : <div>暂无信息</div>),
       beforeSure: (done, { options }) => done()
     });
   };
@@ -1220,7 +1179,6 @@ export const useFlow = (props) => {
     clickDeliverName,
     onEditDeliver,
     onEditDeliver2,
-    clickDeliverName2,
     columns,
     flowTableRef,
     deliverList,

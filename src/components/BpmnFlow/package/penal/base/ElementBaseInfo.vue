@@ -27,7 +27,7 @@
         </el-form-item>
       </template>
       <el-form-item v-if="elementBaseInfo.$type === 'bpmn:SubProcess'" label="状态">
-        <el-switch v-model="elementBaseInfo.isExpanded" active-text="展开" inactive-text="折叠" @change="updateBaseInfo('isExpanded')" />
+        <el-switch v-model="elementBaseInfo.collapsed" active-text="展开" inactive-text="折叠" @change="updateBaseInfo('collapsed')" />
       </el-form-item>
     </el-form>
   </div>
@@ -48,13 +48,13 @@ const props = withDefaults(
 );
 
 const elementBaseInfo = ref({
-  di: { isExpanded: false },
+  // di: { collapsed: true },// 没有用到
   id: "",
   name: "",
   $type: "",
   versionTag: "",
   isExecutable: false,
-  isExpanded: false,
+  collapsed: true, // 是否折叠
   // task
   personFrom: "",
   users: "",
@@ -81,10 +81,14 @@ watch(props, (val) => {
 
 const resetBaseInfo = () => {
   bpmnElement.value = window?.bpmnInstances?.bpmnElement || {};
-  elementBaseInfo.value = JSON.parse(JSON.stringify(bpmnElement.value.businessObject));
-  if (elementBaseInfo.value && elementBaseInfo.value.$type === "bpmn:SubProcess") {
-    elementBaseInfo.value.isExpanded = elementBaseInfo.value.di.isExpanded;
-  }
+  const formData = JSON.parse(JSON.stringify(bpmnElement.value.businessObject));
+  elementBaseInfo.value = {
+    ...formData,
+    collapsed: !bpmnElement.value.collapsed
+  };
+  // if (elementBaseInfo.value?.$type === "bpmn:SubProcess") {
+  //   elementBaseInfo.value.collapsed = elementBaseInfo.value.di?.collapsed;
+  // }
   activeId.value = elementBaseInfo.value.id;
 };
 const updateBaseInfo = (key) => {
@@ -95,7 +99,7 @@ const updateBaseInfo = (key) => {
     });
     return;
   }
-  if (key === "isExpanded") {
+  if (key === "collapsed") {
     window?.bpmnInstances?.modeling.toggleCollapse(toRaw(bpmnElement.value));
     return;
   }

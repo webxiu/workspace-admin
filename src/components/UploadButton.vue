@@ -1,15 +1,15 @@
 <template>
   <el-upload
     ref="uploadRef"
-    :multiple="true"
+    :multiple="multiple"
     :auto-upload="false"
     :show-file-list="true"
     :limit="limit"
     :on-change="onChange"
     :on-exceed="handleExceed"
-    v-bind="$attrs"
     :file-list="fileList"
     style="width: 100%"
+    v-bind="$attrs"
   >
     <slot name="default">
       <el-button type="primary" :disabled="fileList.length >= limit" :icon="UploadFilled">{{ title }}</el-button>
@@ -26,12 +26,14 @@ import { message } from "@/utils/message";
 interface Props {
   modelValue: UploadUserFile[];
   limit?: number;
+  multiple?: boolean;
   title?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => [],
   limit: 1,
+  multiple: true,
   title: "选择文件"
 });
 

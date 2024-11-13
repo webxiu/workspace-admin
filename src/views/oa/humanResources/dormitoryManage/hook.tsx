@@ -1,8 +1,6 @@
 import { onMounted, reactive, ref, h, markRaw } from "vue";
-import { type PaginationProps } from "@pureadmin/table";
-import { downloadDataToExcel, getMenuColumns, updateButtonList } from "@/utils/table";
+import { getMenuColumns, updateButtonList } from "@/utils/table";
 import EditForm from "@/components/EditForm/index.vue";
-import { useEleHeight } from "@/hooks";
 import { addDialog } from "@/components/ReDialog";
 import {
   formConfigs,
@@ -24,47 +22,32 @@ import {
   editPerformanceDataInfo,
   exportUserDormitory,
   fetchDormitoryAllUser,
-  importPerformanceSheet,
   insertUserDormitory,
   addUserDormitoryBuildings,
   updateUserDormitoryBuildings,
-  validYearAndMonthPerformance,
   addUserDormitory,
   updateUserDormitory,
   deleteBuliding,
   deleteZoom,
   fetchAllBuliding,
-  fetchDormitoryAllBuliding
+  fetchDormitoryAllBuliding,
+  staffInfoList
 } from "@/api/oaManage/humanResources";
 import * as CommonUtils from "@/utils/common";
+import * as XLSX from "xlsx";
 
-import { PAGE_CONFIG } from "@/config/constant";
 import { message, showMessageBox } from "@/utils/message";
 import axios from "axios";
 
-export const useActionHook = (fn, fn2) => {
-  const columns = ref<TableColumnList[]>([]);
-  const columns2 = ref<TableColumnList[]>([]);
+export const useActionHook = (fn, fn2, tableData) => {
   const loading = ref<boolean>(false);
   const loading2 = ref<boolean>(false);
   const userList = ref([]);
-  const dataList = ref([]);
   const currentId = ref("");
   const currentRoom: any = ref({});
   const activeName = ref("");
 
-  const rowData = ref();
-
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 52);
   const currentBuilding: any = ref({});
-
-  const formData: any = reactive({
-    page: 1,
-    limit: PAGE_CONFIG.pageSize,
-    yearAndMonth: dayjs(new Date()).add(-1, "month").format("YYYY-MM")
-  });
-
-  const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
   onMounted(() => {
     initBtns();
@@ -76,60 +59,7 @@ export const useActionHook = (fn, fn2) => {
     updateButtonList(buttonList, buttonArrs[0]);
   };
 
-  const getColumnConfig = () => {
-    const columnData: TableColumnList[] = [
-      { label: "序号", type: "index", prop: "index", width: 60 },
-      { label: "年月", prop: "yearAndMonth", width: 110 },
-      { label: "部门", prop: "deptName", minWidth: 180 },
-      { label: "工号", prop: "userCode", minWidth: 180 },
-      { label: "姓名", prop: "staffName", minWidth: 180 },
-      { label: "金额", prop: "money", minWidth: 120 },
-      { label: "操作", prop: "operation", slot: "operation", minWidth: 120 }
-    ];
-    columns.value = columnData;
-    return columnData;
-  };
-
-  const getColumnConfig2 = () => {
-    const columnData: TableColumnList[] = [
-      { label: "URL地址", prop: "urlAddress" },
-      {
-        label: "应用产品种类",
-        prop: "templateProductEntryList",
-        cellRenderer({ row }) {
-          return row.templateProductEntryList
-            .map((item) => item.name)
-            .filter((item) => item)
-            .join("、");
-        }
-      },
-      { label: "操作", prop: "", width: 105, slot: "operation" }
-    ];
-    columns2.value = columnData;
-  };
-
   const onSearch = () => {};
-
-  // 分页相关
-  function handleSizeChange(val: number) {
-    formData.limit = val;
-    onSearch();
-  }
-
-  function handleCurrentChange(val: number) {
-    formData.page = val;
-    onSearch();
-  }
-
-  const onCurrentChange = (row) => {
-    if (!row) return;
-    rowData.value = row;
-  };
-
-  // 添加单据
-  const onAdd = () => {
-    openDialog("add");
-  };
 
   const fetchUsers = (dormitoryId) => {
     loading2.value = true;
@@ -211,8 +141,7 @@ export const useActionHook = (fn, fn2) => {
       dormitoryCode: row?.dormitoryCode ?? "",
       dormitoryId: row?.id ?? "",
       floorNo: row?.floorNo ?? "",
-      moveInDate: "",
-      staffInfoId: ""
+      moveInDate: ""
     });
 
     const formInlineMap = {
@@ -304,25 +233,6 @@ export const useActionHook = (fn, fn2) => {
 
   const onSubmitChange = (type: string, title: string, data, callback) => {
     if (type === "addBuilding" && data.type) data.isClose = "on";
-    if (type === "add") {
-      const param = {
-        userCodeCol: data.userCodeCol,
-        row: data.row,
-        moneyCol: data.moneyCol,
-        yearAndMonth: formData.yearAndMonth
-      };
-      const fData = new FormData();
-      fData.append("files", data.file);
-      fData.append("param", JSON.stringify(param));
-
-      importPerformanceSheet(fData).then((res) => {
-        if (res.data) {
-          callback();
-          message("导入成功");
-        }
-      });
-      return;
-    }
 
     if (type === "insert") {
       data = [data];
@@ -361,40 +271,9 @@ export const useActionHook = (fn, fn2) => {
       .catch(() => {});
   };
 
-  const validYearAndMonth = () => {
-    loading.value = true;
-    validYearAndMonthPerformance({ yearAndMonth: formData.yearAndMonth })
-      .then((res) => {
-        if (res.data) {
-          onAdd();
-        } else {
-          showMessageBox(`【${formData.yearAndMonth}】已存在数据，确定重新导入吗？`)
-            .then(() => {
-              onAdd();
-            })
-            .catch(() => {});
-        }
-      })
-      .finally(() => (loading.value = false));
-  };
-
   const onImport = () => {
-    showMessageBox(`您确认要导入【${formData.yearAndMonth}】的绩效吗？`)
-      .then(() => {
-        validYearAndMonth();
-      })
-      .catch(() => {});
-  };
-
-  const rowStyle = () => {
-    return {
-      cursor: "pointer"
-    };
-  };
-
-  const changeDateYear = (val) => {
-    formData.yearAndMonth = val;
-    onSearch();
+    const dom = document.getElementById("imporZoomUserInput");
+    dom.click();
   };
 
   const onLeave = (item) => {
@@ -517,6 +396,75 @@ export const useActionHook = (fn, fn2) => {
     { clickHandler: delZoom, type: "primary", text: "删除宿舍", isDropDown: true }
   ]);
 
+  const readXlsx = (file: File, sheetConfig = {}) => {
+    return new Promise<Record<string, any[]>>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: "binary", cellDates: true });
+        const allSheetsData: Record<string, any[]> = workbook.SheetNames.reduce((current, sheetName) => {
+          const worksheet = workbook.Sheets[sheetName];
+
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+          const headers = jsonData[0] as string[]; // 表头行
+          console.log(headers, "headers");
+          // 复杂表格数据格式不统一, 数据返回格式有差异
+          if (Array.isArray(headers)) {
+            const dataRows = jsonData.slice(1); // 数据行
+            const formattedData = dataRows.map((row) => {
+              return headers.reduce((acc, header, index) => {
+                acc[header] = row[index];
+                return acc;
+              }, {});
+            });
+            current[sheetName] = formattedData;
+          } else {
+            current[sheetName] = jsonData;
+          }
+          return current;
+        }, {});
+        resolve(allSheetsData);
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  const onChangeFileInput = async (e) => {
+    const file = e.target.files[0];
+    const result = await readXlsx(file);
+    const flatArrData = Object.values(result).flat(Infinity);
+
+    const fieldArr = [];
+    const findZoomId = (floor, code) => {
+      const findZoomInfo = tableData.value.find((el) => el.floor == floor)?.value?.find((el) => el.dormitoryCode == code);
+      return findZoomInfo?.id;
+    };
+
+    flatArrData.forEach((el) => {
+      fieldArr.push({
+        checkInUser: el["姓名"],
+        dormitoryCode: el["房间号"],
+        dormitoryId: findZoomId(el["楼层"], el["房间号"]),
+        floorNo: el["楼层"],
+        moveInDate: dayjs(el["入住时间"]).format("YYYY-MM-DD HH:mm") + ":00",
+        staffCode: el["工号"]
+      });
+    });
+
+    insertUserDormitory(fieldArr)
+      .then((res) => {
+        if (res.data) {
+          message("导入成功", { type: "success" });
+          fn2(currentBuilding.value.name);
+        }
+      })
+      .finally(() => {
+        const dom = document.getElementById("imporZoomUserInput");
+        (dom as any).value = null;
+      });
+  };
+
   return {
     currentId,
     userList,
@@ -526,6 +474,7 @@ export const useActionHook = (fn, fn2) => {
     buttonList2,
     activeName,
     currentBuilding,
+    onChangeFileInput,
     currentRoom,
     onLeave,
     fetchUsers,

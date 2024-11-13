@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-06-17 17:26:03
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-29 16:24:10
+ * @Last Modified time: 2024-11-06 14:25:20
  */
 
 import { useEleHeight } from "@/hooks";
@@ -72,7 +72,7 @@ export const useConfig = () => {
     ];
     const { columnArrs, buttonArrs } = await getMenuColumns([{ productionLine: cellRenderer1 }]);
     const [data] = columnArrs;
-    // if (data?.length) columnData = data;
+    if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
   };
@@ -126,7 +126,13 @@ export const useConfig = () => {
       beforeReset: () => formRef.value.getRef()?.resetFields(),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        console.log("FormRef", FormRef.value);
+        console.log("FormRef", FormRef);
+        FormRef.formRef.validate((valid) => {
+          if (valid) {
+            console.log("submit!");
+          }
+        });
+        console.log("FormRef", FormRef);
         // FormRef.validate((valid) => {
         //   if (valid) {
         //     showMessageBox("确认提交吗").then(() => {

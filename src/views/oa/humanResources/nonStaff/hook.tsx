@@ -125,7 +125,8 @@ export const useMachine = () => {
 
     await fetchNoStaffUser({ page: 1, limit: 30, staffId: row?.staffId }).then((res: any) => {
       if (res.data) {
-        const result = res.data.records[0] || {};
+        let result = res.data.records[0] || {};
+        if (!row) result = {};
         _formData.value.id = result?.id ?? "";
         _formData.value.sex = result?.sex;
         _formData.value.staffName = result?.staffName ?? "";
@@ -139,6 +140,7 @@ export const useMachine = () => {
         _formData.value.isCreateQYWechat = result?.wxOpenId ? true : false;
         _formData.value.laborServiceCompany = result?.laborServiceCompany ?? "";
         _formData.value.remark = result?.remark ?? "";
+        _formData.value.isPoorPeople = result?.isPoorPeople ?? 0;
         _formData.value.exmpetAttendance = result?.exmpetAttendance ?? false;
         _formData.value.machineId = result?.machineId;
       }

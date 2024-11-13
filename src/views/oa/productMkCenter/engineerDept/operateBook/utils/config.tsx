@@ -2,9 +2,12 @@ import { reactive, ref } from "vue";
 
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
-import MaterialModal from "../MaterialModal.vue";
-import ProductModeModal from "../ProductModeModal.vue";
+import HxModalInput from "@/components/HxModalInput/index.vue";
+import MaterialMgmt from "@/views/plmManage/basicData/materialMgmt/index.vue";
+import { PageUrl } from "@/config/constant";
+import { fetchProductStoreList } from "@/api/plmManage";
 import { getEnumDictList } from "@/utils/table";
+import { message } from "@/utils/message";
 
 // 编辑SQL单据校验
 export const formRules = reactive<FormRules>({
@@ -29,13 +32,24 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
       prop: "productCode",
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
-        const onSelect = (val) => {
-          formModel[row.prop] = val.productCode;
-        };
         return (
-          <el-input v-model={formModel[row.prop]} placeholder="请选择产品型号" readonly>
-            {{ append: () => <ProductModeModal onSelect={onSelect} /> }}
-          </el-input>
+          <HxModalInput
+            title="选择产品"
+            placeholder="请选择产品型号"
+            valueKey={row.prop}
+            v-model={formModel[row.prop]}
+            readonly={true}
+            showButton={true}
+            componentProp={{
+              searchConfig: [{ label: "产品型号", value: "productCode" }],
+              maxHeight: 520,
+              columns: [
+                { label: "产品型号", prop: "productCode" },
+                { label: "产品类别", prop: "productType" }
+              ],
+              api: fetchProductStoreList
+            }}
+          />
         );
       }
     },
@@ -44,14 +58,28 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
       prop: "materialNumber",
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
-        const onSelect = (val) => {
-          formModel[row.prop] = val.number;
-          formData.materialId = val.id;
+        const onSelect = (val) => (formData.materialId = val.id);
+        const interceptFn = () => {
+          if (!formModel.productCode) {
+            message("请选择产品型号", { type: "error" });
+            return true;
+          }
+          return false;
         };
         return (
-          <el-input v-model={formModel[row.prop]} placeholder="请选择物料编码" readonly>
-            {{ append: () => <MaterialModal productCode={formModel.productCode} onSelect={onSelect} /> }}
-          </el-input>
+          <HxModalInput
+            title="选择物料"
+            width="85%"
+            placeholder="请选择物料编码"
+            valueKey="number"
+            v-model={formModel[row.prop]}
+            pageKey={PageUrl.materialMgmt}
+            readonly={true}
+            showButton={true}
+            component={MaterialMgmt}
+            onSelect={onSelect}
+            interceptFn={interceptFn}
+          />
         );
       }
     },

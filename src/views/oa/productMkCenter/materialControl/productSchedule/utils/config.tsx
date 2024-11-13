@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-08-01 15:18:56
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-05 17:52:25
+ * @Last Modified time: 2024-11-06 11:54:23
  */
 
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
@@ -34,14 +34,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       prop: "dataStartRow",
       colProp: layout,
       slots: {
-        label: ({ label }) => (
-          <span>
-            {label}
-            <el-tooltip placement="top" content="请根据实际导入行列数值修改默认值(即: 核对上传Excel中的行序号和列序号, 下同)">
-              <Question />
-            </el-tooltip>
-          </span>
-        )
+        label: ({ label }) => <Question label={label} tipMsg="请根据实际导入行列数值修改默认值(即: 核对上传Excel中的行序号和列序号, 下同)" />
       },
       render: ({ formModel, row }) => (
         <el-input-number v-model={formModel[row.prop]} min={1} max={1000} controls-position="right" placeholder="请输入" style="width: 100%" clearable />

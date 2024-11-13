@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-18 10:59:37
+ * @Last Modified time: 2024-11-06 12:00:21
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
@@ -98,14 +98,7 @@ export const useConfig = () => {
         label: "输入类型",
         prop: "itemType",
         headerAlign: "center",
-        headerRenderer: ({ column }) => (
-          <>
-            <span>{column.label}</span>
-            <el-tooltip placement="top" content="输入框, 多选框, 单选框...等">
-              <Question />
-            </el-tooltip>
-          </>
-        ),
+        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="输入框, 多选框, 单选框...等" />,
         cellRenderer: (data) => editCellRender({ type: "select", data, options: inputList })
       },
 
@@ -115,14 +108,7 @@ export const useConfig = () => {
         prop: "valueFormat",
         minWidth: 200,
         headerAlign: "center",
-        headerRenderer: ({ column }) => (
-          <>
-            <span>{column.label}</span>
-            <el-tooltip placement="top" content="自定义单元格数据显示类型">
-              <Question />
-            </el-tooltip>
-          </>
-        ),
+        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="自定义单元格数据显示类型" />,
         cellRenderer: (data) => {
           const prop = data.column["property"];
           const value = JSON.parse(data.row[prop] || "{}");
@@ -148,14 +134,7 @@ export const useConfig = () => {
         label: "插槽",
         prop: "slots",
         headerAlign: "center",
-        headerRenderer: ({ column }) => (
-          <>
-            <span>{column.label}</span>
-            <el-tooltip placement="top" content="与 属性配置 操作相似, 自定义单元格数据">
-              <Question />
-            </el-tooltip>
-          </>
-        ),
+        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="与 属性配置 操作相似, 自定义单元格数据" />,
         cellRenderer: (data) => editCellRender({ type: "select", data, options: slotsList })
       },
       { label: "表名", prop: "tableName", headerAlign: "center", cellRenderer: (data) => editCellRender({ data }) }

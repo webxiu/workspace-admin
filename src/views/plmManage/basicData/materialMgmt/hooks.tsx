@@ -7,7 +7,7 @@ import {
   updateMaterialInfo,
   uploadMaterialImg
 } from "@/api/plmManage";
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 
 import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
@@ -334,9 +334,21 @@ export const useConfig = (props) => {
     }
   };
 
+  watch(
+    () => props.historyData,
+    (newVal) => {
+      if (route.query.materialId) {
+        newHistoryData.value = newVal;
+        initList();
+      }
+    },
+    { deep: true }
+  );
+
   onMounted(() => {
-    newHistoryData.value = props.historyData;
-    initList();
+    if (!route.query.materialId) {
+      initList();
+    }
   });
 
   return { loading, formData, formRef, opts, submit };

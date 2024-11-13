@@ -149,7 +149,8 @@ const formConfigs2 = (formData) => {
   const addUser = () => {
     const setA = (v) => {
       formData.checkInUser = v.userName;
-      formData.staffInfoId = +v.id;
+      // formData.staffInfoId = +v.id;
+      formData.staffCode = v.userCode;
     };
     addDialog({
       title: "选择用户",
@@ -181,7 +182,7 @@ const formConfigs2 = (formData) => {
       }
     },
     {
-      label: "入住人员",  
+      label: "入住人员",
       labelWidth: 100,
       prop: "checkInUser",
       render: ({ formModel, row }) => {

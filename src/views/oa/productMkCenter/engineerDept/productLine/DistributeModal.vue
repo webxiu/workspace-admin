@@ -164,9 +164,7 @@ defineExpose({ getRef });
       <div class="flex just-between align-center">
         <div class="flex flex-1 items-center mb-15">
           <span class="mr-10">
-            选择指导书<el-tooltip placement="top" content="先选择指导书, 然后将 工位名称 填写完整">
-              <Question />
-            </el-tooltip>
+            <Question label="选择指导书" tipMsg="先选择指导书, 然后将 工位名称 填写完整" />
           </span>
           <el-select
             v-model="keyword"
@@ -191,7 +189,7 @@ defineExpose({ getRef });
               <div class="flex just-between align-center border-line-top">
                 <span style="width: 66px; margin-right: 20px">
                   <el-tag v-if="item.billState === BillState.audited" type="success" size="small" effect="dark">已审核</el-tag>
-                  <el-tag v-else size="small" effect="dark" type="danger">{{ BillState_Color[item.billState]?.name }}</el-tag>
+                  <el-tag v-else size="small" effect="dark" type="danger">{{ BillState_Color[item.billState].name }}</el-tag>
                 </span>
                 <span class="ellipsis mr-30" style="flex: 1; max-width: 400px" :title="item.manualName">{{ item.manualName }}</span>
                 <span class="ellipsis" style="width: 120px" :title="item.productModel">{{ item.productModel }}</span>

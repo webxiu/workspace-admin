@@ -1,26 +1,41 @@
 import * as XLSX from "xlsx";
 
-import { deleteMaterialGroupAttr, fetchMaterialGroupAttr, getBOMTableRowSelectOptions, getMaterialGroupTreeData, saveMaterialGroupAttr } from "@/api/plmManage";
-import { getMenuColumns, setColumn, tableEditRender, updateButtonList } from "@/utils/table";
+import {
+  deleteMaterialGroupAttr,
+  fetchMaterialGroupAttr,
+  getBOMTableRowSelectOptions,
+  getMaterialGroupTreeData,
+  insertMaterialGroupAttrList,
+  saveMaterialGroupAttr
+} from "@/api/plmManage";
+import { getEnumDictList, getMenuColumns, setColumn, tableEditRender, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 
 import { ElMessage } from "element-plus";
 import ImportMaterialPropModal from "./ImportMaterialPropModal.vue";
 import { addDialog } from "@/components/ReDialog";
+import { enumDictionaryOptionDelete } from "@/api/systemManage";
 import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
 
 export function useTable() {
   const currentRow = ref();
+  const currentRow2 = ref();
   const curNodeName = ref("");
   const curNodeLabel = ref();
   const loading = ref<boolean>(false);
   const dataList = ref([]);
+  const dataList2 = ref([]);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 40);
   const selectOptionValue = ref([]);
   const selectEnumOptsValue = ref([]);
   const columns = ref<TableColumnList[]>([]);
+  const columns2 = ref<TableColumnList[]>([]);
+  const loading2 = ref(false);
+  const isEditTable2 = ref(false);
+  const isEditTable1 = ref(false);
+  const optionId = ref();
 
   const categoryTreeData = ref([]);
 
@@ -58,19 +73,28 @@ export function useTable() {
     }
   });
 
+  // 编辑表格2
+  const table2CellRender = tableEditRender();
+
   const getConfig = async (buttonList) => {
-    const propNoRender = (data) => editCellRender({ data });
-    const propNameRender = (data) => editCellRender({ data });
+    const propNoRender = (data) => editCellRender({ data, isEdit: isEditTable1.value });
+    const propNameRender = (data) => editCellRender({ data, isEdit: isEditTable1.value });
     const enumCodeRender = (data) =>
       editCellRender({
         type: "select",
         data,
         options: selectEnumOptsValue.value,
-        isEdit: data.row.propertyType == "1",
+        isEdit: isEditTable1.value && data.row.propertyType == "1",
         cellStyle: { color: "#606266", textAlign: "left" }
       });
     const propTypeRender = (data) =>
-      editCellRender({ type: "select", data, options: selectOptionValue.value, cellStyle: { color: "#606266", textAlign: "left" } });
+      editCellRender({
+        type: "select",
+        data,
+        isEdit: isEditTable1.value,
+        options: selectOptionValue.value,
+        cellStyle: { color: "#606266", textAlign: "left" }
+      });
 
     let columnData: TableColumnList[] = [
       { label: "属性id", prop: "id" },
@@ -83,16 +107,41 @@ export function useTable() {
     const { columnArrs, buttonArrs } = await getMenuColumns([
       { propertyCode: propNoRender, propertyName: propNameRender, propertyType: propTypeRender, enumCode: enumCodeRender }
     ]);
-    const [menuCols] = columnArrs;
+    const menuCols = columnArrs[0];
 
     if (menuCols?.length) {
       columnData = menuCols;
     }
 
-    updateButtonList(buttonList, buttonArrs[0]);
+    updateButtonList(
+      buttonList,
+      buttonArrs[0].filter((el) => ["newEdit", "export", "import"].includes(el.btnKey))
+    );
 
     columns.value = setColumn({ columnData, operationColumn: false });
     return columns.value;
+  };
+
+  const getConfig2 = async (buttonList) => {
+    const optionNameRender = (data) => table2CellRender.editCellRender({ data, isEdit: isEditTable2.value });
+    const optionValueRender = (data) => table2CellRender.editCellRender({ data, isEdit: isEditTable2.value });
+
+    let columnData: TableColumnList[] = [
+      { label: "枚举属性", prop: "optionName", cellRenderer: optionNameRender },
+      { label: "枚举值", prop: "optionValue", cellRenderer: optionValueRender }
+    ];
+
+    const { columnArrs, buttonArrs } = await getMenuColumns([{}, { optionName: optionNameRender, optionValue: optionValueRender }]);
+    const menuCols = columnArrs[1];
+
+    if (menuCols?.length) {
+      columnData = menuCols;
+    }
+
+    // updateButtonList(buttonList, buttonArrs[1]);
+
+    columns2.value = setColumn({ columnData, operationColumn: false, dragSelector: ".material-prop-table2", isDragRow: true, dataList: dataList2 });
+    return columns2.value;
   };
 
   const getLeftGroup = () => {
@@ -124,6 +173,7 @@ export function useTable() {
     fetchOpts();
     getLeftGroup();
     getConfig(buttonList);
+    getConfig2(buttonList2);
   });
 
   const handleNodeClick = (treeItem) => {
@@ -140,14 +190,36 @@ export function useTable() {
     fetchMaterialGroupAttr(formData).then((res: any) => {
       if (res.data) {
         dataList.value = res.data.map((item) => ({ ...item, propertyType: item.propertyType + "" }));
+        dataList2.value = [];
       }
     });
+  };
+
+  const onSearch2 = () => {
+    loading2.value = true;
+    getBOMTableRowSelectOptions({ optioncode: currentRow.value.enumCode })
+      .then((res) => {
+        if (res.data) {
+          const result = res.data.find((el) => el.optionCode === currentRow.value.enumCode);
+          dataList2.value = result?.optionList;
+          optionId.value = result?.id;
+        }
+      })
+      .finally(() => {
+        loading2.value = false;
+      });
   };
 
   const onFresh = () => {
     currentRow.value = null;
     getConfig(buttonList);
     onSearch();
+  };
+
+  const onFresh2 = () => {
+    currentRow2.value = null;
+    getConfig2(buttonList2);
+    onSearch2();
   };
 
   const handleTagSearch = (values) => {
@@ -161,13 +233,20 @@ export function useTable() {
   };
 
   const onAdd = () => {
-    console.log("add");
     dataList.value.push({ id: "", materialGroupId: curNodeName.value });
   };
 
   // 点击表格行
   const rowClick = (row, column) => {
     currentRow.value = row;
+    if (row.enumCode) {
+      onSearch2();
+    }
+  };
+
+  // 点击表格行
+  const rowClick2 = (row, column) => {
+    currentRow2.value = row;
   };
 
   // 导出
@@ -209,12 +288,12 @@ export function useTable() {
   };
 
   const onSave = () => {
-    console.log(dataList.value, "save list=>>");
     showMessageBox(`确认要保存吗?`)
       .then(() => {
         saveMaterialGroupAttr(dataList.value).then((res) => {
           if (res.data || res.status === 200) {
             ElMessage({ message: "保存成功", type: "success" });
+            onCancelAction();
             onSearch();
           }
         });
@@ -238,7 +317,6 @@ export function useTable() {
 
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
           const headers = jsonData[0] as string[]; // 表头行
-          console.log(headers, "headers");
           // 复杂表格数据格式不统一, 数据返回格式有差异
           if (Array.isArray(headers)) {
             const dataRows = jsonData.slice(1); // 数据行
@@ -334,20 +412,98 @@ export function useTable() {
       });
     });
 
-    console.log(fieldArr, " fieldArr...");
     openModal(fieldArr);
   };
 
-  const buttonList = ref<ButtonItemType[]>([
-    { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
-    { clickHandler: onDelete, type: "danger", text: "删除", isDropDown: false },
+  const onAdd2 = () => {
+    dataList2.value.push({ id: "", optionName: "", optionValue: "", optionId: optionId.value });
+  };
+
+  const onSave2 = () => {
+    showMessageBox(`确认要保存吗?`)
+      .then(() => {
+        insertMaterialGroupAttrList(dataList2.value).then((res) => {
+          if (res.data || res.status === 200) {
+            ElMessage({ message: "保存成功", type: "success" });
+            isEditTable2.value = false;
+            buttonList2.value = initButtons;
+            onSearch2();
+          }
+        });
+      })
+      .catch(console.log);
+  };
+
+  const onDelete2 = () => {
+    if (!currentRow2.value) return message("请选择枚举记录", { type: "warning" });
+    if (currentRow2.value?.id) {
+      showMessageBox(`确认要删除名称为【${currentRow2.value.optionName}】的枚举属性吗?`)
+        .then(() => {
+          enumDictionaryOptionDelete({ optionListIdList: [currentRow2.value?.id] }).then((res) => {
+            if (res.data || res.status === 200) {
+              ElMessage({ message: "删除成功", type: "success" });
+              onSearch2();
+            }
+          });
+        })
+        .catch(console.log);
+    } else {
+      dataList2.value.splice(currentRow2.value.index, 1);
+      currentRow2.value = null;
+    }
+  };
+
+  const onEidtNew = () => {
+    isEditTable2.value = true;
+    buttonList2.value = editButtons;
+  };
+
+  const onCancel2 = () => {
+    isEditTable2.value = false;
+    buttonList2.value = initButtons;
+  };
+
+  const onEditAction = () => {
+    isEditTable1.value = true;
+    buttonList.value = editButtons1;
+  };
+
+  const onCancelAction = () => {
+    isEditTable1.value = false;
+    buttonList.value = initButtons1;
+  };
+
+  const editButtons1 = [
+    { clickHandler: onAdd, type: "primary", text: "增行", isDropDown: false },
+    { clickHandler: onDelete, type: "danger", text: "删行", isDropDown: false },
     { clickHandler: onSave, type: "warning", text: "保存", isDropDown: false },
+    { clickHandler: onCancelAction, type: "default", text: "取消", isDropDown: false },
+    { clickHandler: onImport, type: "info", text: "导入", isDropDown: true },
+    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
+  ];
+
+  const initButtons1 = [
+    { clickHandler: onEditAction, type: "warning", text: "编辑", isDropDown: false },
     { clickHandler: onImport, type: "primary", text: "导入", isDropDown: true },
-    { clickHandler: onExport, type: "primary", text: "导出", isDropDown: true }
-  ]);
+    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
+  ];
+
+  const buttonList = ref(initButtons1);
+
+  const editButtons = [
+    { clickHandler: onSave2, type: "warning", text: "保存", size: "small", isDropDown: false },
+    { clickHandler: onCancel2, type: "default", text: "取消", size: "small", isDropDown: false },
+    { clickHandler: onAdd2, type: "primary", text: "增行", size: "small", isDropDown: false },
+    { clickHandler: onDelete2, type: "danger", text: "删行", size: "small", isDropDown: false }
+  ];
+
+  const initButtons = [{ clickHandler: onEidtNew, type: "warning", text: "编辑", size: "small", isDropDown: false }];
+
+  const buttonList2 = ref<ButtonItemType[]>(initButtons);
 
   const rowClassName = ({ row, rowIndex }) => {
     row.index = rowIndex;
+    row.displaySeq = rowIndex + 1;
     return "";
   };
 
@@ -355,12 +511,18 @@ export function useTable() {
     loading,
     dataList,
     columns,
+    dataList2,
+    columns2,
+    rowClick2,
     maxHeight,
+    loading2,
     onFresh,
+    onFresh2,
     onChangeFileInput,
     rowClick,
     rowClassName,
     buttonList,
+    buttonList2,
     categoryTreeData,
     searchOptions,
     handleTagSearch,

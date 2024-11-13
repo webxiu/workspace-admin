@@ -121,6 +121,10 @@ export interface SearchOptionType extends CascaderOption {
   type?: DatePickType;
   /** 日期格式(如: YYYY-MM-DD, 仅日期添加) */
   format?: string;
+  /** 开始时间字段(type为daterange时有效) */
+  startKey?: string;
+  /** 结束时间字段(type为daterange时有效) */
+  endKey?: string;
 }
 
 /** 默认搜索类型 */
@@ -201,11 +205,16 @@ onMounted(() => {
   if (!props.immediate || !Object.keys(props.queryParams).length) return;
   const timer = setTimeout(() => {
     if (Object.keys(resultMaps).length > 0) {
-      emits("tagSearch", resultMaps.value);
+      onFinish(resultMaps.value);
     }
     clearTimeout(timer);
   }, 500);
 });
+
+// 返回搜索参数
+const onFinish = (values) => {
+  emits("tagSearch", values);
+};
 
 const keyLabel = computed<string>(() => {
   if (!filterKey.value) return "";
@@ -220,12 +229,22 @@ const keyLabel = computed<string>(() => {
 const resultMaps = computed(() => {
   const data: Record<string, any> = {};
   for (let key in filterTags.value) {
-    const value = filterTags.value[key]["value"];
-    if (key === "") {
-      key = props.searchField;
-    }
+    const { type, value } = filterTags.value[key];
+    // 默认搜索字段
+    if (key === "") key = props.searchField;
     if (key.startsWith(props.searchField)) {
+      // 默认搜索值拼接
       data[props.searchField] = (data[props.searchField] ? data[props.searchField] + "," : "") + value;
+    } else if (type === "daterange") {
+      // 处理时间范围, 把值赋值给startKey和endKey
+      const { startKey, endKey } = props.searchOptions.find((f) => f.type === type);
+      if (startKey && endKey) {
+        const dateArr = value.split("~").map((item) => item.trim());
+        data[startKey] = dateArr[0];
+        data[endKey] = dateArr[1];
+      } else {
+        data[key] = value;
+      }
     } else {
       data[key] = value;
     }
@@ -297,12 +316,23 @@ const onSelectNode = (node, data) => {
   });
 };
 
-const onTagClose = (evt: string) => {
-  delete filterTags.value[evt];
-  const keyField = `${evt}`.split("_")[0];
-  // 将值置空, 而不是删除字段
-  if (keyField) resultMaps.value[keyField] = undefined;
-  emits("tagSearch", resultMaps.value);
+const onTagClose = (key: string) => {
+  delete filterTags.value[key];
+  const keyField = `${key}`.split("_")[0];
+  const item = props.searchOptions.find((f) => f.value === key);
+  if (item?.type === "daterange") {
+    // 处理时间范围的删除
+    const { startKey, endKey } = item;
+    if (startKey && endKey) {
+      resultMaps.value[startKey] = undefined;
+      resultMaps.value[endKey] = undefined;
+      delete resultMaps.value[keyField];
+    }
+  } else {
+    // 将值置空, 而不是删除字段
+    if (keyField) resultMaps.value[keyField] = undefined;
+  }
+  onFinish(resultMaps.value);
 };
 
 const onDateBlur = () => {
@@ -330,7 +360,7 @@ const onDataChange = (values) => {
   };
 
   filterTags.value[filterKey.value] = tag;
-  emits("tagSearch", resultMaps.value);
+  onFinish(resultMaps.value);
   // 清空显示输入框
   filterKey.value = "";
   filterValue.value = "";
@@ -344,9 +374,8 @@ const onSubmit = debounce(() => onSearch());
 
 const onSearch = () => {
   if (filterValue.value === "") {
-    delete filterTags.value[filterKey.value];
+    onTagClose(filterKey.value);
     filterKey.value = "";
-    emits("tagSearch", resultMaps.value);
     return;
   }
   if (filterValue.value && !filterKey.value) {
@@ -361,7 +390,7 @@ const onSearch = () => {
     format: dateFormat.value
   };
   filterTags.value[filterKey.value] = tag;
-  emits("tagSearch", resultMaps.value);
+  onFinish(resultMaps.value);
   filterKey.value = "";
   filterValue.value = "";
   valueLabel.value = "";

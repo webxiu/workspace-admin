@@ -9,7 +9,7 @@ import { moldApplyList, MoldApplyItemType, addMoldApply, editMoldApply, deleteMo
 import EditForm from "@/components/EditForm/index.vue";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
-import { PAGE_CONFIG } from "@/config/constant";
+import { BillState, BillState_Color, PAGE_CONFIG } from "@/config/constant";
 import Print from "../print.vue";
 import { formRules, formConfigs, modelTypeList, dataProvideList } from "./config";
 import { commonBack, commonSubmit } from "@/api/systemManage";
@@ -55,6 +55,20 @@ export const useTestReportConfig = () => {
       });
     };
     let columnData: TableColumnList[] = [
+      { label: "单据编号", prop: "billNo", minWidth: 140 },
+      {
+        label: "单据状态",
+        prop: "billState",
+        minWidth: 140,
+        align: "center",
+        cellRenderer({ row, column }) {
+          const value = row[column["property"]] as string;
+          if (!BillState_Color[value]) return value;
+          const item = BillState_Color[value];
+          const styleBox = { color: "#fff", padding: "3px 6px", borderRadius: "4px", background: item.color };
+          return <span style={styleBox}>{item.name}</span>;
+        }
+      },
       { label: "产品型号", prop: "productCode", minWidth: 140 },
       { label: "产品名称", prop: "productName", minWidth: 140 },
       { label: "开模日期", prop: "modelOpeningDate", minWidth: 160 },
@@ -218,13 +232,15 @@ export const useTestReportConfig = () => {
   }
 
   const onSubmit = wrapFn(rowData, () => {
-    const { productName, id } = rowData.value;
+    const { productName, id, billState } = rowData.value;
+    if (![BillState.submit, BillState.reject].includes(billState)) {
+      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
+    }
     showMessageBox(`确认要提交【${productName}】吗?`).then(() => {
       commonSubmit({ id, billId: "10061" }).then(({ data }) => {
-        if (data) {
-          message("提交成功");
-          getTableList();
-        }
+        if (!data) return message("提交失败", { type: "error" });
+        message("提交成功");
+        getTableList();
       });
     });
   });

@@ -192,6 +192,7 @@ export const useConfig = () => {
       deptId: row?.deptId ?? "",
       groupId: row?.groupId ?? "",
       isStay: row?.isStay ?? "",
+      isPoorPeople: row?.isPoorPeople ?? 0,
       employeKind: row?.employeKind ?? "",
       workRuleId: row?.workRuleId ?? "",
       tryDate: row?.tryDate ?? 3,

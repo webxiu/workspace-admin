@@ -27,11 +27,11 @@ export const topRouteList = [
   "/businessCenter/dataScreen/supplyChainMonitor/index"
 ];
 
-/** 分页配置 */
+/** 分页配置(必须解构使用, 避免引用同一地址) */
 export const PAGE_CONFIG: PaginationProps = {
   /** 总条数 */
   total: 0,
-  /** 每页条数(与`分页选择`第一项相同) */
+  /** 每页条数(与 pageSizes 第一项必须相同) */
   pageSize: 30,
   /** 分页尺寸 */
   small: false,
@@ -47,7 +47,7 @@ export const PAGE_CONFIG: PaginationProps = {
   pagerCount: 5
 };
 
-// 单据审批状态
+/** 单据状态 */
 export enum BillState {
   /** 待提交 */
   submit = 0,
@@ -61,7 +61,7 @@ export enum BillState {
   revoke = 4
 }
 
-// 单据审批状态颜色
+/** 单据状态颜色 */
 export const BillState_Color = {
   [BillState.submit]: { name: "待提交", color: "#409eff" },
   [BillState.auditing]: { name: "审核中", color: "#e6a23c" },
@@ -74,13 +74,10 @@ export const BillState_Color = {
 // prettier-ignore
 export const predefineColors = ["#ffffff", "#303133", "#2200aa", "#0000FF", "#1e90ff", "#409eff", "#73A3F5", "#f590e4", "#c71585", "#dc143c", "#F53145", "#FF0000", "#ff6600", "#ff8c00", "#e6a23c", "#ffc107", "#F5F31B", "#bbff00", "#00FF00", "#90ee90", "#00dd00", "#67c23a", "#008800", "#227700", "#009688", "#909399", "#00ced1", "#ccddff", "#ffcccc", "#F59DC3", "#f56c6c", "#d2691e", "#F59773", "#F5D273", "#770077", "#8c0044", "hsv(51, 100, 98)", "rgba(255, 69, 0, 0.68)", "hsva(120, 40, 94, 0.5)", "hsla(209, 100%, 56%, 0.73)"];
 
-/** 弹窗中引入页面路由组件, 获取该页面的路由ID */
-export const menuPageRouter = () => {
-  enum PageUrl {
-    /** 物料管理 */
-    materialMgmt = "/plmManage/basicData/materialMgmt/index",
-    /** 产品库 */
-    productStore = "/plmManage/productMgmt/productStore/index"
-  }
-  return { PageUrl, setRouterInfo };
-};
+/** 弹窗中引入路由菜单的页面 */
+export enum PageUrl {
+  /** 物料管理 */
+  materialMgmt = "/plmManage/basicData/materialMgmt/index",
+  /** 产品库 */
+  productStore = "/plmManage/productMgmt/productStore/index"
+}

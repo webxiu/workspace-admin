@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:02:57
+ * @Last Modified time: 2024-10-29 15:29:54
  */
 
 import { BudgetManageItemType, budgetManageList, exportBudgetManage, importBudgetManage, saveBudgetManage } from "@/api/businessCenter";
@@ -63,8 +63,8 @@ export const useConfig = () => {
     let columnData: TableColumnList[] = [];
     const monthsRender: RendererType = ({ row, index, column }) => {
       const isEdit = editMap.value[index]?.editable;
-      if (isEdit) return <RegInput v-model={row[column.columnKey]} pattern={regExp.money} isNumber={true} error="请输入数字" />;
-      return <span>{row[column.columnKey]}</span>;
+      if (isEdit) return <RegInput v-model={row[column["property"]]} pattern={regExp.money} isNumber={true} error="请输入数字" />;
+      return <span>{row[column["property"]]}</span>;
     };
     const customRenders = [...new Array(12)].reduce((cur, _, i) => {
       cur["m" + (i + 1)] = cloneDeep(monthsRender);

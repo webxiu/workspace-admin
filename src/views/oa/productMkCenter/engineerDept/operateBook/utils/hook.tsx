@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-06-04 15:31:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-11 11:53:55
+ * @Last Modified time: 2024-11-08 14:55:49
  */
 
 import { BillState, BillState_Color, PAGE_CONFIG } from "@/config/constant";
@@ -225,7 +225,10 @@ export const useConfig = () => {
   });
 
   const onSubmit = wrapFn(rowData, () => {
-    const { id, billId } = rowData.value;
+    const { id, billId, billState } = rowData.value;
+    if (![BillState.submit, BillState.reject].includes(billState)) {
+      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
+    }
     commonSubmit({ id, billId }).then(({ data }) => {
       if (!data) return message("提交失败", { type: "error" });
       message("提交成功");

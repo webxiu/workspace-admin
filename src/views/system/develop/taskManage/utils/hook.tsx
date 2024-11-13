@@ -73,7 +73,7 @@ export const useConfig = () => {
   const formData = reactive<Record<string, any>>({
     page: 1,
     limit: PAGE_CONFIG.pageSize,
-    responsibleMan: "",
+    responsibleUserName: "",
     startTime: [],
     endTime: "",
     select: [TaskStatus.pending, TaskStatus.start, TaskStatus.confirm, TaskStatus.back],
@@ -82,12 +82,12 @@ export const useConfig = () => {
 
   const searchOptions = ref<SearchOptionType[]>([
     { label: "任务名称", value: "taskName" },
-    { label: "责任人", value: "responsibleMan", children: [] },
+    { label: "责任人", value: "responsibleUserName", children: [] },
     { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
     { label: "任务编号", value: "billNo" }
   ]);
   const queryParams = reactive<QueryParamsType>({
-    responsibleMan: { value: userInfo.userName, valueLabel: userInfo.userName }
+    responsibleUserName: { value: userInfo.userName, valueLabel: userInfo.userName }
   });
 
   onMounted(() => {
@@ -140,7 +140,7 @@ export const useConfig = () => {
       { label: "任务名称", prop: "taskName", minWidth: 220 },
       { label: "任务状态", prop: "taskStatusName", width: 80 },
       { label: "单据状态", prop: "billState", width: 100 },
-      { label: "责任人", prop: "responsibleMan", width: 80 },
+      { label: "责任人", prop: "responsibleUserName", width: 80 },
       { label: "工时", prop: "duration", width: 80 },
       { label: "优先级", prop: "priority", width: 100 },
       { label: "开始时间", prop: "startTime", width: 100 },
@@ -182,7 +182,7 @@ export const useConfig = () => {
   const onSearch = () => getTableList();
 
   const handleTagSearch = (values) => {
-    formData.responsibleMan = values.responsibleMan ?? undefined;
+    formData.responsibleUserName = values.responsibleUserName ?? undefined;
     formData.billNo = values.billNo;
     formData.taskName = values.taskName;
     formData.startTime = values.date?.split("~").map((item) => item.trim());
@@ -257,7 +257,7 @@ export const useConfig = () => {
       taskName: row.taskName,
       startTime: isAdd ? initDate : row.startTime,
       endTime: isAdd ? initDate : row.endTime,
-      responsibleMan: row.responsibleManCode ?? undefined,
+      responsibleUserCode: row.responsibleUserCode ?? undefined,
       priority: row.priority,
       duration: row.duration,
       number: number ?? 1,
@@ -270,7 +270,6 @@ export const useConfig = () => {
       taskContent: row.taskContent ?? "",
       score: row.score ?? 0
     });
-
     if (isAdd && rowData.value) formData.billNo = undefined;
 
     const billName = row.billNo ? `: ${row.billNo}` : "";
@@ -291,6 +290,8 @@ export const useConfig = () => {
           formInline.descFileNameList = fileNameList;
         }
 
+        const findUserInfo = taskManageOptions.value.userinfoList.find((el) => el.userCode == formInline.responsibleUserCode);
+        if (findUserInfo) formInline["responsibleUserName"] = findUserInfo.userName;
         if (isAdd) {
           // 新增:存在上级任务, 在上级任务下新增子任务, 没有上级任务, 新增主任务
           formInline.billNo = undefined;
@@ -391,7 +392,7 @@ export const useConfig = () => {
   // 开始任务
   const onStart = (row: TaskManageItemType) => {
     rowData.value = row;
-    if (!row.responsibleManCode) {
+    if (!row.responsibleUserCode) {
       message("任务未设置责任人，不能开始", { type: "error" });
       return;
     }

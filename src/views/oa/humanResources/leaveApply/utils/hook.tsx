@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-24 15:21:02
+ * @Last Modified time: 2024-11-09 14:29:45
  */
 
 import { LeaveApplyItemType, leaveApplyList, exportLeaveApply, deleteLeaveApply } from "@/api/oaManage/humanResources";
@@ -194,7 +194,7 @@ export const useConfig = () => {
   // 提交
   const onSubmit = (row: LeaveApplyItemType) => {
     if (![AuditState.submit, AuditState.reAudit].includes(row.billState)) {
-      return message("请假单不是待提交或重新审核状态，不能进行提交", { type: "error" });
+      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
     }
 
     showMessageBox(`确认提交请假单吗?`).then(() => {

@@ -3,7 +3,7 @@
  * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-05-21 11:37:03
+ * @Last Modified time: 2024-11-09 15:49:44
  */ 
 -->
 
@@ -105,26 +105,7 @@ export default defineComponent({
                             prop={`specs.${idx}.value`}
                             rules={{ required: true, message: "请输入", trigger: "blur" }}
                             labelWidth={(props.formProps as any).labelWidth}
-                            v-slots={{
-                              label: () => (
-                                <div>
-                                  <span>数值{idx + 1}</span>
-                                  <el-tooltip class="box-item" placement="top">
-                                    {{
-                                      default: () => <Question />,
-                                      content: () => (
-                                        <div>
-                                          <div class="fw-700">说明：</div>
-                                          <div>1、根据单元格中不同的数值, 配置相应的标签颜色</div>
-                                          <div>2、多种标签(如: 0代表: 未审批,1代表: 已审批)则添加两行, 数值分别填入0和1, 名称分别填入未审批和已审批</div>
-                                          <div>3、若数值就是要显示的标签名称(即数值和名称一致时), 可只设置数值, 名称可以为空</div>
-                                        </div>
-                                      )
-                                    }}
-                                  </el-tooltip>
-                                </div>
-                              )
-                            }}
+                            v-slots={{ label: () => <Question label={`数值${idx + 1}`} tipMsg="数值和名称一致时, 名称可以不填" /> }}
                           >
                             <el-input v-model={domain.value} placeholder="请输入" style="width: 100px" />
                           </el-form-item>

@@ -99,7 +99,24 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
     { label: "姓名", value: "staffName" },
     { label: "工号", value: "staffId" },
     { label: "状态", value: "state", children: [] },
-    { label: "离职日期", value: "leaveofficeDate", type: "date", format: "YYYY-MM-DD" }
+    { label: "离职日期", value: "leaveofficeDate", type: "date", format: "YYYY-MM-DD" },
+
+    { label: "性别", value: "sex", children: [] },
+    { label: "学历", value: "education", children: [] },
+    { label: "婚姻状况", value: "marital", children: [] },
+    { label: "民族", value: "nation" },
+    { label: "生日", value: "birthDate", type: "date", format: "YYYY-MM-DD" },
+    { label: "年龄", value: "age" },
+    { label: "身份证号码", value: "idCard" },
+    { label: "社保电脑号", value: "socialSecurity" },
+    { label: "户口所在地", value: "registeredResidence" },
+    { label: "联系电话", value: "phone" },
+    { label: "入职时间", value: "startDate", type: "date", format: "YYYY-MM-DD" },
+    { label: "是否住宿", value: "accommodation", children: [] },
+    { label: "离职日期", value: "leaveofficeDate", type: "date", format: "YYYY-MM-DD" },
+
+    { label: "学校", value: "infoEduSchoolName" },
+    { label: "专业", value: "infoEduMajor" }
   ]);
   const queryParams = reactive<QueryParamsType>({
     state: { value: "在职", valueLabel: "在职" }
@@ -164,11 +181,33 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
         return { ...item, label: item.optionName, value: item.optionValue };
       });
 
+      // 性别
+      searchOptions[4].children = res.GenderType.map((item) => {
+        return { ...item, label: item.optionName, value: item.optionValue };
+      });
+
+      // 学历
+      searchOptions[5].children = res.DegreeType.map((item) => {
+        return { ...item, label: item.optionName, value: item.optionValue };
+      });
+
+      // 婚姻状况
+      searchOptions[6].children = res.MaritalStatus.map((item) => {
+        return { ...item, label: item.optionName, value: item.optionValue };
+      });
+
+      // 是否住宿
+      searchOptions[15].children = res.DormitoryType.map((item) => {
+        return { ...item, label: item.optionName, value: item.optionValue };
+      });
+
       // 零时工有劳务公司
       if (temporaryFlag === 1) {
         const laborChildren = res.LaborCompany.map((item) => {
           return { ...item, label: item.optionName, value: item.optionValue };
         });
+        const delIdx = searchOptions.findIndex((el) => el.value === "infoEduMajor");
+        if (delIdx >= 0) searchOptions.splice(delIdx, 1);
         searchOptions.push({ label: "劳务公司", value: "laborServiceCompany", children: laborChildren });
       }
     });

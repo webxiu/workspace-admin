@@ -479,7 +479,7 @@ export const useConfig = (emits, isModal) => {
 
   const rowClick = (row) => {
     currentRow.value = row;
-    emits("selectRow", row);
+    emits("select", row);
   };
 
   const rowDbClick = (row) => {

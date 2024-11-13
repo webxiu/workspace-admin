@@ -138,7 +138,7 @@ export const useConfig = () => {
         }
       });
     } else {
-      ElMessage({ message: "只有【待提交或重新审核】状态下的单据才能提交", type: "error" });
+      ElMessage({ message: "只能提交【待提交/重新审核】的记录", type: "error" });
       return;
     }
   };

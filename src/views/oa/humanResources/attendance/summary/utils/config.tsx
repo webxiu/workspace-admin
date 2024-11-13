@@ -12,6 +12,8 @@ export const formRules = reactive<FormRules>({
   peacetimeOverTime: [{ required: true, message: "平时加班时间" }],
   restOverTime: [{ required: true, message: "休息加班时间" }],
   overTimeSum: [{ required: true, message: "加班汇总" }],
+  thingLeaveTime: [{ required: true, message: "请输入事假", trigger: "blur" }],
+  absentCount: [{ required: true, message: "请输入缺卡次数", trigger: "blur" }],
   specialOverTime: [{ required: true, message: "特殊加班" }]
 });
 
@@ -79,7 +81,7 @@ export const formConfigs = (): FormConfigItemType[] => {
   return [
     {
       label: "工号",
-      prop: "userCode",
+      prop: "staffCode",
       colProp: layout,
       render: ({ formModel, row }) => <el-input disabled v-model={formModel[row.prop]} placeholder="请输入" clearable />
     },
@@ -132,6 +134,12 @@ export const formConfigs = (): FormConfigItemType[] => {
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
     },
     {
+      label: "事假(H)",
+      prop: "thingLeaveTime",
+      colProp: layout,
+      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+    },
+    {
       label: "迟到时间(M)",
       prop: "beLateTime",
       colProp: layout,
@@ -156,7 +164,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
     },
     {
-      label: "休息加班时间(H)",
+      label: "周末加班时间(H)",
       prop: "restOverTime",
       colProp: layout,
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
@@ -170,6 +178,12 @@ export const formConfigs = (): FormConfigItemType[] => {
     {
       label: "特殊加班(H)",
       prop: "specialOverTime",
+      colProp: layout,
+      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+    },
+    {
+      label: "缺卡次数",
+      prop: "absentCount",
       colProp: layout,
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
     },

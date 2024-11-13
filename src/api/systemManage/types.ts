@@ -1083,6 +1083,7 @@ export interface TaskManageItemType {
   parentId: number;
   score: number;
   responsibleManCode: string;
+  responsibleUserCode?: string;
   number: number;
   file: string;
   taskStatusName: string;

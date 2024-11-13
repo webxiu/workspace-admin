@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-18 11:10:38
+ * @Last Modified time: 2024-11-09 16:14:27
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
-import { FormatDataType, SortableCallbackType, moveTableRow, setColumn, tableEditRender } from "@/utils/table";
+import { FormatDataType, FormatKey, SortableCallbackType, getEnumDictList, moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 import {
   MenuColumnItemType,
   TableGroupItemType,
@@ -41,6 +41,7 @@ import { copyText, debounce, readClipboard } from "@/utils/common";
 import { message, showMessageBox } from "@/utils/message";
 import { useRoute, useRouter } from "vue-router";
 
+import { BillState_Color } from "@/config/constant";
 import EditForm from "@/components/EditForm/index.vue";
 import Format from "../component/Format.vue";
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -102,14 +103,7 @@ export const useConfig = () => {
         excelHide: "用于控制导出Excel时是否导出该列",
         format: "layui导出时间格式"
       };
-      return (
-        <>
-          <span>{column.label}</span>
-          <el-tooltip placement="top" content={contents[prop]}>
-            <Question />
-          </el-tooltip>
-        </>
-      );
+      return <Question label={column.label} tipMsg={contents[prop]} />;
     };
     const columnData: TableColumnList[] = [
       { label: "顺序", prop: "seq", width: 60, align: "center", headerAlign: "center", fixed: true, cellRenderer: (data) => editCellRender({ data }) },
@@ -417,30 +411,50 @@ export const useConfig = () => {
 
   // 1.选择格式化配置
   function onClickFormat(data: TableColumnRenderer) {
-    const formatRow: FormatDataType = JSON.parse(data.row?.formatType ?? "{}");
     const formRef = ref();
-    formatRow.specs = formatRow.specs || [{ uuid: Date.now(), value: "", label: "", color: "", background: "" }];
-    const formData = reactive<FormatDataType>({
-      paddingV: "3",
-      paddingH: "6",
-      borderRadius: "4",
-      ...formatRow
-    });
+    const sLoading = ref(false);
+    const formatCache = reactive({ bill: [] });
+    const formatRow: FormatDataType = JSON.parse(data.row?.formatType ?? "{}");
+    const specs = formatRow.specs || [{ uuid: Date.now(), value: "", label: "", color: "", background: "" }];
+    const formData = reactive<FormatDataType>({ paddingV: "3", paddingH: "6", borderRadius: "4", ...formatRow, specs: specs });
+    const formConfigs = formConfigs2({ formData, onChangeType, addSpecs });
 
-    const addSpecs = () => {
+    // 新增一行
+    function addSpecs() {
       formData.specs.push({ uuid: Date.now(), value: "", label: "", color: "", background: "" });
-    };
-    const deleteSpecs = (item) => {
+    }
+
+    // 删除一行
+    function deleteSpecs(item) {
       const index = formData.specs.indexOf(item);
       if (index !== -1) {
         formData.specs.splice(index, 1);
       }
-    };
+    }
 
-    const formConfigs = formConfigs2({ formData, addSpecs });
+    // 获取单据状态列表
+    async function onChangeType(type: FormatKey) {
+      if (type === FormatKey.bill) {
+        if (formatCache[FormatKey.bill].length) {
+          formData.specs = formatCache[FormatKey.bill];
+          return;
+        }
+        sLoading.value = true;
+        const { BillStatus } = await getEnumDictList(["BillStatus"]);
+        const billResult = BillStatus.map(({ id, optionName, optionValue }) => {
+          const background = BillState_Color[optionValue].color;
+          return { uuid: id, value: optionValue, label: optionName, color: "#fff", background };
+        });
+        sLoading.value = false;
+        formData.specs = billResult;
+        formatCache[FormatKey.bill] = billResult;
+      } else {
+        formData.specs = specs;
+      }
+    }
 
-    // 更新
-    const onChange = () => {
+    // 确认选择
+    function onSelectType() {
       const { index, column } = data;
       // 只收集选中的表单数据
       const checkedData = reactive({ type: formData.type });
@@ -451,26 +465,27 @@ export const useConfig = () => {
       let result = JSON.stringify(checkedData);
       if (Object.keys(checkedData).length < 2) result = null;
       dataList.value[index][column["property"]] = result;
-    };
+    }
 
     addDialog({
       title: `格式化处理【${data.row.label}】`,
       props: {
+        loading: sLoading,
         formInline: formData,
         formRules: formRules2,
         formConfigs: formConfigs,
-        formProps: { labelWidth: "100px" }
+        formProps: { labelWidth: "110px" }
       },
       width: "860px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(Format, { ref: formRef, /* 实时更新 onChange, */ onDelete: deleteSpecs }),
+      contentRenderer: () => h(Format, { ref: formRef, /* 实时更新 onSelectType, */ onDelete: deleteSpecs }),
       beforeSure: (done) => {
         const FormRef = formRef.value.getRef();
         FormRef.validate((valid) => {
           if (valid) {
-            onChange();
+            onSelectType();
             done();
           }
         });

@@ -257,8 +257,8 @@ export const useConfig = () => {
       props: {
         formInline: _formData,
         formRules: formRules,
-        // formConfigs: formConfigs({ type, stateOptions, deptOptions }),
-        formConfigs: myFormConfig,
+        formConfigs: formConfigs({ type, stateOptions, deptOptions, _formData }),
+        // formConfigs: myFormConfig,
         formProps: { labelWidth: "140px" }
       },
       width: "860px",

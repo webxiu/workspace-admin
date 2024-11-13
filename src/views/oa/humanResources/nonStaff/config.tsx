@@ -184,9 +184,27 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
       }
     },
     {
+      label: "贫困人员",
+      prop: "isPoorPeople",
+      colProp: { span: 8 },
+      render: ({ formModel, row }) => {
+        const isPoorPeopleOpts = [
+          { optionName: "是", optionValue: 1 },
+          { optionName: "否", optionValue: 0 }
+        ];
+        return (
+          <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
+            {isPoorPeopleOpts.map((item) => (
+              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+            ))}
+          </el-select>
+        );
+      }
+    },
+    {
       label: "备注",
       prop: "remark",
-      colProp: { span: 8 },
+      colProp: { span: 24 },
       render: ({ formModel, row }) => {
         return <el-input type="textarea" autosize v-model={formModel[row.prop]} placeholder="请输入" />;
       }

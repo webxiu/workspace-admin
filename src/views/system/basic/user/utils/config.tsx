@@ -1,7 +1,8 @@
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import regExp from "@/utils/regExp";
+import { getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
 
 const GridSpan = 12;
 const layout = { span: GridSpan, xs: 24, sm: 12, md: 12, lg: 12, xl: 12 };
@@ -23,7 +24,18 @@ export const formRules = reactive<FormRules>({
 });
 
 // 编辑员工信息表单
-export const formConfigs = ({ type, stateOptions, deptOptions }): FormConfigItemType[] => {
+export const formConfigs = ({ type, stateOptions, deptOptions, _formData }): FormConfigItemType[] => {
+  const postSelectValues = ref([]);
+  const changeDept = (deptId) => {
+    getInductionAuditRoleInfoByDeptId({ deptId }).then((res: any) => {
+      if (res.data) {
+        postSelectValues.value = res.data.map(({ id, roleName }) => ({ label: roleName, value: roleName }));
+      }
+    });
+  };
+  if (_formData.roleName) {
+    changeDept(_formData.deptId);
+  }
   const configArr = [
     {
       label: "员工工号",
@@ -57,6 +69,7 @@ export const formConfigs = ({ type, stateOptions, deptOptions }): FormConfigItem
             render-after-expand={false}
             placeholder="请选择所属分组"
             class="ui-w-100"
+            onChange={changeDept}
             props={{ label: "name", value: "value" }}
           />
         );
@@ -67,10 +80,15 @@ export const formConfigs = ({ type, stateOptions, deptOptions }): FormConfigItem
       prop: "roleName",
       colProp: layout,
       render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入岗位" clearable />;
+        return (
+          <el-select v-model={formModel[row.prop]} placeholder="请选择岗位" clearable style="width: 100%">
+            {postSelectValues.value.map((item) => (
+              <el-option label={item.label} value={item.value} />
+            ))}
+          </el-select>
+        );
       }
     },
-
     {
       label: "移动电话",
       prop: "mobile",

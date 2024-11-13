@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2024-09-12 14:34:28
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-20 11:24:50
+ * @Last Modified time: 2024-11-04 11:53:07
  */
 
 import type { ColProps, RowProps } from "element-plus";
-import { defineComponent, useSlots } from "vue";
+import { defineComponent, h, useSlots } from "vue";
 
 import { useEleHeight } from "@/hooks";
 
@@ -16,13 +16,14 @@ import { useEleHeight } from "@/hooks";
  */
 export const Container = defineComponent({
   props: {
-    height: { type: String, default: "100%" }
+    height: { type: String, default: "100%" },
+    offset: { type: Number, default: -20 }
   },
   setup(props) {
     const slots = useSlots();
-    const maxHeight = useEleHeight(".app-main > .el-scrollbar", 0);
+    const maxHeight = useEleHeight(".app-main > .el-scrollbar", props.offset);
     return () => (
-      <div style={{ minHeight: maxHeight.value + "px", display: "flex", flexDirection: "column" }} {...props}>
+      <div style={{ height: props.height, minHeight: maxHeight.value + "px", display: "flex", flexDirection: "column" }} {...props}>
         {slots.default?.()}
       </div>
     );

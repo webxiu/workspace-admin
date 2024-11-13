@@ -42,7 +42,7 @@
       </div>
     </div>
     <el-form ref="overTimeFormRef" :model="formData" class="flex-1 ml-2" label-width="120px">
-      <el-form-item label="任务描述" prop="responsibleMan">
+      <el-form-item label="任务描述" prop="responsibleUserName">
         <!-- <el-input style="display: none" /> -->
         <div class="ui-w-100">
           <!-- <a-button @click="toggleTheme" class="mb-2" type="primary"> 黑暗主题 </a-button>

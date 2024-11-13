@@ -2,15 +2,15 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-21 17:25:27
+ * @Last Modified time: 2024-10-30 14:49:25
  */
 
-import { nextTick, onMounted, reactive, ref } from "vue";
+import { h, nextTick, onMounted, reactive, ref } from "vue";
 import { TeamMemberItemType } from "@/api/workbench/teamManage";
 
 import { message } from "@/utils/message";
 import { type PaginationProps } from "@pureadmin/table";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, FormRules } from "element-plus";
 import { useEleHeight } from "@/hooks";
 import {
   backMaterialInfo,
@@ -26,6 +26,9 @@ import { useRoute, useRouter } from "vue-router";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { PAGE_CONFIG } from "@/config/constant";
 import { commonSubmit } from "@/api/systemManage";
+import { addDialog } from "@/components/ReDialog";
+import EditForm from "@/components/EditForm/index.vue";
+import { QueryParamsType } from "@/components/BlendedSearch/index.vue";
 
 /** 组别类型 */
 export interface DepGroupItemTree {
@@ -156,12 +159,16 @@ export function useTable(emits, { isModal, productCode }) {
   const router = useRouter();
   const route = useRoute();
 
+  const queryParams = reactive<QueryParamsType>({
+    isfrozen: "否"
+  });
+
   onMounted(async () => {
     const _columns = await getConfig(buttonList);
     // 如果是在弹框中加载不浮动列
     _columns.forEach((item) => isModal && (item.fixed = undefined));
     columns.value = _columns;
-    onSearch();
+    // onSearch();
   });
 
   const handleNodeClick = (treeItem) => {
@@ -201,6 +208,8 @@ export function useTable(emits, { isModal, productCode }) {
       formData.startDate = startTime;
       formData.endDate = endTime;
     }
+
+    if (formData.isfrozen === "否") formData.isfrozen = "0";
 
     loading.value = true;
     fetchMaterialList({ ...formData, goodModel: productCode ?? undefined })
@@ -330,14 +339,73 @@ export function useTable(emits, { isModal, productCode }) {
     });
   };
 
+  const openDisableDialog = (selectRows) => {
+    const mFormData = reactive({ forbiddenReason: "" });
+    const mFormRef = ref();
+    const mFormRules = reactive<FormRules>({
+      forbiddenReason: [{ required: true, message: "禁用原因为必填项", trigger: "submit" }]
+    });
+    addDialog({
+      title: `禁用物料`,
+      props: {
+        formInline: mFormData,
+        formRules: mFormRules,
+        formProps: { size: "small" },
+        formConfigs: [
+          {
+            label: "禁用原因",
+            colProp: { span: 24 },
+            prop: "forbiddenReason",
+            render: ({ formModel, row }) => {
+              return <el-input type="textarea" v-model={formModel[row.prop]} autosize={{ minRows: 4 }} />;
+            }
+          }
+        ]
+      },
+      width: "500px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(EditForm, { ref: mFormRef }),
+      beforeSure: (done) => {
+        const FormRef = mFormRef.value.getRef();
+        const ids = selectRows.value.map((item) => item.id);
+        const names = selectRows.value.map((item) => item.name);
+        FormRef.validate(async (valid) => {
+          if (valid) {
+            ElMessageBox.confirm(`确认要禁用名称为【${names}】的物料吗?`, "系统提示", {
+              type: "warning",
+              draggable: true,
+              cancelButtonText: "取消",
+              confirmButtonText: "确定",
+              dangerouslyUseHTMLString: true
+            }).then(() => {
+              disabledMaterialInfo({ ids, forbiddenReason: mFormData.forbiddenReason }).then((res) => {
+                if (res.data) {
+                  done();
+                  ElMessage({ message: "操作成功", type: "success" });
+                  onSearch();
+                }
+              });
+            });
+          }
+        });
+      }
+    });
+  };
+
   // 提交物料
   const businessAction = ({ text }) => {
     if (!selectRows.value.length) {
       return ElMessage({ message: "请选择记录", type: "warning" });
     }
     currentRow.value = selectRows.value[0];
-    if (["禁用", "反禁用"].includes(text)) {
-      const typeApi = { 禁用: disabledMaterialInfo, 反禁用: enableMaterialInfo };
+    if (text === "禁用") {
+      openDisableDialog(selectRows);
+      return;
+    }
+    if (["反禁用"].includes(text)) {
+      const typeApi = { 反禁用: enableMaterialInfo };
       const id = selectRows.value.map((item) => item.id);
       const names = selectRows.value.map((item) => item.name);
       ElMessageBox.confirm(`确认要${text}名称为【${names}】的物料吗?`, "系统提示", {
@@ -425,7 +493,7 @@ export function useTable(emits, { isModal, productCode }) {
     materialMainTable.value?.getTableRef()?.clearSelection();
     materialMainTable.value?.getTableRef()?.toggleRowSelection(row);
     currentRow.value = row;
-    emits("selectRow", row);
+    emits("select", row);
   };
 
   // 导出
@@ -491,6 +559,7 @@ export function useTable(emits, { isModal, productCode }) {
     loading,
     dataList,
     columns,
+    queryParams,
     pagination,
     maxHeight,
     buttonList,

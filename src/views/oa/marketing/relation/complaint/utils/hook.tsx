@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:23:30
+ * @Last Modified time: 2024-11-08 14:55:30
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -36,9 +36,10 @@ import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { setColumn, getExportConfig, getMenuColumns, updateButtonList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { Plus, Edit, Delete, Refresh, Position, Pointer, Download, RefreshLeft, Remove, Close, View } from "@element-plus/icons-vue";
-import { billState, auditState, BillState, AuditState } from "./config";
+import { AuditState } from "./config";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { commonBack, commonSubmit } from "@/api/systemManage";
+import { BillState, BillState_Color } from "@/config/constant";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -66,9 +67,9 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "标题", value: "title" },
     { label: "单据编号", value: "billNo" },
-    { label: "客诉日期", value: "date", type: "daterange", format: "YYYY-MM-DD" },
-    { label: "单据状态", value: "marketState", children: [] },
-    { label: "审核状态", value: "state", children: [] }
+    { label: "客诉日期", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
+    { label: "审核状态", value: "marketState", children: [] },
+    { label: "单据状态", value: "state", children: [] }
   ]);
 
   onMounted(() => {
@@ -99,8 +100,8 @@ export const useConfig = () => {
       { label: "客户名称", prop: "customer" },
       { label: "标题", prop: "title", minWidth: 200 },
       { label: "单据编号", prop: "billNo", sortable: true },
-      { label: "单据状态", prop: "marketStateName", sortable: true },
-      { label: "审核状态", prop: "stateName", sortable: true },
+      { label: "审核状态", prop: "marketStateName", sortable: true },
+      { label: "单据状态", prop: "stateName", sortable: true },
       { label: "单据提交人", prop: "marketSubmitUserName", sortable: true },
       { label: "单据提交时间", prop: "marketSubmitDate", minWidth: 160, sortable: true },
       { label: "接收人", prop: "acceptUserName" },
@@ -138,10 +139,7 @@ export const useConfig = () => {
   };
 
   // 搜索
-  const onTagSearch = ({ date, ...values }) => {
-    const dates = date ? date.split(" ~ ") : [];
-    formData.startDate = dates[0];
-    formData.endDate = dates[1];
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     getTableList();
   };
@@ -194,21 +192,21 @@ export const useConfig = () => {
 
     const { formRef, sendList, formData, detailData } = FormRef.value.getRef();
     switch (detailData?.marketState) {
-      //单据状态为已提交，禁用客诉明细修改
+      //审核状态为已提交，禁用客诉明细修改
       case 1:
-        return message("单据状态为已提交，禁止修改", { type: "error" });
-      //单据状态为已接收或已回复，禁用客诉明细修改
+        return message("审核状态为已提交，禁止修改", { type: "error" });
+      //审核状态为已接收或已回复，禁用客诉明细修改
       case 2:
       case 3:
         {
           const state = detailData?.state;
           if (state === 1 || state === 2) {
-            return message(`单据状态为${auditState[state]}，禁止修改`, { type: "error" });
+            return message(`单据状态为${BillState_Color[state].name}，禁止修改`, { type: "error" });
           }
         }
         break;
       case 4: {
-        return message("单据状态为已作废，禁止修改", { type: "error" });
+        return message("审核状态为已作废，禁止修改", { type: "error" });
       }
     }
 
@@ -272,8 +270,8 @@ export const useConfig = () => {
   });
 
   const onReceiveBill = (row: CustomerComplaintItemType) => {
-    if (row.marketState !== BillState.submited) {
-      return message("单据状态不是已提交，不能接收！(需要业务员在修改页面提交单据)", { type: "error" });
+    if (row.marketState !== AuditState.submited) {
+      return message("审核状态不是已提交，不能接收！(需要业务员在修改页面提交单据)", { type: "error" });
     }
     acceptBill({ id: row.id }).then((res) => {
       if (res.data) {
@@ -290,20 +288,20 @@ export const useConfig = () => {
     onReplyBill(rowData.value);
   });
   const onReplyBill = (row: CustomerComplaintItemType) => {
-    if (row.marketState === BillState.receive || row.marketState === BillState.reply) {
+    if (row.marketState === AuditState.receive || row.marketState === AuditState.reply) {
       openDialog("reply", row);
     } else {
-      message("单据状态不是已接收，不能回复", { type: "error" });
+      message("审核状态不是已接收，不能回复", { type: "error" });
     }
   };
 
   /** 提交 */
   const onSubmit = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
-    if (row.marketState !== BillState.reply) {
+    if (row.marketState !== AuditState.reply) {
       return message("请接收并回复单据后，再提交审批", { type: "error" });
-    } else if ([AuditState.submit, AuditState.reAudit].includes(row.state)) {
-      return message("审核状态不是待提交或重新审核，不能进行提交", { type: "error" });
+    } else if (![BillState.submit, BillState.reject].includes(row.state)) {
+      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
     }
     showMessageBox(`确定提交【${row.title}】进行审核吗？<br />提交审核后不可再修改回复！`).then(() => {
       commonSubmit({ id: row.id, billId: "10013" }).then((res) => {
@@ -334,7 +332,7 @@ export const useConfig = () => {
   const onRevoke = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     //单据已提交，可以撤回
-    if (row.marketState === BillState.submited) {
+    if (row.marketState === AuditState.submited) {
       showMessageBox(`确定撤回【${row.title}的提交吗？`).then(() => {
         withdrawBill({ id: row.id }).then((res) => {
           if (res.data) {
@@ -345,10 +343,10 @@ export const useConfig = () => {
           }
         });
       });
-    } else if (row.marketState === BillState.receive) {
+    } else if (row.marketState === AuditState.receive) {
       message("单据已被品质工程师接收，无法主动撤回，请联系品质工程师对单据进行【退回单据】操作。", { type: "error" });
     } else {
-      message("只能对单据状态为【已提交】的客诉单进行撤回！", { type: "error" });
+      message("只能对审核状态为【已提交】的客诉单进行撤回！", { type: "error" });
     }
   });
 
@@ -356,9 +354,9 @@ export const useConfig = () => {
   const onBack = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     //单据已提交，可以撤回
-    if ([AuditState.reAudit, AuditState.reAudit].includes(row.state)) {
-      //单据状态为已接收或已回复，可以进行退回
-      if ([BillState.receive, BillState.reply].includes(row.marketState)) {
+    if ([BillState.reject].includes(row.state)) {
+      //审核状态为已接收或已回复，可以进行退回
+      if ([AuditState.receive, AuditState.reply].includes(row.marketState)) {
         showMessageBox(`确定退回单据${row.title}吗？`).then(() => {
           commonBack({ id: row.id }).then((res) => {
             if (res.data) {
@@ -370,10 +368,10 @@ export const useConfig = () => {
           });
         });
       } else {
-        message("只能对单据状态为【已接收】或【已回复】的客诉单进行退回！", { type: "error" });
+        message("只能对审核状态为【已接收】或【已回复】的客诉单进行退回！", { type: "error" });
       }
     } else {
-      message("只能对审核状态为【待提交】或【退回重审】的客诉单进行退回！", { type: "error" });
+      message("只能对单据状态为【待提交】或【退回重审】的客诉单进行退回！", { type: "error" });
     }
   });
 

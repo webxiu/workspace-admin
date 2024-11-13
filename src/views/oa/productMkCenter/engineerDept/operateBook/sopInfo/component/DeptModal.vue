@@ -6,9 +6,9 @@
  */ -->
 
 <script setup lang="tsx">
-import { h, ref, reactive, onMounted, computed } from "vue";
+import { h, ref, reactive, onMounted } from "vue";
 import { addDialog } from "@/components/ReDialog";
-import { message, showMessageBox } from "@/utils/message";
+import { showMessageBox } from "@/utils/message";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { getDeptTreeData, DetartMenttemType } from "@/api/systemManage";
 

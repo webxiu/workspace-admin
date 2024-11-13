@@ -249,6 +249,11 @@ export function deleteMaterialGroupAttr(params) {
   return http.request("delete", "/plm/bd/MaterialGroupProperty/batchDelete", { data: params });
 }
 
+/** 基础数据 -  物料分组属性批量保存 */
+export function insertMaterialGroupAttrList(params) {
+  return http.request("post", "/sys/sys/optionlist/batchSaveOrUpdate", { data: params });
+}
+
 /** 项目管理 -  产品分类管理 - 查询列表 */
 export function productClassifyManageList(params) {
   return http.request<ProductClassifyManageItemType[]>("post", "/plm/pm/productcategory/select", { data: params });
@@ -892,6 +897,11 @@ export function getBOMTableRowSelectOptions(params) {
 /** 基础数据 - 物料管理 - 物料图片删除接口 */
 export function deleteMaterialPicture(params) {
   return http.request("get", "/plm/bd/material/deletepicture", { params });
+}
+
+/** 基础数据 - 物料管理 - 是否禁用表单项目 */
+export function fetchDisableFormItemFlag(params) {
+  return http.request("get", "/plm/bd/material/isExistedPurPrice", { params });
 }
 
 /** 基础数据 - 项目管理批量查询项目负责人  */

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-24 15:21:10
+ * @Last Modified time: 2024-11-09 14:29:20
  */
 
 import { OvertimeOrderItemType, overtimeOrderList, deleteOvertimeOrder, exportOvertimeOrder } from "@/api/oaManage/humanResources";
@@ -176,7 +176,7 @@ export const useConfig = () => {
   // 提交
   const onSubmit = (row: OvertimeOrderItemType) => {
     if (![AuditState.submit, AuditState.reAudit].includes(row.billState)) {
-      return message("加班单不是待提交或重新审核状态，不能进行提交", { type: "error" });
+      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
     }
 
     showMessageBox(`确认提交加班单吗?`).then(() => {
@@ -193,7 +193,7 @@ export const useConfig = () => {
   // 删除
   const onDelete = (row: OvertimeOrderItemType) => {
     if (![AuditState.submit, AuditState.reAudit].includes(row.billState)) {
-      return message("加班单不是待提交或重新审核状态，不能进行删除！", { type: "error" });
+      return message("只能删除【待提交/重新审核】的记录", { type: "error" });
     }
     deleteOvertimeOrder({ id: row.priId })
       .then((res) => {

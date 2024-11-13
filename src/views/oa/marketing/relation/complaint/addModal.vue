@@ -11,7 +11,7 @@ import { PureTableBar } from "@/components/RePureTableBar";
 import EditForm from "@/components/EditForm/index.vue";
 import { addformRules, formConfigs } from "./utils/config";
 import { message, showMessageBox } from "@/utils/message";
-import { detailFormRules, detailFormConfigs, billState, auditState } from "./utils/config";
+import { detailFormRules, detailFormConfigs, AuditStateName } from "./utils/config";
 import { addDialog } from "@/components/ReDialog";
 import { onMounted } from "vue";
 import dayjs from "dayjs";
@@ -152,7 +152,7 @@ const onEdit = (row: CustomerComplaintDtailListItemType) => {
 
 const openDialog = (type: "add" | "edit", row?: CustomerComplaintDtailListItemType) => {
   if (detailData?.value && [1, 2, 3].includes(detailData?.value.marketState)) {
-    return message(`单据状态为${billState[detailData?.value.marketState]}，禁用客诉明细修改`, { type: "error" });
+    return message(`审核状态为${AuditStateName[detailData?.value.marketState]}，禁用客诉明细修改`, { type: "error" });
   }
 
   const title = { add: "新增", edit: "修改" }[type];
@@ -219,7 +219,7 @@ const openDialog = (type: "add" | "edit", row?: CustomerComplaintDtailListItemTy
 //删行
 const onDelete = (row?: CustomerComplaintDtailListItemType) => {
   if (detailData?.value && [1, 2, 3].includes(detailData?.value.marketState)) {
-    return message(`单据状态为${billState[detailData?.value.marketState]}，禁用客诉明细修改`, { type: "error" });
+    return message(`审核状态为${AuditStateName[detailData?.value.marketState]}，禁用客诉明细修改`, { type: "error" });
   }
   const curRow = row || rowData.value;
   if (!curRow) return message("请选择产品", { type: "error" });

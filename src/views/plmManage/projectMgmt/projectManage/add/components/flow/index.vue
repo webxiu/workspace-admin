@@ -4,8 +4,10 @@ import { useFlow } from "./hook";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import dayjs from "dayjs";
 import { useRoute, useRouter } from "vue-router";
+import { useCommonTemplate } from "./commonTemplate";
 
 const props = defineProps(["fetchDetailFormData", "detailPageInfo", "isCurrentProjectUser"]);
+const templateFns = useCommonTemplate();
 const {
   dataList,
   currentTreeRow,
@@ -18,7 +20,6 @@ const {
   onEditDeliver2,
   columns,
   flowTableRef,
-  clickDeliverName2,
   deliverList,
   clickRow,
   deliverLoading,
@@ -32,7 +33,7 @@ const {
   billStateOpts,
   selectChange,
   setTemplateId
-} = useFlow(props);
+} = useFlow(props, templateFns);
 const maxHeight = ref(200);
 const loading = ref(false);
 const optionStatus = ref([]);
@@ -143,7 +144,7 @@ defineExpose({ setHeight, dataList, loading, setTemplateId });
           <div class="list_item" v-for="item in deliverList" :key="item.id">
             <div v-if="item.deliverableTemplateId == 14">
               <div class="top-info">
-                <div class="deliver-name" @click="clickDeliverName2(item)">
+                <div class="deliver-name" @click="clickDeliverName(item)">
                   <el-tooltip effect="light" :content="item.deliverableName" placement="bottom"> {{ item.deliverableName }}</el-tooltip>
                 </div>
                 <div class="opt">

@@ -168,9 +168,22 @@ export const IconConf = {
   Remove: <Remove />
 };
 
-// 问号图标
-export const Question = () => (
-  <el-icon style="margin: 1px 0 0 2px" class="ui-va-tt fz-14">
-    <QuestionFilled color="orange" />
-  </el-icon>
-);
+// 提示图标
+export const Question = (props: { label?: string; tipMsg?: string | JSX.Element; Icon?: any; placement?: string; color?: string; size?: number }) => {
+  const { label, tipMsg = "提示", Icon = QuestionFilled, placement = "top", color = "orange", size = 14 } = props;
+  return (
+    <span>
+      {label ? <span>{label}</span> : null}
+      <el-tooltip placement={placement} content={tipMsg}>
+        {{
+          default: () => (
+            <el-icon style="margin: 1px 0 0 2px" class="ui-va-tt" size={size}>
+              {<Icon color={color} />}
+            </el-icon>
+          ),
+          content: () => tipMsg
+        }}
+      </el-tooltip>
+    </span>
+  );
+};

@@ -28,17 +28,42 @@
           </el-select>
         </el-form-item>
         <el-form-item label="开始日期" prop="startDate">
-          <el-date-picker v-model="formData.startDate" type="date" @change="changeStartDate" value-format="YYYY-MM-DD" placeholder="请选择开始日期" />
+          <el-date-picker
+            style="width: 100%"
+            v-model="formData.startDate"
+            type="date"
+            @change="changeStartDate"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择开始日期"
+          />
         </el-form-item>
-        <el-form-item label="开始时间" prop="startTime">
-          <el-time-picker v-model="formData.startTime" value-format="HH:mm" @change="changeStartTime" placeholder="请选择开始时间" />
-        </el-form-item>
+        <div style="display: flex">
+          <el-form-item label="开始时间" prop="startTimeHours" style="margin-right: 0">
+            <el-select style="width: 60px" filterable clearable v-model="formData.startTimeHours" placeholder="时">
+              <el-option v-for="item in startTimeHoursList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label=":" :required="false" label-width="25px" prop="startTimeMinute">
+            <el-select style="width: 60px" filterable clearable v-model="formData.startTimeMinute" placeholder="分">
+              <el-option v-for="item in startTimeMinuteList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+            </el-select>
+          </el-form-item>
+        </div>
         <el-form-item label="结束日期" prop="endDate">
           <el-date-picker v-model="formData.endDate" type="date" value-format="YYYY-MM-DD" placeholder="请选择结束日期" :disabled-date="disabledDate" />
         </el-form-item>
-        <el-form-item label="结束时间" prop="endTime">
-          <el-time-picker v-model="formData.endTime" value-format="HH:mm" placeholder="请选择结束时间" :disabled-hours="disabledHours" />
-        </el-form-item>
+        <div style="display: flex">
+          <el-form-item label="结束时间" prop="endTimeHours" style="margin-right: 0">
+            <el-select style="width: 60px" filterable clearable v-model="formData.endTimeHours" placeholder="时">
+              <el-option v-for="item in startTimeHoursList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label=":" :required="false" label-width="25px" prop="endTimeMinute">
+            <el-select style="width: 60px" filterable clearable v-model="formData.endTimeMinute" placeholder="分">
+              <el-option v-for="item in startTimeMinuteList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+            </el-select>
+          </el-form-item>
+        </div>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="formData.remark" placeholder="请输入备注" />
         </el-form-item>
@@ -51,8 +76,7 @@
 import { reactive, ref, watch } from "vue";
 import { dayjs } from "element-plus";
 import type { FormRules } from "element-plus";
-import { useUserStore } from "@/store/modules/user";
-import { deptUserInfo, getStaffDetail, selectUserDormitory, timeSettingList } from "@/api/oaManage/humanResources";
+import { getStaffDetail, selectUserDormitory, timeSettingList } from "@/api/oaManage/humanResources";
 
 interface Props {
   optionsData: {
@@ -60,6 +84,30 @@ interface Props {
     optionList: any[];
   };
   updateUserBack: (data) => void;
+}
+
+const startTimeHoursList = [];
+for (let i = 0; i < 24; i++) {
+  let numStr = "";
+  if (i < 10) {
+    numStr = "0" + i;
+  } else {
+    numStr = "" + i;
+  }
+  startTimeHoursList.push({ optionName: numStr, optionValue: numStr });
+}
+
+const startTimeMinuteList = [];
+for (let i = 0; i < 60; i++) {
+  if (i % 5 === 0) {
+    let numStr = "";
+    if (i < 10) {
+      numStr = "0" + i;
+    } else {
+      numStr = "" + i;
+    }
+    startTimeMinuteList.push({ optionName: numStr, optionValue: numStr });
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -70,9 +118,7 @@ const props = withDefaults(defineProps<Props>(), {
   updateUserBack: (data) => {}
 });
 
-const data = ref([]);
 const holidayFormRef = ref();
-const userStore = useUserStore();
 
 const disabledDate = (time) => {
   return time.getTime() < dayjs(formData.startDate).valueOf();
@@ -83,18 +129,23 @@ const formData = reactive({
   holidayType: "",
   startDate: dayjs(new Date()).format("YYYY-MM-DD"),
   endDate: dayjs(new Date()).format("YYYY-MM-DD"),
-  startTime: "",
-  endTime: "",
-  remark: ""
+  remark: "",
+  startTimeHours: "",
+  startTimeMinute: "",
+  endTimeHours: "",
+  endTimeMinute: ""
 });
 
 const formRules = reactive<FormRules>({
   useList: [{ required: true, message: "请选择请假人员", trigger: "blur" }],
   holidayType: [{ required: true, message: "请选择请假类型", trigger: "blur" }],
   startDate: [{ required: true, message: "请选择开始日期", trigger: "blur" }],
-  startTime: [{ required: true, message: "请选择开始时间", trigger: "blur" }],
   endDate: [{ required: true, message: "请选择结束日期", trigger: "blur" }],
-  endTime: [{ required: true, message: "请选择结束时间", trigger: "blur" }]
+
+  startTimeHours: [{ required: true, message: "请选择开始时间", trigger: "blur" }],
+  startTimeMinute: [{ required: true, message: "请选择开始时间", trigger: "blur" }],
+  endTimeHours: [{ required: true, message: "请选择结束时间", trigger: "blur" }],
+  endTimeMinute: [{ required: true, message: "请选择结束时间", trigger: "blur" }]
 });
 
 const changeTransData = (val) => {
@@ -105,8 +156,13 @@ const changeTransData = (val) => {
         timeSettingList({ page: 1, limit: 10000 }).then((res) => {
           if (res.data && res.data.length) {
             const workTimeInfo = res.data.find((item) => item.id === workRuleId);
-            formData.startTime = workTimeInfo.forenoonStart;
-            formData.endTime = workTimeInfo.afternoonEnd;
+            const startTimeArr = workTimeInfo.forenoonStart.split(":");
+            formData.startTimeHours = startTimeArr[0];
+            formData.startTimeMinute = startTimeArr[1];
+
+            const endTimeArr = workTimeInfo.afternoonEnd.split(":");
+            formData.endTimeHours = endTimeArr[0];
+            formData.endTimeMinute = endTimeArr[1];
           }
         });
       });
@@ -115,22 +171,6 @@ const changeTransData = (val) => {
 };
 
 const changeStartDate = (val) => (formData.endDate = val);
-
-const changeStartTime = (val) => (formData.startTime = val);
-
-const makeRange = (start: number, end: number, type?: string) => {
-  const result: number[] = [];
-  for (let i = start; i < end; i++) {
-    result.push(i);
-  }
-  return result;
-};
-const disabledHours = () => {
-  if (formData.startTime) {
-    const startDevideHour = formData.startTime.split(":")[0];
-    return makeRange(0, +startDevideHour);
-  }
-};
 
 watch(
   props,
@@ -155,9 +195,9 @@ function getRef() {
         remark: formData.remark,
         holidayType: formData.holidayType,
         startDate: formData.startDate,
-        startTime: formData.startTime,
+        startTime: formData.startTimeHours + ":" + formData.startTimeMinute,
         endDate: formData.endDate,
-        endTime: formData.endTime,
+        endTime: formData.endTimeHours + ":" + formData.endTimeMinute,
         days: "",
         hours: ""
       };

@@ -1,26 +1,7 @@
+import { BillState_Color } from "@/config/constant";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import { reactive } from "vue";
-
-/** 单据状态枚举 */
-export enum StatusType {
-  /** 待提交 */
-  pending = 0,
-  /** 待审核 */
-  audit = 1,
-  /** 已审批 */
-  audited = 2,
-  /** 驳回重审 */
-  rebut = 3
-}
-
-/** 单据状态配置 */
-export const BillStatus = {
-  [StatusType.pending]: { color: "#e6a23c", name: "待提交" },
-  [StatusType.audit]: { color: "#409eff", name: "待审核" },
-  [StatusType.audited]: { color: "#67c23a", name: "已审批" },
-  [StatusType.rebut]: { color: "#DC143C", name: "驳回重审" }
-};
 
 // 编辑SQL单据校验
 export const formRules = reactive<FormRules>({
@@ -102,7 +83,7 @@ export const lookFormConfigs = ({ dbKeyList }): FormConfigItemType[] => {
       prop: "billState",
       colProp: { span: 24 },
       render: ({ formModel, row }) => {
-        const value = BillStatus[Number(formModel[row.prop])].name;
+        const value = BillState_Color[formModel[row.prop]].name;
         return <el-input v-model={value} disabled />;
       }
     },

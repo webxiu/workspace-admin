@@ -1,5 +1,5 @@
 <template>
-  <el-input ref="myRef" v-model="numValue" @blur="onBlur" size="small" v-bind="$attrs" />
+  <el-input ref="myRef" v-model="numValue" @blur="onBlur" size="small" v-bind="$attrs" class="flex-1" />
 </template>
 
 <script setup lang="ts">

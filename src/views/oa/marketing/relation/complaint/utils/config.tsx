@@ -1,5 +1,6 @@
 import { FormRules, UploadProps } from "element-plus";
 
+import { BillState } from "@/config/constant";
 import { CustomerComplaintItemType } from "@/api/oaManage/marketing";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { message } from "@/utils/message";
@@ -38,7 +39,8 @@ export const detailFormRules = reactive<FormRules>({
 const layout = { span: 12 };
 const baseApi = import.meta.env.VITE_BASE_API;
 
-export enum BillState {
+/** 审核状态 */
+export enum AuditState {
   /** 待提交 */
   submit = 0,
   /** 已提交 */
@@ -50,29 +52,14 @@ export enum BillState {
   /** 已作废 */
   discard = 4
 }
-export enum AuditState {
-  /** 待提交 */
-  submit = 0,
-  /** 审核中 */
-  auditing = 1,
-  /** 已审核 */
-  audited = 2,
-  /** 重新审核 */
-  reAudit = 3
-}
 
-export const billState = {
-  [BillState.submit]: "待提交",
-  [BillState.submited]: "已提交",
-  [BillState.receive]: "已接收",
-  [BillState.reply]: "已回复",
-  [BillState.discard]: "已作废"
-};
-export const auditState = {
+/** 审核状态名称 */
+export const AuditStateName = {
   [AuditState.submit]: "待提交",
-  [AuditState.auditing]: "审核中",
-  [AuditState.audited]: "已审核",
-  [AuditState.reAudit]: "重新审核"
+  [AuditState.submited]: "已提交",
+  [AuditState.receive]: "已接收",
+  [AuditState.reply]: "已回复",
+  [AuditState.discard]: "已作废"
 };
 
 // 上传客诉文件
@@ -82,7 +69,7 @@ const replyAccept = [".ppt", ".pptx", ".xls", ".xlsx", ".dot", ".doc", ".docx", 
 
 // 新增表单
 export const formConfigs = ({ detailData, onDownload }: DetailType): FormConfigItemType[] => {
-  // 单据状态为已接收或已回复，禁用客诉明细修改, 显示回复表单
+  // 审核状态为已接收或已回复，禁用客诉明细修改, 显示回复表单
   const isShowReply = detailData?.marketState && [2, 3, 4].includes(detailData.marketState);
 
   return [
@@ -128,7 +115,7 @@ export const formConfigs = ({ detailData, onDownload }: DetailType): FormConfigI
         return (
           <div class="flex ui-w-100">
             <el-input v-model={formModel[row.prop]} placeholder="请上传回复附件" clearable readonly class="flex-1" />
-            {[AuditState.submit, AuditState.reAudit].includes(detailData?.state) ? (
+            {[BillState.submit, BillState.reject].includes(detailData?.state) ? (
               <el-upload
                 class="ml-4"
                 accept={replyAccept.join(",")}
@@ -140,7 +127,7 @@ export const formConfigs = ({ detailData, onDownload }: DetailType): FormConfigI
                 <el-button type="primary">选择文件</el-button>
               </el-upload>
             ) : null}
-            {[BillState.reply, BillState.discard].includes(detailData?.marketState) && detailData.resourceName ? (
+            {[AuditState.reply, AuditState.discard].includes(detailData?.marketState) && detailData.resourceName ? (
               <el-button type="primary" class="ml-4" onClick={onDownload}>
                 下载文件
               </el-button>

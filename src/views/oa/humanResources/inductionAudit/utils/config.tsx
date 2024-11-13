@@ -160,6 +160,24 @@ export const formConfigs = ({ formData, auditOptionData, row }): FormConfigItemT
       )
     },
     {
+      label: "贫困人员",
+      prop: "isPoorPeople",
+      colProp: layout,
+      render: ({ formModel, row }) => {
+        const isPoorPeopleOpts = [
+          { optionName: "是", optionValue: 1 },
+          { optionName: "否", optionValue: 0 }
+        ];
+        return (
+          <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
+            {isPoorPeopleOpts.map((item) => (
+              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+            ))}
+          </el-select>
+        );
+      }
+    },
+    {
       label: "考勤",
       prop: "workRuleId",
       colProp: layout,
@@ -286,6 +304,24 @@ export const basicFormConfigs = (): FormConfigItemType[] => {
       prop: "isStay",
       colProp: layout,
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} readonly />
+    },
+    {
+      label: "贫困人员",
+      prop: "isPoorPeople",
+      colProp: layout,
+      render: ({ formModel, row }) => {
+        const isPoorPeopleOpts = [
+          { optionName: "是", optionValue: 1 },
+          { optionName: "否", optionValue: 0 }
+        ];
+        return (
+          <el-select disabled v-model={formModel[row.prop]} class="ui-w-100" placeholder=" " suffix-icon={<div />}>
+            {isPoorPeopleOpts.map((item) => (
+              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+            ))}
+          </el-select>
+        );
+      }
     },
     {
       label: "户口所在地",

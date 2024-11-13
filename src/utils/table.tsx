@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-18 11:20:47
+ * @Last Modified time: 2024-11-09 15:40:20
  */
 
 import dayjs from "dayjs";
@@ -168,34 +168,35 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
   } = options;
   const columnsDrag = ref<TableColumnList[]>([]);
   const columnData: TableColumnList[] = cloneDeep(options.columnData || []);
+  const expendRow = columnData.splice(0, 1)[0]; // 取出第一列添加折叠按钮
+  const fixedItem = columnData.find((f) => f.fixed === "left"); // 是否有左固定列
 
   // 配置表格折叠图标
-  const cellRendererExpend = (data): JSX.Element => {
+  const rendererExpend = (data): JSX.Element => {
     const { row, column, store } = data;
-    return (
-      <div class="ui-d-ib" style={{ transform: "translate(-6px, 0px)" }}>
+    const renderEle = expendRow?.cellRenderer?.(data) || <span>{row[column["property"]]}</span>;
+    return isCustomExpend ? (
+      <div class="flex flex-1 align-center ellipsis" style={{ transform: "translate(-6px, 0px)" }}>
         <IconifyIconOffline
           class="mr-2 fz-16 pointer ui-d-ib ui-va-tb"
           icon={row.children?.length ? Expand : PriceTag}
           onClick={withModifiers(() => store.toggleRowExpansionAdapter(row), ["stop"])}
         />
-        <span>{row[column["property"]]}</span>
+        {renderEle}
       </div>
+    ) : (
+      (renderEle as JSX.Element)
     );
   };
 
   // 自增索引
-  const cellRendererIndex = ({ $index }) => {
+  const rendererIndex = ({ $index }) => {
     let indexNumber = $index + 1;
     if (formData?.page && formData?.limit) {
       indexNumber = (formData.page - 1) * formData.limit + $index + 1;
     }
     return <span>{indexNumber}</span>;
   };
-
-  columnsDrag.value = []; // 初始化
-  const expendRow = columnData.splice(0, 1)[0]; // 取出第一列添加折叠按钮
-  const fixedItem = columnData.find((f) => f.fixed === "left"); // 是否有左固定列
 
   // 配置单选|多选|序号|操作列
   const mergeColumn: TableColumnList[] = [
@@ -231,11 +232,11 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
       align: "center",
       fixed: fixedItem?.fixed,
       hide: !indexColumn,
-      cellRenderer: cellRendererIndex,
+      cellRenderer: rendererIndex,
       ...indexColumn
     },
     // 4.折叠按钮 (默认不显示)
-    { align: "left", ...expendRow, cellRenderer: isCustomExpend ? cellRendererExpend : expendRow.cellRenderer },
+    { align: "left", ...expendRow, className: isCustomExpend ? "custom-expend" : "", cellRenderer: rendererExpend },
     ...columnData,
     // 5.操作 (默认显示)
     { label: "操作", fixed: "right", align: "center", prop: "operation", minWidth: 140, slot: "operation", hide: !operationColumn, ...operationColumn }
@@ -252,7 +253,6 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
           headerAlign: "center",
           ...item,
           fixed: isMobile ? false : item.fixed, // 移动端移除固定
-          columnKey: item.prop,
           prop: isDragColumn ? (index: number) => columnsDrag.value[index]?.prop as string : item.prop
         };
       })
@@ -273,7 +273,7 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
  */
 export const getExportConfig = (exportName: string, columns: TableColumnList[], params?: any, toJSon?: boolean) => {
   const excelHeader = columns.map((item, index) => {
-    const field = typeof item.prop === "function" ? item.columnKey : item.prop;
+    const field = typeof item.prop === "function" ? item["property"] : item.prop;
     return { ...item, field: field, title: item.label, width: 160, key: `0-${index}}`, hide: false, colspan: 1, rowspan: 1, type: "normal", colGroup: false };
   });
 
@@ -327,7 +327,7 @@ export const downloadDataToExcel = (options: DownloadDataType | DownloadDataType
       dataList.map((item, index) => {
         const arr = [];
         option.columns.forEach((column) => {
-          const prop = typeof column.prop === "function" ? column.columnKey : column.prop;
+          const prop = typeof column.prop === "function" ? column["property"] : column.prop;
           if (column.type === "index" && column.prop !== "radio") {
             arr.push(cellList.length + 1); // index + 1
           } else if (isValidCol(column)) {
@@ -388,7 +388,7 @@ export const exportImgToExcel = (options: DownloadDataType | DownloadDataType[],
       dataList.map((row, rowIndex) => {
         const cellArr: any[] = [];
         option.columns.forEach((column) => {
-          const prop = typeof column.prop === "function" ? column.columnKey : column.prop;
+          const prop = typeof column.prop === "function" ? column["property"] : column.prop;
           if (column.type === "index" && column.prop !== "radio") {
             cellArr.push(rowIndex + 1);
           } else if (isValidCol(column)) {
@@ -603,7 +603,7 @@ export interface CellRenderType {
   data: TableColumnRenderer;
   /** 仅在下拉框使用 */
   options?: CellOptionType[];
-  /** 是否可以编辑列 */
+  /** 是否可以编辑列(默认可编辑) */
   isEdit?: boolean;
   /** 单元格样式 */
   cellStyle?: CSSProperties;
@@ -632,7 +632,7 @@ interface RowColRowType {
 }
 /** 表格编辑配置渲染类型 */
 interface TableEditOptionType {
-  /** 编辑前回调 (需要返回值, 返回false则不触发编辑)*/
+  /** 编辑前拦截 (需要返回值, 返回false则不触发编辑)*/
   editBefore?: (data: CallBackParamType) => boolean;
   /** 编辑完成回调 */
   editFinish?: (data: CallBackParamType) => void;
@@ -670,19 +670,10 @@ export function tableEditRender(options: TableEditOptionType = {}) {
       const onBlur = () => onFinish({ index, prop, row, column });
 
       // 1.输入框编辑
-      const InputCom = () => <RegInput v-model={row[column.columnKey]} autoFocus={true} placeholder="请输入" autoSelect={true} {...eleProps} onBlur={onBlur} />;
+      const InputCom = () => <RegInput v-model={row[prop]} autoFocus={true} placeholder="请输入" autoSelect={true} {...eleProps} onBlur={onBlur} />;
       // 2.下拉框编辑
       const SelectCom = () => (
-        <el-select
-          filterable
-          v-model={row[column.columnKey]}
-          placeholder="请选择"
-          class="ui-w-100"
-          size="small"
-          {...eleProps}
-          onChange={onBlur}
-          onBlur={onBlur}
-        >
+        <el-select filterable v-model={row[prop]} placeholder="请选择" class="ui-w-100" size="small" {...eleProps} onChange={onBlur} onBlur={onBlur}>
           {options.map((item) => (
             <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} disabled={item.disabled} />
           ))}
@@ -691,7 +682,7 @@ export function tableEditRender(options: TableEditOptionType = {}) {
       // 3.日期框编辑
       const DatePickerCom = () => (
         <el-date-picker
-          v-model={row[column.columnKey]}
+          v-model={row[prop]}
           type="date"
           size="small"
           placeholder="请选择日期"
@@ -706,7 +697,7 @@ export function tableEditRender(options: TableEditOptionType = {}) {
       // 4.时间框编辑
       const DateTimeCom = () => (
         <el-time-picker
-          v-model={row[column.columnKey]}
+          v-model={row[prop]}
           size="small"
           value-format="HH:mm"
           placeholder="请选择时间"
@@ -723,7 +714,7 @@ export function tableEditRender(options: TableEditOptionType = {}) {
       // 6.树形下拉编辑
       const TreeSelectCom = () => (
         <el-tree-select
-          v-model={row[column.columnKey]}
+          v-model={row[prop]}
           props={{
             label: "optionName",
             value: "optionValue"
@@ -756,18 +747,18 @@ export function tableEditRender(options: TableEditOptionType = {}) {
       if (res) rowEditMap({ colIndex: column["rawColumnKey"], rowIndex: index, row });
     }
 
-    let cellValue = row[column.columnKey]; // 单元格取值
+    let cellValue = row[prop]; // 单元格取值
     const boxStyle = { height: "24px", lineHeight: "24px", ...cellStyle };
     if (["treeSelect", "select"].includes(type)) {
       boxStyle.textAlign = cellStyle?.textAlign || "center";
-      cellValue = options.find((item) => item.optionValue === row[column.columnKey])?.optionName;
+      cellValue = options.find((item) => item.optionValue === row[prop])?.optionName;
       // 下拉框多选时，用逗号拼接
       if (eleProps?.multiple) {
-        cellValue = (row[column.columnKey] || [])?.join(",");
+        cellValue = (row[prop] || [])?.join(",");
       }
     }
     return (
-      <span onClick={onClickEdit} style={boxStyle} class="ui-w-100 ui-d-ib pointer ui-va-m ellipsis br-4">
+      <span onClick={onClickEdit} style={boxStyle} class="ui-w-100 ui-d-ib pointer ui-va-m ellipsis flex-1">
         {cellValue}
       </span>
     );
@@ -871,7 +862,9 @@ export enum FormatKey {
   /** 日期 */
   date = "date",
   /** 标签 */
-  tag = "tag"
+  tag = "tag",
+  /** 单据状态 */
+  bill = "bill"
 }
 
 /**
@@ -888,7 +881,7 @@ export const getFormatType = (item: TableColumnList, value) => {
   } else if (type === FormatKey.date && dayjs(value).isValid()) {
     // 日期
     return dayjs(value).format(date);
-  } else if (type === FormatKey.tag && !value?.__v_isVNode) {
+  } else if ([FormatKey.tag, FormatKey.bill].includes(type as FormatKey) && !value?.__v_isVNode) {
     // 标签
     const result = specs?.find((item) => item.value === `${value}`);
     const { label, color = "inherit", background = "inherit" } = result || ({} as any);
@@ -1044,7 +1037,7 @@ export const setUserMenuColumns = async (type: "save" | "recover", columns: Tabl
     message("修改失败", { type: "error" });
   } else {
     const { menuId, columnGroupId, groupName } = columns.find((item) => item.menuId && item.columnGroupId) || {};
-    if (!menuId || !groupName) return message("菜单ID获取失败", { type: "error" });
+    if (!menuId || !groupName) return message("未配置表格列", { type: "error" });
     showMessageBox(`确定要恢复【${groupName}】到默认配置吗?`).then(async () => {
       const { data } = await recoverUserMenuColumn({ menuId, columnGroupId });
       if (data) {
@@ -1060,7 +1053,7 @@ export const setUserMenuColumns = async (type: "save" | "recover", columns: Tabl
 /** 修改表头列宽 */
 export const onHeaderDragend = (newWidth, column, columns: TableColumnList[]) => {
   columns.forEach((item) => {
-    const isItem = item.prop === column.columnKey;
+    const isItem = item.prop === column["property"];
     if (isItem) item.width = newWidth;
   });
   setUserMenuColumns("save", columns);
@@ -1331,6 +1324,16 @@ interface OptionKey {
   NormalTestRequire: "NormalTestRequire";
   /** 国家代码 */
   CountryCode: "CountryCode";
+  /** 异常出勤 */
+  AnomalousAttendance: "AnomalousAttendance";
+  /** 失效模式清单严重度 */
+  LoseModeListSeverity: "LoseModeListSeverity";
+  /** 失效模式清单分类 */
+  LoseModeListCategorize: "LoseModeListCategorize";
+  /** 试产样机颜色 */
+  TrialProductionColor: "TrialProductionColor";
+  /** 试产阶段 */
+  TrialProductionStage: "TrialProductionStage";
 }
 
 export type OptionKeys = ValueOf<OptionKey>;

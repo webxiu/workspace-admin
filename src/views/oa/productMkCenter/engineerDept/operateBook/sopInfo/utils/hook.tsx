@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-18 11:01:09
+ * @Last Modified time: 2024-11-07 16:07:49
  */
 
 import {
@@ -114,76 +114,60 @@ export const useConfig = () => {
   const editTable1 = tableEditRender();
   const editTable2 = tableEditRender({
     customRender: ({ editMap, index, row, column, callback }) => {
-      const isEdit = editMap.value[index]?.editable;
-      const colIndex = editMap.value[index]?.colIndex;
-      if (isEdit) {
-        if (["materialNumber"].includes(column.property)) {
-          if (colIndex === column.rawColumnKey) {
-            const onMaterialChange = (data) => {
-              if (typeof data === "object") {
-                row["materialId"] = data.id;
-                row["materialName"] = data.name;
-                row["materialNumber"] = data.number;
-                row["specification"] = data.specification;
-              } else {
-                row["materialId"] = null;
-                row["materialNumber"] = data;
-              }
-              callback({ index });
-            };
-            return (
-              <ChildMaterialModal
-                v-model={row[column.property]}
-                materialId={row["materialId"]}
-                id={formData.id}
-                onChange={onMaterialChange}
-                onBlur={() => callback({ index })}
-              />
-            );
+      if (["materialNumber"].includes(column.property)) {
+        const onMaterialChange = (data) => {
+          if (typeof data === "object") {
+            row["materialId"] = data.id;
+            row["materialName"] = data.name;
+            row["materialNumber"] = data.number;
+            row["specification"] = data.specification;
+          } else {
+            row["materialId"] = null;
+            row["materialNumber"] = data;
           }
-        } else if (["unit"].includes(column.property)) {
-          if (colIndex === column.rawColumnKey) {
-            return (
-              <el-select
-                v-model={row[column.property]}
-                size="small"
-                clearable
-                placeholder="请选择"
-                onChange={() => callback({ index })}
-                onBlur={() => callback({ index })}
-              >
-                {materialList.value.map((item) => (
-                  <el-option key={item.optionValue} label={item.optionName} value={item.optionName} />
-                ))}
-              </el-select>
-            );
-          }
-        } else if (colIndex === column.rawColumnKey) {
-          return <RegInput v-model={row[column.columnKey]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
-        }
+          callback({ index });
+        };
+        return (
+          <ChildMaterialModal
+            v-model={row[column.property]}
+            materialId={row["materialId"]}
+            id={formData.id}
+            onChange={onMaterialChange}
+            onBlur={() => callback({ index })}
+          />
+        );
+      } else if (["unit"].includes(column.property)) {
+        return (
+          <el-select
+            v-model={row[column.property]}
+            size="small"
+            clearable
+            placeholder="请选择"
+            onChange={() => callback({ index })}
+            onBlur={() => callback({ index })}
+          >
+            {materialList.value.map((item) => (
+              <el-option key={item.optionValue} label={item.optionName} value={item.optionName} />
+            ))}
+          </el-select>
+        );
+      } else {
+        return <RegInput v-model={row[column["property"]]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
       }
-      return <span>{row[column.columnKey]}</span>;
     }
   });
   const editTable3 = tableEditRender({
-    customRender: ({ editMap, index, prop, row, column, callback }) => {
-      const isEdit = editMap.value[index]?.editable;
-      const colIndex = editMap.value[index]?.colIndex;
-      if (isEdit) {
-        if (["deptName"].includes(column.property)) {
-          if (colIndex === column.rawColumnKey) {
-            const onDeptChange = (data) => {
-              row[column.property] = data.name;
-              row["deptId"] = data.id;
-              callback({ index });
-            };
-            return <DeptModal v-model={row[column.property]} onChange={onDeptChange} onBlur={() => callback({ index })} />;
-          }
-        } else if (colIndex === column.rawColumnKey) {
-          return <RegInput v-model={row[column.columnKey]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
-        }
+    customRender: ({ index, row, column, callback }) => {
+      if (["deptName"].includes(column.property)) {
+        const onDeptChange = (data) => {
+          row[column.property] = data.name;
+          row["deptId"] = data.id;
+          callback({ index });
+        };
+        return <DeptModal v-model={row[column.property]} onChange={onDeptChange} onBlur={() => callback({ index })} />;
+      } else {
+        return <RegInput v-model={row[column["property"]]} autoFocus={true} autoSelect={true} onBlur={() => callback({ index })} />;
       }
-      return <span>{row[column.columnKey]}</span>;
     }
   });
   const editTable4 = tableEditRender();
@@ -194,14 +178,7 @@ export const useConfig = () => {
         label: "排拉序号",
         prop: "stationNo",
         minWidth: 90,
-        headerRenderer: ({ column }) => (
-          <>
-            <span>{column.label}</span>
-            <el-tooltip placement="top" content={"排位序号以D开头命名 (可拖拽排序)"}>
-              <Question />
-            </el-tooltip>
-          </>
-        )
+        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="排位序号以D开头命名 (可拖拽排序)" />
       },
       { label: "作业内容", prop: "workContent", minWidth: 180 },
       { label: "人数(人)", prop: "workerCount", align: "center", minWidth: 70 },
@@ -213,24 +190,17 @@ export const useConfig = () => {
         label: "物料编号",
         prop: "materialNumber",
         minWidth: 160,
-        headerRenderer: ({ column }) => (
-          <>
-            {column.label}
-            <el-tooltip placement="top" effect="light" content="选择物料编号, 会自动补充物料名称和规格">
-              <Question />
-            </el-tooltip>
-          </>
-        )
+        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="选择物料编号, 会自动补充物料名称和规格" />
       },
       { label: "物料名称", prop: "materialName", minWidth: 100 },
-      { label: "物料规格描述", prop: "specification", minWidth: 140 },
+      { label: "物料规格描述", prop: "specification", minWidth: 160 },
       { label: "用量", prop: "qty", align: "center", width: 55 },
-      { label: "单位", prop: "unit", align: "center", width: 55 }
+      { label: "单位", prop: "unit", align: "center", width: 80 }
     ];
     const columnData3: TableColumnList[] = [
       { label: "确认项目", prop: "confirm" },
       { label: "确认频率/数量", prop: "confirmFrequency", align: "center", minWidth: 110 },
-      { label: "确认部门", prop: "deptName", minWidth: 100 },
+      { label: "确认部门", prop: "deptName", minWidth: 140 },
       { label: "管理方法", prop: "manageMethod", minWidth: 160 }
     ];
     const columnData4: TableColumnList[] = [

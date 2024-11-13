@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-27 13:47:00
+ * @Last Modified time: 2024-11-06 13:52:46
  */
 
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
@@ -24,8 +24,7 @@ import { useEleHeight } from "@/hooks";
 
 export enum ConfUrl {
   table = "/system/basic/menu/tableColumn",
-  form = "/system/basic/menu/formColumn",
-  layout = "/system/basic/menu/layoutColumn"
+  form = "/system/basic/menu/formColumn"
 }
 export type EnumKey = keyof typeof ConfUrl;
 
@@ -348,8 +347,7 @@ export const useConfig = () => {
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", icon: Plus, text: "新增", isDropDown: false },
     { clickHandler: () => onOpenConfig("form"), type: "warning", text: "表单配置", isDropDown: true },
-    { clickHandler: () => onOpenConfig("table"), type: "warning", text: "表格配置", isDropDown: true },
-    { clickHandler: () => onOpenConfig("layout"), type: "warning", text: "布局配置", isDropDown: true }
+    { clickHandler: () => onOpenConfig("table"), type: "warning", text: "表格配置", isDropDown: true }
   ]);
 
   return {

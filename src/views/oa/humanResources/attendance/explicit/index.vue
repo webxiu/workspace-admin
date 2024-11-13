@@ -5,69 +5,37 @@
         <template #title>
           <BlendedSearch @tagSearch="handleTagSearch" :queryParams="queryParams" :searchOptions="searchOptions" placeholder="姓名" searchField="staffName" />
         </template>
-        <template #buttons>
-          <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="业务操作" />
-        </template>
+        <template #buttons />
         <template v-slot="{ size, dynamicColumns }">
-          <pure-table
-            border
-            :height="maxHeight"
-            :max-height="maxHeight"
-            row-key="id"
-            class="machine-table"
-            id="machineTableId"
-            :adaptive="true"
-            align-whole="center"
-            :loading="loading"
-            :size="size"
-            :data="dataList"
-            :columns="dynamicColumns"
-            :pagination="pagination"
-            :paginationSmall="size === 'small'"
-            highlight-current-row
-            :show-overflow-tooltip="true"
-            @row-dblclick="rowDbClick"
-            @page-size-change="onSizeChange"
-            @page-current-change="onCurrentChange"
-            @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-          >
-            <template #setMorningStart="{ row }">
-              <el-space>
-                <el-button size="small" @click="() => onSetTimeValue(row, 'morningWorkTime')">设置</el-button>
-                <el-button size="small" @click="() => (row.morningWorkTime = null)">清空</el-button>
-              </el-space>
-            </template>
-            <template #setMorningEnd="{ row }">
-              <el-space>
-                <el-button size="small" @click="() => onSetTimeValue(row, 'morningDownWorkTime')">设置</el-button>
-                <el-button size="small" @click="() => (row.morningDownWorkTime = null)">清空</el-button>
-              </el-space>
-            </template>
-            <template #setAfternoonStart="{ row }">
-              <el-space>
-                <el-button size="small" @click="() => onSetTimeValue(row, 'afternoonWorkTime')">设置</el-button>
-                <el-button size="small" @click="() => (row.afternoonWorkTime = null)">清空</el-button>
-              </el-space>
-            </template>
-            <template #setAfternoonEnd="{ row }">
-              <el-space>
-                <el-button size="small" @click="() => onSetTimeValue(row, 'afternoonDownWorkTime')">设置</el-button>
-                <el-button size="small" @click="() => (row.afternoonDownWorkTime = null)">清空</el-button>
-              </el-space>
-            </template>
-            <template #setNightStart="{ row }">
-              <el-space>
-                <el-button size="small" @click="() => onSetTimeValue(row, 'nightStart')">设置</el-button>
-                <el-button size="small" @click="() => (row.nightStart = null)">清空</el-button>
-              </el-space>
-            </template>
-            <template #setNightEnd="{ row }">
-              <el-space>
-                <el-button size="small" @click="() => onSetTimeValue(row, 'nightEnd')">设置</el-button>
-                <el-button size="small" @click="() => (row.nightEnd = null)">清空</el-button>
-              </el-space>
-            </template>
-          </pure-table>
+          <div style="display: flex; justify-content: space-between">
+            <div style="width: 70%">
+              <pure-table
+                border
+                :height="maxHeight"
+                :max-height="maxHeight"
+                row-key="id"
+                class="machine-table"
+                id="machineTableId"
+                :adaptive="true"
+                align-whole="center"
+                :loading="loading"
+                :size="size"
+                :data="dataList"
+                :columns="dynamicColumns"
+                :pagination="pagination"
+                :paginationSmall="size === 'small'"
+                highlight-current-row
+                :show-overflow-tooltip="true"
+                @row-click="leftRowClick"
+                :row-class-name="rowClassName"
+                @row-dblclick="rowDbClick"
+                @page-size-change="onSizeChange"
+                @page-current-change="onCurrentChange"
+                @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
+              />
+            </div>
+            <div style="width: 29%"><RightTables ref="rightTableRef" :currentLeftRow="currentRow" :setCurLeftRowByKey="setCurLeftRowByKey" /></div>
+          </div>
         </template>
       </PureTableBar>
     </div>
@@ -78,23 +46,27 @@
 import { useMachine } from "./hook";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 import { PureTableBar } from "@/components/RePureTableBar";
-import ButtonList from "@/components/ButtonList/index.vue";
+import RightTables from "./rightTables.vue";
+import { Setting, Delete } from "@element-plus/icons-vue";
 
 defineOptions({ name: "OaHumanResourcesAttendanceExplicitIndex" });
 
 const {
   columns,
   onFresh,
+  rightTableRef,
   handleTagSearch,
   searchOptions,
   rowDbClick,
-  buttonList,
+  leftRowClick,
+  rowClassName,
+  currentRow,
+  setCurLeftRowByKey,
   maxHeight,
   loading,
   dataList,
   queryParams,
   pagination,
-  onSetTimeValue,
   onSizeChange,
   onCurrentChange
 } = useMachine();

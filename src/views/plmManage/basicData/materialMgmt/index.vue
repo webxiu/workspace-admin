@@ -19,7 +19,7 @@
     <div class="flex-1 ui-ov-h">
       <PureTableBar :columns="columns" @refresh="onFresh" style="padding-top: 0" @change-column="setUserMenuColumns" :show-icon="!isModal">
         <template #title>
-          <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="物料编号" searchField="number" />
+          <BlendedSearch @tagSearch="handleTagSearch" :queryParams="queryParams" :searchOptions="searchOptions" placeholder="物料编号" searchField="number" />
         </template>
         <template #buttons>
           <div>
@@ -86,7 +86,7 @@ interface Props {
 }
 
 defineOptions({ name: "PlmManageBasicDataMaterialMgmtIndex" });
-const emits = defineEmits(["selectRow"]);
+const emits = defineEmits(["select"]);
 
 const props = defineProps<Props>();
 
@@ -94,6 +94,7 @@ const {
   loading,
   dataList,
   columns,
+  queryParams,
   pagination,
   maxHeight,
   buttonList,
@@ -131,8 +132,8 @@ const searchOptions: SearchOptionType[] = [
     label: "是否禁用",
     value: "isfrozen",
     children: [
-      { label: "否", value: "0" },
-      { label: "是", value: "1" }
+      { label: "是", value: "1" },
+      { label: "否", value: "0" }
     ]
   }
 ];

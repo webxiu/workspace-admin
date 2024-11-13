@@ -1,14 +1,22 @@
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { ElMessage, ElMessageBox, FormRules } from "element-plus";
-import { backMaterialInfo, fetchMaterialGroupAttr, getBOMTableRowSelectOptions, pushDownMaterialInfo, submitMaterialInfo } from "@/api/plmManage";
+import {
+  backMaterialInfo,
+  fetchMaterialGroupAttr,
+  fetchProductStoreList,
+  getBOMTableRowSelectOptions,
+  pushDownMaterialInfo,
+  submitMaterialInfo
+} from "@/api/plmManage";
 import { h, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import ButtonList from "@/components/ButtonList/index.vue";
 import ColorModal from "./ColorModal.vue";
+import HxModalInput from "@/components/HxModalInput/index.vue";
 import MaterialPropTable from "./materialPropTable.vue";
 import MyUpload from "./MyUpload.vue";
-import ProductStoreModal from "./ProductStoreModal.vue";
+import { PageUrl } from "@/config/constant";
 import { addDialog } from "@/components/ReDialog";
 import { useMultiTagsStore } from "@/store/modules/multiTags";
 
@@ -36,10 +44,9 @@ const colorListRef = ref();
 const materialPropTableRef = ref();
 
 // 编辑员工信息表单
-export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLoading?, manufacturingShopNameOpts?): any[] => {
+export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLoading?, manufacturingShopNameOpts?, isDisabledMaterialCode?): any[] => {
   const route = useRoute();
   const router = useRouter();
-
   const isView = route.query.type !== "edit" && (view || Boolean(route.query.id));
 
   const clickHandler = (v) => {
@@ -257,7 +264,16 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
       labelWidth: 80,
       required: true,
       render: ({ formModel, row }) => {
-        return <el-input disabled={isView} readonly={isView} size="small" v-model={formModel[row.prop]} placeholder="请输入物料编码" clearable />;
+        return (
+          <el-input
+            disabled={isView || isDisabledMaterialCode}
+            readonly={isView}
+            size="small"
+            v-model={formModel[row.prop]}
+            placeholder="请输入物料编码"
+            clearable
+          />
+        );
       }
     },
     {
@@ -266,7 +282,16 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
       labelWidth: 80,
       colProp: { span: 6 },
       render: ({ formModel, row }) => {
-        return <el-input disabled={isView} readonly={isView} size="small" v-model={formModel[row.prop]} placeholder="请输入名称" clearable />;
+        return (
+          <el-input
+            disabled={isView || isDisabledMaterialCode}
+            readonly={isView}
+            size="small"
+            v-model={formModel[row.prop]}
+            placeholder="请输入名称"
+            clearable
+          />
+        );
       }
     },
     {
@@ -449,9 +474,26 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
           formData.goodModel = val.productCode;
         };
         return (
-          <el-input disabled={isView} size="small" v-model={formModel[row.prop]} placeholder="请选择" readonly>
-            {{ append: () => <ProductStoreModal disabled={isView} onSelect={onSelect} /> }}
-          </el-input>
+          <HxModalInput
+            title="选择产品"
+            placeholder="请选择"
+            valueKey="productType"
+            v-model={formModel[row.prop]}
+            readonly={true}
+            size="small"
+            disabled={isView}
+            showButton={true}
+            onSelect={onSelect}
+            componentProp={{
+              searchConfig: [{ label: "产品型号", value: "productCode" }],
+              maxHeight: 520,
+              columns: [
+                { label: "产品型号", prop: "productCode", headerAlign: "center" },
+                { label: "产品类别", prop: "productType", headerAlign: "center" }
+              ],
+              api: fetchProductStoreList
+            }}
+          />
         );
       }
     },
@@ -576,6 +618,15 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
       prop: "",
       colProp: { span: 5 },
       render: () => null
+    },
+    {
+      label: "禁用原因",
+      labelWidth: 85,
+      prop: "forbiddenReason",
+      colProp: { span: 6 },
+      render: ({ formModel, row }) => {
+        return <el-input disabled type="textarea" autosize size="small" v-model={formModel[row.prop]} placeholder=" " />;
+      }
     }
   ];
 

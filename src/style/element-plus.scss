@@ -284,6 +284,11 @@
 
     .el-table__cell {
       padding: 2px 0;
+      // 折叠按钮设置
+      &.custom-expend > div {
+        display: flex;
+        align-items: center;
+      }
     }
   }
 

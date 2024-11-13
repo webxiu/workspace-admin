@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-10 16:06:53
+ * @Last Modified time: 2024-10-31 17:31:53
  */
 
 import {
@@ -49,7 +49,7 @@ export const useConfig = () => {
     customcerGroupId: ""
   });
   const searchOptions = reactive<SearchOptionType[]>([
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
     { label: "销售员", value: "salePeopleId", children: [] },
     { label: "产品编号", value: "fnumber" },
     { label: "客户名称", value: "customerNameId", children: [] },
@@ -136,15 +136,8 @@ export const useConfig = () => {
     columns2.value = setColumn({ columnData: columnData2, operationColumn: false, radioColumn: { width: 50 } });
   };
 
-  const onTagSearch = ({ date = "", ...values }) => {
-    const [startDate, endDate] = date.split("~").map((m) => m.trim());
-    formData.startDate = startDate;
-    formData.endDate = endDate;
-    formData.salePeopleId = values.salePeopleId;
-    formData.fnumber = values.fnumber;
-    formData.customerNameId = values.customerNameId;
-    formData.customcerGroupId = values.customcerGroupId;
-    formData.saleStockYear = values.saleStockYear;
+  const onTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

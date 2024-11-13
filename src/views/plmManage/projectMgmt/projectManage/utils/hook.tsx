@@ -487,7 +487,7 @@ export const useConfig = () => {
   const onDelete = () => {
     if (JSON.stringify(currentLeftRow.value) !== "{}") {
       const row = currentLeftRow.value;
-      if (![0, 3].includes(row.billState)) return message("只有待提交和重新审核才能进行删除", { type: "error" });
+      if (![0, 3].includes(row.billState)) return message("只能删除【待提交/重新审核】的记录", { type: "error" });
       ElMessageBox.confirm(`确认要删除名称为【${row.projectName}】的项目吗?`, "系统提示", {
         type: "warning",
         draggable: true,

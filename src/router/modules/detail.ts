@@ -145,12 +145,6 @@ export default {
       component: () => import("@/views/system/basic/menu/tableColumn/index.vue")
     },
     {
-      path: "/system/basic/menu/layoutColumn",
-      name: "SystemBasicMenuLayoutColumn",
-      meta: { title: "布局配置", keepAlive: true },
-      component: () => import("@/views/system/basic/menu/layoutColumn/index.vue")
-    },
-    {
       path: "/oa/humanResources/businessRecord/print",
       name: "PrintBusinessRecord",
       meta: { title: "打印外出申请", keepAlive: true },

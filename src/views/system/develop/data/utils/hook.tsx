@@ -21,6 +21,8 @@ import { onMounted, reactive, ref } from "vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { message } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
+import { type PaginationProps } from "@pureadmin/table";
+import { PAGE_CONFIG } from "@/config/constant";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -34,15 +36,17 @@ export const useConfig = () => {
   const loading3 = ref<boolean>(false);
   const rowData = ref<DataBaseItemType>();
   const rowData2 = ref<DataTableItemType>();
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const formData = reactive({ page: 1, limit: 10000 });
-  const formData2 = reactive({ tableName: "", columnName: "", schemaName: "" });
+  const formData2 = reactive({ searchContent: "", schemaName: "", page: 1, limit: PAGE_CONFIG.pageSize });
   const groupArrsList = ref<TableGroupItemType[]>([]);
 
   const searchOptions = reactive<SearchOptionType[]>([
-    { label: "表名", value: "tableName" },
-    { label: "字段名", value: "columnName" }
+    // { label: "表名", value: "tableName" },
+    // { label: "字段名", value: "columnName" }
   ]);
+
+  const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
   onMounted(() => {
     getColumnConfig();
@@ -101,6 +105,11 @@ export const useConfig = () => {
         loading3.value = false;
         dataList2.value = res.data.tableInfoList;
         dataList3.value = res.data.fieldInfoList;
+
+        // TODO: 这里只给表赋值，字段列表需要点击中间行去获取
+
+        // dataList2.value = res.data.records || [];
+        // pagination.total = res.data.total;
       })
       .catch((err) => {
         loading2.value = true;
@@ -153,6 +162,17 @@ export const useConfig = () => {
       .catch(() => (loading3.value = false));
   };
 
+  // 分页相关
+  function onSizeChange(val: number) {
+    formData2.limit = val;
+    getSearchList();
+  }
+
+  function onCurrentChange(val: number) {
+    formData2.page = val;
+    getSearchList();
+  }
+
   return {
     loading,
     loading2,
@@ -171,6 +191,9 @@ export const useConfig = () => {
     onRefresh3,
     onTagSearch,
     onRowClick,
-    onRowClick2
+    onRowClick2,
+    pagination,
+    onSizeChange,
+    onCurrentChange
   };
 };

@@ -240,6 +240,11 @@ export function exportAttendancePageDetail(data) {
   return http.request("post", "/oa/hr/AttendanceDetailInfo/exportAttDetail", { data });
 }
 
+/** 考勤明细: 修改 */
+export function updateAttendancePageDetail(data) {
+  return http.request("put", "/oa/hr/AttendanceDetailInfo/updateAttDetail", { data });
+}
+
 /** ========================= 内购后台 ========================= */
 /** 商品管理: 列表 */
 export function goodsManageList(data) {
@@ -427,6 +432,10 @@ export function staffAnalysis() {
 export function leaveApplyList(data) {
   return http.request<TablePagingResType<LeaveApplyItemType>>("post", "/oa/hr/askforleave/selectPage", { data });
 }
+/** 请假单: 列表(考勤明细) */
+export function leaveApplyListOnAtt(data) {
+  return http.request<TablePagingResType<LeaveApplyItemType>>("post", "/oa/hr/askforleave/getDataByStaffIdAndDate", { data });
+}
 /** 请假单: 删除 */
 export function deleteLeaveApply(params) {
   return http.request<boolean>("get", "/oa/hr/askforleave/delete", { params });
@@ -477,6 +486,10 @@ export function saveHolidaySetting(data) {
 /** 加班单: 表格数据 */
 export function overtimeOrderList(data) {
   return http.request<TablePagingResType<OvertimeOrderItemType>>("post", "/oa/hr/overtimeapply/selectPage", { data });
+}
+/** 加班单: 表格数据(考勤明细) */
+export function overtimeOrderListOnAtt(data) {
+  return http.request<TablePagingResType<OvertimeOrderItemType>>("post", "/oa/hr/overtimeapply/getDataByStaffIdAndDate", { data });
 }
 /** 加班单: 自动生成 */
 export function generateOvertimeOrderList(data) {
@@ -831,7 +844,7 @@ export function deleteCarInfo(data) {
 
 /** 安全证书管理: 列表查询 */
 export function fetchSafeCertificate(data) {
-  return http.request("get", "/oa/hr/securitycertificatemanagement/select", { params: data });
+  return http.request("post", "/oa/hr/securitycertificatemanagement/select", { data });
 }
 
 /** 安全证书管理: 新增 */
@@ -857,6 +870,11 @@ export function exportSafeCertificate(data) {
 /** 出差记录: 列表查询 */
 export function fetchGoOutRecords(data) {
   return http.request("post", "/oa/hr/gooutapply/selectapply", { data });
+}
+
+/** 出差记录: 列表查询(考勤明细) */
+export function fetchGoOutRecordsOnAtt(data) {
+  return http.request("post", "/oa/hr/gooutapply/getDataByStaffIdAndDate", { data });
 }
 
 /** 出差记录: 修改 */
@@ -1027,4 +1045,8 @@ export function approvalData(data) {
 /** 补签卡数据获取 */
 export function supplementaryCard(data) {
   return http.request("post", "/sys/sys/qywxReissue/selectList", { data });
+}
+/** 补签卡数据获取(考勤明细) */
+export function supplementaryCardOnAtt(data) {
+  return http.request("post", "/sys/sys/qywxReissue/getDataByStaffIdAndDate", { data });
 }

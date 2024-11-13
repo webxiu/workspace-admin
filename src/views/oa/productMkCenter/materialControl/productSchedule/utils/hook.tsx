@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-08-01 15:18:40
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-18 11:01:21
+ * @Last Modified time: 2024-11-07 16:01:57
  */
 
 import { Delete, Download, Edit, MessageBox, Postcard, Upload } from "@element-plus/icons-vue";
@@ -70,22 +70,17 @@ export const useConfig = () => {
   });
 
   const editTable = tableEditRender({
-    customRender: ({ editMap, index, row, column, callback }) => {
-      const isEdit = editMap.value[index]?.editable;
-      const colIndex = editMap.value[index]?.colIndex;
-      if (isEdit && colIndex === column.rawColumnKey) {
-        return (
-          <RegInput
-            v-model={row[column.columnKey]}
-            autoFocus={true}
-            autoSelect={true}
-            isNumber={true}
-            pattern={regExp.number3}
-            onBlur={() => callback({ index })}
-          />
-        );
-      }
-      return <span>{row[column.columnKey]}</span>;
+    customRender: ({ index, row, column, callback }) => {
+      return (
+        <RegInput
+          v-model={row[column["property"]]}
+          autoFocus={true}
+          autoSelect={true}
+          isNumber={true}
+          pattern={regExp.number3}
+          onBlur={() => callback({ index })}
+        />
+      );
     }
   });
 

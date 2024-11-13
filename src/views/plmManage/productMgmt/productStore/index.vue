@@ -12,7 +12,7 @@ interface Props {
 
 defineOptions({ name: "PlmManageProjectMgmtProductStoreIndex" });
 const props = defineProps<Props>();
-const emits = defineEmits(["selectRow"]);
+const emits = defineEmits(["select"]);
 
 const {
   loading,

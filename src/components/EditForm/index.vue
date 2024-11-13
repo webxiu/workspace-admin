@@ -3,7 +3,7 @@
  * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-17 15:40:59
+ * @Last Modified time: 2024-10-24 14:21:52
  */ 
 -->
 
@@ -217,8 +217,10 @@ $borderColor: #111;
 
   .el-form-item__content {
     border-left: 1px solid $borderColor;
-    align-items: flex-start;
+    align-items: center;
     position: relative;
+    height: 100%;
+    padding: 2px 4px;
     // 错误提示靠右
     .el-form-item__error {
       position: absolute;

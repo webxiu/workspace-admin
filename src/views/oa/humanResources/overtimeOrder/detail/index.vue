@@ -57,9 +57,11 @@ const formData = reactive({
   autoOvertimeType: "",
   startDate: dayjs(new Date()).format("YYYY-MM-DD"),
   endDate: dayjs(new Date()).format("YYYY-MM-DD"),
-  startTime: "",
   autoGroupId: "",
-  endTime: ""
+  startTimeHours: "",
+  startTimeMinute: "",
+  endTimeHours: "",
+  endTimeMinute: ""
 });
 const optionsData = ref<OvertimeOrderEditOptionItemType>({
   optionList: [],
@@ -144,7 +146,7 @@ const getOptionList = (deptId) => {
     deptIdList: [deptId + ""]
   } as any).then(({ data }) => {
     if (!data.records) return;
-    optionsData.value.userInfoList = data.records || [];
+    (optionsData.value as any).userInfoList = data.records || [];
   });
 };
 
@@ -262,10 +264,10 @@ const onGenerate = () => {
           const setDateList = res.data.map((item) => ({
             ...item,
             startDate: formData.startDate,
-            startTime: formData.startTime,
             overtimeType: formData.autoOvertimeType,
             endDate: formData.endDate,
-            endTime: formData.endTime,
+            startTime: formData.startTimeHours + ":" + formData.startTimeMinute,
+            endTime: formData.endTimeHours + ":" + formData.endTimeMinute,
             staffId: optionsData.value.userInfoList.find((el) => el.userName === item.staffName)?.id
           }));
 
@@ -308,26 +310,36 @@ const openDialog = () => {
       overTimeFormRef.value.validate((valid) => {
         if (valid) {
           showMessageBox(`确认添加加班人员吗?`).then(() => {
-            addUserOvertime({ overTimeApplyDTOList })
-              .then((res) => {
-                if (res.data) {
-                  const { days, hours, productLine } = res.data[0];
-                  const calcDataHours = overTimeApplyDTOList.map((item) => ({
-                    id: uuidv4(),
-                    isNew: true,
-                    ...item,
-                    days,
-                    hours,
-                    productLine: item.productLine
-                  }));
-                  done();
-                  dataList.value = [...dataList.value, ...calcDataHours];
-                  // message("添加成功");
-                } else {
-                  message("添加失败", { type: "error" });
-                }
-              })
-              .catch(console.log);
+            // addUserOvertime({ overTimeApplyDTOList })
+            //   .then((res) => {
+            //     if (res.data) {
+            //       const { days, hours, productLine } = res.data[0];
+            //       const calcDataHours = overTimeApplyDTOList.map((item) => ({
+            //         id: uuidv4(),
+            //         isNew: true,
+            //         ...item,
+            //         days,
+            //         hours,
+            //         productLine: item.productLine
+            //       }));
+            //       done();
+            //       dataList.value = [...dataList.value, ...calcDataHours];
+            //       // message("添加成功");
+            //     } else {
+            //       message("添加失败", { type: "error" });
+            //     }
+            //   })
+            //   .catch(console.log);
+            const calcDataHours = overTimeApplyDTOList.map((item) => ({
+              id: uuidv4(),
+              isNew: true,
+              ...item,
+              // days,
+              // hours,
+              productLine: item.productLine
+            }));
+            done();
+            dataList.value = [...dataList.value, ...calcDataHours];
           });
         }
       });
@@ -436,12 +448,29 @@ const makeRange = (start: number, end: number, type?: string) => {
   return result;
 };
 
-const disabledHours = () => {
-  if (formData.startTime) {
-    const startDevideHour = formData.startTime.split(":")[0];
-    return makeRange(0, +startDevideHour);
+const startTimeHoursList = [];
+for (let i = 0; i < 24; i++) {
+  let numStr = "";
+  if (i < 10) {
+    numStr = "0" + i;
+  } else {
+    numStr = "" + i;
   }
-};
+  startTimeHoursList.push({ optionName: numStr, optionValue: numStr });
+}
+
+const startTimeMinuteList = [];
+for (let i = 0; i < 60; i++) {
+  if (i % 5 === 0) {
+    let numStr = "";
+    if (i < 10) {
+      numStr = "0" + i;
+    } else {
+      numStr = "" + i;
+    }
+    startTimeMinuteList.push({ optionName: numStr, optionValue: numStr });
+  }
+}
 
 const changeOvertimeType = (type) => {
   const dynamicTime = {
@@ -450,8 +479,13 @@ const changeOvertimeType = (type) => {
     工作日加班: { startTime: "18:00", endTime: "22:00" }
   };
 
-  formData.startTime = dynamicTime[type]?.startTime;
-  formData.endTime = dynamicTime[type]?.endTime;
+  const startTimeArr = dynamicTime[type]?.startTime.split(":");
+  formData.startTimeHours = startTimeArr[0];
+  formData.startTimeMinute = startTimeArr[1];
+
+  const endTimeArr = dynamicTime[type]?.endTime.split(":");
+  formData.endTimeHours = endTimeArr[0];
+  formData.endTimeMinute = endTimeArr[1];
 };
 
 defineExpose({ onSave });
@@ -509,13 +543,15 @@ defineExpose({ onSave });
             placeholder="请选择开始日期"
           />
         </el-form-item>
-        <el-form-item
-          label="开始时间"
-          prop="startTime"
-          v-if="type === 'add'"
-          :rules="{ required: true, trigger: ['submit', 'change'], message: '请选择开始时间' }"
-        >
-          <el-time-picker style="width: 160px" v-model="formData.startTime" value-format="HH:mm" format="HH:mm" placeholder="请选择开始时间" />
+        <el-form-item v-if="type === 'add'" label="开始时间" prop="startTimeHours" style="margin-right: 0">
+          <el-select style="width: 60px" filterable clearable v-model="formData.startTimeHours" placeholder="时">
+            <el-option v-for="item in startTimeHoursList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="type === 'add'" label=":" label-width="25px" prop="startTimeMinute">
+          <el-select style="width: 60px" filterable clearable v-model="formData.startTimeMinute" placeholder="分">
+            <el-option v-for="item in startTimeMinuteList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+          </el-select>
         </el-form-item>
         <el-form-item
           label="结束日期"
@@ -532,20 +568,15 @@ defineExpose({ onSave });
             :disabled-date="disabledDate"
           />
         </el-form-item>
-        <el-form-item
-          label="结束时间"
-          prop="endTime"
-          v-if="type === 'add'"
-          :rules="{ required: true, trigger: ['submit', 'change'], message: '请选择结束时间' }"
-        >
-          <el-time-picker
-            style="width: 160px"
-            v-model="formData.endTime"
-            format="HH:mm"
-            value-format="HH:mm"
-            placeholder="请选择结束时间"
-            :disabled-hours="disabledHours"
-          />
+        <el-form-item v-if="type === 'add'" label="结束时间" prop="endTimeHours" style="margin-right: 0">
+          <el-select style="width: 60px" filterable clearable v-model="formData.endTimeHours" placeholder="时">
+            <el-option v-for="item in startTimeHoursList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="type === 'add'" label=":" label-width="25px" prop="endTimeMinute">
+          <el-select style="width: 60px" filterable clearable v-model="formData.endTimeMinute" placeholder="分">
+            <el-option v-for="item in startTimeMinuteList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+          </el-select>
         </el-form-item>
       </el-form>
       <el-divider :style="{ margin: '0px' }" />

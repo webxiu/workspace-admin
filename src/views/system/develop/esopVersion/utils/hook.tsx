@@ -98,8 +98,38 @@ export const useConfig = () => {
     openDialog("add");
   }
 
+  // 版本号自增
+  const addVersion = (version) => {
+    const arr = version.split(".");
+    arr[arr.length - 1] = Number(arr[arr.length - 1]) + 1;
+    return arr.join(".");
+  };
+
+  // 获取最大版本号
+  function getMaxVersion(versions: string[]): string {
+    return versions.reduce((max, version) => {
+      const versionParts = version.split(".").map(Number);
+      const maxParts = max.split(".").map(Number);
+      for (let i = 0; i < Math.max(versionParts.length, maxParts.length); i++) {
+        const currentVersionPart = versionParts[i] || 0;
+        const maxVersionPart = maxParts[i] || 0;
+        if (currentVersionPart > maxVersionPart) {
+          return version;
+        } else if (currentVersionPart < maxVersionPart) {
+          return max;
+        }
+      }
+      return max;
+    });
+  }
+
   async function openDialog(type: "add" | "edit", row?: Partial<EsopVersionItemType>) {
     const title = { add: "新增", edit: "修改" }[type];
+    let version = row?.version;
+    if (type === "add") {
+      const versions = dataList.value.map((m) => m.version);
+      version = addVersion(getMaxVersion(versions));
+    }
     const formRef = ref();
     const formData = reactive({
       id: row?.id ?? "",
@@ -107,7 +137,7 @@ export const useConfig = () => {
       maxTime: row?.maxTime ?? 8,
       timeType: row?.timeType ?? "hour",
       updateLog: row?.updateLog ?? "",
-      version: row?.version ?? "",
+      version: version,
       forceUpdate: row?.forceUpdate ?? false,
       downloadUrl: row?.downloadUrl ? [{ file: null, raw: row.downloadUrl }] : []
     });

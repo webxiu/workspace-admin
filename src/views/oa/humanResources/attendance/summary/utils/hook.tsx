@@ -64,7 +64,7 @@ export const useConfig = () => {
   const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize,
-    userCode: "",
+    staffCode: "",
     staffName: "",
     deptId: "",
     status: "",
@@ -77,7 +77,7 @@ export const useConfig = () => {
 
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "姓名", value: "staffName" },
-    { label: "工号", value: "userCode" },
+    { label: "工号", value: "staffCode" },
     { label: "部门", value: "deptId", children: [] },
     { label: "状态", value: "status", children: [] },
     { label: "考勤年月", value: "date", type: "month", format: "YYYY-MM" },
@@ -128,7 +128,7 @@ export const useConfig = () => {
           );
         }
       },
-      { label: "人员编码", prop: "userCode" },
+      { label: "人员编码", prop: "staffCode" },
       { label: "姓名", prop: "staffName" },
       { label: "性别", prop: "sex" },
       { label: "入职日期", prop: "startDate", sortable: true },
@@ -225,6 +225,8 @@ export const useConfig = () => {
       annualLeaveTerms: row?.annualLeaveTerms ?? "",
       beLateTime: row?.beLateTime ?? "",
       earlyTime: row?.earlyTime ?? "",
+      thingLeaveTime: row?.thingLeaveTime??"",
+      absentCount: row?.absentCount??"",
       absenteeismTime: row?.absenteeismTime ?? "",
       peacetimeOverTime: row?.peacetimeOverTime ?? "",
       restOverTime: row?.restOverTime ?? "",
@@ -346,7 +348,7 @@ export const useConfig = () => {
 
   const onSubmitChange = (data, callback) => {
     // const param = {
-    //   userCodeCol: data.userCodeCol,
+    //   staffCodeCol: data.staffCodeCol,
     //   row: data.row,
     //   moneyCol: data.moneyCol,
     //   yearAndMonth: data.yearAndMonth

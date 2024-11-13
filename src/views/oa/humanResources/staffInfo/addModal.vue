@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-09-22 11:12:26 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-09-22 11:12:26 
+ * @Author: Hailen
+ * @Date: 2023-09-22 11:12:26
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-09-22 11:12:26
  */ -->
 
 <script setup lang="ts">
@@ -34,6 +34,7 @@ const formData = ref({
   transferDate: formatDate(props.row.transferDate, "YYYY-MM-DD"),
   deptId: props.row.deptId ? `${props.row.deptId}` : "",
   workRuleId: props.row.workRuleId ? `${props.row.workRuleId}` : "",
+  isPoorPeople: props.row.isPoorPeople ?? 0,
   // 教育经历删除的id列表
   deleteStaffInfoEducationIdList: [],
   // 家庭关系删除的id列表

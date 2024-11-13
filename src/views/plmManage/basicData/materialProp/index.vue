@@ -16,7 +16,7 @@
         @node-click="handleNodeClick"
       />
     </div>
-    <div class="flex-1 ui-ov-h">
+    <div class="ui-ov-h" style="width: 70%">
       <PureTableBar :columns="columns" @refresh="onFresh" style="padding-top: 0" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="属性名称" searchField="propertyName" />
@@ -48,6 +48,28 @@
         </template>
       </PureTableBar>
     </div>
+    <div class="ui-ov-h" style="width: 30%; padding-top: 8px">
+      <div style="margin-bottom: 8px">
+        <ButtonList :buttonList="buttonList2" :auto-layout="false" moreActionText="更多操作" />
+      </div>
+      <pure-table
+        border
+        class="material-prop-table2"
+        @row-click="rowClick2"
+        :height="maxHeight"
+        :max-height="maxHeight"
+        row-key="id"
+        :adaptive="true"
+        align-whole="left"
+        size="small"
+        :loading="loading2"
+        :data="dataList2"
+        :columns="columns2"
+        :row-class-name="rowClassName"
+        show-overflow-tooltip
+        highlight-current-row
+      />
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -63,6 +85,7 @@ const {
   dataList,
   columns,
   maxHeight,
+  loading2,
   rowClassName,
   onFresh,
   rowClick,
@@ -71,6 +94,10 @@ const {
   searchOptions,
   handleNodeClick,
   onChangeFileInput,
+  buttonList2,
+  dataList2,
+  columns2,
+  rowClick2,
   handleTagSearch,
   curNodeName
 } = useTable();

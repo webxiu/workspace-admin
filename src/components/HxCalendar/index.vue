@@ -29,7 +29,7 @@
         <div class="day-cell week-count">{{ days[0].week }}</div>
         <div v-for="(item, idx) in days" @click="chooseDate(item)" :class="classList(item)" :key="idx">
           <slot name="custom-cell" :item="item">
-            <div :class="{ 'day-cell_name': true }">
+            <div class="day-cell_name">
               <div class="day">{{ item.date.getDate() }}</div>
               <div class="lunar">{{ item.festival || item.lunar.term || item.lunar.lunarDayName }}</div>
             </div>
@@ -322,17 +322,17 @@ $borderColor: var(--el-card-border-color);
       color: $color;
       .today {
         color: #fff !important;
-        background: #409eff;
+        background: var(--el-color-primary);
       }
       .festival {
-        color: #00f;
+        color: var(--el-color-primary);
       }
 
       .current-month {
         font-size: 14px;
       }
-      .other-month .day-cell_name {
-        opacity: 0.4;
+      .other-month {
+        color: #b5b5b5;
       }
 
       .week-count {
@@ -356,11 +356,11 @@ $borderColor: var(--el-card-border-color);
 
         &:hover,
         &.select {
-          color: #fff;
+          color: #fff !important;
           background: #1bac46;
         }
         .day {
-          font-size: 20px;
+          font-size: 18px;
           line-height: 1em;
         }
         .lunar {

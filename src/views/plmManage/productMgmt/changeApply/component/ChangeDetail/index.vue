@@ -9,40 +9,14 @@
       <span>单据编号: PD90150016</span>
       <span>FORM:QR-QC-003-09X</span>
     </div>
-    <div class="item-box border-form-line">
-      <div class="cate-title no-wrap">ECR申请</div>
-      <EditForm
-        ref="formRef"
-        :formInline="formData"
-        :formItemGutter="0"
-        :formRules="formRules"
-        :formProps="{ labelWidth: '70px', requireAsteriskPosition: 'right', inlineMessage: true }"
-        :formConfigs="formConfigs({ onPreviewImg })"
-        class="border-form form1"
-      />
-    </div>
-    <div class="item-box border-form-line">
-      <div class="cate-title no-wrap">ECN执行</div>
-      <EditForm
-        ref="formRef2"
-        :formInline="formData"
-        :formItemGutter="0"
-        :formProps="{ labelWidth: '80px', requireAsteriskPosition: 'right', inlineMessage: true }"
-        :formConfigs="formConfigs2({ onTableChange })"
-        class="border-form"
-      />
-    </div>
-    <div class="item-box border-form-line end-item">
-      <div class="cate-title no-wrap">ECN执行</div>
-      <EditForm
-        ref="formRef3"
-        :formInline="formData"
-        :formItemGutter="0"
-        :formProps="{ labelWidth: '80px', requireAsteriskPosition: 'right', inlineMessage: true }"
-        :formConfigs="formConfigs3()"
-        class="border-form"
-      />
-    </div>
+    <HxFormTable
+      class="mb-30"
+      ref="tableRef"
+      :formRules="formRules"
+      :tableList="tableList({ onPreviewImg, onTableChange })"
+      :formInline="formData"
+      :formProps="{ labelWidth: '0', requireAsteriskPosition: 'right', inlineMessage: true }"
+    />
     <el-dialog v-model="dialogVisible" :append-to-body="true" :draggable="true" class="goods-dialog">
       <el-image :src="dialogImageUrl" fit="contain" :zoom-rate="1.2" :preview-src-list="[dialogImageUrl]" :hide-on-click-modal="true">
         <template #error>
@@ -53,19 +27,36 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-import EditForm from "@/components/EditForm/index.vue";
-import { formConfigs, formRules, formConfigs2, formConfigs3 } from "./config";
+<script setup lang="tsx">
+import { reactive, ref } from "vue";
+import HxFormTable from "@/components/HxFormTable/index.vue";
+import { tableList, formRules } from "./config";
 import Print from "@/utils/print";
 
 const dialogVisible = ref(false);
 const dialogImageUrl = ref("");
 const printRef = ref();
-const formRef = ref();
-const formRef2 = ref();
-const formRef3 = ref();
-const formData = ref({
+const tableRef = ref();
+const formData = reactive({
+  xxx1: "数据1",
+  xxx2: "数据2",
+  xxx3: "数据3",
+  xxx4: "数据4",
+  xxx5: "数据5",
+  xxx6: "数据6",
+  xxx7: "数据7",
+  xxx8: "数据8",
+  xxx9: ["好的B", "好的D"],
+  xxx10: "数据10",
+  xxx11: "数据11",
+  xxx12: "数据12",
+  xxx13: "数据13",
+  xxx14: [],
+  xxx15: "数据15",
+  xxx16: "数据16",
+  xxx17: "数据17",
+  xxx18: "数据18",
+  xxx19: "数据19",
   date: "2024-08-01",
   applyDepartment: "1",
   applyUser: "2",
@@ -108,20 +99,11 @@ const formData = ref({
   deputyDirectorSign: "31",
   influenceRange: ["工装治具", "生产工艺"]
 });
-
 function getRef() {
-  const FormRef = formRef.value.getRef();
-  const FormRef2 = formRef2.value.getRef();
-  const FormRef3 = formRef3.value.getRef();
-
-  console.log("==========", { ...formData.value });
-
-  FormRef.validate((valid) => {
-    if (valid) {
-      console.log("submit!");
-    }
-  });
-  return formData;
+  console.log(formData);
+  // if (printRef.value) Print(printRef.value);
+  const formRef = tableRef.value.getRef();
+  return { formData, formRef };
 }
 
 const onTableChange = (data) => {
