@@ -48,9 +48,12 @@ export const useConfig = () => {
     getTableList();
   });
 
-  watch(formData, (val) => {
-    getTableList();
-  });
+  watch(
+    () => formData.category,
+    () => {
+      getTableList();
+    }
+  );
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
@@ -82,6 +85,7 @@ export const useConfig = () => {
         if (res1.status === 200) {
           // dataList.value = [...dataListTemp.value, ...res1.data];
           dataList.value = res1.data;
+          console.log(res1.data, "res1.data==");
           dataListTemp.value = dataList.value;
         }
         if (res2.status === 200) {

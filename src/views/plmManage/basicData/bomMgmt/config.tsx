@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-21 17:25:00
+ * @Last Modified time: 2024-11-21 15:44:43
  */
 
 import { h, onMounted, reactive, ref } from "vue";
@@ -53,7 +53,9 @@ export interface DepGroupItemTree {
 export type HandleType = "add" | "edit";
 
 const columnsDragDom = ref([]);
-let formData = reactive({
+const formData = reactive({
+  materialName: "",
+  state: "",
   page: 1,
   limit: PAGE_CONFIG.pageSize,
   groupIdList: []
@@ -173,15 +175,7 @@ export function useTable(contextMenuRef) {
    * @param type 请求类型 (all:表单搜索请求, single: 点击左侧菜单请求)
    */
   const onSearch = (rowIndex?) => {
-    // 处理时间范围
-    // const { date = "" } = formData;
-    // if (date) {
-    //   const [startTime, endTime] = date.split("~").map((item) => item.trim());
-    //   formData.startDate = startTime;
-    //   formData.endDate = endTime;
-    // }
     currentRow.value = {};
-    console.log("右侧");
     loading.value = true;
     fetchBomTableData(formData)
       .then((res: any) => {
@@ -208,11 +202,8 @@ export function useTable(contextMenuRef) {
   };
 
   const handleTagSearch = (values) => {
-    console.log(values, "values");
-
-    formData = { ...values, page: 1, limit: PAGE_CONFIG.pageSize };
-    console.log(formData, "准备发送请求");
-
+    Object.assign(formData, values);
+    formData.page = 1;
     onSearch();
   };
 
@@ -414,8 +405,8 @@ export function useTable(contextMenuRef) {
 
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
-    { clickHandler: onEdit, type: "primary", text: "修改", isDropDown: false },
-    { clickHandler: remove, type: "primary", text: "删除", isDropDown: false },
+    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
+    { clickHandler: remove, type: "delete", text: "删除", isDropDown: false },
     { clickHandler: onExport, type: "primary", text: "导出", isDropDown: true },
     { clickHandler: businessAction, type: "primary", text: "提交", isDropDown: true },
     { clickHandler: businessAction, type: "primary", text: "回退", isDropDown: true },

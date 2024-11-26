@@ -1,4 +1,4 @@
-import { ChatRound, Download, Plus, Printer, RefreshRight, Right, Setting } from "@element-plus/icons-vue";
+import { ChatRound, Download, Plus, Printer, RefreshRight, Refresh, Right, Setting } from "@element-plus/icons-vue";
 
 import { ref } from "vue";
 import { useConfig } from "../../staffInfo/utils/hook";
@@ -19,6 +19,7 @@ export const useConfig2 = () => {
     onPrint,
     onDismiss,
     onExport,
+    onSyncMachine,
     onUpdateStandard,
     onSetKingdeeAccount,
     onSetQYWXAccount,
@@ -40,6 +41,7 @@ export const useConfig2 = () => {
     { clickHandler: onPrint, type: "default", text: "打印", icon: Printer, isDropDown: true },
     { clickHandler: onDismiss, type: "default", text: "离职", icon: Right, isDropDown: true },
     { clickHandler: onExport, type: "default", text: "导出", icon: Download, isDropDown: true },
+    { clickHandler: onSyncMachine, type: "default", text: "同步考勤机", icon: Refresh, isDropDown: true },
     { clickHandler: onUpdateStandard, type: "default", text: "更新核算标准", icon: RefreshRight, isDropDown: true },
     { clickHandler: onSetKingdeeAccount, type: "default", text: "设置金蝶账号", icon: Setting, isDropDown: true },
     { clickHandler: onSetQYWXAccount, type: "default", text: "设置企业微信账号", icon: ChatRound, isDropDown: true }

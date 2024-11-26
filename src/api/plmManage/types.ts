@@ -1,21 +1,32 @@
-/** ========================= 产品管理 ========================= */
+/** ========================= 物料管理 ========================= */
 
-import { UploadFile } from "element-plus";
+/** 物料管理 - 项目分类下拉列表类型 */
+export interface MaterialGroupItemType {
+  id: string;
+  parentId: string;
+  name: string;
+  title: string;
+  groupCode: string;
+  spread: false;
+  children: MaterialGroupItemType[];
+}
+/** ========================= 变更申请 ========================= */
 
-/** 产品分类管理 - 列表项类型 */
-export interface ProductClassifyManageItemType {
-  id: number;
-  categoryNo: string;
-  categoryName: string;
-  createUserId: string;
+export interface ChangeApplyItemType {
+  id: string;
+  billNo: string;
+  productName: string;
+  productModel: string;
+  billState: string;
+  customerName: string;
+  changeType: string;
+  changePhase: string;
+  changeTheme: string;
   createDate: string;
-  modifyUserId: string;
-  modifyDate: string;
-  createUserName: string;
+  applyDepartment: string;
+  applyUserName: string;
   modifyUserName: string;
-  label: string;
-  value: number;
-  [key: string]: any;
+  modifyDate: string;
 }
 
 /** ========================= 实验室管理 ========================= */
@@ -117,4 +128,21 @@ export interface MoldFileItemType {
   orgId: string;
   fileName: string;
   filePath: string;
+}
+/** ========================= PLM设置 ========================= */
+
+/** 产品分类管理 - 列表项类型 */
+export interface ProductClassifyManageItemType {
+  id: number;
+  categoryNo: string;
+  categoryName: string;
+  createUserId: string;
+  createDate: string;
+  modifyUserId: string;
+  modifyDate: string;
+  createUserName: string;
+  modifyUserName: string;
+  label: string;
+  value: number;
+  [key: string]: any;
 }

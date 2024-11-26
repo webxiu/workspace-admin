@@ -54,10 +54,9 @@ export type HandleType = "add" | "edit";
 const columnsDragDom = ref([]);
 const selectRows: any = ref([]);
 const materialMainTable = ref();
-let formData = reactive({
+const formData = reactive({
   page: 1,
   limit: PAGE_CONFIG.pageSize,
-  date: "",
   startDate: "",
   endDate: "",
   materialGroups: "",
@@ -201,16 +200,7 @@ export function useTable(emits, { isModal, productCode }) {
    */
   const onSearch = (rowIndex?) => {
     currentRow.value = {};
-    // 处理时间范围
-    const { date = "" } = formData;
-    if (date) {
-      const [startTime, endTime] = date.split("~").map((item) => item.trim());
-      formData.startDate = startTime;
-      formData.endDate = endTime;
-    }
-
     if (formData.isfrozen === "否") formData.isfrozen = "0";
-
     loading.value = true;
     fetchMaterialList({ ...formData, goodModel: productCode ?? undefined })
       .then((res: any) => {
@@ -241,7 +231,8 @@ export function useTable(emits, { isModal, productCode }) {
   };
 
   const handleTagSearch = (values) => {
-    formData = { ...values, page: 1, limit: PAGE_CONFIG.pageSize };
+    Object.assign(formData, values);
+    formData.page = 1;
     onSearch();
   };
 

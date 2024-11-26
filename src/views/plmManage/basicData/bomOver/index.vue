@@ -6,7 +6,7 @@
  */ -->
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
@@ -16,7 +16,7 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "PlmManageBasicDataBomOverIndex" });
 
 const tableRef = ref<HTMLDivElement>();
-const searchOptions: SearchOptionType[] = [
+const searchOptions = reactive<SearchOptionType[]>([
   {
     label: "包含禁用BOM",
     value: "containDisplayBOM",
@@ -25,7 +25,7 @@ const searchOptions: SearchOptionType[] = [
       { label: "不包含", value: false }
     ]
   }
-];
+]);
 
 const { loading, columns, dataList, onFresh, maxHeight, buttonList, handleTagSearch, cellDblclick, onExport } = useConfig();
 </script>

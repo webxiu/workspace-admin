@@ -55,9 +55,7 @@ export const useMachine = () => {
   };
 
   const handleTagSearch = (val) => {
-    formData.sn = val.sn;
-    formData.description = val.description;
-    formData.attMachineName = val.attMachineName;
+    Object.assign(formData, val);
     onSearch();
   };
 

@@ -282,16 +282,7 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
       labelWidth: 80,
       colProp: { span: 6 },
       render: ({ formModel, row }) => {
-        return (
-          <el-input
-            disabled={isView || isDisabledMaterialCode}
-            readonly={isView}
-            size="small"
-            v-model={formModel[row.prop]}
-            placeholder="请输入名称"
-            clearable
-          />
-        );
+        return <el-input disabled={isView} readonly={isView} size="small" v-model={formModel[row.prop]} placeholder="请输入名称" clearable />;
       }
     },
     {

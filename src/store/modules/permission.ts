@@ -40,22 +40,12 @@ export const usePermissionStore = defineStore({
           this.cachePageList = this.cachePageList.filter((v) => v !== name);
           break;
         case "add":
-          this.cachePageList.push(name);
+          if (!this.cachePageList.includes(name)) this.cachePageList.push(name);
           break;
         case "delete":
           delIndex !== -1 && this.cachePageList.splice(delIndex, 1);
           break;
       }
-      /** 监听缓存页面是否存在于标签页，不存在则删除 */
-      debounce(() => {
-        let cacheLength = this.cachePageList.length;
-        const nameList = getKeyList(useMultiTagsStoreHook().multiTags, "name");
-        while (cacheLength > 0) {
-          nameList.findIndex((v) => v === this.cachePageList[cacheLength - 1]) === -1 &&
-            this.cachePageList.splice(this.cachePageList.indexOf(this.cachePageList[cacheLength - 1]), 1);
-          cacheLength--;
-        }
-      })();
     },
     /** 清空缓存页面 */
     clearAllCachePage() {

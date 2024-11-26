@@ -18,23 +18,22 @@ export const useConfig = () => {
   const firstDayOfMonth = dayjs().startOf("month").format("YYYY-MM-DD");
   const nowDay = dayjs().format("YYYY-MM-DD");
 
-  let formData: any = reactive({
+  const formData = reactive({
     startTime: "",
     endTime: "",
     fpoorDerNo: "",
     fnumber: "",
     supCode: "",
-    date: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const searchOptions: SearchOptionType[] = [
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "采购单号", value: "fpoorDerNo" },
     { label: "供应商编号", value: "supCode" },
-    { label: "入库日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
-  ];
+    { label: "入库日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startTime", endKey: "endTime" }
+  ]);
   const queryParams = reactive({ date: `${firstDayOfMonth} ~ ${nowDay}` });
 
   onMounted(() => {
@@ -78,11 +77,6 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const { date = "" } = formData;
-    const [startTime, endTime] = date.split("~").map((item) => item.trim());
-    formData.startTime = startTime;
-    formData.endTime = endTime;
-    console.log(formData, "req");
     fetchInStoreList(formData)
       .then((res: any) => {
         const data = res.data;
@@ -93,15 +87,8 @@ export const useConfig = () => {
       .catch((err) => (loading.value = false));
   };
 
-  const handleTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values };
-
-    formData.page = page;
-    formData.limit = limit;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

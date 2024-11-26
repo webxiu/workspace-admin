@@ -37,8 +37,8 @@ export const useTestProjectConfig = () => {
   const contextMenuRef = ref<InstanceType<typeof ContextMenu>>();
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const formData = reactive({
-    createUserName: "淡淡的",
-    projectName: "斯蒂芬",
+    createUserName: "",
+    projectName: "",
     page: 1,
     typeId: "",
     limit: PAGE_CONFIG.pageSize
@@ -100,9 +100,8 @@ export const useTestProjectConfig = () => {
     getTableList();
   };
 
-  const onTagSearch = (values = {}) => {
-    formData.createUserName = values.createUserName;
-    formData.projectName = values.projectName;
+  const onTagSearch = (values) => {
+    Object.assign(formData, values);
     getTableList();
   };
 

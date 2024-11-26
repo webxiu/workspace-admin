@@ -98,7 +98,7 @@ export const useConfig = () => {
     getTableList();
   };
 
-  const onTagSearch = ({ ...values }) => {
+  const onTagSearch = (values) => {
     formData.mkQuoteRequestVO = values;
     getTableList();
   };
@@ -110,20 +110,26 @@ export const useConfig = () => {
   const openDialog = (type: "edit", row?: QuoteSaleItemType) => {
     const title = { edit: "修改" }[type];
     const formRef = ref();
+    const isEdit = [BillState.submit, BillState.reject].includes(row.billState);
     addDialog({
       title: `${title}销售报价单`,
-      props: { row },
+      props: { row, isEdit },
       width: "90%",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       contentRenderer: () => h(Print, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        if (type === "edit" && ![BillState.submit, BillState.reject].includes(row.billState)) {
+        if (type === "edit" && !isEdit) {
           return message("只能提交【待提交/重新审核】的记录", { type: "error" });
         }
-        const { FormRef, formData, variableCost, materialBomLists, packMaterialBomLists } = formRef.value.getRef();
+        const { FormRef, formData, variableCost, materialBomLists, packMaterialBomLists, ...rowInfo } = formRef.value.getRef();
         const { quoteList, ...reset } = formData;
+        const materialCodes1 = materialBomLists.filter((f) => !f.materialCode && !f.materialGroup);
+        const materialCodes2 = packMaterialBomLists.filter((f) => !f.materialCode && !f.materialGroup);
+        if (materialCodes1.length || materialCodes2.length) {
+          return message("物料编码为空时，物料分组必填", { type: "error" });
+        }
         const jointArr = (list: string[], key: string) => {
           const _arr = list.map((m) => m[key]);
           return _arr.filter(Boolean).join(",");
@@ -132,22 +138,24 @@ export const useConfig = () => {
         const quoteQuantityMoney = jointArr(quoteList, "price");
         const currencys = jointArr(quoteList, "currency");
         const mkQuoteRequestVO = { ...row.mkQuoteRequestVO, quoteQuantity, quoteQuantityMoney, currencys };
-        const params = { ...row, mkQuoteRequestVO, variableCost, materialBomLists, packMaterialBomLists };
+        const params = { ...row, ...rowInfo, mkQuoteRequestVO, variableCost, materialBomLists, packMaterialBomLists };
         console.log("params", params);
         FormRef.validate((valid) => {
           if (valid) {
-            showMessageBox("确认提交吗").then(() => {
-              const reqApi = { add: addQuoteSale, edit: updateQuoteSale };
-              reqApi[type](params).then((res) => {
-                if (res.data) {
-                  message(`${title}成功`);
-                  getTableList();
-                  done();
-                } else {
-                  message(`${title}失败`, { type: "error" });
-                }
-              });
-            });
+            showMessageBox("确认提交吗")
+              .then(() => {
+                const reqApi = { add: addQuoteSale, edit: updateQuoteSale };
+                reqApi[type](params).then((res) => {
+                  if (res.data) {
+                    message(`${title}成功`);
+                    getTableList();
+                    done();
+                  } else {
+                    message(`${title}失败`, { type: "error" });
+                  }
+                });
+              })
+              .catch(console.log);
           }
         });
       }

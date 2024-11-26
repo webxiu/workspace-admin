@@ -21,7 +21,7 @@ export const useMachine = () => {
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
-  const formData: any = reactive({
+  const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
@@ -43,7 +43,7 @@ export const useMachine = () => {
       ]
     },
     { label: "考勤机名称", value: "attMachineName" },
-    { label: "创建时间", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "创建时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   onMounted(() => {
@@ -68,11 +68,6 @@ export const useMachine = () => {
   };
 
   const onSearch = () => {
-    if (formData.date) {
-      const [startDate, endDate] = formData.date.split("~").map((item) => item.trim());
-      formData.startDate = startDate;
-      formData.endDate = endDate;
-    }
     fetchAttendanceLog(formData).then((res: any) => {
       if (res.data) {
         dataList.value = res.data.records || [];
@@ -85,11 +80,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.createUserName = val.createUserName;
-    formData.executeStatus = val.executeStatus;
-    formData.date = val.date;
-    formData.attMachineName = val.attMachineName;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

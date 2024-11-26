@@ -43,7 +43,7 @@ export const useTestReportConfig = () => {
     onSearch();
   });
 
-  let formData: any = reactive({
+  const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
@@ -51,7 +51,7 @@ export const useTestReportConfig = () => {
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "文件编号", value: "fileCode" },
-    { label: "发出日期", value: "usedDate", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "发出日期", value: "usedDate", type: "daterange", format: "YYYY-MM-DD", startKey: "useStartDate", endKey: "useEndDate" },
     { label: "保存期限", value: "shelfLife" },
     { label: "部门", value: "deptId", children: [] },
     {
@@ -63,7 +63,7 @@ export const useTestReportConfig = () => {
       ]
     },
     { label: "创建人姓名", value: "createUserName" },
-    { label: "创建时间", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "创建时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "createStartDateTime", endKey: "createEndDateTime" }
   ]);
 
   const disableInfoConst = { false: "未禁用", true: "禁用" };
@@ -108,23 +108,7 @@ export const useTestReportConfig = () => {
 
   const onSearch = (_rowIndex?) => {
     loading.value = true;
-
-    const newFormData = cloneDeep(formData);
-    if (formData.date) {
-      const [startDate, endDate] = formData.date.split("~");
-      newFormData.createStartDateTime = startDate.trim();
-      newFormData.createEndDateTime = endDate.trim();
-    }
-
-    if (formData.usedDate) {
-      const [startDate, endDate] = formData.usedDate.split("~");
-      newFormData.useStartDate = startDate.trim();
-      newFormData.useEndDate = endDate.trim();
-    }
-
-    delete newFormData.date;
-    delete newFormData.usedDate;
-    fetchControllFileList(newFormData)
+    fetchControllFileList(formData)
       .then((res: any) => {
         const data = res.data;
         loading.value = false;
@@ -147,15 +131,8 @@ export const useTestReportConfig = () => {
     });
   };
 
-  const handleTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values };
-
-    formData.page = page;
-    formData.limit = limit;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

@@ -139,10 +139,7 @@ export const useConfig = () => {
   };
 
   const handleTagSearch = (values) => {
-    formData.staffName = values.staffName;
-    formData.staffCode = values.staffCode;
-    formData.userType = values.userType;
-    formData.deptId = values.deptId;
+    Object.assign(formData, values);
     formData.deptIdList = [];
     formData.year = +values.date?.split("-")[0];
     formData.month = +values.date?.split("-")[1];

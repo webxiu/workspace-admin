@@ -22,7 +22,7 @@ export const formGroupRules = reactive<FormRules>({
 });
 
 // 1.部门编辑弹窗表单配置
-export const formConfigs = ({ depUserInfo, deptInfoTree, type }): FormConfigItemType[] => {
+export const formConfigs = ({ depUserInfo, deptInfoTree, type, changeExamineFlag }): FormConfigItemType[] => {
   return [
     {
       label: "部门编号",
@@ -158,6 +158,19 @@ export const formConfigs = ({ depUserInfo, deptInfoTree, type }): FormConfigItem
             v-model={formModel[row.prop]}
             clearable
           />
+        );
+      }
+    },
+    {
+      label: "考核部门",
+      prop: "examineFlag",
+      colProp: layout,
+      render: ({ formModel, row }) => {
+        return (
+          <el-checkbox-group v-model={formModel[row.prop]} onChange={() => changeExamineFlag(formModel[row.prop])}>
+            <el-checkbox label="是" value="是" />
+            <el-checkbox label="否" value="否" />
+          </el-checkbox-group>
         );
       }
     }

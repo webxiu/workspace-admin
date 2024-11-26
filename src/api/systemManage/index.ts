@@ -212,6 +212,29 @@ export function deleteformColumn(data) {
   return http.request<boolean>("delete", "/sys/sys/SysMenuFormItem/deleteBatch", { data });
 }
 
+/** ========================= 表单分组(菜单管理) ========================= */
+
+/** 表单分组: 列表 */
+export function formGroupList(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/list", { data });
+}
+/** 表单分组: 新增 */
+export function addFormGroup(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/insert", { data });
+}
+/** 表单分组: 修改 */
+export function updateFormGroup(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/update", { data });
+}
+/** 表单分组: 删除(批量) */
+export function deleteFormGroup(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/deleteBatch", { data });
+}
+/** 表单分组: 获取分组详情 */
+export function formGroupDetail(data) {
+  return http.request<boolean>("post", "/oa/sys/quoterequest/selectbyid", { data });
+}
+
 /** ========================= 表格配置(菜单管理) ========================= */
 
 /** 表格配置: 获取表格动态配置列 */
@@ -624,8 +647,8 @@ export function systemParamsValueDelete(params) {
 /** ========================= 枚举字典(开发运维) ========================= */
 
 /** 获取枚举字典列表(左) */
-export function enumDictionaryList(data) {
-  return http.request<EnumDictionaryItemType[]>("post", "/sys/sys/optioninfo/select", { data });
+export function enumDictionaryList(data, config?) {
+  return http.request<TablePagingResType<EnumDictionaryItemType>>("post", "/sys/sys/optioninfo/select", { data }, config);
 }
 
 /** 添加枚举字典(左) */

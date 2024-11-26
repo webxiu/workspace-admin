@@ -247,6 +247,11 @@ export function exportMarginAnalysisData(data) {
   return http.request("post", "/oa/fin/GrossProfitAnalysis/export", { data });
 }
 
+/** 解析毛利分析表格数据 */
+export function marginResolutionData(data) {
+  return http.request("post", "/oa/fin/GrossProfitAnalysis/costByLost", { params: data });
+}
+
 /** 获取各部门费用图表数据 */
 export function getEveryDeptMoneyData(data) {
   return http.request<any[]>("get", "/oa/fin/departcharge/getcostreportdata", { params: data });

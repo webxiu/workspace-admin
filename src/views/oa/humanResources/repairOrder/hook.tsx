@@ -10,9 +10,9 @@ import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
 import { getDeptOptions } from "@/utils/requestApi";
+import { message } from "@/utils/message";
 import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
-import { message } from "@/utils/message";
 
 export const useMachine = () => {
   const dataList = ref([]);
@@ -22,18 +22,17 @@ export const useMachine = () => {
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
-  const formData: any = reactive({
+  const formData = reactive({
+    model: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
 
   const nowDate = dayjs().format("YYYY-MM-DD");
-
   const queryParams = reactive({ date: `${nowDate} ~ ${nowDate}` });
-
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "规格型号", value: "model" },
-    { label: "完成日期", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "完成日期", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   onMounted(() => {
@@ -61,19 +60,12 @@ export const useMachine = () => {
   };
 
   const onSearch = () => {
-    // if (formData.date) {
-    //   const [startDate, endDate] = formData.date.split("~").map((item) => item.trim());
-    //   formData.startDate = startDate;
-    //   formData.endDate = endDate;
-    // }
     // fetchAttendanceRecord(formData).then((res: any) => {
     //   if (res.data) {
     //     dataList.value = res.data.records || [];
     //     pagination.total = res.data.total;
     //   }
     // });
-    console.log(formData, "fd...");
-
     dataList.value = [];
     pagination.total = 0;
   };
@@ -83,15 +75,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.deviceName = val.deviceName;
-    formData.model = val.model;
-    formData.date = val.date;
-
-    if (!val.date) {
-      formData.startDate = undefined;
-      formData.endDate = undefined;
-    }
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

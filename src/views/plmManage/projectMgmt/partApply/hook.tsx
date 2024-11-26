@@ -1,12 +1,13 @@
-import { addDialog } from "@/components/ReDialog";
-import detail from "./detail/index.vue";
+import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
-import { message } from "@/utils/message";
-import { useEleHeight } from "@/hooks";
-import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { addDialog } from "@/components/ReDialog";
+import detail from "./detail/index.vue";
+import { message } from "@/utils/message";
+import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
   const columns = ref([]);
@@ -16,7 +17,7 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "产品型号", value: "productModel" },
     { label: "产品名称", value: "productName" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
   const currentRow = ref();
   const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
@@ -80,11 +81,8 @@ export const useConfig = () => {
     openDialog("edit", currentRow.value);
   };
 
-  const handleTagSearch = (val) => {
-    formData["billNo"] = val.billNo;
-    formData["productName"] = val.productName;
-    formData["productModel"] = val.productModel;
-    formData["date"] = val.date;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
   };
 
   const onExport = () => {

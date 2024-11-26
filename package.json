@@ -1,6 +1,6 @@
 {
   "name": "workspace-web",
-  "version": "2024.0.395",
+  "version": "2024.0.416",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=4096 vite",

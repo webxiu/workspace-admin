@@ -49,13 +49,14 @@ export const useConfig = () => {
     staffCode: "",
     deptId: "",
     deptIdList: [],
-    date: ""
+    startDate: "",
+    endDate: ""
   });
 
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "姓名", value: "staffName" },
     { label: "工号", value: "staffCode" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
     { label: "部门", value: "deptId", children: [] }
   ]);
 
@@ -110,10 +111,7 @@ export const useConfig = () => {
   };
 
   const handleTagSearch = (values) => {
-    formData.date = values.date;
-    formData.staffCode = values.staffCode;
-    formData.staffName = values.staffName;
-    formData.deptId = values.deptId;
+    Object.assign(formData, values);
     formData.deptIdList = [];
     if (values.deptId) {
       const result = getTreeArrItem(treeData.value, "value", values.deptId);
@@ -127,13 +125,7 @@ export const useConfig = () => {
 
   const getTableList = () => {
     loading.value = true;
-    const { date, ...reset } = formData;
-    const params = {
-      ...reset,
-      endDate: date ? date.split("~")[1].trim() : "",
-      startDate: date ? date.split("~")[0].trim() : ""
-    };
-    overtimeOrderList(params)
+    overtimeOrderList(formData)
       .then(({ data }) => {
         loading.value = false;
         dataList.value = data.records || [];
@@ -162,6 +154,7 @@ export const useConfig = () => {
       fullscreenIcon: true,
       closeOnClickModal: false,
       okButtonText: type === "view" ? "确定" : "保存",
+      hideFooter: type === "view",
       contentRenderer: () => h(Detail, { ref: formRef }),
       beforeSure: (done, { options }) => {
         if (type === "view") return done();
@@ -206,14 +199,6 @@ export const useConfig = () => {
 
   // 导出
   const onExport = () => {
-    if (formData.date) {
-      const [startDate, endDate] = formData.date.split("~").map((el) => el.trim());
-      formData["startDate"] = startDate;
-      formData["endDate"] = endDate;
-    } else {
-      formData["startDate"] = undefined;
-      formData["endDate"] = undefined;
-    }
     const headConfig = getExportConfig("加班单", columns.value, { ...formData, limit: 200000 });
     exportOvertimeOrder(headConfig)
       .then((res) => {

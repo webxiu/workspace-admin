@@ -1,19 +1,19 @@
+import { commonBack, commonSubmit } from "@/api/systemManage";
+import { deleteHandleApplyPageList, fetchHandleApplyPageList } from "@/api/oaManage/marketing";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
+import { message, showMessageBox } from "@/utils/message";
 
+import HandleMakeSheet from "@/views/plmManage/projectMgmt/projectManage/add/components/flow/handleMakeSheet/index.vue";
+import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { addDialog } from "@/components/ReDialog";
 import dayjs from "dayjs";
 import { getDeptOptions } from "@/utils/requestApi";
 import { useEleHeight } from "@/hooks";
-import { message, showMessageBox } from "@/utils/message";
-import { addDialog } from "@/components/ReDialog";
-import HandleMakeSheet from "@/views/plmManage/projectMgmt/projectManage/add/components/flow/handleMakeSheet/index.vue";
 import { useRouter } from "vue-router";
-import { commonBack, commonSubmit } from "@/api/systemManage";
-import NodeDetailList from "@/components/NodeDetailList/index.vue";
-import { deleteHandleApplyPageList, fetchHandleApplyPageList } from "@/api/oaManage/marketing";
 
 export const useMachine = () => {
   const dataList = ref([]);
@@ -22,7 +22,11 @@ export const useMachine = () => {
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
-  const formData: any = reactive({
+  const formData = reactive({
+    applyUserName: "",
+    deptId: "",
+    startDate: "",
+    endDate: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
@@ -37,7 +41,7 @@ export const useMachine = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "申请人姓名", value: "applyUserName" },
     { label: "申请部门", value: "deptId", children: [] },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   const fetchOptions = () => {
@@ -79,11 +83,6 @@ export const useMachine = () => {
   };
 
   const onSearch = () => {
-    if (formData.date) {
-      const [startDate, endDate] = formData.date.split("~").map((item) => item.trim());
-      formData.startDate = startDate;
-      formData.endDate = endDate;
-    }
     fetchHandleApplyPageList(formData).then((res: any) => {
       if (res.data) {
         dataList.value = res.data.records || [];
@@ -97,16 +96,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.productName = val.productName;
-    formData.applyUserName = val.applyUserName;
-    formData.deptId = val.deptId;
-    formData.date = val.date;
-
-    if (!val.date) {
-      formData.startDate = undefined;
-      formData.endDate = undefined;
-    }
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

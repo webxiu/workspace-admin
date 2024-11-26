@@ -70,7 +70,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import dayjs from "dayjs";
 import { useTable } from "./config";
 import { PureTableBar } from "@/components/RePureTableBar";
@@ -127,7 +127,7 @@ const menuItems = ref<ContextMenuItem[]>([
 
 const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
 
-const searchOptions: SearchOptionType[] = [
+const searchOptions = reactive<SearchOptionType[]>([
   { label: "父级物料名称", value: "materialName" },
   {
     label: "审核状态",
@@ -139,7 +139,7 @@ const searchOptions: SearchOptionType[] = [
       { label: "重新审核", value: "3" }
     ]
   }
-];
+]);
 </script>
 
 <style lang="scss" scoped>

@@ -8,6 +8,7 @@ import { ElMessage } from "element-plus";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import SelectUserModal from "../selectUserModal/modal.vue";
 import { addDialog } from "@/components/ReDialog";
 import { cloneDeep } from "@pureadmin/utils";
@@ -30,14 +31,14 @@ export const useConfig = () => {
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
-  let formData: any = reactive({
+  const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
 
-  const searchOptions: any = ref([
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "单据编号", value: "billNo" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "searchStartDate", endKey: "searchEndDate" }
   ]);
 
   const getStateInfo = () => {
@@ -84,13 +85,7 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const copyData = cloneDeep(formData);
-    const [searchStartDate, searchEndDate] = copyData.date ? copyData.date.split(" ~ ") : [undefined, undefined];
-    copyData.searchStartDate = searchStartDate;
-    copyData.searchEndDate = searchEndDate;
-    delete copyData.date;
-
-    fetchVisitorList({ ...copyData })
+    fetchVisitorList(formData)
       .then((res: any) => {
         const data = res.data;
         loading.value = false;
@@ -100,12 +95,8 @@ export const useConfig = () => {
       .catch(() => (loading.value = false));
   };
 
-  const onTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values, page, limit };
+  const onTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 
@@ -285,22 +276,7 @@ export const useConfig = () => {
   // 导出
   const onExport = () => {
     loading.value = true;
-    let searchStartDate, searchEndDate;
-
-    if (formData.date) {
-      [searchStartDate, searchEndDate] = formData.date.split(" ~ ");
-    }
-
-    const copyData = cloneDeep(formData);
-    delete copyData.date;
-
-    const headConfig = {
-      ...copyData,
-      searchStartDate,
-      searchEndDate
-    };
-
-    exportVisitorList(headConfig)
+    exportVisitorList(formData)
       .then((res: any) => {
         window.open("/api" + res.data, "_blank");
       })

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-06 13:52:46
+ * @Last Modified time: 2024-11-26 11:04:36
  */
 
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
@@ -153,7 +153,7 @@ export const useConfig = () => {
     const formRef = ref();
     const loading = ref<boolean>(true);
     const parentSelect = ref<MenuListItemType>();
-    const myFormConfig = ref<FormConfigItemType[]>([]);
+    const formConfigs = ref<FormConfigItemType[]>([]);
     const formRules2 = ref<FormRules>({});
     const _formData = reactive({
       parentCode: row?.parentCode || "",
@@ -175,13 +175,8 @@ export const useConfig = () => {
       auxilTable: row?.auxilTable ?? ""
     });
 
-    // 父级下拉框变化记录选中项
-    function onParentTreeChange(row: MenuListItemType) {
-      parentSelect.value = row;
-    }
-
     const customProps = reactive({
-      parentCode: { onCurrentChange: onParentTreeChange },
+      parentCode: { onCurrentChange: (row) => (parentSelect.value = row) },
       menuType: { disabled: type === "edit" },
       dataBase: { disabled: row.menuType !== "菜单" },
       dataTable: { disabled: row.menuType !== "菜单" },
@@ -235,10 +230,10 @@ export const useConfig = () => {
 
     getFormColumns({ customProps, customElement, loading })
       .then((data) => {
-        formRules2.value = data.formRules;
+        const { formRules, formColumns } = data;
         loading.value = false;
-        if (!data.formColumns.length) return;
-        myFormConfig.value = data.formColumns;
+        formRules2.value = formRules;
+        if (formColumns.length) formConfigs.value = formColumns;
       })
       .catch(() => (loading.value = false));
 
@@ -262,10 +257,10 @@ export const useConfig = () => {
       props: {
         loading: loading,
         formInline: _formData,
-        // formRules: formRules2,
-        formRules: formRules(_formData),
+        // formRules: formRules(_formData),
         // formConfigs: formConfigs({ type, parentData: parentData, menuOption, _formData, onParentTreeChange });,
-        formConfigs: myFormConfig,
+        formRules: formRules2,
+        formConfigs: formConfigs,
         formProps: { labelWidth: "120px" }
       },
       width: "860px",

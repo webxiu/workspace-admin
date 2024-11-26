@@ -8,6 +8,7 @@
 <script lang="tsx">
 import { defineComponent, PropType, watch, reactive } from "vue";
 import { Plus, Delete } from "@element-plus/icons-vue";
+import { ItemKey } from "@/utils/form";
 
 export interface RulesItemType {
   id: number;
@@ -33,12 +34,22 @@ export default defineComponent({
     watch(space, watchUpdata, { deep: true });
 
     function watchUpdata(values) {
-      const specs = values.map(({ id, ...m }) => m);
+      const specs = values.map(({ id, ...m }) => {
+        if (!m.trigger?.length) delete m.trigger;
+        if (!m.message) delete m.message;
+        if (!m.pattern) delete m.pattern;
+        else m.pattern = m.pattern.toString().slice(1, -1);
+        return m;
+      });
       emit("update:modelValue", specs);
     }
     function addSpecs() {
       const { label, itemType } = props.rowData;
-      const msgType = { input: "请输入", select: "请选择" }[itemType];
+      let msgType = "请选择";
+      if ([ItemKey.input, ItemKey.inputNumber].includes(itemType)) {
+        msgType = "请输入";
+      }
+
       space.push({
         id: Date.now(),
         required: false,
@@ -52,7 +63,7 @@ export default defineComponent({
     }
 
     return () => (
-      <el-form>
+      <el-form class="ui-w-100">
         {space.map((domain, idx) => {
           return (
             <div class="flex mb-10" key={domain.id}>
@@ -60,10 +71,10 @@ export default defineComponent({
                 <el-switch v-model={domain.required} />
               </el-form-item>
               <el-form-item label="提示信息" prop={`specs.${idx}.message`} label-width="70px" class="mr-10">
-                <el-input v-model={domain.message} placeholder="请输入" style="width: 100px" />
+                <el-input v-model={domain.message} placeholder="请输入提示" style="min-width: 100px" />
               </el-form-item>
               <el-form-item label="校验正则" prop={`specs.${idx}.pattern`} label-width="70px" class="mr-10">
-                <el-input v-model={domain.pattern} placeholder="请输入" style="width: 80px" />
+                <el-input v-model={domain.pattern} placeholder="请输入正则" style="min-width: 80px" />
               </el-form-item>
               <el-form-item label="触发方式" label-width="70px" class="mr-10" prop={`specs.${idx}.trigger`}>
                 <el-select v-model={domain.trigger} multiple placeholder="请选择" style="width: 176px">

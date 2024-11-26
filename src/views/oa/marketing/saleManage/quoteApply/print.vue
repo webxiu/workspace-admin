@@ -11,22 +11,32 @@
       :formItemGutter="0"
       :formRules="formRules"
       :formProps="{ labelWidth: '160px', requireAsteriskPosition: 'right', inlineMessage: true }"
-      :formConfigs="formConfigs()"
+      :formConfigs="formConfigs({ currencyList, isEdit })"
       class="border-form"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import EditForm from "@/components/EditForm/index.vue";
 import { formRules, formConfigs } from "./utils/config";
 import { QuoteApplyItemType } from "@/api/oaManage/marketing";
+import { getEnumDictList } from "@/utils/table";
+import { OptionItemType } from "@/api/plmManage";
 
-const props = defineProps<{ row?: QuoteApplyItemType }>();
+const props = defineProps<{ row?: QuoteApplyItemType; isEdit?: boolean }>();
 const formRef = ref();
 const loading = ref(false);
 const formData = reactive({ ...props.row });
+const currencyList = ref<OptionItemType[]>([]);
+
+onMounted(() => {
+  loading.value = true;
+  getEnumDictList(["Currency"])
+    .then(({ Currency }) => (currencyList.value = Currency))
+    .finally(() => (loading.value = false));
+});
 
 function getRef() {
   return formRef.value.getRef();

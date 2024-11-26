@@ -13,6 +13,7 @@ import { message, showMessageBox } from "@/utils/message";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessage } from "element-plus";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { useEleHeight } from "@/hooks";
 
@@ -29,8 +30,7 @@ export const useConfig = () => {
     plateNumber: "",
     createUserName: ""
   });
-
-  const searchOptions = reactive([
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "车牌号码", value: "plateNumber" },
     { label: "创建用户", value: "createUserName" }
   ]);
@@ -76,8 +76,7 @@ export const useConfig = () => {
   };
   // 搜索
   const handleTagSearch = (values) => {
-    formData.plateNumber = values.plateNumber;
-    formData.createUserName = values.createUserName;
+    Object.assign(formData, values);
     getTableList();
   };
 

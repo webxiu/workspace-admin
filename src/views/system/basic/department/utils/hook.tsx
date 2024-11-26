@@ -131,6 +131,9 @@ export const useConfig = () => {
     const clerkId = row?.clerkId ? row?.clerkId.split(",").map((c) => Number(c)) : 0;
     const myFormConfig = ref<FormConfigItemType[]>([]);
 
+    const examineFlagMap = { 否: 0, 是: 1 };
+    const examineReverseFlag = { 0: "否", 1: "是" };
+
     const _formData = reactive({
       deptCode: type === "edit" ? row?.deptCode : "",
       deptName: type === "edit" ? row?.deptName : "",
@@ -143,6 +146,7 @@ export const useConfig = () => {
       itemId: type === "edit" ? row?.itemId : "",
       level: type === "add" ? undefined : row?.level,
       select: clerkId,
+      examineFlag: type === "edit" ? [examineReverseFlag[row.examineFlag]] : [examineReverseFlag["0"]],
       clerkId: type === "add" ? undefined : clerkId
     });
 
@@ -170,13 +174,19 @@ export const useConfig = () => {
       }
     });
 
+    const changeExamineFlag = () => {
+      if (_formData.examineFlag.length > 1) {
+        _formData.examineFlag.splice(0, 1);
+      }
+    };
+
     addDialog({
       title: `${title}部门`,
       props: {
         loading: loading,
         formInline: _formData,
         formRules: formRules,
-        formConfigs: myFormConfig,
+        formConfigs: formConfigs({ depUserInfo, deptInfoTree, type, changeExamineFlag }),
         formProps: { labelWidth: "140px" }
       },
       width: "860px",
@@ -194,7 +204,13 @@ export const useConfig = () => {
         const FormRef = formRef.value.getRef();
         const { clerkId } = options.props.formInline;
         const newClerkId = clerkId.join(",");
-        const params = { ..._formData, clerkId: newClerkId, select: newClerkId, level: type === "add" ? undefined : _formData.level };
+        const params = {
+          ..._formData,
+          clerkId: newClerkId,
+          select: newClerkId,
+          level: type === "add" ? undefined : _formData.level,
+          examineFlag: examineFlagMap[_formData.examineFlag[0]]
+        };
         FormRef.validate((valid) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(() => {

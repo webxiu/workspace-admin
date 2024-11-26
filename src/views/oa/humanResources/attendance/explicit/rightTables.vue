@@ -113,13 +113,17 @@ const handleCommand = (command, rightRow) => {
 
 const getConfig = () => {
   const columns1Data = [
-    { label: "请假时长", prop: "hours" },
+    { label: "请假时长", prop: "hours", width: 90 },
+    { label: "开始日期", prop: "startDate" },
     { label: "开始时间", prop: "startTime" },
+    { label: "结束日期", prop: "endDate" },
     { label: "结束时间", prop: "endTime" }
   ];
   const columns2Data = [
-    { label: "加班时长", prop: "hours" },
+    { label: "加班时长", prop: "hours", width: 90 },
+    { label: "开始日期", prop: "startDate" },
     { label: "开始时间", prop: "startTime" },
+    { label: "结束日期", prop: "endDate" },
     { label: "结束时间", prop: "endTime" }
   ];
   const columns3Data = [

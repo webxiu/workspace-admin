@@ -59,7 +59,6 @@ export const useConfig = () => {
     fbillno: "",
     fnumber: "",
     supCode: "",
-    date: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize,
     fclosestatus: "",
@@ -75,7 +74,7 @@ export const useConfig = () => {
 
   const queryParams = reactive({ date: `${before90DayDate} ~ ${nowDate}` });
 
-  const searchOptions: SearchOptionType[] = [
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "物料编码", value: "fnumber" },
     { label: "物料名称", value: "fname" },
     { label: "回签单号", value: "fhqdh" },
@@ -97,8 +96,8 @@ export const useConfig = () => {
         { label: "已回签", value: "yes" }
       ]
     },
-    { label: "采购日期", value: "date", type: "daterange", format: "YYYY-MM-DD" }
-  ];
+    { label: "采购日期", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startTime", endKey: "endTime" }
+  ]);
 
   onMounted(async () => {
     getColumnConfig();
@@ -160,10 +159,6 @@ export const useConfig = () => {
     onSearch();
   };
   const onSearch = (idx?) => {
-    const { date = "" } = formData;
-    const [startTime, endTime] = date.split("~").map((item) => item.trim());
-    formData.startTime = startTime;
-    formData.endTime = endTime;
     fetchSupOrderList(formData)
       .then((res: any) => {
         // console.log(res.data.records, "records");
@@ -214,16 +209,7 @@ export const useConfig = () => {
   };
 
   const handleTagSearch = (values) => {
-    formData.fnumber = values.fnumber;
-    formData.fname = values.fname;
-    formData.fhqdh = values.fhqdh;
-    formData.supCode = values.supCode;
-    formData.fclosestatus = values.fclosestatus;
-    formData.fileNumParam = values.fileNumParam;
-    formData.date = values.date;
-    formData.fname = values.fname;
-    formData.fbillno = values.fbillno;
-
+    Object.assign(formData, values);
     onSearch();
   };
 

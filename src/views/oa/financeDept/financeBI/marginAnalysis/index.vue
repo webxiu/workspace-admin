@@ -5,7 +5,7 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "OaFinanceDeptFinanceBIMarginAnalysisIndex" });
 
-const { columns, dataList, loading, getSummaries, maxHeight, buttonList, searchOptions, onFresh, onTagSearch, queryParams } = useMarginAnalysis();
+const { columns, dataList, loading, maxHeight, buttonList, searchOptions, onFresh, onTagSearch, queryParams } = useMarginAnalysis();
 </script>
 
 <template>
@@ -28,8 +28,6 @@ const { columns, dataList, loading, getSummaries, maxHeight, buttonList, searchO
         <pure-table
           id="marginAnalysisId"
           border
-          :summary-method="getSummaries"
-          show-summary
           :height="maxHeight"
           :max-height="maxHeight"
           row-key="id"

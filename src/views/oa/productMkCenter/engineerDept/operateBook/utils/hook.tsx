@@ -53,7 +53,7 @@ export const useConfig = () => {
     { label: "单据状态", value: "billState", children: [] },
     { label: "生产型号", value: "productModel" },
     { label: "创建人", value: "createUserName" },
-    { label: "创建时间", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "创建时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   onMounted(() => {
@@ -120,13 +120,7 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    const dates = values.date ? values.date.split(" ~ ") : [];
-    formData.startDate = dates[0];
-    formData.endDate = dates[1];
-    formData.manualName = values.manualName;
-    formData.billState = values.billState;
-    formData.productModel = values.productModel;
-    formData.createUserName = values.createUserName;
+    Object.assign(formData, values);
     getTableList();
   };
 

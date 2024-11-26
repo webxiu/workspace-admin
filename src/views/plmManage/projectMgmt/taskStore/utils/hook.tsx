@@ -38,17 +38,18 @@ export const useConfig = () => {
   const columns2 = ref<TableColumnList[]>([]);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 45);
 
-  let formData: any = reactive({
+  const formData = reactive({
     startTime: "",
     endTime: "",
-    date: "",
+    mnemonicCode: "",
     page: 1,
-    limit: PAGE_CONFIG.pageSize,
-    mnemonicCode: ""
+    limit: PAGE_CONFIG.pageSize
   });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const searchOptions: SearchOptionType[] = [{ label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }];
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startTime", endKey: "endTime" }
+  ]);
 
   const fetchDeliverTemplate = () => {
     fetchAllTemplateList({}).then((res: any) => {
@@ -126,13 +127,6 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const { date = "" } = formData;
-    console.log(formData, "df");
-    const [startTime, endTime] = date ? date.split("~").map((item) => item.trim()) : [undefined, undefined];
-    formData.startTime = startTime;
-    formData.endTime = endTime;
-    if (!date) formData.date = undefined;
-    console.log(formData, "req");
     fetchTaskStoreList(formData)
       .then((res: any) => {
         const data = res.data;
@@ -148,15 +142,8 @@ export const useConfig = () => {
     onSearch();
   };
 
-  const handleTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values };
-
-    formData.page = page;
-    formData.limit = limit;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

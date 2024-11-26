@@ -39,20 +39,8 @@
         </el-form-item>
         <el-form-item label="加班时段" prop="overtimePeriod">
           <el-input style="display: none" v-model="formData.overtimePeriod" />
-          <el-checkbox
-            @change="changeMorning"
-            v-model="formData.morningOvertime"
-            label="上午"
-            value="上午"
-            :disabled="formData.overtimeType === '工作日加班'"
-          />
-          <el-checkbox
-            @change="changeAfternoon"
-            v-model="formData.afternoonOvertime"
-            label="下午"
-            value="下午"
-            :disabled="formData.overtimeType === '工作日加班'"
-          />
+          <el-checkbox @change="changeMorning" v-model="formData.morningOvertime" label="上午" value="上午" />
+          <el-checkbox @change="changeAfternoon" v-model="formData.afternoonOvertime" label="下午" value="下午" />
           <el-checkbox @change="changeEvening" v-model="formData.eveningOvertime" label="晚上" value="晚上" />
           <template #label>
             <span style="font-size: var(--el-form-label-font-size); color: var(--el-text-color-regular); font-weight: 700">加班时段</span>
@@ -201,6 +189,17 @@ const changeOvertimeType = (val) => {
   } else {
     formData.morningOvertime = false;
     formData.afternoonOvertime = false;
+
+    // 清空上午和下午的时间段
+    formData.morningStartHour = undefined;
+    formData.morningStartMinute = undefined;
+    formData.morningEndHour = undefined;
+    formData.morningEndMinute = undefined;
+
+    formData.arvoStartHour = undefined;
+    formData.arvoStartMinute = undefined;
+    formData.arvoEndHour = undefined;
+    formData.arvoEndMinute = undefined;
   }
   formData.eveningOvertime = true;
 

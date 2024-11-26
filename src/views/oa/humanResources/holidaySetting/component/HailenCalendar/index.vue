@@ -23,6 +23,7 @@
           :class="[{ 'other-month': !isCurrentMonth(item.date) }, { today: isToday(item.date) }, { select: isSelect(item.date) }]"
         >
           <div class="cell-date_name">
+            <div class="jia" v-if="getInWork(item.date).isLegal">假</div>
             <span class="cell-num">{{ item.date.getDate() }}日</span>
             <span class="cell-text">{{ getNongLi(item.date) }}</span>
           </div>
@@ -129,7 +130,6 @@ const initCalendar = () => {
     }
   }
   allDays.value = daysList;
-
   // 生成当前月加班列表
   const currentHoliday = curMonthDays.map((day) => {
     const workDate = dayjs(day).format("YYYY-MM-DD");
@@ -210,10 +210,11 @@ function getInWork(date: Date) {
   if (item) {
     return {
       name: { 0: "休", 1: "班" }[item.isWork] || "",
-      class: { 0: "xiu", 1: "ban" }[item.isWork] || ""
+      class: { 0: "xiu", 1: "ban" }[item.isWork] || "",
+      isLegal: item.isHolidayLegal
     };
   }
-  return { name: "", class: "" };
+  return { name: "", class: "", isLegal: 0 };
 }
 
 // 选择当天
@@ -356,6 +357,17 @@ $border-color: #ebeef5;
       padding: 4px 2px;
       font-size: 14px;
       text-align: right;
+
+      .jia {
+        color: #fff;
+        display: inline-block;
+        background-color: #dc3545;
+        padding: 1px 3px;
+        font-size: 12px;
+        margin-right: 4px;
+        font-weight: 600;
+        border-radius: 4px;
+      }
     }
   }
 }

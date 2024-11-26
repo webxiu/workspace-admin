@@ -68,6 +68,7 @@ import { PureTableBar } from "@/components/RePureTableBar";
 import ButtonList from "@/components/ButtonList/index.vue";
 import { fetchSearchSelectStockList, getMaterialGroupTreeData } from "@/api/plmManage";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 defineOptions({ name: "PlmManageBasicDataStockSearchIndex" });
 
@@ -91,7 +92,7 @@ const categoryTreeData = ref([]);
 
 const stockList = ref([]);
 
-const searchOptions = reactive([
+const searchOptions = reactive<SearchOptionType[]>([
   { label: "物料名称", value: "name" },
   { label: "仓库", value: "stockNoLineName", children: [] }
 ]);

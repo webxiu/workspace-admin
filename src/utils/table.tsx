@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-09 15:40:20
+ * @Last Modified time: 2024-11-22 14:30:45
  */
 
 import dayjs from "dayjs";
@@ -12,14 +12,14 @@ import { IconConf } from "@/config/elements";
 import Expand from "@iconify-icons/ep/expand";
 import Sortable, { MoveEvent } from "sortablejs";
 import RegInput from "@/components/RegInput.vue";
-import { getUrlParameters, onDownload } from "@/utils/common";
+import { getTreeArrItem, getUrlParameters, onDownload } from "@/utils/common";
 import PriceTag from "@iconify-icons/ep/price-tag";
 import { clone, cloneDeep, deviceDetection } from "@pureadmin/utils";
 import { TableColumnRenderer } from "@pureadmin/table";
 import { message, showMessageBox } from "@/utils/message";
 import { getRouterInfo, removeRouterInfo } from "@/utils/storage";
 import IconifyIconOffline from "@/components/ReIcon/src/iconifyIconOffline";
-import { type DatePickerProps, type TableColumnCtx, type TableRefs, type InputProps, type ElSelect, colProps } from "element-plus";
+import type { DatePickerProps, TableColumnCtx, TableRefs, InputProps, colProps } from "element-plus";
 import { getBOMTableRowSelectOptions, OptionItemType, OptionResType } from "@/api/plmManage";
 import { CSSProperties, Ref, nextTick, reactive, ref, withModifiers, type VNode } from "vue";
 import {
@@ -636,7 +636,7 @@ interface TableEditOptionType {
   editBefore?: (data: CallBackParamType) => boolean;
   /** 编辑完成回调 */
   editFinish?: (data: CallBackParamType) => void;
-  /** 自定义渲染函数 */
+  /** 自定义渲染函数(返回null则不显示自定义内容) */
   customRender?: (data: CustomCellParamType) => JSX.Element;
 }
 
@@ -708,27 +708,25 @@ export function tableEditRender(options: TableEditOptionType = {}) {
           {...eleProps}
         />
       );
-      // 5.自定义编辑
-      const MyCustomRender = () => customRender({ editMap, index, prop, row, column, callback: onBlur });
-
-      // 6.树形下拉编辑
+      // 5.树形下拉编辑
       const TreeSelectCom = () => (
         <el-tree-select
           v-model={row[prop]}
-          props={{
-            label: "optionName",
-            value: "optionValue"
-          }}
           data={options}
           filterable
+          check-strictly
+          node-key="id"
           placeholder="请选择"
           class="ui-w-100"
           size="small"
+          props={{ label: "optionName", value: "optionValue" }}
           {...eleProps}
-          onChange={onBlur}
           onBlur={onBlur}
+          onChange={onBlur}
         />
       );
+      // 6.自定义编辑
+      const MyCustomRender = () => customRender({ editMap, index, prop, row, column, callback: onBlur });
 
       const eleConfig = {
         input: InputCom,
@@ -738,7 +736,7 @@ export function tableEditRender(options: TableEditOptionType = {}) {
         treeSelect: TreeSelectCom,
         custom: MyCustomRender
       };
-      if (customRender) type = "custom";
+      if (customRender && MyCustomRender()) type = "custom";
       return eleConfig[type]();
     }
 
@@ -748,14 +746,16 @@ export function tableEditRender(options: TableEditOptionType = {}) {
     }
 
     let cellValue = row[prop]; // 单元格取值
+    const { multiple, props } = eleProps || {}; // 配置属性
     const boxStyle = { height: "24px", lineHeight: "24px", ...cellStyle };
     if (["treeSelect", "select"].includes(type)) {
       boxStyle.textAlign = cellStyle?.textAlign || "center";
-      cellValue = options.find((item) => item.optionValue === row[prop])?.optionName;
-      // 下拉框多选时，用逗号拼接
-      if (eleProps?.multiple) {
-        cellValue = (row[prop] || [])?.join(",");
+      if (row[prop]) {
+        const result = getTreeArrItem(options, props?.value || "optionValue", row[prop]); // 获取选中项
+        cellValue = props?.label ? result?.[props?.label] : result?.optionName;
       }
+      // 下拉框多选时，用逗号拼接
+      if (multiple) cellValue = (row[prop] || [])?.join(",");
     }
     return (
       <span onClick={onClickEdit} style={boxStyle} class="ui-w-100 ui-d-ib pointer ui-va-m ellipsis flex-1">
@@ -1272,7 +1272,7 @@ interface OptionKey {
   GoOutVehicleUsage: "GoOutVehicleUsage";
   /** 交付物变更模式 */
   DeliverablesChangeMode: "DeliverablesChangeMode";
-  /** 项目客户 */
+  /** 产品库客户 */
   ProjectCustom: "ProjectCustom";
   /** 人事档案职级排序 */
   StaffRankOrder: "StaffRankOrder";
@@ -1303,9 +1303,9 @@ interface OptionKey {
   /** 汇总周期 */
   GroupPeriod: "GroupPeriod";
   /** 爬取汇率币种清单-天 */
-  ExRateCurrencyList: "ExRateCurrencyList";
+  CurrencyRateDay: "CurrencyRateDay";
   /** 爬取汇率币种清单-月 */
-  Month: "Month";
+  CurrencyRateMonth: "CurrencyRateMonth";
   /** 标准工时单位 */
   StandardWorkTimeUnit: "StandardWorkTimeUnit";
   /** 库存周期复检 */
@@ -1324,16 +1324,22 @@ interface OptionKey {
   NormalTestRequire: "NormalTestRequire";
   /** 国家代码 */
   CountryCode: "CountryCode";
-  /** 异常出勤 */
+  /** 异常出勤枚举 */
   AnomalousAttendance: "AnomalousAttendance";
+  /** 贫困人员 */
+  PoorPeople: "PoorPeople";
   /** 失效模式清单严重度 */
   LoseModeListSeverity: "LoseModeListSeverity";
   /** 失效模式清单分类 */
   LoseModeListCategorize: "LoseModeListCategorize";
-  /** 试产样机颜色 */
-  TrialProductionColor: "TrialProductionColor";
   /** 试产阶段 */
   TrialProductionStage: "TrialProductionStage";
+  /** 试产样机颜色 */
+  TrialProductionColor: "TrialProductionColor";
+  /** 币种 */
+  Currency: "Currency";
+  /** 税率 */
+  TaxRate: "TaxRate";
 }
 
 export type OptionKeys = ValueOf<OptionKey>;

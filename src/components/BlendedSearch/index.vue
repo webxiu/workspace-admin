@@ -56,7 +56,7 @@
       :type="inputType"
       v-model="filterValue"
       :value-format="dateFormat"
-      placeholder="请选择"
+      placeholder="请选择日期"
       size="default"
       @focus="focus = true"
       @blur="onDateBlur"
@@ -102,7 +102,7 @@ import { debounce } from "@/utils/common";
  *    status: 1,
  *    month: "2023-02",
  *    date: "2023-05-08 ~ 2023-06-25",
- *    deptId: { value: "6", valueLabel: "技术研发中心" } // 存在children默认值配置格式
+ *    deptId: { value: "6", valueLabel: "技术研发中心" } // 设置children默认值配置格式
  *  }
  */
 /** 配置选项类型 */
@@ -187,7 +187,7 @@ const shortcuts = timesConfig().map((item) => {
     }
   };
 });
-
+const _placeholder = ref<string>("");
 const inputType = ref<DatePickType>(); // 输入类型
 const dateFormat = ref<string>("YYYY-MMM-DD"); // 日期格式
 const SearchInput = ref();
@@ -213,6 +213,7 @@ onMounted(() => {
 
 // 返回搜索参数
 const onFinish = (values) => {
+  _placeholder.value = "";
   emits("tagSearch", values);
 };
 
@@ -237,7 +238,7 @@ const resultMaps = computed(() => {
       data[props.searchField] = (data[props.searchField] ? data[props.searchField] + "," : "") + value;
     } else if (type === "daterange") {
       // 处理时间范围, 把值赋值给startKey和endKey
-      const { startKey, endKey } = props.searchOptions.find((f) => f.type === type);
+      const { startKey, endKey } = props.searchOptions.find((f) => f.value === key);
       if (startKey && endKey) {
         const dateArr = value.split("~").map((item) => item.trim());
         data[startKey] = dateArr[0];
@@ -252,9 +253,8 @@ const resultMaps = computed(() => {
   return data;
 });
 const placeholderText = computed(() => {
-  if (focus.value && filterKey.value) {
-    return "按下Enter键进行搜索";
-  }
+  if (_placeholder.value) return _placeholder.value;
+  if (focus.value && filterKey.value) return "按下Enter键进行搜索";
   return props.placeholder;
 });
 
@@ -293,7 +293,7 @@ const onSelectNode = (node, data) => {
 
   const fieldItem = props.searchOptions.find(({ value }) => value === fieldName);
   // 如果点击一级菜单 且有下级选项(children), 则阻止执行
-  if (fieldItem.children && keys.length === 1) return;
+  if (fieldItem.children?.length && keys.length === 1) return;
 
   if (!keys || keys.length === 0) return;
   if (keys.length === 1) {
@@ -303,6 +303,7 @@ const onSelectNode = (node, data) => {
       dateFormat.value = data.format;
     }
     filterKey.value = fieldName;
+    _placeholder.value = `请输入${data.label}`;
     SearchInput.value.focus();
   } else if (keys.length >= 2) {
     filterKey.value = fieldName;

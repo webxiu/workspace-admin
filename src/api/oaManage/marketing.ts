@@ -434,9 +434,9 @@ export function submitQuoteSale(data) {
 export function historyQuoteSale(params) {
   return http.request<boolean>("get", "/oa/hr/purchasequotation/getorderbymaterialcode", { params });
 }
-/** 销售报价单 - 导入BOM */
-export function importQuoteSale(data) {
-  return http.request<boolean>("post", "/oa/hr/purchasequotation/xxxximport", { data }, { headers: { "Content-Type": "multipart/form-data" } });
+/** 销售报价单 - 重新导入 */
+export function regenerateQuoteSale(data) {
+  return http.request<boolean>("post", "/oa/hr/purchasequotation/reloaddatas", { data });
 }
 
 /** ========================= 采购询价单 ========================= */

@@ -670,6 +670,7 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
     dataList,
     maxHeight,
     pagination,
+    onSyncMachine,
     treeOptions,
     treeLoading,
     buttonList,

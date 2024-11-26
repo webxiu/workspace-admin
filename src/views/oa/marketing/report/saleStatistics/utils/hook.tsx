@@ -61,7 +61,7 @@ export const useConfig = () => {
       .catch(console.log);
   };
 
-  const renderCell = (row: SaleStatisticsItemType, column) => {
+  const contentConf = (row: SaleStatisticsItemType, column) => {
     const prop = row[column["property"]];
     return prop ? (
       <el-button link type="primary" onClick={() => onPreview(row, column)}>
@@ -75,21 +75,21 @@ export const useConfig = () => {
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
       { label: "产品", prop: "modelName" },
-      { label: "一月", prop: "01", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "二月", prop: "02", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "三月", prop: "03", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "四月", prop: "04", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "五月", prop: "05", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "六月", prop: "06", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "小计", prop: "firstHalfYearSum", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
+      { label: "一月", prop: "01", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "二月", prop: "02", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "三月", prop: "03", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "四月", prop: "04", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "五月", prop: "05", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "六月", prop: "06", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "小计", prop: "firstHalfYearSum", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
       { label: "上半年销售比例", prop: "firstHalfYearSaleProprtion", align: "right", minWidth: 140, sortable: true },
-      { label: "七月", prop: "07", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "八月", prop: "08", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "九月", prop: "09", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "十月", prop: "10", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "十一月", prop: "11", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "十二月", prop: "12", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
-      { label: "合计", prop: "oneYearSum", align: "right", cellRenderer: ({ row, column }) => renderCell(row, column), sortable: true },
+      { label: "七月", prop: "07", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "八月", prop: "08", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "九月", prop: "09", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "十月", prop: "10", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "十一月", prop: "11", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "十二月", prop: "12", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
+      { label: "合计", prop: "oneYearSum", align: "right", cellRenderer: ({ row, column }) => contentConf(row, column), sortable: true },
       { label: "年销售比例", prop: "oneYearSaleProprtion", sortable: true }
     ];
 
@@ -101,7 +101,7 @@ export const useConfig = () => {
         cellRenderer: (data) => {
           const prop = data.column["property"]; // 不需要显示按钮的字段
           const flag = ["modelName", "firstHalfYearSaleProprtion", "oneYearSaleProprtion"].includes(prop);
-          return flag ? data.row[prop] : renderCell(data.row, data.column);
+          return flag ? data.row[prop] : contentConf(data.row, data.column);
         }
       };
     });

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useHome } from "./hooks";
 import KimiChat from "./components/KimiChat/index.vue";
-import { ChatDotRound } from "@element-plus/icons-vue";
+import { ChatDotRound, CircleClose } from "@element-plus/icons-vue";
 import FullScreen from "@iconify-icons/ep/full-screen";
-import CloseCircle from "@iconify-icons/ri/delete-back-2-line";
 import FullScreenExit from "@iconify-icons/ri/fullscreen-exit-fill";
+import { Question } from "@/config/elements";
+defineOptions({ name: "Home" });
 const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScreen } = useHome();
 </script>
 
@@ -41,7 +42,15 @@ const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScree
                 </span>
                 <div class="flex align-center">
                   <span class="mr-10" title="清空消息">
-                    <IconifyIconOffline class="pointer" :icon="CloseCircle" title="清空消息" @click="onClearChat" />
+                    <Question
+                      :Icon="CircleClose"
+                      :size="17"
+                      color="#626365"
+                      effect="light"
+                      @click="onClearChat"
+                      :visible="false"
+                      :iconStyle="{ cursor: 'pointer' }"
+                    />
                   </span>
                   <span title="全屏显示" v-show="!isFullScreen">
                     <IconifyIconOffline class="pointer" :icon="FullScreen" @click="onFullScreen" />

@@ -1,22 +1,63 @@
 <template>
   <div class="apply-container" ref="printRef">
-    <div class="flex-col align-center justify-center">
-      <img src="@/assets/logo/print_color_logo.png" width="40%" />
-      <p class="fz-16 color-222 m-10">变更申请&执行单</p>
+    <div class="apply-item">
+      <div class="flex-col align-center justify-center">
+        <img src="@/assets/logo/print_color_logo.png" width="40%" />
+        <p class="fz-18 color-222 m-10">变更申请&执行单</p>
+      </div>
+      <div class="change-bill">
+        <span>NO: RD-20240801-01</span>
+        <span>单据编号: PD90150016</span>
+        <span>FORM:QR-QC-003-09X</span>
+      </div>
+      <HxTableForm
+        class="mb-20"
+        ref="tableRef"
+        :formRules="formRules"
+        :formConfig="formConfig({ onPreviewImg, onTableChange })"
+        :formData="formData"
+        :formProps="{ labelWidth: '0', requireAsteriskPosition: 'right', inlineMessage: true }"
+      />
     </div>
-    <div class="change-bill">
-      <span>NO: RD-20240801-01</span>
-      <span>单据编号: PD90150016</span>
-      <span>FORM:QR-QC-003-09X</span>
+    <div class="apply-item page2">
+      <div class="flex-col align-center justify-center">
+        <img src="@/assets/logo/print_color_logo.png" width="40%" />
+        <p class="fz-18 color-222 m-10">变更申请&执行单</p>
+      </div>
+      <div class="change-bill">
+        <span>NO: RD-20240712-01</span>
+        <span>单据编号: PD90150016</span>
+        <span>FORM:QR-QC-003-09X</span>
+      </div>
+      <HxTableForm
+        class="mb-10"
+        ref="tableRef"
+        :formRules="formRules"
+        :formConfig="formConfig2()"
+        :formData="formData2"
+        :formProps="{ labelWidth: '0', requireAsteriskPosition: 'right', inlineMessage: true }"
+      />
+      <HxTableForm
+        class="mb-10"
+        ref="tableRef"
+        :formRules="formRules"
+        :formConfig="formConfig3()"
+        :formData="formData3"
+        :formProps="{ labelWidth: '0', requireAsteriskPosition: 'right', inlineMessage: true }"
+      />
+      <div class="ui-ta-c">
+        <h2>附 页 (变更申请验证项目清单)</h2>
+      </div>
+      <HxTableForm
+        class="table-form"
+        ref="tableRef"
+        :formRules="formRules"
+        :formConfig="formConfig4()"
+        :formData="formData4"
+        :formProps="{ labelWidth: '0', requireAsteriskPosition: 'right', inlineMessage: true }"
+      />
     </div>
-    <HxFormTable
-      class="mb-30"
-      ref="tableRef"
-      :formRules="formRules"
-      :tableList="tableList({ onPreviewImg, onTableChange })"
-      :formInline="formData"
-      :formProps="{ labelWidth: '0', requireAsteriskPosition: 'right', inlineMessage: true }"
-    />
+
     <el-dialog v-model="dialogVisible" :append-to-body="true" :draggable="true" class="goods-dialog">
       <el-image :src="dialogImageUrl" fit="contain" :zoom-rate="1.2" :preview-src-list="[dialogImageUrl]" :hide-on-click-modal="true">
         <template #error>
@@ -29,8 +70,8 @@
 
 <script setup lang="tsx">
 import { reactive, ref } from "vue";
-import HxFormTable from "@/components/HxFormTable/index.vue";
-import { tableList, formRules } from "./config";
+import HxTableForm from "@/components/HxTableForm/index.vue";
+import { formConfig, formConfig2, formConfig3, formConfig4, formRules } from "./config";
 import Print from "@/utils/print";
 
 const dialogVisible = ref(false);
@@ -99,11 +140,141 @@ const formData = reactive({
   deputyDirectorSign: "31",
   influenceRange: ["工装治具", "生产工艺"]
 });
+const formData2 = reactive({
+  bbb1: "数据1",
+  bbb2: ["OK"],
+  bbb3: "数据3",
+  bbb4: "数据4",
+  bbb5: "数据5",
+  bbb6: "数据6",
+  bbb7: "数据7",
+  bbb8: "数据8",
+  bbb9: ["好的", "好的"],
+  bbb10: "数据10",
+  bbb11: "数据11",
+  bbb12: "数据12"
+});
+const formData3 = reactive({
+  ccc1: [],
+  ccc2: ["客户书面批准"],
+  ccc3: "数据3",
+  ccc4: "数据4",
+  ccc5: "数据5",
+  ccc6: "数据6",
+  ccc7: [],
+  ccc8: "数据8",
+  ccc9: "s",
+  ccc10: [],
+  ccc11: "数据11",
+  ccc12: "数据12",
+  ccc13: ["BOM变更"],
+  ccc14: "数据14",
+  ccc15: "",
+  ccc16: "数据16",
+  ccc17: "数据17",
+  ccc18: "",
+  ccc19: "数据19",
+  ccc20: "",
+  ccc21: "数据21",
+  ccc22: "数据22",
+  ccc23: "数据23",
+  ccc24: "数据24",
+  ccc25: ["认证"],
+  ccc26: "数据26",
+  ccc27: "",
+  ccc28: "数据28",
+  ccc29: "数据29",
+  ccc30: "数据30",
+  ccc31: "数据31",
+  ccc32: "数据32",
+  ccc33: "数据33",
+  ccc34: ["RoHS 其他报告"],
+  ccc35: "数据35",
+  ccc36: "数据36"
+});
+const formData4 = reactive({
+  // ddd1: [],
+  // ddd2: "数据2",
+  // ddd3: "数据3",
+  // ddd4: "数据4",
+  // ddd5: [],
+  // ddd6: "数据6",
+  // ddd7: "数据7",
+  // ddd8: "数据8",
+  // ddd9: [],
+  // ddd10: "s",
+  // ddd11: "数据11",
+  // ddd12: "数据12",
+  // ddd13: ["老化实验"],
+  // ddd14: "数据14",
+  // ddd15: "",
+  // ddd16: "数据16",
+  // ddd17: ["温度确认"],
+  // ddd18: "",
+  // ddd19: "数据19",
+  // ddd20: "",
+  // ddd21: ["功率确认"],
+  // ddd22: "数据22",
+  // ddd23: "数据23",
+  // ddd24: "数据24",
+  // ddd25: [],
+  // ddd26: "数据26",
+  // ddd27: "",
+  // ddd28: "数据28",
+  // ddd29: "数据29",
+  // ddd30: [],
+  // ddd31: "数据31",
+  // ddd32: "数据32",
+  // ddd33: "数据33",
+  // ddd34: ["RoHS 其他报告"],
+  // ddd35: "数据35",
+  // ddd36: "数据36",
+  // ddd37: "数据37",
+  // ddd38: "数据38",
+  // ddd39: "数据39",
+  // ddd40: ["工装方面"],
+  // ddd41: "数据41",
+  // ddd42: "数据42",
+  // ddd43: "数据43",
+  // ddd44: "数据44",
+  // ddd45: "数据45",
+  // ddd46: "数据46",
+  // ddd47: "数据47",
+  // ddd48: "数据48",
+  // ddd49: "数据49",
+  // ddd50: "数据50",
+  // ddd51: "数据51",
+  // ddd52: ["操作合理性"],
+  // ddd53: "数据53",
+  // ddd54: "数据54",
+  // ddd55: "数据55",
+  // ddd56: "数据56",
+  // ddd57: "数据57",
+  // ddd58: "数据58",
+  // ddd59: "数据59",
+  // ddd60: "数据60",
+  // ddd61: "数据61",
+  // ddd62: "数据62",
+  // ddd63: "数据63",
+  // ddd64: "数据64",
+  // ddd65: "数据65",
+  // ddd66: "数据66",
+  // ddd67: "数据67",
+  // ddd68: ["RoHS确认"],
+  // ddd69: "数据69",
+  // ddd70: "数据70",
+  // ddd71: "数据71",
+  // ddd72: "数据72",
+  // ddd73: "数据73",
+  // ddd74: "数据74",
+  // ddd75: "数据75",
+  // ddd76: ["XRF确认"],
+  // ddd77: "数据77"
+});
 function getRef() {
-  console.log(formData);
-  // if (printRef.value) Print(printRef.value);
+  if (printRef.value) Print(printRef.value);
   const formRef = tableRef.value.getRef();
-  return { formData, formRef };
+  return { formData, formData3, formData4, formRef };
 }
 
 const onTableChange = (data) => {
@@ -123,52 +294,25 @@ defineExpose({ onPrint, getRef });
 </script>
 
 <style lang="scss">
+$color: #111;
+$size: 16px;
 @media print {
   @page {
     size: a4 portrait;
     margin: 10mm;
   }
 
-  .apply-container {
+  .el-checkbox__inner {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  .apply-item {
     font-size: 12px;
-    page-break-after: avoid;
-    // min-height: 100% !important;
-    // min-width: 100% !important;
-    // transform: scale(0.85);
+    page-break-after: always;
+
     .change-bill {
       font-size: 10px !important;
-    }
-    .end-item {
-      page-break-inside: avoid; /* 避免在元素内部换页 */
-      page-break-after: always; /* 在元素后强制换页 */
-    }
-    .cate-title {
-      padding: 0 6px !important;
-      font-size: 10px !important;
-    }
-
-    .form-label {
-      font-weight: normal !important;
-    }
-
-    .border-form {
-      width: 100%;
-      overflow: hidden;
-      .el-form-item__label {
-        font-size: 10px !important;
-        font-weight: normal !important;
-      }
-      &.form1 .el-form-item__label {
-        max-height: 14px !important;
-        line-height: 14px !important;
-      }
-    }
-    .el-checkbox.el-checkbox--small .el-checkbox__label {
-      font-size: 10px !important;
-      font-weight: normal !important;
-    }
-    .el-input {
-      line-height: 14px !important;
     }
 
     .el-upload--picture-card,
@@ -188,116 +332,54 @@ defineExpose({ onPrint, getRef });
   }
 }
 
-.apply-container {
-  // min-height: calc(100vh - 100px);
-  // min-width: 1438px;
-  overflow: hidden;
+.apply-item {
+  padding: 0 2px;
   .change-bill {
     display: flex;
     justify-content: space-between;
     font-size: 14px;
     padding-bottom: 2px;
   }
-  .border-form-line {
-    box-shadow: 0px 0px 1px 1px #111 inset;
-  }
-
-  .form-label {
-    font-weight: 700;
-  }
-  .item-box {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    &:not(:first-child) {
-      margin-top: -1px;
+  .table-form {
+    .el-table .cell {
+      overflow: hidden !important;
+      font-weight: normal !important;
+      font-size: 10px !important;
     }
   }
-  .cate-title {
-    text-align: right;
-    padding: 0 10px;
+  .table-form table tr td {
+    padding: 0 2px !important;
+    color: $color !important;
+    font-family: "宋体", Arial, sans-serif, serif;
   }
-
-  /** 表单添加边框 */
-  .border-form {
-    // 添加右、下表框
-    border-right: 1px solid #111;
-    border-bottom: 1px solid #111;
-    padding: 0 !important;
-
-    &.form1 .el-form-item__label {
-      align-items: center;
-      text-align: justify;
-      display: block;
-      padding: 0 6px;
-      align-self: center;
-      &::after {
-        width: 100%;
-        content: "" !important;
-        display: inline-block;
-      }
-    }
-
-    // 居中label
-    .center-label .el-form-item__label {
-      display: inline-block;
-      text-align: center !important;
-    }
-    // 添加左、上表框
-    .el-form-item {
-      border-top: 1px solid #111;
-      border-left: 1px solid #111;
-      margin: 0 !important;
-      height: 100%;
-    }
-
-    // 错误提示靠右
-    .el-form-item__content {
-      align-items: flex-start;
-      position: relative;
-      .el-form-item__error {
-        position: absolute;
-        top: 9px;
-        right: 5px;
-      }
-    }
-    .el-form-item__content {
-      border-left: 1px solid #111;
-    }
-
-    // 隐藏边框
-    .hide-label-left .el-form-item__content {
-      border-left: none;
-    }
-    .hide-top.el-form-item {
-      border-top: none;
-    }
-    .hide-left.el-form-item {
-      border-left: none;
-    }
-
-    // 隐藏输入框边框
-    .el-textarea__inner,
-    .el-input__wrapper,
-    .el-form-item.is-error .el-textarea__inner,
-    .el-form-item.is-error .el-input__wrapper {
-      border-radius: 0;
-      box-shadow: 0 0 0 0 var(--el-input-border-color, var(--el-border-color)) inset;
-    }
-
-    .el-upload--picture-card,
-    .el-upload-list__item {
-      width: 79px;
-      height: 79px;
-      transition: none !important;
-      &:nth-child(5n) {
-        margin-right: 0px;
-      }
-    }
+  .el-input__prefix {
+    display: none;
   }
-  .el-table .cell {
-    font-weight: normal !important;
-    font-size: 10px !important;
+  .el-form-item label,
+  .el-input__inner,
+  .el-textarea__inner {
+    font-size: $size;
+    font-family: "宋体", Arial, sans-serif, serif;
+    color: $color;
+    cursor: default;
+  }
+  .el-checkbox__inner,
+  .el-checkbox__inner::after {
+    border-color: $color;
+  }
+  .el-checkbox__input.is-checked .el-checkbox__inner,
+  .el-checkbox__input.is-disabled .el-checkbox__inner,
+  .el-checkbox__input.is-disabled.is-checked .el-checkbox__inner::after {
+    background-color: transparent;
+    border-color: $color;
+  }
+  .el-checkbox__input.is-checked + .el-checkbox__label {
+    color: $color !important;
+  }
+  .el-checkbox.el-checkbox--small .el-checkbox__label {
+    font-size: $size;
+    color: $color;
+    cursor: default;
   }
 }
 </style>

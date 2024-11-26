@@ -240,9 +240,24 @@ export function exportAttendancePageDetail(data) {
   return http.request("post", "/oa/hr/AttendanceDetailInfo/exportAttDetail", { data });
 }
 
+/** 考勤明细: 补卡提醒 */
+export function sendMissCardNotice(params) {
+  return http.request("get", "/oa/hr/AttendanceDetailInfo/sendReissueRemind", { params });
+}
+
+/** 考勤明细: 重算 */
+export function reCalcAttDetail(params) {
+  return http.request("get", "/oa/hr/AttendanceDetailInfo/regenerateAtt", { params });
+}
+
 /** 考勤明细: 修改 */
 export function updateAttendancePageDetail(data) {
   return http.request("put", "/oa/hr/AttendanceDetailInfo/updateAttDetail", { data });
+}
+
+/** 考勤明细: 获取时间 */
+export function getTimeStandardAttendancel(data) {
+  return http.request("post", "/oa/hr/AttendanceDetailInfo/getStandardAttTime", { data });
 }
 
 /** ========================= 内购后台 ========================= */

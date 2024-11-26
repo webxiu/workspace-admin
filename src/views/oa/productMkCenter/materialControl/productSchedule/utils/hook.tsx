@@ -46,14 +46,15 @@ export const useConfig = () => {
     saleOrderBillNo: "",
     prdOrderBillNo: "",
     materialNumber: "",
-    date: ""
+    startDate: "",
+    endDate: ""
   });
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "线别", value: "prdLineName" },
     { label: "销售订单", value: "saleOrderBillNo" },
     { label: "生产订单", value: "prdOrderBillNo" },
     { label: "生产型号", value: "materialNumber" },
-    { label: "排产日期", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "排产日期", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   onMounted(() => getTableList());
@@ -108,20 +109,14 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = (values) => {
-    formData.prdLineName = values.prdLineName;
-    formData.saleOrderBillNo = values.saleOrderBillNo;
-    formData.prdOrderBillNo = values.prdOrderBillNo;
-    formData.materialNumber = values.materialNumber;
-    formData.date = values.date;
+    Object.assign(formData, values);
     getTableList();
   };
 
   const getTableList = () => {
     loading.value = true;
     dynamicColumn.value = [];
-    const { date, ...reset } = formData;
-    const [startDate, endDate] = date.split("~").map((item) => item.trim());
-    productScheduleList({ ...reset, startDate, endDate })
+    productScheduleList(formData)
       .then(async ({ data }) => {
         loading.value = false;
         dataList.value = data || [];

@@ -26,13 +26,9 @@ export const useConfig = () => {
   const formData: any = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize
-    // date: ""
   });
 
-  const searchOptions: SearchOptionType[] = [
-    { label: "客户型号", value: "customerModel" }
-    // { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
-  ];
+  const searchOptions = reactive<SearchOptionType[]>([{ label: "客户型号", value: "customerModel" }]);
 
   onMounted(() => {
     getColumnConfig();
@@ -189,10 +185,8 @@ export const useConfig = () => {
 
   const rowClick = (row) => (currentRow.value = row);
 
-  const handleTagSearch = (val) => {
-    console.log(val, "val...");
-    formData.customerModel = val.customerModel;
-    formData.customerName = val.customerName;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     getTableList();
   };
 

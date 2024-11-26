@@ -50,10 +50,10 @@ export const useConfig = () => {
   });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const searchOptions: SearchOptionType[] = [
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "业务Id", value: "billId" },
     { label: "前缀字符", value: "prefix" }
-  ];
+  ]);
 
   onMounted(() => {
     getColumnConfig();

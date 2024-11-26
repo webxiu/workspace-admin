@@ -11,7 +11,10 @@ export function useUserTable(props) {
   const dataList: any = ref([]);
   const modalTableRef = ref();
   const currentMultipRow: any = ref({});
-  let searchFormData: any = reactive({});
+  const formData = reactive({
+    menuName: "",
+    menuType: ""
+  });
   const curSingleRow: any = ref({});
 
   const searchOptions = reactive<SearchOptionType[]>([
@@ -53,19 +56,18 @@ export function useUserTable(props) {
     menuList({})
       .then((res: any) => {
         if (res.data) {
-          console.log(searchFormData, "searchFormData");
           let result = res.data;
 
-          if (searchFormData.menuType) {
-            result = res.data.filter((item) => item.menuType === searchFormData.menuType);
+          if (formData.menuType) {
+            result = res.data.filter((item) => item.menuType === formData.menuType);
           }
 
-          if (searchFormData.menuName) {
-            result = res.data.filter((item) => item.menuName === searchFormData.menuName);
+          if (formData.menuName) {
+            result = res.data.filter((item) => item.menuName === formData.menuName);
           }
 
-          if (searchFormData.menuType && searchFormData.menuName) {
-            result = res.data.filter((item) => item.menuName === searchFormData.menuName && item.menuType === searchFormData.menuType);
+          if (formData.menuType && formData.menuName) {
+            result = res.data.filter((item) => item.menuName === formData.menuName && item.menuType === formData.menuType);
           }
 
           dataList.value = handleTree(result, "menuCode", "parentCode", "children");
@@ -74,8 +76,8 @@ export function useUserTable(props) {
       .finally(() => (loading.value = false));
   };
 
-  const handleTagSearch = (values = {}) => {
-    searchFormData = { ...values };
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

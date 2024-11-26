@@ -69,6 +69,7 @@ import Edit from "@iconify-icons/ep/edit";
 import Delete from "@iconify-icons/ep/delete";
 import CirclePlus from "@iconify-icons/ep/circle-plus";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
+import { reactive } from "vue";
 
 defineOptions({ name: "WorkbenchTeamManageMemberIndex" });
 
@@ -91,10 +92,10 @@ const {
 } = useConfig();
 
 const defaultProps = { children: "children", label: "title" };
-const searchOptions: SearchOptionType[] = [
+const searchOptions = reactive<SearchOptionType[]>([
   { label: "工号", value: "staffId" },
   { label: "姓名", value: "staffName" }
-];
+]);
 
 const handleTagSearch = (values) => {
   formData.staffId = values.staffId;

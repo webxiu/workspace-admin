@@ -3,6 +3,7 @@ import {
   exportAttendanceUser,
   fetchAttendanceUserList,
   fetchMachine,
+  staffInfoList,
   updateAttendanceUser,
   uploadAttendanceData
 } from "@/api/oaManage/humanResources";
@@ -29,7 +30,9 @@ import { useEleHeight } from "@/hooks";
 
 export const useMachine = () => {
   const dataList = ref([]);
+  const dataList1 = ref([]);
   const columns = ref<TableColumnList[]>([]);
+  const columns1 = ref<TableColumnList[]>([]);
   const loading = ref(false);
   const currentRow = ref();
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
@@ -44,12 +47,12 @@ export const useMachine = () => {
   });
 
   const searchOptions = reactive<SearchOptionType[]>([
-    { label: "工号", value: "staffCode" },
-    { label: "部门", value: "deptId", children: [] },
-    { label: "考勤机名称", value: "attMachineName", children: [] },
-    { label: "考勤机工号", value: "pin" },
-    { label: "考勤机姓名", value: "name" },
-    { label: "映射状态", value: "mappingState", children: [] }
+    { label: "工号", value: "staffId" },
+    { label: "部门", value: "deptId", children: [] }
+    // { label: "考勤机名称", value: "attMachineName", children: [] },
+    // { label: "考勤机工号", value: "pin" },
+    // { label: "考勤机姓名", value: "name" },
+    // { label: "映射状态", value: "mappingState", children: [] }
   ]);
 
   onMounted(() => {
@@ -60,29 +63,35 @@ export const useMachine = () => {
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
-      { label: "工号", prop: "staffCode" },
-      { label: "姓名", prop: "staffName" },
-      { label: "部门", prop: "deptName" },
-      { label: "考勤机", prop: "attMachineName" },
       { label: "考勤机工号", prop: "pin" },
       { label: "考勤机姓名", prop: "name" },
       { label: "修改人", prop: "modifyUserName" },
       { label: "修改时间", prop: "modifyDate" }
     ];
 
+    let columnData1: TableColumnList[] = [
+      { label: "工号", prop: "staffCode" },
+      { label: "姓名", prop: "staffName" },
+      { label: "部门", prop: "deptName" },
+      { label: "入职日期", prop: "startDate" }
+    ];
+
     const { columnArrs, buttonArrs } = await getMenuColumns();
-    const [menuCols] = columnArrs;
+    const [menuCols, menuCols1] = columnArrs;
     if (menuCols?.length) columnData = menuCols;
+    if (menuCols1?.length) columnData1 = menuCols1;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
+    columns1.value = setColumn({ columnData: columnData1, operationColumn: false });
     return columnData;
   };
 
   const onSearch = () => {
-    fetchAttendanceUserList(formData).then((res: any) => {
+    dataList.value = [];
+    staffInfoList({ ...formData, state: "在职" }).then((res: any) => {
       if (res.data) {
         const data = res.data;
-        dataList.value = data.records || [];
+        dataList1.value = data.records || [];
         pagination.total = data.total;
       }
     });
@@ -94,19 +103,19 @@ export const useMachine = () => {
       searchOptions[1].children = data;
     });
 
-    fetchMachine({}).then((res: any) => {
-      if (res.data) {
-        machineOptions.value = res.data.map((item) => ({ label: item.attMachineName, value: item.attMachineName }));
-        searchOptions[2].children = machineOptions.value;
-      }
-    });
+    // fetchMachine({}).then((res: any) => {
+    //   if (res.data) {
+    //     machineOptions.value = res.data.map((item) => ({ label: item.attMachineName, value: item.attMachineName }));
+    //     searchOptions[2].children = machineOptions.value;
+    //   }
+    // });
 
-    getBOMTableRowSelectOptions({ optioncode: "MappingStatus" }).then((res) => {
-      if (res.data) {
-        const result = res.data.find((item) => item.optionCode === "MappingStatus")?.optionList || [];
-        searchOptions[5].children = result.map((item) => ({ label: item.optionName, value: item.optionValue }));
-      }
-    });
+    // getBOMTableRowSelectOptions({ optioncode: "MappingStatus" }).then((res) => {
+    //   if (res.data) {
+    //     const result = res.data.find((item) => item.optionCode === "MappingStatus")?.optionList || [];
+    //     searchOptions[5].children = result.map((item) => ({ label: item.optionName, value: item.optionValue }));
+    //   }
+    // });
   };
 
   const onFresh = () => {
@@ -114,15 +123,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.staffName = val.staffName;
-    formData.staffCode = val.staffCode;
-    formData.deptId = val.deptId;
-    formData.attMachineName = val.attMachineName;
-    formData.pin = val.pin;
-    formData.name = val.name;
-    formData.mappingState = val.mappingState;
-
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 
@@ -319,8 +321,19 @@ export const useMachine = () => {
     currentRow.value = row;
   };
 
+  const rowClick2 = (row) => {
+    console.log(row, "left row..");
+    fetchAttendanceUserList({ staffCode: row.staffId, page: 1, limit: 10000 }).then((res: any) => {
+      if (res.data) {
+        const result = res.data.records || [];
+        dataList.value = result;
+      }
+    });
+  };
+
   return {
     columns,
+    columns1,
     onFresh,
     handleTagSearch,
     searchOptions,
@@ -329,7 +342,9 @@ export const useMachine = () => {
     rowClick,
     maxHeight,
     loading,
+    rowClick2,
     dataList,
+    dataList1,
     pagination,
     onSizeChange,
     onCurrentChange

@@ -175,8 +175,8 @@ export const useConfig = () => {
 
   // 搜索
   const onTagSearch = ({ state, ...values }) => {
-    formData.state = state === "-1" ? "" : state;
     Object.assign(formData, values);
+    formData.state = state === "-1" ? "" : state;
     getTableList();
   };
   const onRefresh = () => getTableList();

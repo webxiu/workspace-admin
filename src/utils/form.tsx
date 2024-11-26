@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-03-19 16:12:48
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-14 15:41:56
+ * @Last Modified time: 2024-11-22 16:50:05
  */
 
 import { DictResultType, OptionKeys, getEnumDictList } from "@/utils/table";
@@ -225,6 +225,7 @@ export const renderComponent = ({ column, customProps = {}, formatData, customEl
 export interface FormConfigParamType extends CustomMergeType {
   columnList: FormColumnItemType[];
   loading?: Ref<boolean>;
+  menuId?: number;
 }
 
 /** 配置返回类型 */
@@ -312,11 +313,13 @@ export const getFormConfigs = (options: FormConfigParamType): FormConfigReturnTy
  */
 export const getFormColumns = async (options: Omit<FormConfigParamType, "columnList"> = {}): Promise<FormConfigReturnType> => {
   return new Promise<any>((resolve) => {
-    const { menuId } = getUrlParameters();
+    let { menuId } = getUrlParameters();
+    const { menuId: _menuId, ...option } = options;
+    if (_menuId) menuId = _menuId;
     if (!menuId) throw new Error("菜单id不存在");
     formColumnList(menuId, { headers: { hideLoading: true } })
       .then(({ data }) => {
-        const res = getFormConfigs({ columnList: data, ...options });
+        const res = getFormConfigs({ columnList: data, ...option });
         resolve(res);
       })
       .catch(() => resolve([]));

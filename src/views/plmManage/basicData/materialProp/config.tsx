@@ -14,6 +14,7 @@ import { message, showMessageBox } from "@/utils/message";
 
 import { ElMessage } from "element-plus";
 import ImportMaterialPropModal from "./ImportMaterialPropModal.vue";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { enumDictionaryOptionDelete } from "@/api/systemManage";
 import { saveAs } from "file-saver";
@@ -38,8 +39,7 @@ export function useTable() {
   const optionId = ref();
 
   const categoryTreeData = ref([]);
-
-  const searchOptions = reactive([
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "属性编号", value: "propertyCode" },
     { label: "属性值类型", value: "propertyType", children: [] },
     { label: "枚举编码", value: "enumCode" },

@@ -45,7 +45,7 @@ export function useBankTable() {
   const currentLeftRow: any = ref({});
   const formData = reactive({ holidayName: "", yearMonth: "" });
 
-  const searchOptions: SearchOptionType[] = [{ label: "年月", value: "date", type: "month", format: "YYYY-MM" }];
+  const searchOptions = reactive<SearchOptionType[]>([{ label: "年月", value: "date", type: "month", format: "YYYY-MM" }]);
 
   const loading = ref(false);
   onMounted(() => {

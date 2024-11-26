@@ -29,7 +29,7 @@ export const useApiList = () => {
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
-  const searchOptions = ref<SearchOptionType[]>([
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "类名", value: "className" },
     { label: "方法名", value: "methodName" },
     { label: "权限类型", value: "permissionType", children: [] },
@@ -48,7 +48,7 @@ export const useApiList = () => {
     getBOMTableRowSelectOptions({ optioncode: "PermissionType" }).then((res) => {
       if (res.data) {
         authTypeOpts.value = res.data[0]?.optionList || [];
-        searchOptions.value[2].children = res.data[0]?.optionList.map((item) => ({ label: item.optionName, value: item.optionValue }));
+        searchOptions[2].children = res.data[0]?.optionList.map((item) => ({ label: item.optionName, value: item.optionValue }));
       }
     });
   };

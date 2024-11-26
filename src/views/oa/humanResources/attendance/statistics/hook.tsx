@@ -31,7 +31,7 @@ export const useMachine = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "工号", value: "userCode" },
     { label: "部门", value: "deptId", children: [] },
-    { label: "考勤时间", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "考勤时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   const fetchOptions = () => {
@@ -80,11 +80,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.userName = val.userName;
-    formData.userCode = val.userCode;
-    formData.deptId = val.deptId;
-    formData.date = val.date;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

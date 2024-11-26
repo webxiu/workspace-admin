@@ -30,12 +30,7 @@ export const useConfig = () => {
 
   const formData = reactive({ start: sTime, end: eTime });
   const searchOptions = reactive<SearchOptionType[]>([
-    {
-      label: "日期范围",
-      value: "date",
-      type: "daterange",
-      format: "YYYY-MM-DD"
-    }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "start", endKey: "end" }
   ]);
   const queryParams = reactive<QueryParamsType>({ date: `${sTime} ~ ${eTime}` });
 
@@ -69,10 +64,8 @@ export const useConfig = () => {
     columns.value = setColumn({ columnData, operationColumn: false, dragSelector: ".customer-ratio" });
   };
 
-  function onTagSearch({ date = "" }) {
-    const [startTime, endTime] = date.split("~").map((m) => m.trim());
-    formData.start = startTime;
-    formData.end = endTime;
+  function onTagSearch(values) {
+    Object.assign(formData, values);
     getTableList();
   }
 

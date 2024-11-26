@@ -41,20 +41,29 @@ export const useConfig = () => {
     productLevel: [{ required: true, message: "产品等级为必填项", trigger: "submit" }]
   });
 
-  const formData: any = reactive({
+  const formData = reactive({
+    productName: "",
+    developmentType: "",
+    productGrade: "",
+    referenceModel: "",
+    customer: "",
+    billNo: "",
+    applyDepartment: "",
+    userName: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
 
   const searchOptions = reactive<SearchOptionType[]>([
-    { label: "开发类型", value: "devType", children: [] },
-    { label: "参考机型", value: "simpleModel" },
-    { label: "产品等级", value: "productLevel", children: [] },
+    { label: "开发类型", value: "developmentType", children: [] },
+    { label: "参考机型", value: "referenceModel" },
+    { label: "产品等级", value: "productGrade", children: [] },
     { label: "客户", value: "customer" },
-    { label: "申请部门", value: "applyDeptName", children: [] },
+    { label: "申请部门", value: "applyDepartment", children: [] },
+    { label: "单据编号", value: "billNo" },
     { label: "产品名称", value: "productName" },
-    { label: "申请人", value: "applyUserName" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "申请人", value: "userName" },
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
@@ -539,23 +548,7 @@ export const useConfig = () => {
   };
 
   const handleTagSearch = (values) => {
-    formData.productName = values.productName;
-    formData.billNo = values.billNo;
-    formData.developmentType = values.devType;
-    formData.productGrade = values.productLevel;
-    formData.referenceModel = values.simpleModel;
-    formData.customer = values.customer;
-    formData.applyDepartment = values.applyDeptName;
-    formData.userName = values.applyUserName;
-
-    if (values.date) {
-      const [startDate, endDate] = values.date.split("~").map((item) => item.trim());
-      formData.startDate = startDate;
-      formData.endDate = endDate;
-    } else {
-      formData.startDate = undefined;
-      formData.endDate = undefined;
-    }
+    Object.assign(formData, values);
     onSearch();
   };
 

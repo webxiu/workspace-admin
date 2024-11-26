@@ -1,14 +1,14 @@
-import { dayjs, ElMessage, FormRules } from "element-plus";
+import { ElMessage, FormRules, dayjs } from "element-plus";
 import { addSafeCertificate, delSafeCertificate, exportSafeCertificate, fetchSafeCertificate, updateSafeCertificate } from "@/api/oaManage/humanResources";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 
 import EditForm from "@/components/EditForm/index.vue";
-import { addDialog } from "@/components/ReDialog";
-import { useEleHeight } from "@/hooks";
-import { fixed2AndAddcomma } from "@/utils/common";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { addDialog } from "@/components/ReDialog";
+import { fixed2AndAddcomma } from "@/utils/common";
+import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -28,7 +28,7 @@ export const useConfig = () => {
     remark: [{ required: true, message: "备注为必填项", trigger: "submit" }]
   });
 
-  const formData: any = reactive({ page: 1, limit: 10000 });
+  const formData = reactive({ page: 1, limit: 10000 });
 
   const formConfigs = () => [
     {
@@ -338,34 +338,12 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "年份", value: "year", type: "year", format: "YYYY" },
     { label: "公司名称", value: "companyName" },
-    { label: "证书日期", value: "caDate", type: "daterange", format: "YYYY-MM-DD" },
-    { label: "有效日期", value: "effectDate", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "证书日期", value: "caDate", type: "daterange", format: "YYYY-MM-DD", startKey: "startCaDate", endKey: "endCaDate" },
+    { label: "有效日期", value: "effectDate", type: "daterange", format: "YYYY-MM-DD", startKey: "startEffectDate", endKey: "endEffectDate" }
   ]);
 
-  const handleTagSearch = (val) => {
-    formData["projectName"] = val.projectName;
-    formData["year"] = val.year;
-    formData["companyName"] = val.companyName;
-
-    // 证书日期
-    if (val.caDate) {
-      const [startCaDate, endCaDate] = val.caDate.split("~").map((el) => el.trim());
-      formData.startCaDate = startCaDate;
-      formData.endCaDate = endCaDate;
-    } else {
-      formData.startCaDate = undefined;
-      formData.endCaDate = undefined;
-    }
-
-    // 有效日期
-    if (val.effectDate) {
-      const [startEffectDate, endEffectDate] = val.effectDate.split("~").map((el) => el.trim());
-      formData.startEffectDate = startEffectDate;
-      formData.endEffectDate = endEffectDate;
-    } else {
-      formData.startEffectDate = undefined;
-      formData.endEffectDate = undefined;
-    }
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

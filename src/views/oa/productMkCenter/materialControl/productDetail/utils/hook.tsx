@@ -28,7 +28,7 @@ export const useConfig = () => {
   });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const searchOptions: SearchOptionType[] = [
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "父物料编号", value: "parentmaterial" },
     { label: "子物料编号", value: "material" },
     {
@@ -39,8 +39,8 @@ export const useConfig = () => {
         { label: "未欠料", value: "1" }
       ]
     },
-    { label: "计划时间", value: "date", type: "daterange", format: "YYYY-MM-DD" }
-  ];
+    { label: "计划时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startTime", endKey: "endTime" }
+  ]);
 
   onMounted(() => {
     getColumnConfig();
@@ -94,11 +94,6 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const { date = "" } = formData;
-    const [startTime, endTime] = date.split("~").map((item) => item.trim());
-    formData.startTime = startTime;
-    formData.endTime = endTime;
-    console.log(formData, "req");
     fetchProductDetailList(formData)
       .then((res: any) => {
         const data = res.data;
@@ -109,14 +104,8 @@ export const useConfig = () => {
       .catch((err) => (loading.value = false));
   };
 
-  const handleTagSearch = (values: any) => {
-    const { page, limit } = formData;
-
-    formData.billNo = values.billNo || "";
-    formData.limit = limit;
-    formData.page = page;
-    formData.parentmaterial = values.parentmaterial;
-    formData.material = values.material;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     formData.stockNum = values.stockNum || "0";
     formData.type = 0;
     onSearch();

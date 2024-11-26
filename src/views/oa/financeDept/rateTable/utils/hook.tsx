@@ -16,7 +16,7 @@ export const useConfig = () => {
   const rowData = ref();
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 52);
 
-  let formData: any = reactive({
+  const formData = reactive({
     startDate: "",
     endDate: "",
     date: "",
@@ -26,7 +26,9 @@ export const useConfig = () => {
   const nowDay = dayjs().format("YYYY-MM-DD");
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const searchOptions: SearchOptionType[] = [{ label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }];
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
+  ]);
   const queryParams = reactive<QueryParamsType>({ date: `${nowDay} ~ ${nowDay}` });
 
   onMounted(() => {
@@ -61,9 +63,7 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const { date, ...reset } = formData;
-    const [startDate, endDate] = date.split("~").map((item) => item.trim());
-    getRateTableList({ ...reset, startDate, endDate })
+    getRateTableList(formData)
       .then((res: any) => {
         const data = res.data;
         loading.value = false;
@@ -73,15 +73,8 @@ export const useConfig = () => {
       .catch((err) => (loading.value = false));
   };
 
-  const handleTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values };
-
-    formData.page = page;
-    formData.limit = limit;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 
@@ -103,9 +96,7 @@ export const useConfig = () => {
 
   // 下载
   const onDownload = () => {
-    const { date } = formData;
-    const [startDate, endDate] = date.split("~").map((item) => item.trim());
-
+    const { startDate, endDate } = formData;
     if (startDate !== endDate) {
       ElMessage({ message: "开始日期和结束日期必须相同", type: "warning" });
       return;

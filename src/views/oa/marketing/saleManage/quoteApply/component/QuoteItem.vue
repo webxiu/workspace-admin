@@ -13,11 +13,22 @@
       >
         <el-input-number v-model="item.count" placeholder="请输入数量" :controls="false" clearable :disabled="disableCount" class="ui-w-100" />
       </el-form-item>
+      <el-form-item
+        label="币种"
+        class="flex-1"
+        :prop="'quoteList.' + index + '.currency'"
+        label-width="120px"
+        :rules="[
+          { required: !disableCurrency, message: '请输入币种', trigger: 'blur' },
+          { trigger: 'blur', validator: disableCurrency ? null : validator.bind(null, 'currency', index) }
+        ]"
+      >
+        <el-select v-model="item.currency" placeholder="请选择" :disabled="disableCurrency" class="ui-w-100">
+          <el-option v-for="item in currencyList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="单价" class="flex-1" :prop="'quoteList.' + index + '.price'" label-width="120px">
         <el-input-number v-model="item.price" placeholder="/" :controls="false" disabled class="ui-w-100" />
-      </el-form-item>
-      <el-form-item label="币种" class="flex-1" :prop="'quoteList.' + index + '.currency'" label-width="120px">
-        <el-input-number v-model="item.currency" placeholder="/" :controls="false" disabled class="ui-w-100" />
       </el-form-item>
       <el-form-item label-width="0px" style="border-left: 0px">
         <el-button @click.prevent="removeAction(item)" type="danger" size="small" :icon="Delete" :disabled="disabled">删除</el-button>
@@ -33,44 +44,48 @@
 import { v4 as uuidv4 } from "uuid";
 import { ref, watch, onMounted } from "vue";
 import { Plus, Delete } from "@element-plus/icons-vue";
+import { OptionItemType } from "@/api/plmManage";
 
 interface Props {
   /** 默认禁用项 */
   disabled?: boolean;
   /** 禁用数量 */
   disableCount?: boolean;
+  /** 禁用币种 */
+  disableCurrency?: boolean;
   modelValue: DomainItem[];
+  /** 币种下拉选项 */
+  currencyList?: OptionItemType[];
 }
 
 export interface DomainItem {
   id: string;
   count: number;
   price: number;
-  currency: number;
+  currency: string | number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: () => []
+  modelValue: () => [],
+  currencyList: () => []
 });
 
 const emits = defineEmits(["update:modelValue"]);
 const dataList = ref<DomainItem[]>(props.modelValue);
-onMounted(() => {
-  if (props.modelValue.length === 0) {
+
+watch(props, (val) => {
+  dataList.value = val.modelValue || [];
+  if (val.currencyList.length && !dataList.value.length) {
     addAction();
   }
 });
 
-watch(props, (val) => {
-  dataList.value = val.modelValue || [];
-});
-
 function validator(field, index, rule: any, value: any, callback: any) {
-  const name = { count: "数量" /*, price: "单价"*/ }[field];
+  const name = { count: "数量", currency: "币种" }[field];
   const arr = dataList.value.map((f) => f[field]).filter((f, i) => f && i !== index);
   if (!value) {
     callback(new Error(`请输入${name}`));
-  } else if (arr.includes(value)) {
+  } else if (arr.includes(value) && field !== "currency") {
     callback(new Error(`输入${name}重复`));
   } else {
     callback();
@@ -79,7 +94,8 @@ function validator(field, index, rule: any, value: any, callback: any) {
 
 function addAction() {
   if (props.disabled) return;
-  dataList.value.push({ id: uuidv4(), price: undefined, count: undefined, currency: undefined });
+  const currency = props.currencyList[0]?.optionValue;
+  dataList.value.push({ id: uuidv4(), count: undefined, currency: currency, price: undefined });
   emits("update:modelValue", dataList.value);
 }
 

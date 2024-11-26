@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { match } from "pinyin-pro";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import SearchResult from "./SearchResult.vue";
 import SearchFooter from "./SearchFooter.vue";
 import { useNav } from "@/layout/hooks/useNav";
@@ -26,6 +26,8 @@ const { device } = useNav();
 const emit = defineEmits<Emits>();
 const props = withDefaults(defineProps<Props>(), {});
 const router = useRouter();
+const route = useRoute();
+
 const { locale } = useI18n();
 
 const keyword = ref("");
@@ -61,12 +63,13 @@ watch(show, (val) => {
 /** 查询 */
 function search() {
   const flatMenusData = flatTree(menusData.value);
-  resultOptions.value = flatMenusData.filter((menu) =>
-    keyword.value
-      ? transformI18n(menu.meta?.title).toLocaleLowerCase().includes(keyword.value.toLocaleLowerCase().trim()) ||
-        (locale.value === "zh" && !isAllEmpty(match(transformI18n(menu.meta?.title).toLocaleLowerCase(), keyword.value.toLocaleLowerCase().trim())))
-      : false
-  );
+  resultOptions.value = flatMenusData.filter((menu) => {
+    const title = transformI18n(menu.meta?.title).toLocaleLowerCase();
+    const kw = keyword.value.toLocaleLowerCase().trim();
+    const isMatchName = title.includes(kw) || (locale.value === "zh" && !isAllEmpty(match(title, kw)));
+    const isMatchPath = menu.path.includes(keyword.value); // 根据路径匹配
+    return keyword.value ? isMatchName || isMatchPath : false;
+  });
   if (resultOptions.value?.length > 0) {
     activePath.value = resultOptions.value[0];
   } else {
@@ -128,7 +131,26 @@ function handleEnter() {
   // 跳转具体页面
   const pagePath = `${menuItem.path}?menuId=${menuItem.id}`;
 
-  router.push(hasChild ? mainPath : pagePath);
+  function extractPathSegment(path: string) {
+    const segments = path.split("/").filter((segment) => segment !== "");
+    if (segments.includes("/oa")) {
+      return "/" + segments.slice(0, 3).join("/");
+    } else {
+      return "/" + segments.slice(0, 2).join("/");
+    }
+  }
+  const parentRoute = menusData.value?.find((item) => menuItem.path.includes(item.path));
+
+  router.push({
+    path: hasChild ? mainPath : pagePath,
+    query: {
+      ...route.query,
+      menuCode: parentRoute.menuCode,
+      from: extractPathSegment(menuItem.path),
+      menuId: menuItem.id,
+      menuName: menuItem.meta.title
+    }
+  });
   handleClose();
 }
 

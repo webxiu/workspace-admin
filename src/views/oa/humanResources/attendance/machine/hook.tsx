@@ -95,10 +95,8 @@ export const useMachine = () => {
     getTableList();
   };
 
-  const handleTagSearch = (val) => {
-    formData.sn = val.sn;
-    formData.description = val.description;
-    formData.attMachineName = val.attMachineName;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     getTableList();
   };
 

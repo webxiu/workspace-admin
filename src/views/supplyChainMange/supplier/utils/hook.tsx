@@ -29,7 +29,7 @@ export const useConfig = () => {
   });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const searchOptions: SearchOptionType[] = [
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "简称", value: "fshortName" },
     { label: "联系人", value: "fcontact" },
     {
@@ -40,7 +40,7 @@ export const useConfig = () => {
         { label: "否", value: "false" }
       ]
     }
-  ];
+  ]);
 
   onMounted(() => {
     getColumnConfig();

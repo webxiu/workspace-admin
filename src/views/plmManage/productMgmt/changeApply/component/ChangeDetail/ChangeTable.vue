@@ -26,6 +26,7 @@ const columnData: TableColumnList[] = [
     label: "场所",
     prop: "place",
     cellRenderer,
+    width: 160,
     headerRenderer: () => (
       <div class="flex just-center align-center">
         <span class="pr-2">场所</span>
@@ -34,12 +35,12 @@ const columnData: TableColumnList[] = [
       </div>
     )
   },
-  { label: "物料编号", prop: "materialCode", cellRenderer },
-  { label: "数量", prop: "number", cellRenderer },
-  { label: "采购部计划与仓储", prop: "major", cellRenderer },
-  { label: "经管核算", prop: "computer", cellRenderer },
+  { label: "物料编号", prop: "materialCode", cellRenderer, width: 120 },
+  { label: "数量", prop: "number", cellRenderer, width: 90 },
+  { label: "采购部计划与仓储", prop: "major", cellRenderer, width: 120 },
+  { label: "经管核算", prop: "computer", cellRenderer, width: 100 },
   { label: "技术研发中心判定变更前旧物料处置方法", prop: "method", width: 200, cellRenderer },
-  { label: "责任归属判断", prop: "duty", cellRenderer }
+  { label: "责任归属判断", prop: "duty", cellRenderer, width: 120 }
 ];
 
 const columns = setColumn({
@@ -68,27 +69,33 @@ function onDeleteAll() {
 function onSelectionChange(rows) {
   rowsData.value = rows;
 }
+
+const objectSpanMethod = ({ row, column, rowIndex, columnIndex }) => {
+  const len = dataList.value.length;
+  if (columnIndex === 7) {
+    if (rowIndex >= 0) {
+      return { rowspan: len, colspan: 1 };
+    } else {
+      return { rowspan: 0, colspan: 0 };
+    }
+  }
+};
 </script>
 
 <template>
-  <div class="ui-h-100 flex-col flex-1 main main-content">
-    <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" :show-icon="false" style="padding: 0">
-        <template v-slot="{ size, dynamicColumns }">
-          <pure-table
-            border
-            row-key="id"
-            :adaptive="true"
-            align-whole="center"
-            :size="size"
-            :data="dataList"
-            :columns="dynamicColumns"
-            highlight-current-row
-            :show-overflow-tooltip="true"
-            @selection-change="onSelectionChange"
-          />
-        </template>
-      </PureTableBar>
-    </div>
+  <div class="ui-h-100 flex-col flex-1 inner-table">
+    <pure-table
+      border
+      row-key="id"
+      :adaptive="true"
+      align-whole="center"
+      size="small"
+      :data="dataList"
+      :columns="columns"
+      highlight-current-row
+      :show-overflow-tooltip="true"
+      :span-method="objectSpanMethod"
+      @selection-change="onSelectionChange"
+    />
   </div>
 </template>

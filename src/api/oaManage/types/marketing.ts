@@ -448,6 +448,7 @@ export interface QuoteBomItemType {
   materialAmount: number;
   materialCode: string;
   materialName: string;
+  materialGroupId: string;
   materialProperty: string;
   materialUnitPrice: number;
   orgId: string;
@@ -458,6 +459,7 @@ export interface QuoteBomItemType {
   valuationUnit: string;
   valuationUnitQuantity: number;
   verificationState: number;
+  materialUnitMoney: string;
   uuid?: string;
   isNew?: boolean;
 }
@@ -465,7 +467,8 @@ export interface QuoteBomItemType {
 /** 变量成本列表类型 */
 export interface VariableCostItemType {
   category: string;
-  companyGrossMargin: number;
+  /** 毛利率 */
+  grossProfitRate: number;
   createDate: string;
   createUserId: number;
   domesticPrice: number;
@@ -479,8 +482,15 @@ export interface VariableCostItemType {
   packagingCost: number;
   quotationId: string;
   rawMaterialCost: number;
+  /** 成本合计 */
   totalUnitCost: number;
   unitContributionMargin: number;
+  /** 税率 */
+  taxRate: number;
+  /** 汇率 */
+  exchangeRate: number;
+  /** 报价 */
+  quote?: number;
 }
 
 /** ========================= 采购询价单 ========================= */

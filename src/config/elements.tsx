@@ -83,6 +83,8 @@ import {
   ZoomOut
 } from "@element-plus/icons-vue";
 
+import { CSSProperties } from "vue";
+
 /** 按钮上的图标 */
 export const IconConf = {
   Plus: <Plus />,
@@ -169,15 +171,23 @@ export const IconConf = {
 };
 
 // 提示图标
-export const Question = (props: { label?: string; tipMsg?: string | JSX.Element; Icon?: any; placement?: string; color?: string; size?: number }) => {
-  const { label, tipMsg = "提示", Icon = QuestionFilled, placement = "top", color = "orange", size = 14 } = props;
+export const Question = (props: {
+  label?: string;
+  tipMsg?: string | JSX.Element;
+  Icon?: any;
+  placement?: string;
+  color?: string;
+  size?: number;
+  iconStyle?: CSSProperties;
+}) => {
+  const { label, tipMsg = "提示", Icon = QuestionFilled, placement = "top", color = "orange", size = 14, iconStyle, ...reset } = props;
   return (
     <span>
       {label ? <span>{label}</span> : null}
-      <el-tooltip placement={placement} content={tipMsg}>
+      <el-tooltip placement={placement} content={tipMsg} {...reset}>
         {{
           default: () => (
-            <el-icon style="margin: 1px 0 0 2px" class="ui-va-tt" size={size}>
+            <el-icon class="ui-va-tt" size={size} style={{ margin: "1px 0 0 2px", ...iconStyle }}>
               {<Icon color={color} />}
             </el-icon>
           ),

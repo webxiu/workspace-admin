@@ -30,7 +30,7 @@ export const useConfig = () => {
     year: new Date().getFullYear()
   });
 
-  const searchOptions: SearchOptionType[] = [{ label: "客户编码", value: "customerOANumber" }];
+  const searchOptions = reactive<SearchOptionType[]>([{ label: "客户编码", value: "customerOANumber" }]);
 
   onMounted(() => {
     onSearch();
@@ -87,7 +87,7 @@ export const useConfig = () => {
   };
 
   const handleTagSearch = (values) => {
-    formData.customerOANumber = values.customerOANumber;
+    Object.assign(formData, values);
     onSearch();
   };
 

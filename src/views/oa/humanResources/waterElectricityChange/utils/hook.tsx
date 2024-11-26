@@ -15,6 +15,7 @@ import EditForm from "@/components/EditForm/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import SelectUserModal from "../selectUserModal/modal.vue";
 import { addDialog } from "@/components/ReDialog";
 import { cloneDeep } from "@pureadmin/utils";
@@ -35,10 +36,10 @@ export const useConfig = () => {
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   let formData: any = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
 
-  const searchOptions: any = ref([
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "宿舍楼栋", value: "buildingName" },
     { label: "房间号", value: "dormitoryCode" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "searchStartDate", endKey: "searchEndDate" }
   ]);
 
   onMounted(() => {
@@ -69,13 +70,7 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const copyData = cloneDeep(formData);
-    const [searchStartDate, searchEndDate] = copyData.date ? copyData.date.split(" ~ ") : [undefined, undefined];
-    copyData.searchStartDate = searchStartDate;
-    copyData.searchEndDate = searchEndDate;
-    delete copyData.date;
-
-    fetchChangeWaterElectricity({ ...copyData })
+    fetchChangeWaterElectricity(formData)
       .then((res: any) => {
         if (res.data) {
           const data = res.data;
@@ -87,12 +82,8 @@ export const useConfig = () => {
       .catch(() => (loading.value = false));
   };
 
-  const onTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values, page, limit };
+  const onTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

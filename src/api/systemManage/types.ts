@@ -138,6 +138,7 @@ export interface DetartMenttemType {
   parentId: number;
   k3DeptGroupNumber: string;
   principalId: string;
+  examineFlag?: number;
   clerkId: string;
   createDate: string;
   principalCode: string;

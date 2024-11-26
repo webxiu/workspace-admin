@@ -412,9 +412,9 @@ export const readXlsx = (file: File, sheetConfig = {}) => {
 export const openInVScode = (vscodeMain, { path }) => {
   path = !path.includes("index") ? `${path}/index` : path;
   const openURL = vscodeMain + __ROOT__ + `/src/views${path}.vue`;
-  const newWindow = window.open(openURL, "在vscode中打开", "width=50,height=50,resizable=yes");
+  const newWindow = window.open(openURL, "在vscode中打开", "width=480,height=200,resizable=yes");
   const timer = setTimeout(() => {
     newWindow.close();
     clearTimeout(timer);
-  }, 1000);
+  }, 5000);
 };

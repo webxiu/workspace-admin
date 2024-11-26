@@ -127,10 +127,11 @@ export const useConfig = () => {
   const openDialog = (type: "add" | "edit", row?: QuoteApplyItemType) => {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
+    const isEdit = [BillState.submit, BillState.reject].includes(row.billState);
     const quoteList = combineArrays(row.quoteQuantityLists, row.quoteQuantityMoneyLists, row.currencyLists);
     addDialog({
       title: `${title}报价申请单`,
-      props: { row: { ...row, quoteList } },
+      props: { row: { ...row, quoteList }, isEdit: type === "add" || isEdit },
       width: "80%",
       draggable: true,
       fullscreenIcon: true,
@@ -150,21 +151,23 @@ export const useConfig = () => {
             const currencys = jointArr(quoteList, "currency");
             const params = { ...formData, quoteQuantity, quoteQuantityMoney, currencys };
 
-            if (type === "edit" && ![BillState.submit, BillState.reject].includes(row.billState)) {
+            if (type === "edit" && !isEdit) {
               return message("只能提交【待提交/重新审核】的记录", { type: "error" });
             }
-            showMessageBox("确认提交吗").then(() => {
-              const reqApi = { add: addQuoteApply, edit: updateQuoteApply };
-              reqApi[type](params).then((res) => {
-                if (res.data) {
-                  message(`${title}成功`);
-                  getTableList();
-                  done();
-                } else {
-                  message(`${title}失败`, { type: "error" });
-                }
-              });
-            });
+            showMessageBox("确认提交吗")
+              .then(() => {
+                const reqApi = { add: addQuoteApply, edit: updateQuoteApply };
+                reqApi[type](params).then((res) => {
+                  if (res.data) {
+                    message(`${title}成功`);
+                    getTableList();
+                    done();
+                  } else {
+                    message(`${title}失败`, { type: "error" });
+                  }
+                });
+              })
+              .catch(console.log);
           }
         });
       }

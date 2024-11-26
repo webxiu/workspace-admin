@@ -1,8 +1,8 @@
-import { MoldApplyItemType, MoldFileItemType, ProductClassifyManageItemType } from "./types";
+import { ChangeApplyItemType, MaterialGroupItemType, MoldApplyItemType, MoldFileItemType, ProductClassifyManageItemType } from "./types";
 
 import { http } from "@/utils/http";
 
-export type { ProductClassifyManageItemType, MoldApplyItemType, MoldFileItemType };
+export type { MaterialGroupItemType, ProductClassifyManageItemType, MoldApplyItemType, MoldFileItemType, ChangeApplyItemType };
 
 /** ========================= PLM ========================= */
 /** 基础数据 -  查询物料列表 */
@@ -33,8 +33,8 @@ export function addMaterialInfo(params) {
 }
 
 /** 基础数据 -  物料分组 */
-export function getMaterialGroupTreeData(params) {
-  return http.request("post", "/plm/bd/materialgroup/GetMaterialGroupTreeData", { data: params });
+export function getMaterialGroupTreeData(data) {
+  return http.request<MaterialGroupItemType[]>("post", "/plm/bd/materialgroup/GetMaterialGroupTreeData", { data });
 }
 
 /** 基础数据 -  更新物料 */
@@ -277,6 +277,13 @@ export function updateProductStoreList(params) {
 /** 项目管理 -  产品库 - 新增列表 */
 export function insertProductStoreList(params) {
   return http.request("post", "/plm/pm/productinfo/insertproduct", { data: params }, { headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** ========================= 变更申请 ========================= */
+
+/** 变更申请 - 列表 */
+export function changeApplyList(data) {
+  return http.request<TablePagingResType<ChangeApplyItemType>>("post", "/plm/bd/material/select", { data }, { headers: { hideLoading: true } });
 }
 
 /** 项目管理 -  产品分类管理 - 导出列表 */
@@ -871,7 +878,7 @@ export function deleteDeliveralbeChangeInfo(params) {
 export interface OptionItemType {
   id: number;
   optionId: number;
-  optionValue: string;
+  optionValue: string | number;
   optionName: string;
   reserve1: string;
   reserve2: string;

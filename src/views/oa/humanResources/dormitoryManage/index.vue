@@ -115,9 +115,11 @@ import { showMessageBox } from "@/utils/message";
 import ButtonList from "@/components/ButtonList/index.vue";
 import { getEnumDictList } from "@/utils/table";
 import { getDeptOptions } from "@/utils/requestApi";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 defineOptions({ name: "OaHumanResourcesDormitoryManageIndex" });
-const searchOptions = reactive([
+
+const searchOptions = reactive<SearchOptionType[]>([
   { label: "姓名", value: "userName" },
   { label: "工号", value: "userCode" },
   { label: "部门", value: "deptId", children: [] },

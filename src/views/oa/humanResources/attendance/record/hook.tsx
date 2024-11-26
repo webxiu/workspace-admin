@@ -22,6 +22,11 @@ export const useMachine = () => {
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
   const formData: any = reactive({
+    attMachineName: "",
+    staffCode: "",
+    deptId: "",
+    startDate: "",
+    endDate: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
@@ -34,7 +39,7 @@ export const useMachine = () => {
     { label: "工号", value: "staffCode" },
     { label: "部门", value: "deptId", children: [] },
     { label: "考勤机名称", value: "attMachineName", children: [] },
-    { label: "考勤时间", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "考勤时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   const fetchOptions = () => {
@@ -73,11 +78,6 @@ export const useMachine = () => {
   };
 
   const onSearch = () => {
-    if (formData.date) {
-      const [startDate, endDate] = formData.date.split("~").map((item) => item.trim());
-      formData.startDate = startDate;
-      formData.endDate = endDate;
-    }
     fetchAttendanceRecord(formData).then((res: any) => {
       if (res.data) {
         dataList.value = res.data.records || [];
@@ -91,17 +91,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.staffName = val.staffName;
-    formData.staffCode = val.staffCode;
-    formData.deptId = val.deptId;
-    formData.date = val.date;
-    formData.attMachineName = val.attMachineName;
-
-    if (!val.date) {
-      formData.startDate = undefined;
-      formData.endDate = undefined;
-    }
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

@@ -304,3 +304,23 @@ export function selectCustomerComplaintList(data) {
 export function importCustomerComplaintList(data) {
   return http.request("post", "/oa/mk/customercomplaints/importbyexcel", { data, headers: { "Content-Type": "multipart/form-data" } });
 }
+
+/** 生产标准——导出 */
+export function exportProductStandard(data) {
+  return http.request("post", "/oa/mfg/eng/productionStandard/export", { data });
+}
+
+/** 生产标准——查询 */
+export function fetchProductStandard(data) {
+  return http.request("post", "/oa/mfg/eng/productionStandard/selectProductionStandard", { data });
+}
+
+/** 生产标准——修改 */
+export function updateProductStandard(data) {
+  return http.request("put", "/oa/mfg/eng/productionStandard/updateProductionStandard", { data });
+}
+
+/** 生产标准——导入 */
+export function importProductStandard(data) {
+  return http.request("post", "/oa/mfg/eng/productionStandard/uploadProductionStandard", { data, headers: { "Content-Type": "multipart/form-data" } });
+}

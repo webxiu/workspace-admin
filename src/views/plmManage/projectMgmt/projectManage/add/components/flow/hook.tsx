@@ -663,6 +663,66 @@ export const useFlow = (props, cbs?) => {
         // 零部件打样申请表
         cbs.partSampleApply(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
         return;
+      case "25":
+        // 改模修模确认单
+        cbs.editAndFixMoldConfirmOrder(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "26":
+        // 模具修改履历表
+        cbs.moldEditHistory(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "27":
+        // 系列产品对照表
+        cbs.seriesComparison(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "28":
+        // 项目预算申请表
+        cbs.budgetApplySheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "29":
+        // 客户满意度调查表
+        cbs.customerCheckSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "30":
+        // 样机测试申请表
+        cbs.sampleTestApplySheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "31":
+        // 项目改善进程表
+        cbs.pmImproveProcessSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "32":
+        // ce产品认证管控清单
+        cbs.ceProductControlList(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "33":
+        // 承认书清单
+        cbs.admitBookList(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "34":
+        // 共用件以及参考清单
+        cbs.publicPartAndList(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "35":
+        // 治夹具制作申请表
+        cbs.fixtureMakeApplySheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "36":
+        // 设计变更申请单
+        cbs.designChangeApplySheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "37":
+        // 试产前会议点检表
+        cbs.tryMeetCheckSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "38":
+        // 研发工时及费用统计表
+        cbs.devWorkTimeFeeTotalSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "39":
+        // 样品制作计划与清单
+        cbs.sampleMakePlanAndListSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
       default:
         break;
     }
@@ -877,7 +937,38 @@ export const useFlow = (props, cbs?) => {
   };
 
   const clickDeliverName = (item) => {
-    if (["2", "10", "14", "15", "16", "17", "18", "19", "20", "12", "22", "23", "24"].includes(item.deliverableTemplateId)) {
+    if (
+      [
+        "2",
+        "10",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "12",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "36",
+        "37",
+        "38",
+        "39"
+      ].includes(item.deliverableTemplateId)
+    ) {
       // 手板制作模版、产品设计输入表
       return;
     }

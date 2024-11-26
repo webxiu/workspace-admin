@@ -1,11 +1,20 @@
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { ElMessage, FormRules } from "element-plus";
-import { NoStaffItemType, addNoStaffUser, fetchNoStaffUser, leaveNoStaffUser, updateNoStaffUser } from "@/api/oaManage/humanResources";
+import {
+  NoStaffItemType,
+  StaffInfoItemType,
+  addNoStaffUser,
+  fetchNoStaffUser,
+  leaveNoStaffUser,
+  manySyncMachineData,
+  updateNoStaffUser
+} from "@/api/oaManage/humanResources";
 import { formConfigs, formRules } from "./config";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { getMenuColumns, setColumn, updateButtonList, usePageSelect } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 import { utils, write } from "xlsx";
+import MachineUserModal from "../staffInfo/utils/machineUserModal/index.vue";
 
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
@@ -22,7 +31,9 @@ export const useMachine = () => {
   const treeSelectData = ref([]);
   const currentRow = ref<NoStaffItemType>();
   const columns = ref<TableColumnList[]>([]);
+  const rowsData = ref([]);
   const dataList = ref<NoStaffItemType[]>([]);
+  const noTableRef = ref();
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const formData = reactive({
@@ -37,6 +48,8 @@ export const useMachine = () => {
     { label: "编号", value: "staffId" }
     // { label: "公司", value: "laborServiceCompany" }
   ]);
+
+  const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef: noTableRef, dataList, rowsData, uniId: "id" });
 
   onMounted(() => {
     getColumnConfig();
@@ -72,7 +85,7 @@ export const useMachine = () => {
     const [menuCols] = columnArrs;
     if (menuCols?.length) columnData = menuCols;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, operationColumn: false });
+    columns.value = setColumn({ columnData, selectionColumn: { hide: false }, operationColumn: false });
     return columnData;
   };
 
@@ -81,6 +94,7 @@ export const useMachine = () => {
       if (res.data) {
         dataList.value = res.data.records || [];
         pagination.total = res.data.total;
+        setSelectCheckbox();
       }
     });
   };
@@ -90,10 +104,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.staffName = val.staffName;
-    formData.staffId = val.staffId;
-    formData.laborServiceCompany = val.laborServiceCompany;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 
@@ -108,12 +120,7 @@ export const useMachine = () => {
       bookSST: true,
       type: "array"
     });
-    saveAs(
-      new Blob([wbout], {
-        type: "application/octet-stream"
-      }),
-      `编外人员${timeStep}.xlsx`
-    );
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), `编外人员${timeStep}.xlsx`);
   };
 
   const openDialog = async (type: "add" | "view" | "edit", row?) => {
@@ -312,10 +319,46 @@ export const useMachine = () => {
     onLeave(currentRow.value);
   };
 
+  const onSyncMachine = () => {
+    if (!rowsData.value.length) return message("请勾选人员", { type: "error" });
+    const formRef = ref();
+    addDialog({
+      title: `选择考勤机`,
+      width: "900px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(MachineUserModal, { ref: formRef }),
+      beforeSure: (done) => {
+        const selectedIds: any[] = formRef.value?.selectedRows?.map((item) => item.id);
+        if (selectedIds.length) {
+          const names = rowsData.value.map((item) => item.staffName);
+          const paramsData = rowsData.value.map((item) => ({ ...item, machineIds: selectedIds }));
+
+          const attMachineNames = formRef.value?.selectedRows?.map((item) => item.attMachineName);
+          showMessageBox(`确认要同步人员【${names}】的信息到考勤机【${attMachineNames}】吗?`)
+            .then(() => {
+              manySyncMachineData(paramsData).then((res) => {
+                if (res.status === 200) {
+                  ElMessage({ message: "同步成功", type: "success" });
+                  done();
+                  onSearch();
+                }
+              });
+            })
+            .catch(console.log);
+        } else {
+          message("请选择至少一条考勤机记录", { type: "warning" });
+        }
+      }
+    });
+  };
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增" },
     { clickHandler: onEdit, type: "warning", text: "修改" },
     { clickHandler: onDel, type: "danger", text: "离职" },
+    { clickHandler: onSyncMachine, type: "default", text: "同步考勤机", isDropDown: true },
     { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
   ]);
 
@@ -338,6 +381,14 @@ export const useMachine = () => {
     currentRow.value = row;
   };
 
+  function onSelect(rows: StaffInfoItemType[], row: StaffInfoItemType) {
+    setSelectChange({ rows, row });
+  }
+
+  function onSelectAll(rows: StaffInfoItemType[]) {
+    setSelectAllChange(rows);
+  }
+
   return {
     columns,
     loading,
@@ -350,6 +401,9 @@ export const useMachine = () => {
     rowClick,
     rowDbclick,
     onSizeChange,
+    onSelect,
+    onSelectAll,
+    noTableRef,
     handleTagSearch,
     onCurrentChange
   };

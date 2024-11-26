@@ -50,14 +50,13 @@ export const useConfig = () => {
     userName: "",
     deptId: "",
     deptIdList: [],
-    date: "",
     holidayType: ""
   });
 
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "姓名", value: "userName" },
     { label: "工号", value: "userId" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
     { label: "部门", value: "deptId", children: [] },
     { label: "请假类型", value: "holidayType", children: [] }
   ]);
@@ -124,11 +123,7 @@ export const useConfig = () => {
   };
 
   const handleTagSearch = (values) => {
-    formData.date = values.date;
-    formData.userId = values.userId;
-    formData.userName = values.userName;
-    formData.deptId = values.deptId;
-    formData.holidayType = values.holidayType;
+    Object.assign(formData, values);
     formData.deptIdList = [];
     if (values.deptId) {
       const result = getTreeArrItem(treeData.value, "value", values.deptId);
@@ -142,13 +137,7 @@ export const useConfig = () => {
 
   const getTableList = () => {
     loading.value = true;
-    const { date, ...reset } = formData;
-    const params = {
-      ...reset,
-      endDate: date ? date.split("~")[1].trim() : "",
-      startDate: date ? date.split("~")[0].trim() : ""
-    };
-    leaveApplyList(params)
+    leaveApplyList(formData)
       .then(({ data }) => {
         loading.value = false;
         dataList.value = data.records || [];
@@ -162,7 +151,7 @@ export const useConfig = () => {
   };
 
   const onEdit = (row: LeaveApplyItemType, updateType?: string) => {
-    const type = [AuditState.submit, AuditState.reAudit, AuditState.audited].includes(row.billState) ? "edit" : "view";
+    const type = [AuditState.submit, AuditState.reAudit].includes(row.billState) ? "edit" : "view";
     openDialog(type, row, updateType);
   };
 
@@ -177,6 +166,7 @@ export const useConfig = () => {
       fullscreenIcon: true,
       closeOnClickModal: false,
       okButtonText: type === "view" ? "确定" : "保存",
+      hideFooter: type === "view",
       contentRenderer: () => h(Detail, { ref: formRef }),
       beforeSure: (done, { options }) => {
         if (type === "view") return done();

@@ -50,7 +50,7 @@ export const useConfig = () => {
     { label: "部门", value: "deptId", children: [] },
     { label: "单据状态", value: "billState", children: [] },
     { label: "任务状态", value: "taskStatus", children: [] },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   const fetchOpts = () => {
@@ -165,13 +165,7 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const copyData = cloneDeep(formData);
-    const [searchStartDate, searchEndDate] = copyData.date ? copyData.date.split(" ~ ") : [undefined, undefined];
-    copyData.startDate = searchStartDate;
-    copyData.endDate = searchEndDate;
-    delete copyData.date;
-
-    fetchMyWorkOrderList({ ...copyData })
+    fetchMyWorkOrderList(formData)
       .then((res: any) => {
         if (res.data) {
           const data = res.data;
@@ -183,12 +177,8 @@ export const useConfig = () => {
       .catch(() => (loading.value = false));
   };
 
-  const handleTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values, page, limit };
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

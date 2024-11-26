@@ -115,9 +115,9 @@ export const useConfig = () => {
   };
 
   const onTagSearch = ({ curDate, ...values }) => {
+    Object.assign(formData, values);
     formData.year = curDate?.split("-")[0];
     formData.month = curDate?.split("-")[1];
-    Object.assign(formData, values);
     onSearch();
   };
 

@@ -47,12 +47,19 @@ import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { setColumn, usePageSelect } from "@/utils/table";
 
 export interface SelectTableProp {
+  /** 唯一ID */
   rowKey?: string;
+  /** 是否多选 */
   multiple?: boolean;
+  /** 表格最大高度 */
   maxHeight?: number;
+  /** 表格列配置 */
   columns: TableColumnList[];
+  /** 查询参数(默认) */
   paramConfig?: Record<string, any>;
+  /** 搜索配置 */
   searchConfig?: SearchOptionType[];
+  /** 查询接口 */
   api: (arg: any) => Promise<any>;
 }
 
@@ -73,7 +80,7 @@ const loading = ref(false);
 const dataList = ref<QuoteApplyBillItemType[]>([]);
 const searchOptions = reactive<SearchOptionType[]>(props.searchConfig);
 const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-const formData = reactive(props.paramConfig);
+const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize, ...props.paramConfig });
 const emits = defineEmits(["select", "dbClick", "mulSelect"]);
 const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData: rowsData, uniId: props.rowKey });
 

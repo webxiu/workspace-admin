@@ -877,6 +877,7 @@ export interface HolidaySettingDataType {
   workDate: string;
   isWork: number | string;
   isHoliday: number;
+  isHolidayLegal?: number;
   inDate: string;
   keyIn: string;
   category: number;

@@ -25,13 +25,14 @@
 import { onMounted, ref, reactive } from "vue";
 import { fetchPersonNameProjectPartData, fetchPersonRoleProjectPartData } from "@/api/plmManage";
 import { setColumn, usePageSelect } from "@/utils/table";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 const dataList = ref([]);
 const columns = ref([]);
 const tableRef = ref();
 const rowsData = ref([]);
 const originList = ref([]);
-const searchOptions = reactive([]);
+const searchOptions = reactive<SearchOptionType[]>([]);
 
 const props = defineProps(["currentTaskRow"]);
 

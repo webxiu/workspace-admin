@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-09-27 14:02:53 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-09-27 14:02:53 
+ * @Author: Hailen
+ * @Date: 2023-09-27 14:02:53
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-09-27 14:02:53
  */ -->
 
 <script setup lang="ts">
@@ -78,7 +78,7 @@ const {
             <template #operation="{ row }">
               <div style="text-align: left">
                 <el-button size="small" @click.stop="onEdit(row)">{{
-                  [AuditState.submit, AuditState.reAudit, AuditState.audited].includes(row.billState) ? "修改" : "查看"
+                  [AuditState.submit, AuditState.reAudit].includes(row.billState) ? "修改" : "查看"
                 }}</el-button>
                 <el-button size="small" @click.stop="onSubmit(row)" :disabled="![AuditState.submit, AuditState.reAudit].includes(row.billState)">
                   提交

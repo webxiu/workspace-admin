@@ -11,6 +11,7 @@
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
             border
+            ref="noTableRef"
             :height="maxHeight"
             :max-height="maxHeight"
             row-key="id"
@@ -26,6 +27,8 @@
             :paginationSmall="size === 'small'"
             highlight-current-row
             :show-overflow-tooltip="true"
+            @select="onSelect"
+            @select-all="onSelectAll"
             @row-click="rowClick"
             @row-dblclick="rowDbclick"
             @page-size-change="onSizeChange"
@@ -57,6 +60,9 @@ const {
   onFresh,
   rowClick,
   rowDbclick,
+  onSelect,
+  noTableRef,
+  onSelectAll,
   onSizeChange,
   handleTagSearch,
   onCurrentChange

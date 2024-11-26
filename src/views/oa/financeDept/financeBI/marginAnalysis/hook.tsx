@@ -1,12 +1,13 @@
 import { QueryParamsType, SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { downloadFile, fixed2AndAddcomma } from "@/utils/common";
-import { exportMarginAnalysisData, getMarginAnalysisData } from "@/api/oaManage/financeDept";
+import { exportMarginAnalysisData, getMarginAnalysisData, marginResolutionData } from "@/api/oaManage/financeDept";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { onMounted, reactive, ref } from "vue";
 
 import dayjs from "dayjs";
 import { useEleHeight } from "@/hooks";
 import { useRoute } from "vue-router";
+import { message, showMessageBox } from "@/utils/message";
 
 export const useMarginAnalysis = () => {
   const dataList = ref([]);
@@ -91,51 +92,22 @@ export const useMarginAnalysis = () => {
     onSearch();
   };
 
-  const buttonList = ref<ButtonItemType[]>([{ clickHandler: onExport, type: "primary", text: "导出", isDropDown: false }]);
-
-  const getSummaries = (param) => {
-    const { columns, data } = param;
-    const shouldTotalArr = [
-      "FPRICEQTY",
-      "FNOTAXAMOUNT",
-      "FPRICE",
-      "FREALQTY",
-      "FSALARYUNIT",
-      "FEXPENSEUNIT",
-      "FCOSTAMOUNT_LC",
-      "FMATERIALUNIT",
-      "FCOSTPRICE",
-      "FGROSSMARGIN",
-      "FGROSSMARGINRATE"
-    ];
-    const sums = [];
-    columns.forEach((column, index) => {
-      // 第一列 显示文字 小计
-      if (column.property === "radio") {
-        sums[index] = "合计";
-        return;
-      }
-      if (shouldTotalArr.includes(column.property)) {
-        const values = data.map((item) => Number(item[column.property]));
-        if (!values.every((value) => isNaN(value))) {
-          sums[index] = values.reduce((prev, curr) => {
-            const value = Number(curr);
-            if (!isNaN(value)) {
-              return prev + curr;
-            } else {
-              return prev;
-            }
-          }, 0);
-          sums[index] = ["FPRICEQTY", "FREALQTY", "FGROSSMARGINRATE"].includes(column.property)
-            ? (+sums[index]).toLocaleString()
-            : fixed2AndAddcomma(+sums[index].toFixed(2)); // 保留2位小数，解决小数列合计精度缺失的问题
-        } else {
-          sums[index] = ""; // 其余列一律不进行合计，结果输出空
-        }
-      }
-    });
-    return sums;
+  const onCostAnalysis = () => {
+    showMessageBox(`确认要解析${formData.yearAndMonth}的成本数据吗?`)
+      .then(() => {
+        marginResolutionData({ costDate: formData.yearAndMonth }).then((res) => {
+          if (res.data) {
+            message("成本解析成功", { type: "success" });
+          }
+        });
+      })
+      .catch(console.log);
   };
 
-  return { buttonList, onFresh, columns, onTagSearch, queryParams, dataList, getSummaries, loading, searchOptions, maxHeight };
+  const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onExport, type: "primary", text: "导出", isDropDown: false },
+    { clickHandler: onCostAnalysis, type: "primary", text: "成本解析", isDropDown: false }
+  ]);
+
+  return { buttonList, onFresh, columns, onTagSearch, queryParams, dataList, loading, searchOptions, maxHeight };
 };

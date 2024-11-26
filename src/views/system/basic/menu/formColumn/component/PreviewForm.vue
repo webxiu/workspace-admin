@@ -1,55 +1,31 @@
-<script setup lang="tsx">
+<script setup lang="ts">
 import { ref, watch, reactive } from "vue";
-import { useRoute } from "vue-router";
-import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
-import type { FormProps } from "element-plus";
 import { getFormConfigs } from "@/utils/form";
+import { Finished } from "@element-plus/icons-vue";
 import { FormColumnItemType } from "@/api/systemManage";
+import { ElNotification, type FormProps, type FormRules } from "element-plus";
+import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
+import { Question } from "@/config/elements";
 
-/** ========预览表单========= */
 const props = defineProps<{ height: number; columnList: FormColumnItemType[] }>();
 const formProps = reactive<Partial<FormProps>>({ labelWidth: "100px" });
 const formData = ref<Record<string, any>>({ id: "" });
 const formConfigs = ref<FormConfigItemType[]>([]);
 const loading = ref<boolean>(false);
-const route = useRoute();
-const username = { onClick, onChange };
+const formRules = ref<FormRules>({});
+const formRef = ref();
 
-function onClick() {
-  console.log("click");
-}
-function onChange() {
-  console.log("change");
-}
-
-watch(props, (value) => {
-  // 表单配置: 参考配置
-  const { formData, formColumns } = getFormConfigs({
-    loading,
-    columnList: value.columnList,
-    customProps: { username },
-    customElement: {
-      icon: ({ formModel, row }) => {
-        return (
-          <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable>
-            {{
-              append: () => (
-                <el-popover placement="right" width={347} trigger="click">
-                  {{
-                    reference: () => <el-button>选择</el-button>,
-                    default: () => <div>复杂输入框, 自定义配置</div>
-                  }}
-                </el-popover>
-              )
-            }}
-          </el-input>
-        );
-      }
-    }
-  });
-  formData.value = { ...formData, id: "" };
-  formConfigs.value = formColumns;
-});
+watch(
+  props,
+  (value) => {
+    // 获取表单配置项、校验规则、默认值
+    const result = getFormConfigs({ loading, columnList: value.columnList });
+    formData.value = result.formData;
+    formConfigs.value = result.formColumns;
+    formRules.value = result.formRules;
+  },
+  { immediate: true }
+);
 
 watch(
   formData,
@@ -58,13 +34,36 @@ watch(
   },
   { deep: true }
 );
+
+function onTestSubmit() {
+  const FormRef = formRef.value.getRef();
+  FormRef.validate((valid) => {
+    const message = `<pre><code>${JSON.stringify(formData.value, null, 2)}</code></pre>`;
+    if (valid) {
+      ElNotification({ title: "校验通过:", dangerouslyUseHTMLString: true, message, type: "success" });
+    } else {
+      ElNotification({ title: "校验失败:", dangerouslyUseHTMLString: true, message, type: "error" });
+    }
+  });
+}
 </script>
 
 <template>
   <div class="flex-1 pr-10">
-    <div class="no-wrap block-quote-tip ui-w-100 ml-6 mt-10 mb-10">预览表单・{{ route.query?.menuName }}</div>
+    <div class="flex just-between align-center">
+      <div class="no-wrap block-quote-tip ui-w-100 ml-6 mt-10 mb-10">表单预览<span class="fz-14 color-f00 ml-1">(布局预览、内容查看、表单验证)</span></div>
+      <el-button type="warning" @click="onTestSubmit" :icon="Finished" class="ml-50">测试提交</el-button>
+    </div>
     <div class="flex-1 ui-ovy-a" :style="{ height: props.height + 'px' }">
-      <EditForm :formInline="formData" :formConfigs="formConfigs" :formProps="formProps" :loading="false" class="form-config" />
+      <EditForm
+        ref="formRef"
+        :formInline="formData"
+        :formConfigs="formConfigs"
+        :formProps="formProps"
+        :formRules="formRules"
+        :loading="false"
+        class="form-config"
+      />
     </div>
   </div>
 </template>

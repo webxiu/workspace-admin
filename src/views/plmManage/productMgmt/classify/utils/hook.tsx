@@ -49,7 +49,7 @@ export const useConfig = () => {
     limit: 10000
   });
 
-  const searchOptions: SearchOptionType[] = [{ label: "产品分类名称", value: "categoryName" }];
+  const searchOptions = reactive<SearchOptionType[]>([{ label: "产品分类名称", value: "categoryName" }]);
 
   const formConfigs = () => [
     {

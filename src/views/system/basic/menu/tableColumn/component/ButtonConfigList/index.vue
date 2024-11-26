@@ -2,8 +2,8 @@
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <PureTableBar :columns="columns" @refresh="getTableList">
       <template #title>
-        <div class="no-wrap block-quote-tip mt-10 ui-w-100">
-          按钮配置<span class="fz-14 color-f00 ml-1">(注: 查询按钮仅用于菜单列表数据权限控制, 在操作按钮中不显示)</span>
+        <div class="no-wrap block-quote-tip mt-10 ui-w-100 mr-100">
+          按钮配置<span class="fz-14 color-f00 ml-1">(注: 查询按钮仅用于列表查询权限控制, 在操作按钮中不显示)</span>
         </div>
       </template>
       <template #buttons>

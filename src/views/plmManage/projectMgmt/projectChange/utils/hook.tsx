@@ -26,10 +26,9 @@ export const useConfig = () => {
 
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 45);
 
-  let formData: any = reactive({
+  const formData = reactive({
     startTime: "",
     endTime: "",
-    date: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize,
     billNo: ""
@@ -39,7 +38,7 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "产品名称", value: "productName" },
     { label: "产品分类", value: "categoryName", children: [] },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startTime", endKey: "endTime" }
   ]);
 
   onMounted(() => {
@@ -81,11 +80,6 @@ export const useConfig = () => {
   };
 
   const onSearch = () => {
-    const { date = "" } = formData;
-    const [startTime, endTime] = date ? date.split("~").map((item) => item.trim()) : [undefined, undefined];
-    formData.startTime = startTime;
-    formData.endTime = endTime;
-    if (!date) formData.date = undefined;
     // fetchTaskStoreList(formData).then((res: any) => {
     //   const data = res.data;
     //   dataList.value = data.records || [];
@@ -99,15 +93,8 @@ export const useConfig = () => {
     onSearch();
   };
 
-  const handleTagSearch = (values = {}) => {
-    const { page, limit } = formData;
-    Object.keys(values)?.forEach((key) => {
-      formData[key] = values[key];
-    });
-    formData = { ...values };
-
-    formData.page = page;
-    formData.limit = limit;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

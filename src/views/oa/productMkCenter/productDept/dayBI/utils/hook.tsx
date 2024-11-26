@@ -21,24 +21,22 @@ export const useConfig = () => {
   const nowDay = dayjs().format("YYYY-MM-DD");
   const initDateRange = `${firstDayOfMonth} ~ ${nowDay}`;
 
-  const formData: any = reactive({
-    date: "",
+  const formData = reactive({
     startDate: "",
     endDate: "",
-    // fName: "",
-    // fMobillno: "",
-    // fNumber: "",
     number: "",
     name: "",
-    mobillno: ""
+    mobillno: "",
+    page: 1,
+    limit: PAGE_CONFIG.pageSize
   });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const searchOptions: SearchOptionType[] = [
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "生产线", value: "name" },
     { label: "物料编码", value: "number" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
-  ];
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
+  ]);
 
   const queryParams = reactive<QueryParamsType>({ date: initDateRange });
 
@@ -96,14 +94,7 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const { date = "" } = formData;
-    const [startDate, endDate] = date.split("~").map((item) => item.trim());
-    formData.startDate = startDate;
-    formData.endDate = endDate;
-    console.log(formData, "req");
-    const copyData = cloneDeep(formData);
-    delete copyData.date;
-    getProductDayBI(copyData)
+    getProductDayBI(formData)
       .then((res: any) => {
         const data = res.data;
         loading.value = false;
@@ -113,11 +104,8 @@ export const useConfig = () => {
       .catch((err) => (loading.value = false));
   };
 
-  const handleTagSearch = (values: any) => {
-    formData.name = values.name || "";
-    formData.number = values.number || "";
-    formData.mobillno = values.mobillno || "";
-    formData.date = values.date || "";
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

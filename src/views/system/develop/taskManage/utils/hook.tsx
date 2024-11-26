@@ -74,16 +74,16 @@ export const useConfig = () => {
     page: 1,
     limit: PAGE_CONFIG.pageSize,
     responsibleUserName: "",
-    startTime: [],
+    startTime: "",
     endTime: "",
     select: [TaskStatus.pending, TaskStatus.start, TaskStatus.confirm, TaskStatus.back],
     hideChildDone: true
   });
 
-  const searchOptions = ref<SearchOptionType[]>([
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "任务名称", value: "taskName" },
     { label: "责任人", value: "responsibleUserName", children: [] },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startTime", endKey: "endTime" },
     { label: "任务编号", value: "billNo" }
   ]);
   const queryParams = reactive<QueryParamsType>({
@@ -108,7 +108,7 @@ export const useConfig = () => {
     }).then(({ data }) => {
       if (data && data.records) {
         taskManageOptions.value.userinfoList = data.records;
-        searchOptions.value[1].children = data.records.map((item) => ({ label: item.userName, value: item.userName }));
+        searchOptions[1].children = data.records.map((item) => ({ label: item.userName, value: item.userName }));
       }
     });
 
@@ -165,9 +165,8 @@ export const useConfig = () => {
   // 获取列表
   const getTableList = () => {
     loading.value = true;
-    const date = formData.startTime ?? ["", ""];
     const select = formData.select.join(",");
-    const params = { ...formData, startTime: date[0], endTime: date[1], select };
+    const params = { ...formData, select };
     taskLogList.value = [];
     taskManageList(params)
       .then(({ data }) => {
@@ -182,10 +181,7 @@ export const useConfig = () => {
   const onSearch = () => getTableList();
 
   const handleTagSearch = (values) => {
-    formData.responsibleUserName = values.responsibleUserName ?? undefined;
-    formData.billNo = values.billNo;
-    formData.taskName = values.taskName;
-    formData.startTime = values.date?.split("~").map((item) => item.trim());
+    Object.assign(formData, values);
     getTableList();
   };
 

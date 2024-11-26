@@ -26,7 +26,7 @@ export const orderOptions = [
   { label: "否", value: false }
 ];
 
-export const formConfigs = (): FormConfigItemType[] => {
+export const formConfigs = ({ currencyList, isEdit }): FormConfigItemType[] => {
   const styleEl = { height: "40px", display: "inline-flex", alignItems: "center" };
   const styleItem = { alignItems: "center" };
 
@@ -35,8 +35,9 @@ export const formConfigs = (): FormConfigItemType[] => {
     { label: "产品类别", prop: "productType", headerAlign: "center" }
   ];
   const columns2: TableColumnList[] = [
-    { label: "客户名称", prop: "customerName", minWidth: 140 },
-    { label: "客户简称", prop: "FSHORTNAME", minWidth: 140 }
+    { label: "客户编号", prop: "customerNumber", minWidth: 140 },
+    { label: "客户简称", prop: "customerShortName", minWidth: 140 },
+    { label: "客户名称", prop: "customerName", minWidth: 140 }
   ];
   const columns3: TableColumnList[] = [
     { label: "订单号", prop: "FBILLNO", align: "center", minWidth: 140 },
@@ -93,11 +94,12 @@ export const formConfigs = (): FormConfigItemType[] => {
         return (
           <HxModalInput
             title="选择产品"
-            placeholder="请选择"
+            placeholder="点击选择"
             valueKey={row.prop}
             v-model={formModel[row.prop]}
             readonly
             clearable
+            disabled={!isEdit}
             style={styleEl}
             component={SelectTable}
             componentProp={{
@@ -121,19 +123,21 @@ export const formConfigs = (): FormConfigItemType[] => {
         return (
           <HxModalInput
             title="选择客户名称"
-            placeholder="请选择"
+            placeholder="点击选择"
             valueKey={row.prop}
             v-model={formModel[row.prop]}
             readonly
             clearable
+            disabled={!isEdit}
             style={styleEl}
             component={SelectTable}
             componentProp={{
               maxHeight: 520,
+              rowKey: "customerId",
               searchConfig: [
-                { label: "客户名称", value: "customerName" },
-                { label: "客户编号", value: "customerShortName" },
-                { label: "客户简称", value: "customerCode" }
+                { label: "客户编号", value: "customerCode" },
+                { label: "客户简称", value: "customerShortName" },
+                { label: "客户名称", value: "customerName" }
               ],
               columns: columns2,
               api: customListQuoteApply
@@ -149,7 +153,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       colProp: { span: 8 },
       style: styleItem,
       render: ({ formModel, row }) => (
-        <el-select v-model={formModel[row.prop]} placeholder="请选择" value-key="value" class="ui-w-100" style={styleEl}>
+        <el-select v-model={formModel[row.prop]} placeholder="请选择" disabled={!isEdit} value-key="value" class="ui-w-100" style={styleEl}>
           {orderOptions.map((item) => (
             <el-option key={item.value} label={item.label} value={item.value} />
           ))}
@@ -168,11 +172,12 @@ export const formConfigs = (): FormConfigItemType[] => {
           <HxModalInput
             width="90%"
             title="选择参考单号"
-            valueKey="billNo"
-            placeholder="请选择"
+            valueKey="FBILLNO"
+            placeholder="点击选择"
             v-model={formModel[row.prop]}
             readonly
             clearable
+            disabled={!isEdit}
             style={styleEl}
             component={SelectTable}
             onSelect={onSelect}
@@ -181,7 +186,7 @@ export const formConfigs = (): FormConfigItemType[] => {
               columns: columns3,
               paramConfig: { page: 1, limit: PAGE_CONFIG.pageSize },
               searchConfig: [
-                { label: "订单号", value: "billNo" },
+                { label: "订单号", value: "FBILLNO" },
                 { label: "客户简称", value: "customerShortName" },
                 { label: "规格型号", value: "specification" },
                 { label: "订单日期", value: "date", type: "daterange", startKey: "startDate", endKey: "endDate" }
@@ -198,7 +203,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       class: "center-label",
       colProp: { span: 16 },
       style: styleItem,
-      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="选择参考单号填充" style={styleEl} disabled />
+      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="自动填充" style={styleEl} disabled />
     },
     {
       label: "工艺要求",
@@ -207,7 +212,16 @@ export const formConfigs = (): FormConfigItemType[] => {
       colProp: { span: 24 },
       style: { ...styleItem, height: "auto" },
       render: ({ formModel, row }) => (
-        <el-input v-model={formModel[row.prop]} rows={3} autofocus resize="none" type="textarea" placeholder="请输入" autosize={{ minRows: 3, maxRows: 3 }} />
+        <el-input
+          v-model={formModel[row.prop]}
+          rows={3}
+          autofocus
+          resize="none"
+          type="textarea"
+          disabled={!isEdit}
+          placeholder="请输入"
+          autosize={{ minRows: 3, maxRows: 3 }}
+        />
       )
     },
     {
@@ -217,7 +231,16 @@ export const formConfigs = (): FormConfigItemType[] => {
       colProp: { span: 24 },
       style: { ...styleItem, height: "auto" },
       render: ({ formModel, row }) => (
-        <el-input v-model={formModel[row.prop]} rows={3} autofocus resize="none" type="textarea" placeholder="请输入" autosize={{ minRows: 3, maxRows: 3 }} />
+        <el-input
+          v-model={formModel[row.prop]}
+          rows={3}
+          autofocus
+          resize="none"
+          type="textarea"
+          disabled={!isEdit}
+          placeholder="请输入"
+          autosize={{ minRows: 3, maxRows: 3 }}
+        />
       )
     },
     {
@@ -227,17 +250,28 @@ export const formConfigs = (): FormConfigItemType[] => {
       colProp: { span: 24 },
       style: { ...styleItem, height: "auto" },
       render: ({ formModel, row }) => (
-        <el-input v-model={formModel[row.prop]} rows={3} autofocus resize="none" type="textarea" placeholder="请输入" autosize={{ minRows: 3, maxRows: 3 }} />
+        <el-input
+          v-model={formModel[row.prop]}
+          rows={3}
+          autofocus
+          resize="none"
+          type="textarea"
+          disabled={!isEdit}
+          placeholder="请输入"
+          autosize={{ minRows: 3, maxRows: 3 }}
+        />
       )
     },
     {
-      label: "报价数量/单价/币种",
+      label: "报价数量/币种/单价",
       prop: "quoteList",
       class: "center-label dynamic-form-item",
       colProp: { span: 24 },
       style: { ...styleItem, height: "auto" },
       slots: { label: ({ label }) => <span class="fz-16 color-111">{label}</span> },
-      render: ({ formModel, row }) => <QuoteItem v-model={formModel[row.prop]} />
+      render: ({ formModel, row }) => (
+        <QuoteItem v-model={formModel[row.prop]} currencyList={currencyList} disabled={!isEdit} disableCurrency={false || !isEdit} disableCount={!isEdit} />
+      )
     }
   ];
 };

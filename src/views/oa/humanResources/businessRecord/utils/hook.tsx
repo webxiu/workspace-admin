@@ -11,6 +11,7 @@ import { ElMessage } from "element-plus";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import SelectUserModal from "../selectUserModal/modal.vue";
 import { addDialog } from "@/components/ReDialog";
 import { carSourceConstant } from "@/config/constant";
@@ -33,14 +34,14 @@ export const useConfig = () => {
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const formData: any = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
 
-  const searchOptions: any = ref([
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "工号", value: "userCode" },
     { label: "申请人", value: "applyUserName" },
     { label: "同行人", value: "userNames" },
     { label: "外出人", value: "outUserName" },
-    { label: "创建时间", value: "createRangeDate", type: "daterange", format: "YYYY-MM-DD" },
-    { label: "预计外出时间", value: "planOutRangeDate", type: "daterange", format: "YYYY-MM-DD" },
-    { label: "预计返回时间", value: "planBackRangeDate", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "创建时间", value: "createRangeDate", type: "daterange", format: "YYYY-MM-DD", startKey: "createStartDate", endKey: "createEndDate" },
+    { label: "预计外出时间", value: "planOutRangeDate", type: "daterange", format: "YYYY-MM-DD", startKey: "planOutStartDate", endKey: "planOutEndDate" },
+    { label: "预计返回时间", value: "planBackRangeDate", type: "daterange", format: "YYYY-MM-DD", startKey: "planBackStartDate", endKey: "planBackEndDate" },
     { label: "外出事由", value: "gooutReason" },
     { label: "司机", value: "driverName" },
     { label: "状态", value: "billState", children: billStateList.map((item) => ({ label: item.optionName, value: item.optionValue })) }
@@ -197,42 +198,8 @@ export const useConfig = () => {
   };
 
   const onTagSearch = (values) => {
-    const userNamesArr = [values.userNames].filter(Boolean);
-    formData.applyUserName = values.applyUserName;
-    formData.billNo = values.billNo;
-    formData.userCode = values.userCode;
-    formData.userNames = userNamesArr.length ? userNamesArr : undefined;
-    formData.outUserName = values.outUserName;
-    formData.gooutReason = values.gooutReason;
-    formData.billState = values.billState;
-
-    if (values.createRangeDate) {
-      const [createStartDate, createEndDate] = values["createRangeDate"].split("~").map((el) => el.trim());
-      formData["createStartDate"] = createStartDate;
-      formData["createEndDate"] = createEndDate;
-    } else {
-      formData["createStartDate"] = undefined;
-      formData["createEndDate"] = undefined;
-    }
-
-    if (values.planOutRangeDate) {
-      const [planOutStartDate, planOutEndDate] = values["planOutRangeDate"].split("~").map((el) => el.trim());
-      formData["planOutStartDate"] = planOutStartDate;
-      formData["planOutEndDate"] = planOutEndDate;
-    } else {
-      formData["planOutStartDate"] = undefined;
-      formData["planOutEndDate"] = undefined;
-    }
-
-    if (values.planBackRangeDate) {
-      const [planBackStartDate, planBackEndDate] = values["planBackRangeDate"].split("~").map((el) => el.trim());
-      formData["planBackStartDate"] = planBackStartDate;
-      formData["planBackEndDate"] = planBackEndDate;
-    } else {
-      formData["planBackStartDate"] = undefined;
-      formData["planBackEndDate"] = undefined;
-    }
-
+    Object.assign(formData, values);
+    formData.userNames = [values.userNames].filter(Boolean);
     onSearch();
   };
 
@@ -278,8 +245,6 @@ export const useConfig = () => {
       closeOnClickModal: false,
       contentRenderer: () => h(SelectUserModal, { setA, curRows: currentRow }),
       beforeSure: (done, { options }) => {
-        // formData.userName = selectRowData.userName;
-        // formData.staffId = selectRowData.userCode;
         if (!curMultipeUserList.value.length) {
           return ElMessage({ message: "未选定人员", type: "warning" });
         }

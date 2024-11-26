@@ -28,21 +28,20 @@ export const useTable = () => {
   const curNodeLabel = ref("0");
   const currentRow: any = ref({});
   const materialMainTable = ref();
-  let formData = reactive({
+  const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize,
-    date: "",
     startDate: "",
     endDate: "",
     materialGroups: "",
     isfrozen: "0"
   });
 
-  const searchOptions: SearchOptionType[] = [
+  const searchOptions = reactive<SearchOptionType[]>([
     { label: "物料名称", value: "name" },
     { label: "规格型号", value: "specification" },
     { label: "模号", value: "model" },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
     {
       label: "物料状态",
       value: "state",
@@ -61,7 +60,7 @@ export const useTable = () => {
         { label: "是", value: "1" }
       ]
     }
-  ];
+  ]);
 
   const getConfig = async () => {
     let columnData: TableColumnList[] = [
@@ -119,15 +118,6 @@ export const useTable = () => {
 
   const onSearch = (rowIndex?) => {
     currentRow.value = {};
-    console.log("rignt data");
-    // 处理时间范围
-    const { date = "" } = formData;
-    if (date) {
-      const [startTime, endTime] = date.split("~").map((item) => item.trim());
-      formData.startDate = startTime;
-      formData.endDate = endTime;
-    }
-
     selectMaterialV2List(formData).then((res: any) => {
       const { total, records } = res.data;
       pagination.total = total;
@@ -385,8 +375,8 @@ export const useTable = () => {
   };
 
   const handleTagSearch = (values) => {
-    console.log(values, "values");
-    formData = { ...values, page: 1, limit: PAGE_CONFIG.pageSize, materialGroups: formData.materialGroups };
+    Object.assign(formData, values);
+    formData.page = 1;
     onSearch();
   };
 

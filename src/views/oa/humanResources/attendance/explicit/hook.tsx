@@ -1,3 +1,4 @@
+import { Delete, Setting } from "@element-plus/icons-vue";
 import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import {
   exportAttendancePageDetail,
@@ -5,24 +6,26 @@ import {
   fetchAttendanceRecord,
   fetchGoOutRecordsOnAtt,
   getStaffDetail,
+  getTimeStandardAttendancel,
   leaveApplyListOnAtt,
   overtimeOrderListOnAtt,
+  reCalcAttDetail,
+  sendMissCardNotice,
   supplementaryCardOnAtt,
   timeSettingList,
   updateAttendancePageDetail
 } from "@/api/oaManage/humanResources";
 import { getEnumDictList, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { onMounted, reactive, ref } from "vue";
-import { Setting, Delete } from "@element-plus/icons-vue";
 
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
 import { getDeptOptions } from "@/utils/requestApi";
+import { message, showMessageBox } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
-import { message } from "@/utils/message";
-import { cloneDeep } from "@pureadmin/utils";
 
 export const useMachine = () => {
   const dataList = ref([]);
@@ -49,7 +52,7 @@ export const useMachine = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "工号", value: "staffCode" },
     { label: "部门", value: "deptId", children: [] },
-    { label: "考勤时间", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+    { label: "考勤时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
     { label: "异常出勤", value: "abnormalAtt", children: [] }
   ]);
 
@@ -82,203 +85,235 @@ export const useMachine = () => {
     ];
 
     const morningWorkTimeRender = (data) => {
-      return data.row.morningWorkTime ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{data.row.morningWorkTime}</span>
-          {data.row.morningWorkTimeFlag !== 0 && (
+      return data.row.morningWorkTimeFlag !== 0 ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>{data.row.morningWorkTime}</span>
+            {[2, 3].includes(data.row.morningWorkTimeFlag) && (
+              <el-button
+                onClick={() => {
+                  data.row.morningWorkTime = null;
+                  data.row.morningWorkTimeFlag = 1;
+                  saveRow(data.row);
+                }}
+                size="small"
+                type="danger"
+                icon={<Delete />}
+                style={{ width: "10px", height: "20px" }}
+              />
+            )}
+          </div>
+
+          {data.row.morningWorkTimeFlag === 1 && (
             <el-button
-              onClick={() => {
-                data.row.morningWorkTime = null;
-                data.row.morningWorkTimeFlag = 1;
-                saveRow(data.row);
-              }}
+              onClick={() => onSetTimeValue(data.row, "morningWorkTime")}
               size="small"
-              type="danger"
-              icon={<Delete />}
+              type="success"
               style={{ width: "10px", height: "20px" }}
+              icon={<Setting />}
             />
           )}
         </div>
       ) : (
-        <el-button
-          onClick={() => onSetTimeValue(data.row, "morningWorkTime")}
-          size="small"
-          type="success"
-          style={{ width: "10px", height: "20px" }}
-          icon={<Setting />}
-        />
+        <span>{data.row.morningWorkTime}</span>
       );
     };
 
     const morningDownWorkTimeRender = (data) => {
-      return data.row.morningDownWorkTime ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{data.row.morningDownWorkTime}</span>
-          {data.row.morningDownWorkTimeFlag !== 0 && (
+      return data.row.morningDownWorkTimeFlag !== 0 ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>{data.row.morningDownWorkTime}</span>
+            {[2, 3].includes(data.row.morningDownWorkTimeFlag) && (
+              <el-button
+                onClick={() => {
+                  data.row.morningDownWorkTime = null;
+                  data.row.morningDownWorkTimeFlag = 1;
+                  saveRow(data.row);
+                }}
+                size="small"
+                type="danger"
+                icon={<Delete />}
+                style={{ width: "10px", height: "20px" }}
+              />
+            )}
+          </div>
+
+          {data.row.morningDownWorkTimeFlag === 1 && (
             <el-button
-              onClick={() => {
-                data.row.morningDownWorkTime = null;
-                data.row.morningDownWorkTimeFlag = 1;
-                saveRow(data.row);
-              }}
+              onClick={() => onSetTimeValue(data.row, "morningDownWorkTime")}
               size="small"
-              type="danger"
-              icon={<Delete />}
+              type="success"
               style={{ width: "10px", height: "20px" }}
+              icon={<Setting />}
             />
           )}
         </div>
       ) : (
-        <el-button
-          onClick={() => onSetTimeValue(data.row, "morningDownWorkTime")}
-          size="small"
-          type="success"
-          style={{ width: "10px", height: "20px" }}
-          icon={<Setting />}
-        />
+        <span>{data.row.morningDownWorkTime}</span>
       );
     };
 
     const afternoonWorkTimeRender = (data) => {
-      return data.row.afternoonWorkTime ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{data.row.afternoonWorkTime}</span>
-          {data.row.afternoonWorkTimeFlag !== 0 && (
+      return data.row.afternoonWorkTimeFlag !== 0 ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>{data.row.afternoonWorkTime}</span>
+            {[2, 3].includes(data.row.afternoonWorkTimeFlag) && (
+              <el-button
+                onClick={() => {
+                  data.row.afternoonWorkTime = null;
+                  data.row.afternoonWorkTimeFlag = 1;
+                  saveRow(data.row);
+                }}
+                size="small"
+                type="danger"
+                icon={<Delete />}
+                style={{ width: "10px", height: "20px" }}
+              />
+            )}
+          </div>
+
+          {data.row.afternoonWorkTimeFlag === 1 && (
             <el-button
-              onClick={() => {
-                data.row.afternoonWorkTime = null;
-                data.row.afternoonWorkTimeFlag = 1;
-                saveRow(data.row);
-              }}
+              onClick={() => onSetTimeValue(data.row, "afternoonWorkTime")}
               size="small"
-              type="danger"
-              icon={<Delete />}
+              type="success"
               style={{ width: "10px", height: "20px" }}
+              icon={<Setting />}
             />
           )}
         </div>
       ) : (
-        <el-button
-          onClick={() => onSetTimeValue(data.row, "afternoonWorkTime")}
-          size="small"
-          type="success"
-          style={{ width: "10px", height: "20px" }}
-          icon={<Setting />}
-        />
+        <span>{data.row.afternoonWorkTime}</span>
       );
     };
 
     const afternoonDownWorkTimeRender = (data) => {
-      return data.row.afternoonDownWorkTime ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{data.row.afternoonDownWorkTime}</span>
-          {data.row.afternoonDownWorkTimeFlag !== 0 && (
+      return data.row.afternoonDownWorkTimeFlag !== 0 ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>{data.row.afternoonDownWorkTime}</span>
+            {[2, 3].includes(data.row.afternoonDownWorkTimeFlag) && (
+              <el-button
+                onClick={() => {
+                  data.row.afternoonDownWorkTime = null;
+                  data.row.afternoonDownWorkTimeFlag = 1;
+                  saveRow(data.row);
+                }}
+                size="small"
+                type="danger"
+                icon={<Delete />}
+                style={{ width: "10px", height: "20px" }}
+              />
+            )}
+          </div>
+
+          {data.row.afternoonDownWorkTimeFlag === 1 && (
             <el-button
-              onClick={() => {
-                data.row.afternoonDownWorkTime = null;
-                data.row.afternoonDownWorkTimeFlag = 1;
-                saveRow(data.row);
-              }}
+              onClick={() => onSetTimeValue(data.row, "afternoonDownWorkTime")}
               size="small"
-              type="danger"
-              icon={<Delete />}
+              type="success"
               style={{ width: "10px", height: "20px" }}
+              icon={<Setting />}
             />
           )}
         </div>
       ) : (
-        <el-button
-          onClick={() => onSetTimeValue(data.row, "afternoonDownWorkTime")}
-          size="small"
-          type="success"
-          style={{ width: "10px", height: "20px" }}
-          icon={<Setting />}
-        />
+        <span>{data.row.afternoonDownWorkTime}</span>
       );
     };
 
     const eveningWorkTimeRender = (data) => {
-      return data.row.eveningWorkTime ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{data.row.eveningWorkTime}</span>
-          {data.row.eveningWorkTimeFlag !== 0 && (
+      return data.row.eveningWorkTimeFlag !== 0 ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>{data.row.eveningWorkTime}</span>
+            {[2, 3].includes(data.row.eveningWorkTimeFlag) && (
+              <el-button
+                onClick={() => {
+                  data.row.eveningWorkTime = null;
+                  data.row.eveningWorkTimeFlag = 1;
+                  saveRow(data.row);
+                }}
+                size="small"
+                type="danger"
+                icon={<Delete />}
+                style={{ width: "10px", height: "20px" }}
+              />
+            )}
+          </div>
+
+          {data.row.eveningWorkTimeFlag === 1 && (
             <el-button
-              onClick={() => {
-                data.row.eveningWorkTime = null;
-                data.row.eveningWorkTimeFlag = 1;
-                saveRow(data.row);
-              }}
+              onClick={() => onSetTimeValue(data.row, "eveningWorkTime")}
               size="small"
-              type="danger"
-              icon={<Delete />}
+              type="success"
               style={{ width: "10px", height: "20px" }}
+              icon={<Setting />}
             />
           )}
         </div>
       ) : (
-        <el-button
-          onClick={() => onSetTimeValue(data.row, "eveningWorkTime")}
-          size="small"
-          type="success"
-          style={{ width: "10px", height: "20px" }}
-          icon={<Setting />}
-        />
+        <span>{data.row.eveningWorkTime}</span>
       );
     };
 
     const eveningDownWorkTimeRender = (data) => {
-      return data.row.eveningDownWorkTime ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{data.row.eveningDownWorkTime}</span>
-          {data.row.eveningDownWorkTimeFlag !== 0 && (
+      return data.row.eveningDownWorkTimeFlag !== 0 ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>{data.row.eveningDownWorkTime}</span>
+            {[2, 3].includes(data.row.eveningDownWorkTimeFlag) && (
+              <el-button
+                onClick={() => {
+                  data.row.eveningDownWorkTime = null;
+                  data.row.eveningDownWorkTimeFlag = 1;
+                  saveRow(data.row);
+                }}
+                size="small"
+                type="danger"
+                icon={<Delete />}
+                style={{ width: "10px", height: "20px" }}
+              />
+            )}
+          </div>
+
+          {data.row.eveningDownWorkTimeFlag === 1 && (
             <el-button
-              onClick={() => {
-                data.row.eveningDownWorkTime = null;
-                data.row.eveningDownWorkTimeFlag = 1;
-                saveRow(data.row);
-              }}
+              onClick={() => onSetTimeValue(data.row, "eveningDownWorkTime")}
               size="small"
-              type="danger"
-              icon={<Delete />}
+              type="success"
               style={{ width: "10px", height: "20px" }}
+              icon={<Setting />}
             />
           )}
         </div>
       ) : (
-        <el-button
-          onClick={() => onSetTimeValue(data.row, "eveningDownWorkTime")}
-          size="small"
-          type="success"
-          style={{ width: "10px", height: "20px" }}
-          icon={<Setting />}
-        />
+        <span>{data.row.eveningDownWorkTime}</span>
       );
     };
 
-    const { columnArrs } = await getMenuColumns([
+    const { columnArrs, buttonArrs } = await getMenuColumns([
       {
         morningWorkTime: morningWorkTimeRender,
         morningDownWorkTime: morningDownWorkTimeRender,
         afternoonWorkTime: afternoonWorkTimeRender,
-        afternoonDownWorkTime: afternoonDownWorkTimeRender
-        // TODO: 打卡班次规则中还没有晚上上下班的时间
-        // eveningWorkTime: eveningWorkTimeRender,
-        // eveningDownWorkTime: eveningDownWorkTimeRender
+        afternoonDownWorkTime: afternoonDownWorkTimeRender,
+        eveningWorkTime: eveningWorkTimeRender,
+        eveningDownWorkTime: eveningDownWorkTimeRender
       }
     ]);
     const [menuCols] = columnArrs;
     if (menuCols?.length) columnData = menuCols;
+    updateButtonList(buttonList, buttonArrs[0]);
+
     allFetchCols.value = menuCols;
     columns.value = setColumn({ columnData: columnData, operationColumn: false });
     return columnData;
   };
 
   const onSearch = () => {
-    if (formData.date) {
-      const [startDate, endDate] = formData.date.split("~").map((item) => item.trim());
-      formData.startDate = startDate;
-      formData.endDate = endDate;
-    }
     fetchAttendanceDetail(formData).then((res: any) => {
       if (res.data) {
         const result = res.data.records || [];
@@ -303,16 +338,13 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.staffName = val.staffName;
-    formData.staffCode = val.staffCode;
-    formData.deptId = val.deptId;
-    formData.date = val.date;
-    formData.abnormalAtt = val.abnormalAtt;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 
   const saveRow = (row) => {
+    console.log("update===");
     updateAttendancePageDetail([row]).then((res) => {
       if (res.data) {
         message("保存成功", { type: "success" });
@@ -331,8 +363,6 @@ export const useMachine = () => {
     formData.page = val;
     onSearch();
   }
-
-  const rowDbClick = (row) => {};
 
   const leftRowClick = (row) => {
     currentRow.value = row;
@@ -385,7 +415,6 @@ export const useMachine = () => {
   };
 
   const setCurLeftRowByKey = (commandKey, data) => {
-    if (["eveningWorkTime", "eveningDownWorkTime"].includes(commandKey)) return message("没有相关数据", { type: "warning" });
     if (currentRow.value) {
       currentRow.value[commandKey] = data;
       currentRow.value[`${commandKey}Flag`] = 3;
@@ -394,49 +423,46 @@ export const useMachine = () => {
   };
 
   const onSetTimeValue = (row, actionKey) => {
-    getStaffDetail({ id: row.staffId }).then((res: any) => {
-      const workRuleId = res.data?.workRuleId;
-      timeSettingList({ page: 1, limit: 10000 }).then((res) => {
-        if (res.data && res.data.length) {
-          const workTimeInfo = res.data.find((item) => item.id === workRuleId);
-          switch (actionKey) {
-            case "morningWorkTime":
-              row.morningWorkTime = workTimeInfo.forenoonStart;
-              row.morningWorkTimeFlag = 2;
-              saveRow(row);
-              break;
-            case "morningDownWorkTime":
-              row.morningDownWorkTime = workTimeInfo.forenoonEnd;
-              row.morningDownWorkTimeFlag = 2;
-              saveRow(row);
-              break;
-            case "afternoonWorkTime":
-              row.afternoonWorkTime = workTimeInfo.afternoonStart;
-              row.afternoonWorkTimeFlag = 2;
-              saveRow(row);
-              break;
-            case "afternoonDownWorkTime":
-              row.afternoonDownWorkTime = workTimeInfo.afternoonEnd;
-              row.afternoonDownWorkTimeFlag = 2;
-              saveRow(row);
-              break;
-            case "eveningWorkTime":
-              // row.eveningWorkTime = workTimeInfo.xxx; // TODO: 还没有晚上上下班的考勤规则
-              message("没有对应数据", { type: "warning" });
-              // row.eveningWorkTimeFlag = 2;
-              // saveRow(row);
-              break;
-            case "eveningDownWorkTime":
-              // row.eveningDownWorkTime = workTimeInfo.xxx;
-              message("没有对应数据", { type: "warning" });
-              // row.afternoonDownWorkTimeFlag = 2;
-              // saveRow(row);
-              break;
-            default:
-              break;
-          }
+    const reqParams = { staffId: row.staffId, attDate: row.attDate };
+    reqParams[`${actionKey}Flag`] = row[`${actionKey}Flag`];
+
+    getTimeStandardAttendancel(reqParams).then((res) => {
+      if (res.data) {
+        switch (actionKey) {
+          case "morningWorkTime":
+            row.morningWorkTime = res.data;
+            row.morningWorkTimeFlag = 2;
+            saveRow(row);
+            break;
+          case "morningDownWorkTime":
+            row.morningDownWorkTime = res.data;
+            row.morningDownWorkTimeFlag = 2;
+            saveRow(row);
+            break;
+          case "afternoonWorkTime":
+            row.afternoonWorkTime = res.data;
+            row.afternoonWorkTimeFlag = 2;
+            saveRow(row);
+            break;
+          case "afternoonDownWorkTime":
+            row.afternoonDownWorkTime = res.data;
+            row.afternoonDownWorkTimeFlag = 2;
+            saveRow(row);
+            break;
+          case "eveningWorkTime":
+            row.eveningWorkTime = res.data;
+            row.eveningWorkTimeFlag = 2;
+            saveRow(row);
+            break;
+          case "eveningDownWorkTime":
+            row.eveningDownWorkTime = res.data;
+            row.afternoonDownWorkTimeFlag = 2;
+            saveRow(row);
+            break;
+          default:
+            break;
         }
-      });
+      }
     });
   };
 
@@ -448,6 +474,49 @@ export const useMachine = () => {
     return className;
   };
 
+  const onExport = () => {
+    exportAttendancePageDetail({ ...formData, limit: 100000 }).then((res: any) => {
+      if (res.data) {
+        const fileName = getFileNameOnUrlPath(res.data);
+        downloadFile(res.data, fileName);
+      }
+    });
+  };
+
+  const onSendNotice = () => {
+    if (!dataList.value.length) return message("还没有考勤明细数据", { type: "warning" });
+    sendMissCardNotice({ attDate: dataList.value[0].attDate }).then((res) => {
+      if (res.data) {
+        message("发送补卡提醒成功", { type: "success" });
+        onSearch();
+      }
+    });
+  };
+
+  const reCalcAtt = () => {
+    const { startDate, endDate } = formData;
+
+    if (!startDate || !endDate) return message("日期不能为空", { type: "error" });
+
+    if (startDate !== endDate) return message("开始日期和结束日期不一致", { type: "error" });
+    showMessageBox(`确定要重算【${startDate}】的考勤吗?`)
+      .then(() => {
+        reCalcAttDetail({ attDate: startDate }).then((res) => {
+          if (res.data) {
+            message("重算成功", { type: "success" });
+            onSearch();
+          }
+        });
+      })
+      .catch(console.log);
+  };
+
+  const buttonList = ref([
+    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true },
+    { clickHandler: onSendNotice, type: "info", text: "补卡提醒", isDropDown: true },
+    { clickHandler: reCalcAtt, type: "info", text: "重算考勤", isDropDown: true }
+  ]);
+
   return {
     columns,
     onFresh,
@@ -457,9 +526,9 @@ export const useMachine = () => {
     currentRow,
     setCurLeftRowByKey,
     handleTagSearch,
-    rowDbClick,
     leftRowClick,
     searchOptions,
+    buttonList,
     maxHeight,
     loading,
     dataList,

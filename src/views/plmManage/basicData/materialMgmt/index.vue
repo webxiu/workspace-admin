@@ -68,7 +68,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useTable } from "./config";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
@@ -113,11 +113,11 @@ const {
 
 const categoryTreeData = ref([]);
 const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
-const searchOptions: SearchOptionType[] = [
+const searchOptions = reactive<SearchOptionType[]>([
   { label: "物料名称", value: "name" },
   { label: "规格型号", value: "specification" },
   { label: "模号", value: "model" },
-  { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" },
+  { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
   {
     label: "物料状态",
     value: "state",
@@ -136,7 +136,7 @@ const searchOptions: SearchOptionType[] = [
       { label: "否", value: "0" }
     ]
   }
-];
+]);
 
 const getLeftTreeData = () => {
   getMaterialGroupTreeData({}).then((res: any) => {

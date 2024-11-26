@@ -27,7 +27,9 @@ export const useConfig = () => {
   let formData: any = reactive({});
   const route = useRoute();
 
-  const searchOptions = reactive<SearchOptionType[]>([{ label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }]);
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
+  ]);
 
   const chartOption = reactive({
     xAxis: {
@@ -97,14 +99,7 @@ export const useConfig = () => {
   };
 
   const onSearch = () => {
-    const copyData = cloneDeep(formData);
-    const [searchStartDate, searchEndDate] = copyData.date ? copyData.date.split(" ~ ") : ["", ""];
-    copyData.startDate = searchStartDate;
-    copyData.endDate = searchEndDate;
-    delete copyData.date;
-    delete copyData.search;
-
-    fetchOverDueOrder({ ...copyData }).then((res: any) => {
+    fetchOverDueOrder(formData).then((res: any) => {
       if (res.data) {
         dataList.value = res.data;
         console.log(res.data, "dd.");

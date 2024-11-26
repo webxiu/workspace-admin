@@ -5,7 +5,9 @@
         <template #title>
           <BlendedSearch @tagSearch="handleTagSearch" :queryParams="queryParams" :searchOptions="searchOptions" placeholder="姓名" searchField="staffName" />
         </template>
-        <template #buttons />
+        <template #buttons>
+          <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="更多操作" />
+        </template>
         <template v-slot="{ size, dynamicColumns }">
           <div style="display: flex; justify-content: space-between">
             <div style="width: 70%">
@@ -28,7 +30,6 @@
                 :show-overflow-tooltip="true"
                 @row-click="leftRowClick"
                 :row-class-name="rowClassName"
-                @row-dblclick="rowDbClick"
                 @page-size-change="onSizeChange"
                 @page-current-change="onCurrentChange"
                 @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
@@ -48,6 +49,7 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 import { PureTableBar } from "@/components/RePureTableBar";
 import RightTables from "./rightTables.vue";
 import { Setting, Delete } from "@element-plus/icons-vue";
+import ButtonList from "@/components/ButtonList/index.vue";
 
 defineOptions({ name: "OaHumanResourcesAttendanceExplicitIndex" });
 
@@ -57,7 +59,7 @@ const {
   rightTableRef,
   handleTagSearch,
   searchOptions,
-  rowDbClick,
+  buttonList,
   leftRowClick,
   rowClassName,
   currentRow,

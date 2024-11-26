@@ -31,11 +31,18 @@ export const useMachine = () => {
   const currentRow = ref();
   const tabsRef = ref();
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49);
-  const formData: any = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
+  const formData: any = reactive({
+    customerName: "",
+    billState: "",
+    startDate: "",
+    endDate: "",
+    page: 1,
+    limit: PAGE_CONFIG.pageSize
+  });
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "客户名称", value: "customerName" },
     { label: "单据状态", value: "billState", children: [] },
-    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD" }
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
@@ -78,11 +85,6 @@ export const useMachine = () => {
   };
 
   const onSearch = () => {
-    if (formData.date) {
-      const [startDate, endDate] = formData.date.split("~").map((item) => item.trim());
-      formData.startDate = startDate;
-      formData.endDate = endDate;
-    }
     fetchSaleQuotationList(formData).then((res: any) => {
       if (res.data) {
         dataList.value = res.data.records || [];
@@ -96,11 +98,8 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (val) => {
-    formData.customerName = val.customerName;
-    formData.billNo = val.billNo;
-    formData.billState = val.billState;
-    formData.date = val.date;
+  const handleTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 

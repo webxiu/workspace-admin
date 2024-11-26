@@ -17,11 +17,6 @@ export const useConfig = () => {
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 90);
 
   const formData: any = reactive({
-    startTime: "",
-    endTime: "",
-    FSHORTNAME: "",
-    FNUMBER: "",
-    date: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
@@ -226,10 +221,6 @@ export const useConfig = () => {
 
   const onSearch = () => {
     loading.value = true;
-    const { date = "" } = formData;
-    const [startTime, endTime] = date.split("~").map((item) => item.trim());
-    formData.startTime = startTime;
-    formData.endTime = endTime;
     fetchProdAndOrderList(formData)
       .then((res: any) => {
         loading.value = false;
@@ -258,17 +249,8 @@ export const useConfig = () => {
       raw: true //有的是日期、小数等格式，直接乱码#。所以这里直接保留原始字符串
     });
 
-    const wbout = write(workbook, {
-      bookType: "xlsx",
-      bookSST: true,
-      type: "array"
-    });
-    saveAs(
-      new Blob([wbout], {
-        type: "application/octet-stream"
-      }),
-      `订单出货对比表.xlsx`
-    );
+    const wbout = write(workbook, { bookType: "xlsx", bookSST: true, type: "array" });
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), `订单出货对比表.xlsx`);
   };
 
   const buttonList = ref<ButtonItemType[]>([{ clickHandler: onExport, type: "primary", text: "导出", icon: Download, isDropDown: false }]);
