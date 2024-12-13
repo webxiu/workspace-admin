@@ -101,8 +101,8 @@ export const useConfig = () => {
   function onSubmit() {
     saveBudgetManage(dataList.value)
       .then(({ data }) => {
-        if (data) return message("保存成功");
-        message("保存失败", { type: "error" });
+        if (data) return message.success("保存成功");
+        message.error("保存失败");
       })
       .catch(console.log);
   }
@@ -136,7 +136,7 @@ export const useConfig = () => {
       contentRenderer: () => h(EditForm, { ref: formRef }),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        if (!_formData.deptId) return message("请选择部门", { type: "error" });
+        if (!_formData.deptId) return message.error("请选择部门");
         FormRef.validate((valid) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(() => {
@@ -146,8 +146,8 @@ export const useConfig = () => {
               fd.append("deptId", _formData.deptId);
               importBudgetManage(fd)
                 .then(({ data }) => {
-                  if (!data) return message("导出失败", { type: "error" });
-                  message("导入成功");
+                  if (!data) return message.error("导出失败");
+                  message.success("导入成功");
                   done();
                   getTableList();
                 })
@@ -164,7 +164,7 @@ export const useConfig = () => {
     const headConfig = getExportConfig("预算管理", columns.value, formData);
     exportBudgetManage(headConfig)
       .then((res) => {
-        if (!res.data) return message("导出失败", { type: "error" });
+        if (!res.data) return message.error("导出失败");
         const fileName = getFileNameOnUrlPath(res.data);
         downloadFile(res.data, fileName, true);
       })

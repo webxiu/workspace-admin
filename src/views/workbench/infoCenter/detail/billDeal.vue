@@ -45,26 +45,26 @@ import { message } from "@/utils/message";
 import { Position } from "@element-plus/icons-vue";
 import { approvalBillNO, backBillNO, backBillNOOptionList, BackBillNOOptionItemType } from "@/api/workbench/infoCenter";
 
-import LeaveApply from "@/views/oa/humanResources/leaveApply/detail/index.vue";
-import OvertimeOrder from "@/views/oa/humanResources/overtimeOrder/detail/index.vue";
+import LeaveApply from "@/views/humanResources/leaveApply/detail/index.vue";
+import OvertimeOrder from "@/views/humanResources/overtimeOrder/detail/index.vue";
 import SupplyChainOrdersDetail from "@/views/supplyChainMange/orders/utils/orderDetail.vue";
 import ProductsDevApplay from "@/views/plmManage/productMgmt/productsDevApplay/infoCenterDetail/index.vue";
 import SQLDetail from "@/views/system/develop/database/Detail.vue";
 import TestDetail from "@/views/plmManage/laboratory/testReport/Detail.vue";
-import GetOutDetail from "@/views/oa/humanResources/businessRecord/Detail.vue";
+import GetOutDetail from "@/views/humanResources/businessRecord/Detail.vue";
 import MyWorkOrderDetail from "@/views/common/myWorkOrder/Detail.vue";
-import VisitorDetail from "@/views/oa/humanResources/visitorReception/Detail.vue";
+import VisitorDetail from "@/views/humanResources/visitorReception/Detail.vue";
 import InductionDetail from "./component/InductionDetail/index.vue";
 import StatementAccountDetail from "@/views/supplyChainMange/statementAccount/detail/index.vue";
 import PlmManageProjectMgmtProjectManageAddIndex from "@/views/plmManage/projectMgmt/projectManage/add/index.vue";
-import QuotationDetail from "@/views/oa/marketing/saleManage/quotation/infoCenterDetail.vue";
+import QuotationDetail from "@/views/marketing/saleManage/quotation/infoCenterDetail.vue";
 import DeliverDetail from "@/views/plmManage/projectMgmt/projectManage/add/components/deliverDetail/index.vue";
 // import reportDetail from "@/views/plmManage/projectMgmt/projectManage/add/components/reportingDetail/index.vue";
 import DeliverChangeDetail from "@/views/plmManage/projectMgmt/deliveryChange/infoCenterDetail/index.vue";
 import MoldApplyDetail from "@/views/plmManage/moldManage/moldApply/infoCenterDetail/index.vue";
 import DR0ApplyDetail from "@/views/plmManage/productMgmt/DR0Apply/infoCenterDetail/index.vue";
-import HandleMadeApplyDetail from "@/views/oa/marketing/saleManage/handleMake/infoCenterDetail/index.vue";
-import ResignApplyDetail from "@/views/oa/humanResources/resignApply/Detail.vue";
+import HandleMadeApplyDetail from "@/views/marketing/saleManage/handleMake/infoCenterDetail/index.vue";
+import ResignApplyDetail from "@/views/humanResources/resignApply/Detail.vue";
 
 interface Props {
   id: string;
@@ -177,7 +177,7 @@ const onSubmit = async () => {
   if (props.formUrl === "/oa/induction/appr" && !isApproveSubmit.value) {
     const dom = document.querySelector(".view-bill_audit");
     dom.parentElement.scrollTo({ top: 500, behavior: "smooth" });
-    return message("请填写入职信息", { type: "warning" });
+    return message.warning("请填写入职信息");
   }
 
   if (props.formUrl === "/oa/mk/xxxxx") {
@@ -214,11 +214,11 @@ const onSubmit = async () => {
         .then((res) => {
           isAudit.value = false;
           if (res.data) {
-            message("提交成功");
+            message.success("提交成功");
             props.callbackFn();
             isApproveSubmit.value = false;
           } else {
-            message("提交失败", { type: "error" });
+            message.error("提交失败");
           }
         })
         .catch(() => (isAudit.value = false));

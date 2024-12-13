@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:18:16
+ * @Last Modified time: 2024-11-29 16:05:02
  */
 
 import {
@@ -38,7 +38,7 @@ export const useConfig = () => {
   const rowData2 = ref<DataTableItemType>();
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const formData = reactive({ page: 1, limit: 10000 });
-  const formData2 = reactive({ searchContent: "", schemaName: "", page: 1, limit: PAGE_CONFIG.pageSize });
+  const formData2 = reactive({ tableName: "", schemaName: "", page: 1, limit: PAGE_CONFIG.pageSize });
   const groupArrsList = ref<TableGroupItemType[]>([]);
 
   const searchOptions = reactive<SearchOptionType[]>([
@@ -91,12 +91,12 @@ export const useConfig = () => {
   // 搜索数据库表字段
   const onTagSearch = (values) => {
     Object.assign(formData2, values);
-    getSearchList();
+    getDataTableList(rowData.value);
   };
 
   /** 0.数据库搜索列表 */
   const getSearchList = () => {
-    if (!rowData.value?.schemaName) return message("请选择库名", { type: "error" });
+    if (!rowData.value?.schemaName) return message.error("请选择库名");
     loading2.value = true;
     loading3.value = true;
     dataBaseSearch({ ...formData2, schemaName: rowData.value.schemaName })
@@ -109,7 +109,6 @@ export const useConfig = () => {
         // TODO: 这里只给表赋值，字段列表需要点击中间行去获取
 
         // dataList2.value = res.data.records || [];
-        // pagination.total = res.data.total;
       })
       .catch((err) => {
         loading2.value = true;
@@ -137,10 +136,11 @@ export const useConfig = () => {
   const getDataTableList = (row: DataBaseItemType) => {
     if (!row) return;
     loading2.value = true;
-    dataTableList({ schemaName: row.schemaName })
+    dataTableList({ ...formData2, schemaName: row.schemaName })
       .then((res) => {
         loading2.value = false;
-        dataList2.value = res.data;
+        dataList2.value = res.data.records;
+        pagination.total = res.data.total;
       })
       .catch(() => (loading2.value = false));
   };
@@ -165,16 +165,17 @@ export const useConfig = () => {
   // 分页相关
   function onSizeChange(val: number) {
     formData2.limit = val;
-    getSearchList();
+    getDataTableList(rowData.value);
   }
 
   function onCurrentChange(val: number) {
     formData2.page = val;
-    getSearchList();
+    getDataTableList(rowData.value);
   }
 
   return {
     loading,
+    pagination,
     loading2,
     loading3,
     columns,
@@ -192,7 +193,6 @@ export const useConfig = () => {
     onTagSearch,
     onRowClick,
     onRowClick2,
-    pagination,
     onSizeChange,
     onCurrentChange
   };

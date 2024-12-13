@@ -75,18 +75,69 @@ export interface MenuButtonItemType {
 /** 表单配置列表类型 */
 export interface FormColumnItemType extends TableColumnList {
   id: string;
-  seq: number;
-  menuId: number;
   label: string;
   prop: string;
-  hide: boolean;
-  itemType: string;
-  slots: boolean;
+  menuId: number;
+  formGroupId: string;
+  itemType?: string;
+  fieldComment: string;
   tableName: string;
-  valueFormat: string; // 数据格式化: 包括: 网格json/rules规则/枚举编号/下拉接口/样式/类名
-  isNew?: boolean; // 是否新建
+  hide: boolean;
+  slots?: boolean;
+  valueFormat?: string;
+  seq: number;
+  minWidth: string;
+  excelHide: boolean;
+  width: number;
+  sortable: boolean;
+  slot: string;
+  formatType: string;
+  excelFormat: string;
+  className: string;
   dataOption?: any[];
+  isNew?: boolean;
 }
+/** 表单分组列表类型 */
+export interface FormGroupConfigItemType {
+  formGroupName: string;
+  sysMenuFormItemVO: FormColumnItemType[];
+}
+
+/** 表单配置列表类型 */
+export interface FormGroupItemType {
+  id: string;
+  createDate: string;
+  createUserId: string;
+  createUserName: string;
+  modifyDate: string;
+  modifyUserId: string;
+  modifyUserName: string;
+  menuId: string;
+  groupName: string;
+  remark: string;
+  groupCode: string;
+  groupType: string;
+  formGroupList: FormTypeItemType[];
+}
+export interface FormTypeItemType {
+  id: string;
+  menuId: string;
+  tableName: string;
+  menuName: string;
+  groupName: string;
+  groupType: string;
+  createUserId: string;
+  createDate: string;
+  modifyUserId: string;
+  columnGroupName: string;
+  columnGroupId: string;
+  modifyDate: string;
+  deleteIds: string;
+  createUserName: string;
+  modifyUserName: string;
+  formGroupList?: FormTypeItemType[];
+}
+
 /** ========================= 菜单配置(菜单管理) ========================= */
 /** 菜单配置列表类型 */
 export interface MenuColumnItemType extends TableColumnList {
@@ -100,18 +151,11 @@ export interface MenuColumnItemType extends TableColumnList {
   seq: number;
   slot?: string;
   formatType?: string;
-  format?: string;
+  excelFormat?: string;
   className?: string;
   hide?: boolean;
-  columnname?: string;
   tablename?: string;
-  /** 分组id */
   columnGroupId?: string;
-  // type?: string;
-  // align?: string;
-  // fixed?: string;
-  // headerAlign?: string;
-  /** 是否新建 */
   isNew?: boolean;
 }
 /** 菜单分组列表类型 */
@@ -1217,7 +1261,7 @@ export interface EsopVersionItemType {
   downloadUrl: string;
   updateLog: string;
   version: string;
-  forceUpdate: false;
+  forceUpdate: boolean;
   minTime: number;
   maxTime: number;
   timeType: string;

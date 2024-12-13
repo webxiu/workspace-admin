@@ -2,13 +2,13 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-26 18:14:13
+ * @Last Modified time: 2024-12-12 11:02:19
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
 import { FormColumnItemType, deleteformColumn, enumDictionaryList, formColumnList, updateformColumn } from "@/api/systemManage";
 import { FormatDataType, ItemKey } from "@/utils/form";
-import { SplitChar, formConfigs, formRules, formatConfigs, formatRules, hideList, inputList, pasteConfigs, slotsList } from "./config";
+import { SplitChar, formConfigs, formRules, formatConfigs, formatRules, hideList, pasteConfigs, slotsList, typeOptions } from "./config";
 import { copyText, debounce, readClipboard } from "@/utils/common";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
@@ -16,7 +16,7 @@ import { moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessageBox } from "element-plus";
-import Format from "@/views/system/basic/menu/tableColumn/component/Format.vue";
+import Format from "@/views/system/basic/menu/tableColumn/component/TableConfigList/Format.vue";
 import { LoadingType } from "@/components/ButtonList/index.vue";
 import { Question } from "@/config/elements";
 import { TableColumnRenderer } from "@pureadmin/table";
@@ -24,26 +24,22 @@ import VueJsonPretty from "vue-json-pretty";
 import { addDialog } from "@/components/ReDialog";
 import { defaultMime } from "@/config/constant";
 import regExp from "@/utils/regExp";
-import { useEleHeight } from "@/hooks";
-import { useRoute } from "vue-router";
 import { v4 as uuidv4 } from "uuid";
+
+export type SearchType = { menuId: number; columnGroupId: string; id: string; isForm: boolean };
 
 export const useConfig = (emits) => {
   const tableRef = ref();
-  const route = useRoute();
-
   const loading = ref<boolean>(false);
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<FormColumnItemType[]>([]);
   const dataListTemp = ref<FormColumnItemType[]>([]);
   const rowDatas = ref<FormColumnItemType[]>([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 98);
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
-  const queryParams2 = ref({ menuId: 0, columnGroupId: "", columnname: "" });
+  const queryParams2 = ref<Partial<SearchType>>({ menuId: 0, columnGroupId: "", id: "", isForm: false });
 
   onMounted(() => {
     getColumnConfig();
-    getTableList();
   });
 
   // 编辑表格
@@ -94,7 +90,7 @@ export const useConfig = (emits) => {
         label: "输入类型",
         prop: "itemType",
         headerAlign: "center",
-        cellRenderer: (data) => editCellRender({ type: "select", data, options: inputList })
+        cellRenderer: (data) => editCellRender({ type: "select", data, options: typeOptions })
       },
 
       { label: "是否隐藏", prop: "hide", headerAlign: "center", cellRenderer: (data) => editCellRender({ type: "select", data, options: hideList }) },
@@ -108,9 +104,22 @@ export const useConfig = (emits) => {
           const prop = data.column["property"];
           const value = JSON.parse(data.row[prop] || "{}");
           const DefaultDom = () => (
-            <span class="ui-d-ib ui-w-100 pointer ellipsis ui-va-m" style="min-height: 22px;" onClick={onClickFormat.bind(null, data)}>
-              {data.row[prop]}
-            </span>
+            <el-dropdown trigger="contextmenu" style="display: inline; line-height: inherit">
+              {{
+                default: () => (
+                  <span class="ui-d-ib ui-w-100 pointer ellipsis ui-va-m" style="min-height: 22px;" onClick={onClickFormat.bind(null, data)}>
+                    {data.row[prop]}
+                  </span>
+                ),
+                dropdown: () => (
+                  <el-dropdown-menu>
+                    <el-dropdown-item onClick={onCopyFormat.bind(null, data)}>复制</el-dropdown-item>
+                    <el-dropdown-item onClick={onPasteFormat.bind(null, data)}>粘贴</el-dropdown-item>
+                    <el-dropdown-item onClick={onClearFormat.bind(null, data)}>清除</el-dropdown-item>
+                  </el-dropdown-menu>
+                )
+              }}
+            </el-dropdown>
           );
           if (!value.layout) return <DefaultDom />;
           const ContentDom = () => (
@@ -125,7 +134,7 @@ export const useConfig = (emits) => {
           );
         }
       },
-      { label: "字段说明", prop: "fieldDesc", headerAlign: "center", cellRenderer: (data) => editCellRender({ data }) },
+      { label: "字段说明", prop: "fieldComment", headerAlign: "center", cellRenderer: (data) => editCellRender({ data }) },
       {
         label: "插槽",
         prop: "slots",
@@ -150,16 +159,51 @@ export const useConfig = (emits) => {
     );
   }
 
+  // 更新预览
+  function onUpdatePreview() {
+    emits("dataList", dataList.value);
+  }
+
+  // 外部查询
+  function onSearch(row) {
+    const { id, menuId, formGroupList } = row;
+    if (formGroupList) {
+      dataList.value = [];
+      dataListTemp.value = [];
+      queryParams2.value = {};
+      return;
+    }
+    const param = { id, menuId, columnGroupId: id, isForm: !formGroupList };
+    queryParams2.value = param;
+    getTableList();
+  }
+
+  // 检查表单
+  function checkForm() {
+    if (queryParams2.value.isForm) return true;
+    message.error("禁止分组操作, 请选择表单");
+    return false;
+  }
+
+  // 检查表单
+  function checkFn(func: Function) {
+    return (...arg: any) => {
+      const { isForm } = queryParams2.value;
+      if (!isForm) return message.error("禁止分组操作, 请选择表单");
+      func.call(null, ...arg);
+    };
+  }
+
   const getTableList = debounce(() => {
-    if (!queryParams2.value.menuId) return message("菜单id错误", { type: "error" });
+    if (!queryParams2.value.id) return message.error("表单ID不能为空");
     loading.value = true;
-    formColumnList(queryParams2.value.menuId)
+    formColumnList(queryParams2.value.id)
       .then(({ data }) => {
         const _data = data || [];
         loading.value = false;
         dataList.value = _data;
         dataListTemp.value = _data;
-        emits("dataList", data);
+        onUpdatePreview();
         onUpdateIndex();
       })
       .catch(() => (loading.value = false));
@@ -202,7 +246,7 @@ export const useConfig = (emits) => {
       listType: formatRow.listType ?? "picture"
     });
     // 获取枚举字典下拉列表
-    enumDictionaryList({}, { headers: { hideLoading: true } })
+    enumDictionaryList({ page: 1, limit: 10000 }, { headers: { hideLoading: true } })
       .then(({ data }) => (enumList.value = data.records || []))
       .finally(() => (sLoading.value = false));
 
@@ -217,6 +261,7 @@ export const useConfig = (emits) => {
       if (Object.keys(checkedData).length === 0) result = null;
       dataList.value[index]["itemType"] = itemType;
       dataList.value[index][column["property"]] = result;
+      onUpdatePreview();
     };
 
     addDialog({
@@ -246,11 +291,35 @@ export const useConfig = (emits) => {
     });
   }
 
-  function onAdd() {
-    openDialog("table");
+  // 2.复制格式化配置
+  function onCopyFormat(data: TableColumnRenderer) {
+    const value = data.row[data.column["property"]];
+    copyText(value);
   }
 
+  // 3.粘贴格式化配置
+  function onPasteFormat(data: TableColumnRenderer) {
+    readClipboard()
+      .then((text) => {
+        const result = JSON.parse(text || "{}");
+        // 简单判断layout
+        if (!result.layout) return message.error("数据格式错误");
+        data.row[data.column["property"]] = text;
+      })
+      .catch((err) => message.error("粘贴失败"));
+  }
+
+  // 4.清除格式化配置
+  function onClearFormat(data: TableColumnRenderer) {
+    data.row[data.column["property"]] = null;
+  }
+
+  const onAdd = checkFn(() => {
+    openDialog("table");
+  });
+
   function openDialog(type: "table" | "name", cb?) {
+    if (!checkForm()) return;
     const formRef = ref();
     const tableField = dataList.value.map(({ tableName, label, prop }) => {
       const name = type === "table" ? tableName : label;
@@ -305,16 +374,17 @@ export const useConfig = (emits) => {
                   label: label,
                   prop: prop,
                   hide: false,
-                  itemType: ItemKey.input,
                   menuId: queryParams2.value.menuId,
+                  formGroupId: queryParams2.value.id,
+                  itemType: ItemKey.input,
                   slots: false,
-                  tableName: tableName,
                   valueFormat: undefined,
+                  tableName: tableName,
                   isNew: true
                 } as FormColumnItemType;
               });
               if (repeatField) {
-                return message(`${repeatField}字段重复, 请重新输入`, { type: "error" });
+                return message.error(`${repeatField}字段重复, 请重新输入`);
               }
               dataList.value = result;
               done();
@@ -343,38 +413,40 @@ export const useConfig = (emits) => {
   }
 
   // 保存及更新
-  const onSave = debounce(() => {
-    const verify = verifyField();
-    const emptyLabel = dataList.value.filter((f) => !f.label);
-    const emptyProp = dataList.value.filter((f) => !f.prop);
-    if (!dataList.value.length) return message("配置表不能为空", { type: "error" });
-    if (emptyLabel.length > 0) return message("名称不能为空", { type: "error" });
-    if (emptyProp.length > 0) return message("字段不能为空", { type: "error" });
-    if (!verify.pass) return message(`${verify.column}填写不正确`, { type: "error" });
+  const onSave = debounce(
+    checkFn(() => {
+      const verify = verifyField();
+      const emptyLabel = dataList.value.filter((f) => !f.label);
+      const emptyProp = dataList.value.filter((f) => !f.prop);
+      if (!dataList.value.length) return message.error("配置表不能为空");
+      if (emptyLabel.length > 0) return message.error("名称不能为空");
+      if (emptyProp.length > 0) return message.error("字段不能为空");
+      if (!verify.pass) return message.error(`${verify.column}填写不正确`);
 
-    // 如果是新添加的列, 不提交ID
-    const params: FormColumnItemType[] = [];
-    dataList.value.forEach((item) => {
-      const id = item.isNew ? undefined : item.id;
-      params.push({ ...item, id });
-    });
-    loadingStatus.value = { loading: true, text: "保存" };
-    updateformColumn(params)
-      .then((res) => {
-        if (res.data) {
-          message("保存成功");
-          getTableList();
-        } else {
-          message("保存失败", { type: "error" });
-        }
-      })
-      .catch(console.log)
-      .finally(() => (loadingStatus.value = { loading: false, text: "保存" }));
-  });
+      // 如果是新添加的列, 不提交ID
+      const params: FormColumnItemType[] = [];
+      dataList.value.forEach((item) => {
+        const id = item.isNew ? undefined : item.id;
+        params.push({ ...item, id });
+      });
+      loadingStatus.value = { loading: true, text: "保存" };
+      updateformColumn(params)
+        .then((res) => {
+          if (res.data) {
+            message.success("保存成功");
+            getTableList();
+          } else {
+            message.error("保存失败");
+          }
+        })
+        .catch(console.log)
+        .finally(() => (loadingStatus.value = { loading: false, text: "保存" }));
+    })
+  );
 
   // 批量删除
-  function onBatchDelete() {
-    if (rowDatas.value.length === 0) return message("请选择删除内容", { type: "error" });
+  const onBatchDelete = checkFn(() => {
+    if (rowDatas.value.length === 0) return message.error("请选择删除内容");
     ElMessageBox.confirm("确认要删除吗?", "系统提示", {
       type: "warning",
       draggable: true,
@@ -384,22 +456,22 @@ export const useConfig = (emits) => {
     })
       .then(() => onDelete(rowDatas.value))
       .catch(console.log);
-  }
+  });
 
   // 单个删除
-  function onDelete(rows: FormColumnItemType[]) {
+  const onDelete = checkFn((rows: FormColumnItemType[]) => {
     const ids = rows.map((f) => f.id);
     deleteformColumn(ids)
       .then(({ data }) => {
         if (data) {
           getTableList();
           rowDatas.value = [];
-          return message("删除成功");
+          return message.success("删除成功");
         }
-        message("删除失败", { type: "error" });
+        message.error("删除失败");
       })
       .catch(console.log);
-  }
+  });
 
   function onRowClick(row: FormColumnItemType, column) {
     // tableRef.value?.getTableRef()?.toggleRowSelection(row);
@@ -430,18 +502,19 @@ export const useConfig = (emits) => {
       beforeSure: (done) => {
         const list: FormColumnItemType[] = JSON.parse(formData.content);
         const some = list.every((item) => item.label && item.prop);
-        if (some && queryParams2.value.menuId) {
-          dataList.value = list.map((item) => ({ ...item, menuId: queryParams2.value.menuId, id: undefined }));
+        const { menuId, id } = queryParams2.value;
+        if (some && menuId) {
+          dataList.value = list.map((item) => ({ ...item, id: undefined, menuId: menuId, formGroupId: id }));
           done();
         } else {
-          message("保存失败", { type: "error" });
+          message.error("保存失败");
         }
       }
     });
 
     // 复制
     function onCopy() {
-      if (!dataListTemp.value.length) return message("配置表格数据为空", { type: "error" });
+      if (!dataListTemp.value.length) return message.error("配置表格数据为空");
       copyText(JSON.stringify(dataListTemp.value, null, 2));
       resultDialog.options.value.visible = false;
     }
@@ -458,7 +531,7 @@ export const useConfig = (emits) => {
           if (formData.content) return;
           formData.content = text;
         })
-        .catch((err) => message("粘贴失败", { type: "error" }));
+        .catch((err) => message.error("粘贴失败"));
     }
     // 清空
     function onClear() {
@@ -489,7 +562,7 @@ export const useConfig = (emits) => {
           beforeSure: (done) => done()
         });
       } catch (error) {
-        message("数据格式错误", { type: "error" });
+        message.error("数据格式错误");
       }
     }
   }
@@ -502,15 +575,12 @@ export const useConfig = (emits) => {
 
   return {
     tableRef,
+    loading,
     columns,
     dataList,
-    loading,
-    maxHeight,
     buttonList3,
-    route,
     loadingStatus,
-    queryParams2,
-    getTableList,
+    onSearch,
     onRefresh,
     onDelete,
     onRowClick,

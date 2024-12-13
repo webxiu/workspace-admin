@@ -160,8 +160,8 @@ export const useTestReportConfig = () => {
             showMessageBox(`确认要${title}吗?`).then(() => {
               const params = { ..._formData, testTemplateDetails: dymicData.value };
               saveTemplateList(params).then(({ data }) => {
-                if (!data) return message("保存失败", { type: "error" });
-                message("保存成功");
+                if (!data) return message.error("保存失败");
+                message.success("保存成功");
                 getTableList();
                 done();
               });
@@ -176,8 +176,8 @@ export const useTestReportConfig = () => {
     const row = rowData.value;
     showMessageBox(`删除模板会将该模板下的数据同步删除, 确认要删除模板【${row.templateName}】吗?`).then(() => {
       delTestTemplateList({ id: row.id }).then(({ data }) => {
-        if (!data) return message("删除失败", { type: "error" });
-        message("删除成功");
+        if (!data) return message.error("删除失败");
+        message.success("删除成功");
         getTableList();
       });
     });
@@ -186,15 +186,15 @@ export const useTestReportConfig = () => {
   const onCopy = wrapFn(rowData, () => {
     const row = rowData.value;
     copyTestTemplateList({ id: row.id }).then(({ data }) => {
-      if (!data) return message("复制失败", { type: "error" });
-      message("复制成功");
+      if (!data) return message.error("复制失败");
+      message.success("复制成功");
       getTableList();
     });
   });
 
   const onExport = () => {
     exportTestTemplateList(formData).then(({ data }) => {
-      if (!data) return message("导出失败", { type: "error" });
+      if (!data) return message.error("导出失败");
       const fileName = getFileNameOnUrlPath(data);
       downloadFile(data, fileName);
     });

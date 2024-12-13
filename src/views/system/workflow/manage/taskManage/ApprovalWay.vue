@@ -52,7 +52,7 @@ const addSendPeople = () => {
   const title = personFrom === UserType.user ? "选择用户" : "系统角色列表";
   const personType = personFrom === UserType.user ? "user" : "role";
   if (![UserType.user, UserType.role].includes(personFrom)) {
-    return message(`${props.type}是用户或角色才能添加`, { type: "error" });
+    return message.error(`${props.type}是用户或角色才能添加`);
   }
 
   addDialog({
@@ -68,7 +68,7 @@ const addSendPeople = () => {
     beforeSure: (done, { options }) => {
       const FormRef = formRef.value.getRef();
       if (FormRef.length === 0) {
-        return message("未选择" + personFrom, { type: "warning" });
+        return message.warning("未选择" + personFrom);
       }
       showMessageBox(`确认要添加吗?`)
         .then(() => {
@@ -77,7 +77,7 @@ const addSendPeople = () => {
             if (!selectIds.includes(item.id)) userList.value.push(item);
           });
           emits("add", { type: props.type, list: userList.value });
-          message("添加成功");
+          message.success("添加成功");
           done();
         })
         .catch(console.log);

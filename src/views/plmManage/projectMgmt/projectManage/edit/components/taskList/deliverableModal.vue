@@ -76,7 +76,7 @@ const onDel = () => {
     dataList.value.splice(curRow.value.index, 1);
     curRow.value = undefined;
   } else {
-    message("请选择记录", { type: "warning" });
+    message.warning("请选择记录");
   }
 };
 

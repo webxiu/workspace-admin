@@ -239,9 +239,9 @@ export function useConfig() {
                   if (res.data) {
                     done();
                     getTableList();
-                    message("撤销成功");
+                    message.success("撤销成功");
                   } else {
-                    message("撤销失败", { type: "error" });
+                    message.error("撤销失败");
                   }
                 });
               })

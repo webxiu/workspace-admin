@@ -1,12 +1,11 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-09-07 16:01:43 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-09-07 16:01:43 
+ * @Author: Hailen
+ * @Date: 2023-09-07 16:01:43
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-09-07 16:01:43
  */ -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 
 defineOptions({ name: "BusinessCenterProdAndSaleIndex" });
@@ -23,21 +22,15 @@ const { chartRef1, chartRef2, chartRef3, formData, activeName, columns, dataList
       <ButtonList :buttonList="buttonList" :autoLayout="false" />
     </div>
 
-    <el-tabs v-model="activeName" class="demo-tabs">
-      <el-tab-pane label="图表" name="chart">
-        <div v-loading="loading">
-          <div ref="chartRef1" style="height: 420px" />
-          <div ref="chartRef3" style="height: 420px; margin-top: 20px" />
-          <div ref="chartRef2" style="height: 420px; margin-top: 20px" />
-        </div>
-      </el-tab-pane>
-      <el-tab-pane label="表格" name="table">
+    <div v-loading="loading">
+      <div ref="chartRef1" style="height: 420px" />
+      <div ref="chartRef3" style="height: 420px; margin-top: 20px" />
+      <div ref="chartRef2" style="height: 420px; margin-top: 20px" />
+      <div>
         <PureTableBar :columns="columns" class="flex-1" :showIcon="false">
           <template v-slot="{ size, dynamicColumns }">
             <pure-table
               border
-              :height="maxHeight"
-              :max-height="maxHeight"
               row-key="id"
               class="sale-rate"
               :adaptive="true"
@@ -52,7 +45,7 @@ const { chartRef1, chartRef2, chartRef3, formData, activeName, columns, dataList
             />
           </template>
         </PureTableBar>
-      </el-tab-pane>
-    </el-tabs>
+      </div>
+    </div>
   </div>
 </template>

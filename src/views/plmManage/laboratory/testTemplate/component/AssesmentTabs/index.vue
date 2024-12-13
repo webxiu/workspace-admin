@@ -30,10 +30,10 @@
         </PureTableBar>
       </el-tab-pane>
     </el-tabs>
-    <div style="width: auto; right: 0; top: 0" class="flex ui-p-a">
+    <div style="top: 0; right: 0; width: auto" class="flex ui-p-a">
       <el-button type="primary" @click="onAdd" :icon="Plus" class="mr-10">增行</el-button>
       <el-button type="danger" @click="onDeleteAll" :icon="Delete" class="mr-10">批量删除{{ selectCount }}</el-button>
-      <UploadButton title="上传文件" :limit="1" :show-file-list="false" @change="onUploadChange" :accept="['.xlsx, .xls'].join(',')" />
+      <HxUploadButton :limit="1" :show-file-list="false" @change="onUploadChange" :accept="['.xlsx, .xls'].join(',')" />
     </div>
   </div>
 </template>
@@ -41,9 +41,7 @@
 <script setup lang="ts">
 import { cloneDeep } from "@pureadmin/utils";
 import { ref, reactive, Ref, watch, computed } from "vue";
-import UploadButton from "@/components/UploadButton.vue";
 import { setColumn, tableEditRender } from "@/utils/table";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { Plus, Delete } from "@element-plus/icons-vue";
 import type { TabsPaneContext, UploadFiles } from "element-plus";
 import { importTestTemplate, TestTemplateItemType, TemplateDataItemType } from "@/api/plmManage/laboratory";
@@ -159,7 +157,7 @@ function onAdd() {
 /** 批量删除 */
 function onDeleteAll() {
   const tabItem = tabsList.find((item) => activeKey.value === item.name);
-  if (!tabItem.rowsData.length) return message("请选择要删除的记录", { type: "error" });
+  if (!tabItem.rowsData.length) return message.error("请选择要删除的记录");
   const tipMsg = `确定要删除【${tabItem.label}】选中的${tabItem.rowsData.length}条记录吗?`;
   showMessageBox(tipMsg).then(() => {
     tabItem.dataList = tabItem.dataList.filter((item) => tabItem.rowsData.indexOf(item) < 0);
@@ -176,7 +174,7 @@ function onDelete(name, row: TemplateDataItemType) {
 }
 
 /** 上传excel */
-function onUploadChange(files: UploadFiles) {
+function onUploadChange(file, files: UploadFiles) {
   const fd = new FormData();
   fd.append("file", files[0].raw);
   fd.append("dto", JSON.stringify({}));

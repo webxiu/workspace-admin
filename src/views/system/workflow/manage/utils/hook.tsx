@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-06 16:27:22
+ * @Last Modified time: 2024-11-29 16:49:00
  */
 
 import { CustomPropsType, getFormColumns } from "@/utils/form";
@@ -205,12 +205,13 @@ export const useConfig = () => {
       }
     });
 
-    getFormColumns({ customProps, loading })
+    getFormColumns({ customProps, groupCode: "1" })
       .then((data) => {
+        loading.value = false;
         if (!data.formColumns.length) return;
         myFormConfig.value = data.formColumns;
       })
-      .catch(console.log);
+      .catch(() => (loading.value = false));
 
     addDialog({
       title: `${title}模板配置`,
@@ -237,13 +238,13 @@ export const useConfig = () => {
               const templateApi = { add: addFlowBillInfo, edit: updateFlowBillInfoById };
               templateApi[type](params).then((res) => {
                 if (res.data) {
-                  message("保存成功");
+                  message.success("保存成功");
                   if (type === "add") {
                     openFlowDialog(type, { ...row, id: res.data });
                   }
                   done();
                 } else {
-                  message("保存失败", { type: "error" });
+                  message.error("保存失败");
                 }
               });
             })
@@ -260,19 +261,19 @@ export const useConfig = () => {
   const verifyFlow = (xml: string) => {
     const { processInfo, userTaskList } = getUserTaskList();
     if (!processInfo.name) {
-      message("请添加流程名称", { type: "warning" });
+      message.warning("请添加流程名称");
       return false;
     } else if (!processInfo.id) {
-      message("请添加流程ID", { type: "warning" });
+      message.warning("请添加流程ID");
       return false;
     } else if (!xml.includes("startEvent")) {
-      message("请添加开始节点", { type: "warning" });
+      message.warning("请添加开始节点");
       return false;
     } else if (!xml.includes("userTask")) {
-      message("请添加任务节点", { type: "warning" });
+      message.warning("请添加任务节点");
       return false;
     } else if (!xml.includes("endEvent")) {
-      message("请添加结束节点", { type: "warning" });
+      message.warning("请添加结束节点");
       return false;
     }
 
@@ -294,15 +295,15 @@ export const useConfig = () => {
         // 1.任务常规填写检测
         if (!item.id) {
           mark = false;
-          message("任务ID不能为空", { type: "error" });
+          message.error("任务ID不能为空");
           break;
         } else if (!item.name) {
           mark = false;
-          message(`${item.id}:任务名称不能为空`, { type: "error" });
+          message.error(`${item.id}:任务名称不能为空`);
           break;
         } else if (!taskNode) {
           mark = false;
-          message(item.name + "任务配置不能为空", { type: "error" });
+          message.error(item.name + "任务配置不能为空");
           break;
         }
 
@@ -311,18 +312,18 @@ export const useConfig = () => {
             if (task.taskId !== item.id) continue;
             if (!task.personFrom) {
               mark = false;
-              message(`常规:请选择${item.name}的审批方式`, { type: "error" });
+              message.error(`常规:请选择${item.name}的审批方式`);
               break outerLoop;
             } else if (task.personFrom === "用户") {
               if (!task.persons) {
                 mark = false;
-                message(`常规:请选择${item.name}的审批用户`, { type: "error" });
+                message.error(`常规:请选择${item.name}的审批用户`);
                 break outerLoop;
               }
             } else if (task.personFrom === "角色") {
               if (!task.roleId) {
                 mark = false;
-                message(`常规:请选择${item.name}的审批角色`, { type: "error" });
+                message.error(`常规:请选择${item.name}的审批角色`);
                 break outerLoop;
               }
             }
@@ -337,7 +338,7 @@ export const useConfig = () => {
           }
           if (!taskNode[key] || !taskNode[key]?.length) {
             mark = false;
-            message(item.name + msgObj[key], { type: "error" });
+            message.error(item.name + msgObj[key]);
             break outerLoop;
           }
         }
@@ -461,9 +462,9 @@ export const useConfig = () => {
             sLoading.value = true;
             updateTaskManage(row?.id, "update", (error) => {
               sLoading.value = false;
-              if (error) return message(error.toString(), { type: "error" });
+              if (error) return message.error(error.toString());
               resultDialog.options.value.visible = false;
-              message(`${title}成功`);
+              message.success(`${title}成功`);
               getTableList();
               done();
             });
@@ -483,21 +484,21 @@ export const useConfig = () => {
                 if (res.data) {
                   updateTaskManage(res.data || row.id, "create", (error) => {
                     sLoading.value = false;
-                    if (error) return message(error.toString(), { type: "error" });
+                    if (error) return message.error(error.toString());
                     resultDialog.options.value.visible = false;
-                    message(`${title}成功`);
+                    message.success(`${title}成功`);
                     getTableList();
                     done();
                   });
                 } else {
                   sLoading.value = false;
-                  message(`${title}失败`, { type: "error" });
+                  message.error(`${title}失败`);
                 }
               })
               .catch(() => (sLoading.value = false));
           };
         } catch (error) {
-          message(error.toString(), { type: "error" });
+          message.error(error.toString());
         }
       }
     });
@@ -564,15 +565,15 @@ export const useConfig = () => {
         .then(() => {
           api(params)
             .then((res) => {
-              if (res.status !== 200) return message(res.message);
+              if (res.status !== 200) return message.error(res.message);
               if (res.data) {
                 getTableList();
-                message(`流程删除成功`);
+                message.success(`流程删除成功`);
               } else {
-                message("流程删除失败");
+                message.error("流程删除失败");
               }
             })
-            .catch((err) => message(`流程删除失败`, { type: "error" }));
+            .catch((err) => message.error(`流程删除失败`));
         })
         .catch(console.log);
     }
@@ -580,8 +581,8 @@ export const useConfig = () => {
     if (processId) {
       revokeFlowCheck({ processId })
         .then((res) => {
-          if (res.status !== 200) return message(res.message);
-          if (res.data) return message("当前部署流程存在历史流程数据，禁止操作");
+          if (res.status !== 200) return message.error(res.message);
+          if (res.data) return message.error("当前部署流程存在历史流程数据，禁止操作");
           submitRevoke(revokeFlow, { deploymentId: deployId });
         })
         .catch(console.log);
@@ -594,21 +595,21 @@ export const useConfig = () => {
   const onPause = wrapFn(rowData, ({ text }) => {
     const { processId, deployName } = rowData.value;
     pauseActiveFlowCheck({ processId }).then((res) => {
-      if (res.status !== 200) return message(res.message);
-      if (res.data) return message("当前流程状态处于暂停状态，禁止重复操作");
+      if (res.status !== 200) return message.error(res.message);
+      if (res.data) return message.error("当前流程状态处于暂停状态，禁止重复操作");
       showMessageBox(`确定暂停流程【${deployName}】吗?`)
         .then(() => {
           pauseFlow({ processId })
             .then((res) => {
-              if (res.status !== 200) return message(res.message);
+              if (res.status !== 200) return message.error(res.message);
               if (res.data) {
                 getTableList();
-                message(`流程暂停成功`);
+                message.success("流程暂停成功");
               } else {
-                message("流程暂停失败");
+                message.error("流程暂停失败");
               }
             })
-            .catch((err) => message(`流程暂停失败`, { type: "error" }));
+            .catch((err) => message.error("流程暂停失败"));
         })
         .catch(console.log);
     });
@@ -618,21 +619,21 @@ export const useConfig = () => {
   const onActive = wrapFn(rowData, ({ text }) => {
     const { processId, deployName } = rowData.value;
     // pauseActiveFlowCheck({ processId }).then((res) => {
-    //   if (res.status !== 200) return message(res.message);
-    //   if (res.data) return message("当前流程状态处于激活状态，禁止重复操作");
+    //   if (res.status !== 200) return message.error(res.message);
+    //   if (res.data) return message.error("当前流程状态处于激活状态，禁止重复操作");
     showMessageBox(`确定激活流程【${deployName}】吗?`)
       .then(() => {
         activeFlow({ processId })
           .then((res) => {
-            if (res.status !== 200) return message(res.message);
+            if (res.status !== 200) return message.error(res.message);
             if (res.data) {
               getTableList();
-              message(`流程激活成功`);
+              message.success(`流程激活成功`);
             } else {
-              message("流程激活失败");
+              message.error("流程激活失败");
             }
           })
-          .catch((err) => message(`流程激活失败`, { type: "error" }));
+          .catch((err) => message.error(`流程激活失败`));
       })
       .catch(console.log);
     // });

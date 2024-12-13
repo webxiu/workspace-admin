@@ -51,7 +51,6 @@ import { useBankTable } from "./config";
 import { Search } from "@element-plus/icons-vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useEleHeight } from "@/hooks";
 defineProps(["leftRow"]);
 

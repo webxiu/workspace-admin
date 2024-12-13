@@ -68,7 +68,6 @@
 import dayjs from "dayjs";
 import { reactive } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 const _formData = reactive({
   productModel: "",
@@ -145,15 +144,15 @@ defineExpose({ _formData });
     }
 
     .black-td {
-      background-color: #555;
-      color: #fff;
       font-size: 16px;
+      color: #fff;
       text-align: center;
+      background-color: #555;
     }
 
     td {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

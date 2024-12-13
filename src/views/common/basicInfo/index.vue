@@ -4,7 +4,7 @@ import { basicUserInfo } from "@/api/user/user";
 import { formConfigs } from "./config";
 import EditForm from "@/components/EditForm/index.vue";
 import { timeSettingList } from "@/api/oaManage/humanResources";
-import { StaffOptionDataType } from "@/views/oa/humanResources/staffInfo/utils/config";
+import { StaffOptionDataType } from "@/views/humanResources/staffInfo/utils/config";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { getDeptTreeData } from "@/api/systemManage";
 import { formatDate } from "@/utils/common";

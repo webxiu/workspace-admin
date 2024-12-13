@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { useConfig } from "./utils/hook";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "SystemDevelopData" });
@@ -31,8 +30,8 @@ const {
   onTagSearch,
   onRowClick,
   onRowClick2,
-  pagination,
   onSizeChange,
+  pagination,
   onCurrentChange
 } = useConfig();
 </script>
@@ -65,7 +64,7 @@ const {
       </PureTableBar>
       <PureTableBar :columns="columns2" style="width: 40%" @refresh="onRefresh2" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入表名或备注" searchField="searchContent" />
+          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入表名" searchField="tableName" />
         </template>
         <template v-slot="{ size, dynamicColumns }">
           <pure-table

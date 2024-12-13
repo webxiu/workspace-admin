@@ -7,10 +7,8 @@
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import ButtonList from "@/components/ButtonList/index.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "PlmManageBasicDataBomOverIndex" });

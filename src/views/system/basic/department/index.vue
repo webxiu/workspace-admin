@@ -6,10 +6,8 @@
  */ -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
-import SearchList from "@/components/SearchList/index.vue";
 
 defineOptions({ name: "SystemBasicDepartment" });
 

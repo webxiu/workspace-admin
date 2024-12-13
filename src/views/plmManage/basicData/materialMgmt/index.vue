@@ -70,7 +70,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { useTable } from "./config";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import ButtonList, { LoadingType } from "@/components/ButtonList/index.vue";
 import { getMaterialGroupTreeData } from "@/api/plmManage";

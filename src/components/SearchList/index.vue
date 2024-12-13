@@ -19,7 +19,7 @@ import { ref, watch } from "vue";
  *  列表中使用v-html绑定到元素高亮关键词
  */
 
-interface Props<T> {
+export interface SearchListProps<T = any> {
   /** 搜索列表 */
   modelValue: T[];
   /** 搜索字段 */
@@ -42,7 +42,7 @@ defineOptions({ name: "SearchList" });
 
 const dataListTemp = ref([]);
 const keyword = ref("");
-const props = withDefaults(defineProps<Props<any>>(), {
+const props = withDefaults(defineProps<SearchListProps>(), {
   modelValue: () => [],
   bright: false,
   color: "#111111",

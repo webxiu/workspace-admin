@@ -65,9 +65,9 @@ const {
     margin-bottom: 16px;
 
     .pm-left-text {
-      color: #409eff;
       font-size: 15px;
       font-weight: 600;
+      color: #409eff;
     }
   }
 

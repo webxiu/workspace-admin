@@ -1,9 +1,9 @@
 import { StaffInfoItemType, getStaffDeptGroup } from "@/api/oaManage/humanResources";
 
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
-import Photo from "@/views/oa/humanResources/inductionAudit/basicInfo/Photo.vue";
+import Photo from "@/views/humanResources/inductionAudit/basicInfo/Photo.vue";
 import { PureTableBar } from "@/components/RePureTableBar";
-import { StaffOptionDataType } from "@/views/oa/humanResources/staffInfo/utils/config";
+import { StaffOptionDataType } from "@/views/humanResources/staffInfo/utils/config";
 import { ref } from "vue";
 
 interface OptionType {

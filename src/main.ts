@@ -17,7 +17,7 @@ import { createApp } from "vue";
 import { getServerConfig } from "./config";
 import hljsVuePlugin from "@highlightjs/vue-plugin";
 import { injectResponsiveStorage } from "@/utils/responsive";
-import { registerComponents } from "@/components";
+import { registerComponents } from "@/plugins/registerComponents";
 import { registerDirective } from "@/directives";
 import router from "./router";
 import { setupStore } from "@/store";

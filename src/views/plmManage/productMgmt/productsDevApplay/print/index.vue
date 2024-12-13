@@ -443,14 +443,14 @@ onMounted(() => {
   table,
   table td,
   table th {
-    border: 1px solid #000000;
     padding: 5px 10px;
+    border: 1px solid #000;
   }
 
   .devide-td {
     padding: 8px auto;
-    background-color: #ccc;
     font-weight: 700;
+    background-color: #ccc;
   }
 
   table {
@@ -480,13 +480,13 @@ onMounted(() => {
 
   .top-area-dr0 {
     display: flex;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
 
     .title {
-      font-weight: 700;
-      font-size: 30px;
       margin: 8px 0;
+      font-size: 30px;
+      font-weight: 700;
     }
   }
 }

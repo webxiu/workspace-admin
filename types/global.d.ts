@@ -10,6 +10,10 @@ import { CheckOnlineWebsocket } from "@/hooks/websocketOnline";
  */
 declare global {
   /**
+   * JSX元素渲染类型
+   */
+  type JSXElement = JSX.Element | string;
+  /**
    * 项目根目录
    */
   const __ROOT__: string;
@@ -102,10 +106,9 @@ declare global {
     /** 下拉选项列表 */
     options?: Array<ElOption>;
     /** 导出时间格式 (yyyy-MM-dd HH:mm:ss) */
-    format?: string;
-    /** 格式化处理方式(json字符串) */
+    excelFormat?: string;
+    /** 自定义渲染(json字符串) */
     formatType?: string;
-
     id?: string;
     menuId?: number;
     sortable?: boolean;
@@ -113,16 +116,10 @@ declare global {
     width?: number | string;
     seq?: number;
     className?: string;
-    columnname?: string;
     tablename?: string;
     groupCode?: string;
     groupName?: string;
     columnGroupId?: string;
-    // type?: string;
-    // align?: string;
-    // fixed?: string;
-    // headerAlign?: string;
-    /** 是否新建 */
     isNew?: boolean;
   }
 

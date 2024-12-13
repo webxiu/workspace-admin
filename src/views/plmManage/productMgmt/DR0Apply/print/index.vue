@@ -162,7 +162,7 @@ const route = useRoute();
 const detailInfo: any = ref({});
 
 const onBack = () => {
-  router.push("/plmManage/productMgmt/DR0Apply/index?menuCode=11&from=/oa/marketing&menuId=322&menuName=DR0开发申请");
+  router.push("/plmManage/productMgmt/DR0Apply/index?menuCode=11&from=/marketing&menuId=322&menuName=DR0开发申请");
 };
 
 const onPrint = () => {
@@ -196,7 +196,7 @@ onMounted(() => {
 }
 
 @page {
-  size: A4 portrait; /* A4纸，横向打印 */
+  size: a4 portrait; /* A4纸，横向打印 */
   //margin: 5mm 0 30mm; /*去掉页边距*/
   // margin: 10mm; /* 去掉页边距 */
 }
@@ -209,14 +209,14 @@ onMounted(() => {
   table,
   table td,
   table th {
-    border: 1px solid #000000;
     padding: 5px 10px;
+    border: 1px solid #000;
   }
 
   .devide-td {
     padding: 8px auto;
-    background-color: #ccc;
     font-weight: 700;
+    background-color: #ccc;
   }
 
   table {
@@ -242,8 +242,8 @@ onMounted(() => {
 
   .top-area-dr0 {
     display: flex;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
     // align-items: center;
     // margin: auto;
 
@@ -253,9 +253,9 @@ onMounted(() => {
     // }
 
     .title {
-      font-weight: 700;
-      font-size: 30px;
       margin: 8px 0;
+      font-size: 30px;
+      font-weight: 700;
     }
   }
 }

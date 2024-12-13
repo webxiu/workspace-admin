@@ -4,11 +4,11 @@
       <tr>
         <td colspan="13">
           <div style="display: flex; align-items: center">
-            <div style="display: flex; width: 25%; align-items: center">
+            <div style="display: flex; align-items: center; width: 25%">
               <div>编号：</div>
               <div><el-input size="small" v-model="formData.billNo" placeholder=" " /></div>
             </div>
-            <div style="display: flex; width: 25%; align-items: center">
+            <div style="display: flex; align-items: center; width: 25%">
               <div>产品型号：</div>
               <div>
                 <HxModalInput
@@ -32,11 +32,11 @@
                 />
               </div>
             </div>
-            <div style="display: flex; width: 25%; align-items: center">
+            <div style="display: flex; align-items: center; width: 25%">
               <div>产品名称：</div>
               <div><el-input size="small" v-model="formData.productName" placeholder=" " /></div>
             </div>
-            <div style="display: flex; width: 25%; align-items: center">
+            <div style="display: flex; align-items: center; width: 25%">
               <div>日期：</div>
               <div>
                 <el-date-picker
@@ -116,7 +116,6 @@
 <script setup lang="tsx">
 import { h, reactive, ref } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 import { Upload, Edit, Plus } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
 import { message } from "@/utils/message";
@@ -202,7 +201,7 @@ const openFileModel = (type, row) => {
       ),
     beforeSure: (done) => {
       if (!row.files.length) {
-        message("还没有上传文件", { type: "warning" });
+        message.warning("还没有上传文件");
       } else {
         done();
       }
@@ -233,9 +232,11 @@ defineExpose({ formData, dataList });
 .trial-detail {
   table {
     width: 100%;
+
     :deep(.el-upload--picture-card) {
       background-color: #fff;
     }
+
     .head-col {
       text-align: center;
     }
@@ -246,9 +247,9 @@ defineExpose({ formData, dataList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
       text-align: center;
+      border: 1px solid #000;
     }
   }
 }

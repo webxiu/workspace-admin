@@ -16,7 +16,6 @@ import { useRoute, useRouter } from "vue-router";
 import { FormRules } from "element-plus";
 import { Plus } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
-import { findDataList } from "@/utils/common";
 import { findTreeNodes } from "@/utils/tree";
 import { getFormColumns } from "@/utils/form";
 import { handleTree } from "@/utils/tree";
@@ -143,7 +142,7 @@ export const useConfig = () => {
     openDialog("add", selectRow);
   };
   const onEdit = (row: MenuListItemType) => {
-    // if (!row.parentId) return message("不能修改顶级", { type: "error" });
+    // if (!row.parentId) return message.error("不能修改顶级")
     openDialog("edit", row);
   };
 
@@ -228,7 +227,7 @@ export const useConfig = () => {
       }
     };
 
-    getFormColumns({ customProps, customElement, loading })
+    getFormColumns({ customProps, customElement, loading, groupCode: "1" })
       .then((data) => {
         const { formRules, formColumns } = data;
         loading.value = false;
@@ -279,14 +278,14 @@ export const useConfig = () => {
         FormRef.validate((valid) => {
           // 禁止关闭菜单管理
           if (row?.webRouter === route.path && !curData?.isEnable) {
-            return message(`禁止关闭${row.menuName}`, { type: "error" });
+            return message.error(`禁止关闭${row.menuName}`);
           }
           // 移动判断
           if (curData.parentCode && curData.menuCode === curData.parentCode) {
-            return message("项目编号和父级编号不能相同", { type: "error" });
+            return message.error("项目编号和父级编号不能相同");
             // 2024-09-27 移除
             // } else if (curData.parentCode && parentSelect.value && parentSelect.value?.menuType === "目录") {
-            //   return message("父级只能为目录", { type: "error" });
+            //   return message.error("父级只能为目录")
           }
 
           if (valid) {
@@ -308,7 +307,7 @@ export const useConfig = () => {
       .then((res) => {
         if (!res.data) return;
         callback();
-        message(`${title}成功`);
+        message.success(`${title}成功`);
       })
       .catch(console.log);
   };
@@ -317,10 +316,10 @@ export const useConfig = () => {
     menuDelete({ id: row.itemId, menuType: row.menuType })
       .then((res) => {
         if (res.data) {
-          message("删除成功");
+          message.success("删除成功");
           getTableList();
         } else {
-          message("删除失败，请联系开发人员处理", { type: "error" });
+          message.error("删除失败，请联系开发人员处理");
         }
       })
       .catch(console.log);
@@ -329,10 +328,10 @@ export const useConfig = () => {
   // 菜单配置
   const onOpenConfig = (name: EnumKey) => {
     const row = rowData.value;
-    if (!row) return message("请选择菜单", { type: "error" });
+    if (!row) return message.error("请选择菜单");
     const { menuType, itemId, menuName } = row;
     if (menuType !== "菜单") {
-      return message("菜单类型不能为" + menuType, { type: "error" });
+      return message.error("菜单类型不能为" + menuType);
     }
     router.push({ path: ConfUrl[name], query: { isNewTag: "yes", itemId, menuName } });
   };
@@ -346,9 +345,9 @@ export const useConfig = () => {
   ]);
 
   return {
-    loading,
     columns,
     dataList,
+    loading,
     maxHeight,
     keyword,
     buttonList,

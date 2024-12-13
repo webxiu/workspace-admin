@@ -456,13 +456,13 @@ export const useEditPage = (formData) => {
               }
             }
 
-            if (!_formData.deliverablesTemplateVOS?.length) return message("还未添加交付物", { type: "error" });
+            if (!_formData.deliverablesTemplateVOS?.length) return message.error("还未添加交付物");
 
             const nameMsg = _formData.deliverablesTemplateVOS.some((item) => !item.name);
-            if (nameMsg) return message("请填写交付物名称", { type: "error" });
+            if (nameMsg) return message.error("请填写交付物名称");
 
             const deliverableMsg = _formData.deliverablesTemplateVOS.some((item) => !item.deliverableId);
-            if (deliverableMsg) return message("请选择交付物模版", { type: "error" });
+            if (deliverableMsg) return message.error("请选择交付物模版");
             ElMessageBox.confirm(`确认要${title}吗?`, "系统提示", {
               type: "warning",
               draggable: true,

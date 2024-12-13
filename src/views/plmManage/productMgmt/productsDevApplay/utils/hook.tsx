@@ -1,18 +1,18 @@
 import { ElMessage, ElMessageBox } from "element-plus";
+import { commonBack, commonSubmit } from "@/api/systemManage";
 import { deleteProductsDevApplayInfo, fetchProductsDevApplayList, submitProductsDevApplayInfo } from "@/api/plmManage";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
+import { message, showMessageBox } from "@/utils/message";
 import { utils, write } from "xlsx";
 
+import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { addDialog } from "@/components/ReDialog";
 import { getProductClassifyList } from "@/views/plmManage/productMgmt/classify/utils/hook";
 import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
 import { useRouter } from "vue-router";
-import { message, showMessageBox } from "@/utils/message";
-import { commonBack, commonSubmit } from "@/api/systemManage";
-import { addDialog } from "@/components/ReDialog";
-import NodeDetailList from "@/components/NodeDetailList/index.vue";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -116,13 +116,13 @@ export const useConfig = () => {
 
   const onSubmitAction = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      return message("请选择一条记录", { type: "warning" });
+      return message.warning("请选择一条记录");
     } else {
       const { billNo, id } = currentRow.value;
       showMessageBox(`确认要提交【${billNo}】吗?`).then(() => {
         commonSubmit({ id, billId: "10031" }).then(({ data }) => {
           if (data) {
-            message("提交成功");
+            message.success("提交成功");
             onSearch();
           }
         });
@@ -213,13 +213,13 @@ export const useConfig = () => {
   };
   const beforeOnRevoke = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      return message("请选择一条记录", { type: "warning" });
+      return message.warning("请选择一条记录");
     } else {
       const { billNo } = currentRow.value;
       showMessageBox(`确认要撤销【${billNo}】吗?`).then(() => {
         commonBack({ comment: "", backToActivityId: "startEvent1", billNo }).then(({ data }) => {
           if (data) {
-            message("撤销成功");
+            message.success("撤销成功");
             onSearch();
           }
         });
@@ -229,7 +229,7 @@ export const useConfig = () => {
 
   const beforeOnViewDetail = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      return message("请选择一条记录", { type: "warning" });
+      return message.warning("请选择一条记录");
     } else {
       addDialog({
         title: "查看审批详情",
@@ -246,7 +246,7 @@ export const useConfig = () => {
 
   const beforePrint = () => {
     // if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-    //   return message("请选择一条记录", { type: "warning" });
+    //   return message.warning("请选择一条记录")
     // } else {
 
     // }

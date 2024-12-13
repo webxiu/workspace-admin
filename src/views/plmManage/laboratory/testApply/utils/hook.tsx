@@ -404,7 +404,7 @@ export const useTestReportConfig = () => {
         .then(() => {
           deleteTestApply([currentRow.value.id]).then((res) => {
             if (res.data) {
-              message(`删除成功`, { type: "success" });
+              message.success(`删除成功`);
               onSearch();
             }
           });
@@ -474,7 +474,7 @@ export const useTestReportConfig = () => {
       .then(() => {
         submitTestApply({ id: row.id }).then((res) => {
           if (res.data) {
-            message(`提交成功`, { type: "success" });
+            message.success(`提交成功`);
             const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
             onSearch(_rowIndex);
           }

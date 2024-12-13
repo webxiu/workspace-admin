@@ -41,10 +41,10 @@ export const useConfig = () => {
     API[type]({ menuId: curItem.id })
       .then((res) => {
         if (res.data) {
-          message(`${title}成功`);
+          message.success(`${title}成功`);
           routeLink.value[index].children[idx].isNoLike = !routeLink.value[index].children[idx].isNoLike;
         } else {
-          message(`${title}失败`, { type: "error" });
+          message.error(`${title}失败`);
         }
       })
       .catch(console.log);

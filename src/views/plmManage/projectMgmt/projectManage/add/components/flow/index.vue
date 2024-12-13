@@ -87,23 +87,23 @@ defineExpose({ setHeight, dataList, loading, setTemplateId });
 
 <template>
   <div class="pro_flow">
-    <div style="margin-bottom: 8px; display: flex; align-items: center">
+    <div style="display: flex; align-items: center; margin-bottom: 8px">
       <el-button type="primary" @click="handleAdd" size="small" :disabled="[3, 4].includes(detailPageInfo.projectInfoListVO?.projectState)">新增</el-button>
       <el-button type="warning" @click="handleEdit" size="small" :disabled="[3, 4].includes(detailPageInfo.projectInfoListVO?.projectState)">编辑</el-button>
       <el-button type="danger" @click="handleDel" size="small" :disabled="[3, 4].includes(detailPageInfo.projectInfoListVO?.projectState)">删除</el-button>
       <el-button type="success" @click="onPrintAction" size="small">打印</el-button>
-      <div style="font-size: 14px; margin-left: 16px; color: red">注意：红色字体的任务为已延期任务</div>
-      <div style="font-size: 14px; display: flex">
+      <div style="margin-left: 16px; font-size: 14px; color: red">注意：红色字体的任务为已延期任务</div>
+      <div style="display: flex; font-size: 14px">
         <div style="display: flex; align-items: center">
-          <div style="background-color: #ffbf00; width: 12px; height: 12px; border-radius: 100%; margin-left: 12px; margin-right: 4px" />
+          <div style="width: 12px; height: 12px; margin-right: 4px; margin-left: 12px; background-color: #ffbf00; border-radius: 100%" />
           等待
         </div>
         <div style="display: flex; align-items: center">
-          <div style="background-color: #00cd66; width: 12px; height: 12px; border-radius: 100%; margin-left: 12px; margin-right: 4px" />
+          <div style="width: 12px; height: 12px; margin-right: 4px; margin-left: 12px; background-color: #00cd66; border-radius: 100%" />
           进行中
         </div>
         <div style="display: flex; align-items: center">
-          <div style="background-color: #1e90ff; width: 12px; height: 12px; border-radius: 100%; margin-left: 12px; margin-right: 4px" />
+          <div style="width: 12px; height: 12px; margin-right: 4px; margin-left: 12px; background-color: #1e90ff; border-radius: 100%" />
           已完成
         </div>
       </div>
@@ -291,9 +291,9 @@ defineExpose({ setHeight, dataList, loading, setTemplateId });
     }
 
     .status {
-      cursor: pointer;
       width: 100px;
       text-align: right;
+      cursor: pointer;
     }
   }
 }

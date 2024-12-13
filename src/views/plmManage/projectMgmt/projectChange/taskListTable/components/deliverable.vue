@@ -57,7 +57,7 @@ const delRow = () => {
   if (currentRow.value) {
     dataList.value.splice(currentRow.value.index, 1);
   } else {
-    message("请选择记录", { type: "warning" });
+    message.warning("请选择记录");
   }
 };
 const handleClickRow = (row) => {

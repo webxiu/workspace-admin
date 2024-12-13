@@ -1,10 +1,8 @@
-import type { FormRules, UploadInstance, UploadProps, UploadRawFile } from "element-plus";
-
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
+import type { FormRules } from "element-plus";
+import HxUploadButton from "@/components/HxUploadButton/index.vue";
 import { OptionsType } from "@/utils/table";
 import { Question } from "@/config/elements";
-import UploadButton from "@/components/UploadButton.vue";
-import { ref } from "vue";
 
 const layout = { span: 12 };
 
@@ -112,7 +110,7 @@ export const formConfigs = ({ timeTypeList }): FormConfigItemType[] => {
       prop: "downloadUrl",
       colProp: layout,
       slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
-      render: ({ formModel, row }) => <UploadButton limit={1} accept={".apk"} v-model={formModel[row.prop]} />
+      render: ({ formModel, row }) => <HxUploadButton v-model:fileList={formModel[row.prop]} limit={1} accept={".apk"} />
     },
     {
       label: "发布日志",

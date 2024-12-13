@@ -132,7 +132,6 @@
 <script setup lang="tsx">
 import { h, reactive, ref } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 import { Upload, Edit, Plus } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
 import { message } from "@/utils/message";
@@ -215,7 +214,7 @@ const openFileModel = (type, row, keyStr) => {
       ),
     beforeSure: (done) => {
       if (!row[keyStr].length) {
-        message("还没有上传文件", { type: "warning" });
+        message.warning("还没有上传文件");
       } else {
         done();
       }
@@ -250,8 +249,8 @@ defineExpose({ formData, dataList });
     width: 100%;
 
     .line-txt {
-      font-weight: 700;
       padding: 6px;
+      font-weight: 700;
     }
 
     .fw {
@@ -269,8 +268,8 @@ defineExpose({ formData, dataList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 

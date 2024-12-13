@@ -51,6 +51,14 @@
   border-radius: 4px;
 }
 
+// 带冒号的 label
+.label-colon::after {
+  position: relative;
+  top: -0.5px;
+  margin: 0 8px 0 2px;
+  content: ":";
+}
+
 .el-table .el-table__body tr.current-row > td.el-table__cell,
 .el-table .el-table__body tr.hover-row > td.el-table__cell {
   background-color: var(--el-color-primary-light-8);
@@ -66,24 +74,28 @@
   // 标题样式
   .el-radio__input.is-disabled + span.el-radio__label {
     color: var(--el-text-color-regular);
-    border-color: var(--el-color-primary);
     cursor: default;
+    border-color: var(--el-color-primary);
   }
+
   // 圆圈样式
   .el-radio__input.is-disabled .el-radio__inner {
-    background: var(--el-radio-input-bg-color);
     cursor: default;
+    background: var(--el-radio-input-bg-color);
   }
+
   .el-radio__input.is-disabled.is-checked {
     // 选中标题样式
     + span.el-radio__label {
       color: var(--el-color-primary);
     }
+
     // 选中圆圈样式
     .el-radio__inner {
-      border-color: var(--el-color-primary);
       background: var(--el-color-primary);
+      border-color: var(--el-color-primary);
     }
+
     // 选中圆圈中心点样式
     .el-radio__inner::after {
       background-color: var(--el-color-white);

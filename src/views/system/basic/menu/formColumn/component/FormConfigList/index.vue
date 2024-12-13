@@ -47,43 +47,13 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from "vue";
 import "vue-json-pretty/lib/styles.css";
 import { useConfig } from "./utils/hook";
-import { PureTableBar } from "@/components/RePureTableBar";
-import ButtonList from "@/components/ButtonList/index.vue";
-import { NodeItemProps } from "@/views/system/basic/menu/tableColumn/utils/hook";
 
-defineOptions({ name: "FormConfigList" });
+defineProps<{ height: number }>();
 const emits = defineEmits(["dataList"]);
+const { tableRef, loading, columns, dataList, buttonList3, loadingStatus, onSearch, onRefresh, onDelete, onRowClick, onCopyColumn, handleSelectionChange } =
+  useConfig(emits);
 
-const props = defineProps<{ queryParams: NodeItemProps; height: number }>();
-const {
-  tableRef,
-  route,
-  loading,
-  columns,
-  dataList,
-  buttonList3,
-  queryParams2,
-  loadingStatus,
-  getTableList,
-  onRefresh,
-  onDelete,
-  onRowClick,
-  onCopyColumn,
-  handleSelectionChange
-} = useConfig(emits);
-
-watch(
-  props,
-  ({ queryParams }) => {
-    const { columnGroupId, columnname, menuId } = queryParams;
-    if (/* columnGroupId && columnname && */ menuId) {
-      queryParams2.value = queryParams;
-      getTableList();
-    }
-  },
-  { immediate: true }
-);
+defineExpose({ onSearch });
 </script>

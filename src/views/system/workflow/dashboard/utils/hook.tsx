@@ -183,7 +183,7 @@ export const useConfig = () => {
             .then((res) => {
               done();
               getOAList();
-              message("更改成功");
+              message.success("更改成功");
             })
             .catch(console.log);
         });
@@ -197,10 +197,10 @@ export const useConfig = () => {
     getQywxDataByMonth({ month: defMonth.value })
       .then((res) => {
         if (res.data) {
-          message("数据抓取成功");
+          message.success("数据抓取成功");
           getWechatListt();
         } else {
-          message("数据抓取成功", { type: "error" });
+          message.error("数据抓取成功");
         }
       })
       .catch(console.log);

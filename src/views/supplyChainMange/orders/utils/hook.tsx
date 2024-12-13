@@ -233,7 +233,7 @@ export const useConfig = () => {
   const onDelete = (row) => {
     delOrderAttr({ id: row.fileId }).then((res) => {
       if (res.data) {
-        message("删除成功");
+        message.success("删除成功");
         const _rowIndex = dataList.value.findIndex((item) => item.fbillno === row.fbillno);
         onSearch(_rowIndex);
       }
@@ -522,7 +522,7 @@ export const useConfig = () => {
       return ElMessage({ message: "请选择一条记录", type: "warning" });
     }
     if (![1, 2].includes(currentActiveRow.value.billState)) {
-      return message("当前状态不能进行回退", { type: "error" });
+      return message.error("当前状态不能进行回退");
     }
     commonBackLogic(currentActiveRow.value.billNo, onSearch);
   };

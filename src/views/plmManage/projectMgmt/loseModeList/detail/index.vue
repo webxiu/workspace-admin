@@ -63,8 +63,8 @@ defineExpose({ tableConfList });
     }
 
     .head-col {
-      text-align: center;
       color: #000;
+      text-align: center;
     }
 
     .bold {
@@ -77,8 +77,8 @@ defineExpose({ tableConfList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

@@ -11,7 +11,7 @@ const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScree
 
 <template>
   <div class="flex flex-1 main main-content welcome home" v-mainHeight="{ offset: -10 }">
-    <el-row :gutter="20" style="width: -webkit-fill-available">
+    <el-row :gutter="20" style="width: fill-available">
       <el-col :xs="24" :sm="24" :md="14" :lg="14" :xl="13" style="display: flex">
         <el-row :gutter="20" class="panel-box">
           <el-col class="mb-5" v-for="item in homeList" :key="item.name" :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
@@ -71,14 +71,16 @@ const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScree
 <style lang="scss" scoped>
 .home {
   .box-card {
-    width: 100%;
-    height: 100%;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    height: 100%;
+
     &.calendar :deep(.el-card__body) {
       padding: 10px;
     }
   }
+
   :deep(.el-card__header) {
     padding: 6px 15px;
     background: var(--el-fill-color-light);
@@ -92,13 +94,14 @@ const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScree
   .grid-container {
     display: flex;
     flex-wrap: wrap;
+
     .item {
+      box-sizing: border-box;
       width: calc(50% - 20px);
-      border-radius: 4px;
-      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
       margin: 10px;
       overflow: hidden;
-      box-sizing: border-box;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
     }
   }
 }
@@ -107,37 +110,42 @@ const { maxHeight, kimiChatRef, homeList, isFullScreen, onClearChat, onFullScree
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 2009; /* 确保元素覆盖其他内容 */
   width: 100% !important;
   height: 100% !important;
-  z-index: 2009; /* 确保元素覆盖其他内容 */
 }
 </style>
 
 <style lang="scss">
-@media screen and (max-height: 768px) {
+@media screen and (height <= 768px) {
   .home {
     .item-box {
       height: 72px !important;
+
       i {
         font-size: 22px !important;
       }
+
       .ellipsis {
         font-size: 12px !important;
       }
     }
+
     .el-card__body {
       padding-top: 10px !important;
       padding-bottom: 10px !important;
     }
   }
 }
-@media only screen and (min-width: 992px) {
+
+@media only screen and (width >= 992px) {
   .panel-box {
     &:only-child {
       flex: 1;
     }
+
     > div:nth-last-child(-n + 2) {
-      margin-bottom: 0px !important;
+      margin-bottom: 0 !important;
     }
   }
 }

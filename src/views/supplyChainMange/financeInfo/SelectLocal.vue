@@ -40,7 +40,6 @@
 </template>
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useLocalTable } from "./selectLocalConfig";
 
 defineProps(["setA"]);

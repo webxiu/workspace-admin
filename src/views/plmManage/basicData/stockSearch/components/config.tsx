@@ -1,8 +1,6 @@
-import ButtonList from "@/components/ButtonList/index.vue";
-import { reactive } from "vue";
-
 import { FormRules } from "element-plus";
 import MyUpload from "./MyUpload.vue";
+import { reactive } from "vue";
 
 // 编辑员工信息校验
 export const formRules = reactive<FormRules>({

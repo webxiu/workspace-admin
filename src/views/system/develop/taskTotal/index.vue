@@ -54,7 +54,6 @@ import { ref, onMounted } from "vue";
 import { setColumn, getMenuColumns } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { getTaskPerformanceData, getTaskBoardData } from "@/api/systemManage";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "SystemDevelopTaskTotalIndex" });

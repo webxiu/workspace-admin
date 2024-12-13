@@ -38,8 +38,6 @@
 <script setup lang="ts">
 import { useConfig } from "./hook";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
-import { PureTableBar } from "@/components/RePureTableBar";
-import ButtonList from "@/components/ButtonList/index.vue";
 
 defineOptions({ name: "PlmManageProjectMgmtSampleMakePlanAndListIndex" });
 

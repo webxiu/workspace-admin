@@ -118,7 +118,7 @@ export const useConfig = () => {
     approvalData({ systemSource }).then((res) => {
       const data = res.data;
       loading.value = false;
-      if (!data) return message("数据获取失败", { type: "error" });
+      if (!data) return message.error("数据获取失败");
       // 重置->数字动画
       totalObj1.value.number = 0;
       totalObj2.value.number = 0;

@@ -88,7 +88,7 @@ function getDetail() {
   inductionAuditDetail({ id: props.id })
     .then(({ data }) => {
       sLoading.value = false;
-      if (!data) return message("详情信息获取失败", { type: "error" });
+      if (!data) return message.error("详情信息获取失败");
       formData.value = {
         ...data,
         tryDate: data.tryDate ?? 3,

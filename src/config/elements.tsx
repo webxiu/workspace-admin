@@ -82,8 +82,11 @@ import {
   ZoomIn,
   ZoomOut
 } from "@element-plus/icons-vue";
+import { CSSProperties, h, reactive, ref } from "vue";
+import { message, showMessageBox } from "@/utils/message";
 
-import { CSSProperties } from "vue";
+import { AxiosProgressEvent } from "axios";
+import { addDialog } from "@/components/ReDialog";
 
 /** 按钮上的图标 */
 export const IconConf = {
@@ -173,7 +176,7 @@ export const IconConf = {
 // 提示图标
 export const Question = (props: {
   label?: string;
-  tipMsg?: string | JSX.Element;
+  tipMsg?: string | JSXElement;
   Icon?: any;
   placement?: string;
   color?: string;
@@ -196,4 +199,72 @@ export const Question = (props: {
       </el-tooltip>
     </span>
   );
+};
+
+// 定义 uploadApi 的类型
+type UploadApi<T> = (formData: FormData, onUploadProgress: (progressEvent: AxiosProgressEvent) => void) => Promise<T>;
+
+// 提示图标
+export const HxUploadProgress = <T extends {}>(props: { fd: FormData; uploadApi: UploadApi<T> }): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    const { uploadApi, fd } = props;
+    const formRef = ref();
+    const isOK = ref(false);
+    const progressInfo = ref<AxiosProgressEvent>({ loaded: 0, total: 0 } as AxiosProgressEvent);
+
+    // 上传进度
+    const UploadProgress = () => {
+      const { loaded, total } = progressInfo.value;
+      const percent = Math.floor((loaded / total) * 100);
+      return (
+        <>
+          <div>测试接口定义地址:/oa/fin/payslipmanage/importpayslipdata2</div>
+          <el-progress percentage={percent} stroke-width={15} text-inside={true} status="success" />
+        </>
+      );
+    };
+    const resultDialog = addDialog({
+      title: "上传进度",
+      width: "460px",
+      draggable: true,
+      showClose: false,
+      fullscreenIcon: false,
+      closeOnClickModal: false,
+      closeOnPressEscape: false,
+      style: { marginTop: "10vh !important" },
+      hideItem: ["ok"],
+      contentRenderer: () => h(UploadProgress, { ref: formRef }),
+      beforeCancel: (done, { options }) => {
+        const { loaded, total } = progressInfo.value;
+        if (total > 0 && loaded < total) {
+          showMessageBox(`确认要取消上传吗?`).then(() => {
+            progressInfo.value = { loaded: 0, total: 0 } as AxiosProgressEvent;
+            isOK.value = true;
+            uploadApi["cancel"]("上传已取消");
+            done();
+          });
+        } else if (!isOK.value) {
+          done();
+        }
+      }
+    });
+    function onUploadProgress(progressEvent: AxiosProgressEvent) {
+      const { loaded, total } = progressEvent;
+      progressInfo.value = progressEvent;
+      if (loaded > 0 && loaded === total) {
+        const timer = setTimeout(() => {
+          resultDialog.options.value.visible = false;
+          isOK.value = true;
+          progressInfo.value = { loaded: 0, total: 0 } as AxiosProgressEvent;
+          clearTimeout(timer);
+        }, 2000);
+      }
+    }
+    uploadApi(fd, onUploadProgress)
+      .then(resolve)
+      .catch((err) => {
+        isOK.value = false;
+        reject(err);
+      });
+  });
 };

@@ -74,7 +74,7 @@ const handleRemove = () => {
         deleteMaterialPicture({ id: route.query.id })
           .then((res) => {
             if (res.data) {
-              message(`删除成功`, { type: "success" });
+              message.success(`删除成功`);
               fileList.value = [];
             }
           })

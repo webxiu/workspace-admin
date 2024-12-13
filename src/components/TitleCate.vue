@@ -1,5 +1,9 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ name?: string; border?: boolean }>(), {
+export interface TitleCateProps {
+  name?: string;
+  border?: boolean;
+}
+withDefaults(defineProps<TitleCateProps>(), {
   name: "",
   border: true
 });

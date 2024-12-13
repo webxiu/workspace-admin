@@ -42,8 +42,6 @@
 <script setup lang="ts">
 import { useBankTable } from "./selectBankConfig";
 
-import { PureTableBar } from "@/components/RePureTableBar";
-
 const { columns, dataList, loading, rowClick, handleTagSearch, searchOptions, handleSizeChange, handleCurrentChange, pagination } = useBankTable();
 
 defineProps(["setA"]);

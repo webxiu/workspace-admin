@@ -8,14 +8,19 @@
 <script setup lang="ts">
 import { ConfUrl } from "../utils/hook";
 import { useConfig } from "./utils/hook";
+import { Question } from "@/config/elements";
+import { Back } from "@element-plus/icons-vue";
 import PreviewForm from "./component/PreviewForm.vue";
+import PreviewTable from "./component/PreviewTable.vue";
 import FormConfigList from "./component/FormConfigList/index.vue";
-import { Plus, Delete, Edit, Back } from "@element-plus/icons-vue";
+import TableConfigList from "./component/TableConfigList/index.vue";
 import ColumnMenuList from "../tableColumn/component/ColumnMenuList.vue";
+import { formTypeOptions } from "./utils/config";
 
 defineOptions({ name: "SystemBasicMenuFormColumn" });
 
-const { treeRef, gLoading, queryParams, dataList, maxHeight, route, treeOptions, onNodeClick, onAddGroup, onEditGroup, onDeleteGroup, onBack } = useConfig();
+const { formRef, loading, dataList, maxHeight, currentKey, showType, treeOptions, onBack, onGoTo, onNodeClick, onAddGroup, onEditGroup, onDeleteGroup } =
+  useConfig();
 </script>
 
 <template>
@@ -23,82 +28,55 @@ const { treeRef, gLoading, queryParams, dataList, maxHeight, route, treeOptions,
     <div class="flex-col pt-10 info-left-tree border-line">
       <div class="flex-col just-between border-line-bottom p-10" style="padding-top: 0">
         <div class="flex just-between align-center">
-          <el-button @click="onBack" :icon="Back" size="small">返回</el-button>
-          <ColumnMenuList :url="ConfUrl.table" />
+          <div class="label-colon fz-14">配置菜单</div>
+          <ColumnMenuList :url="ConfUrl.form" />
         </div>
-        <div class="flex just-between align-center mt-10">
-          <div class="ellipsis">{{ route.query?.menuName }}</div>
-          <el-button type="primary" size="small" :icon="Plus" @click="onAddGroup">添加表单</el-button>
+        <div class="flex align-center mt-10">
+          <el-button @click="onBack" :icon="Back" size="small" type="danger">返回</el-button>
+          <HxIcon icon="SetUp" @click="onGoTo" size="20" color="#409eff" class="ml-10 pointer" title="表格配置" />
+          <Question tipMsg="主表格的修改配置, 默认获取第一个分组下的第一个配置列表" :size="18" style="margin-left: auto" />
         </div>
       </div>
-      <div style="padding: 8px 10px" v-loading="gLoading">
+      <div style="padding: 8px 10px" v-loading="loading">
         <el-tree
-          ref="treeRef"
-          node-key="uid"
+          node-key="id"
+          :key="currentKey"
           :data="treeOptions"
+          :current-node-key="currentKey"
           :default-expand-all="true"
+          :highlight-current="true"
           @node-click="onNodeClick"
-          :props="{ children: 'children', label: 'groupName' }"
+          :props="{ children: 'formGroupList', label: 'groupName' }"
           :style="{ width: '240px', height: maxHeight + 'px' }"
         >
           <template #default="{ data }">
-            <span class="flex just-between ui-w-100">
-              <div class="ellipsis" :title="data.groupName">{{ data.groupName }}</div>
-              <div class="group-btn">
-                <el-icon v-if="!data.children" size="18" title="修改"><Edit @click.stop="onEditGroup(data)" class="ui-d-ib ui-va-m" /></el-icon>
-                <el-icon v-if="!data.children" size="18" title="删除"><Delete @click.stop="onDeleteGroup(data)" class="ui-d-ib ui-va-m" /></el-icon>
+            <div class="flex just-between flex-1">
+              <div class="inline-flex">
+                <el-tag v-if="!data.formGroupList" size="small" :type="data.groupType === '1' ? '' : 'success'" effect="dark" disable-transitions>
+                  {{ data.groupType === "1" ? "表单" : "表格" }}
+                </el-tag>
+                <div class="ellipsis ml-4" :title="data.formGroupList ? '分组名称' : '表单名称'">{{ data.groupName }}</div>
               </div>
-            </span>
+              <div class="inline-flex">
+                <HxIcon v-if="data.formGroupList" icon="Plus" size="18" title="新增" @click.stop="onAddGroup(data)" />
+                <HxIcon v-if="!data.formGroupList" icon="Edit" size="18" title="修改" @click.stop="onEditGroup(data)" />
+                <HxIcon v-if="!data.formGroupList" icon="Delete" size="18" title="删除" class="ml-1" @click.stop="onDeleteGroup(data)" />
+              </div>
+            </div>
+          </template>
+          <template #empty>
+            <div class="position-center">
+              <el-empty description="请先到表格配置中添加分组~" :image-size="80" />
+            </div>
           </template>
         </el-tree>
       </div>
     </div>
     <div class="ui-h-100 flex-col flex-1 ui-ov-h pl-10 ui-p-r">
-      <FormConfigList :height="maxHeight * 0.5" :queryParams="queryParams" @dataList="(data) => (dataList = data)" />
-      <PreviewForm :height="maxHeight * 0.4" :columnList="dataList" />
+      <FormConfigList v-if="showType" ref="formRef" :height="maxHeight * 0.5" @dataList="(data) => (dataList = data)" />
+      <TableConfigList v-else ref="formRef" :height="maxHeight * 0.5" @dataList="(data) => (dataList = data)" />
+      <PreviewForm v-if="showType" :height="maxHeight * 0.4" :columnList="dataList" />
+      <PreviewTable v-else :height="maxHeight * 0.48" :columnList="dataList" />
     </div>
   </div>
 </template>
-<style lang="scss" scoped>
-.info-left-tree {
-  padding-top: 10px;
-
-  .custom-tree-node {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: space-between;
-    overflow: hidden;
-    font-size: 14px;
-  }
-
-  :deep(.el-tree-node:focus > .el-tree-node__content) {
-    background-color: inherit;
-  }
-
-  :deep(.el-tree-node) {
-    padding: 0 10px;
-
-    .el-icon.is-leaf {
-      display: none;
-    }
-
-    &.is-checked {
-      color: #fff;
-      background-color: rgb(127 178 255);
-
-      .el-tree-node__content:hover {
-        background-color: rgb(127 178 255);
-      }
-    }
-  }
-
-  .group-btn {
-    display: inline-flex;
-
-    .el-icon {
-      margin-left: 5px;
-    }
-  }
-}
-</style>

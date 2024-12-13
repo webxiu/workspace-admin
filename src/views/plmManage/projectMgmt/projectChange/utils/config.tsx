@@ -1,11 +1,12 @@
+import { fetchAllProjectMsgByProjectId, fetchProjectMgmtList, fetchProjectTemplatePersons } from "@/api/plmManage";
 import { h, reactive, ref } from "vue";
-import SelectProjectModal from "../projectModal/index.vue";
+
 import { FormRules } from "element-plus";
-import { addDialog } from "@/components/ReDialog";
-import { message } from "@/utils/message";
+import SelectProjectModal from "../projectModal/index.vue";
 import SourceTableList from "../sourceTable/index.vue";
 import TaskTableList from "../taskListTable/index.vue";
-import { fetchAllProjectMsgByProjectId, fetchProjectMgmtList, fetchProjectTemplatePersons } from "@/api/plmManage";
+import { addDialog } from "@/components/ReDialog";
+import { message } from "@/utils/message";
 
 export const formRules = reactive<FormRules>({
   // duration: [{ required: true, message: "工期为必填项", trigger: "submit" }],
@@ -34,7 +35,7 @@ export const formConfigs = ({ categoryOpts, projectModelOpts, deptSelectData, _f
       beforeSure: (done) => {
         const formIns = formRef.value;
         if (!formIns.currentLeftRow) {
-          message("请选择项目", { type: "warning" });
+          message.warning("请选择项目");
         } else {
           _formData.projectId = formIns.currentLeftRow.id;
 

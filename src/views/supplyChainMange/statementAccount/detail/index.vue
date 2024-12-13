@@ -9,7 +9,6 @@
 import { setColumn } from "@/utils/table";
 import { downloadFile, formatDate } from "@/utils/common";
 import { onMounted, reactive, ref } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import {
   statementFileList,
   FileListItemType,
@@ -176,7 +175,7 @@ const onView = (row: FileListItemType) => {
 };
 
 const onDownload = (row: FileListItemType) => {
-  if (!row.filePath) return message("文件不存在", { type: "error" });
+  if (!row.filePath) return message.error("文件不存在");
   const index = row.filePath?.lastIndexOf("/");
   const fileName = row.filePath?.slice(index + 1);
   downloadFile(row.filePath, fileName);
@@ -203,9 +202,9 @@ const onDelete = (row: FileListItemType) => {
       supplierCode: formData.userCode
     })
       .then((res) => {
-        if (!res.data) return message("删除失败", { type: "error" });
+        if (!res.data) return message.error("删除失败");
         getDataList();
-        message("删除成功");
+        message.success("删除成功");
       })
       .catch(console.log);
   });

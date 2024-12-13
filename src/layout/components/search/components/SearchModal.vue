@@ -133,11 +133,7 @@ function handleEnter() {
 
   function extractPathSegment(path: string) {
     const segments = path.split("/").filter((segment) => segment !== "");
-    if (segments.includes("/oa")) {
-      return "/" + segments.slice(0, 3).join("/");
-    } else {
-      return "/" + segments.slice(0, 2).join("/");
-    }
+    return "/" + segments.slice(0, 2).join("/");
   }
   const parentRoute = menusData.value?.find((item) => menuItem.path.includes(item.path));
 

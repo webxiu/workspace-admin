@@ -24,13 +24,13 @@
         </td>
       </tr>
       <tr>
-        <td colspan="4" style="text-align: left; padding: 6px; font-size: 15px">
+        <td colspan="4" style="padding: 6px; font-size: 15px; text-align: left">
           <div style="color: #000">设计简要说明：</div>
           <div><el-input v-model="_formData.desingDesc" :autosize="{ minRows: 2 }" type="textarea" placeholder=" " /></div>
         </td>
       </tr>
       <tr>
-        <td colspan="4" style="text-align: left; padding: 6px">
+        <td colspan="4" style="padding: 6px; text-align: left">
           <div style="color: #000">方案1-尺寸图</div>
           <div class="row-upload">
             <el-upload action="#" list-type="picture-card" multiple :auto-upload="false" v-model:file-list="_formData.fileList">
@@ -40,7 +40,7 @@
         </td>
       </tr>
       <tr>
-        <td colspan="4" style="text-align: left; padding: 6px">
+        <td colspan="4" style="padding: 6px; text-align: left">
           <div style="color: #000">方案1-正视图</div>
           <div class="row-upload">
             <el-upload action="#" list-type="picture-card" multiple :auto-upload="false" v-model:file-list="_formData.fileList2">
@@ -50,7 +50,7 @@
         </td>
       </tr>
       <tr>
-        <td colspan="4" style="text-align: left; padding: 6px">
+        <td colspan="4" style="padding: 6px; text-align: left">
           <div style="color: #000">方案1-透视立体图</div>
           <div class="row-upload">
             <el-upload action="#" list-type="picture-card" multiple :auto-upload="false" v-model:file-list="_formData.fileList3">
@@ -97,9 +97,9 @@ defineExpose({ _formData });
     }
 
     td {
-      border: 1px solid #000;
-      text-align: center;
       padding: 2px 0;
+      text-align: center;
+      border: 1px solid #000;
     }
   }
 }

@@ -5,10 +5,9 @@ import { Finished } from "@element-plus/icons-vue";
 import { FormColumnItemType } from "@/api/systemManage";
 import { ElNotification, type FormProps, type FormRules } from "element-plus";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { Question } from "@/config/elements";
 
 const props = defineProps<{ height: number; columnList: FormColumnItemType[] }>();
-const formProps = reactive<Partial<FormProps>>({ labelWidth: "100px" });
+const formProps = reactive<Partial<FormProps>>({ labelWidth: "100px", requireAsteriskPosition: "right", inlineMessage: true });
 const formData = ref<Record<string, any>>({ id: "" });
 const formConfigs = ref<FormConfigItemType[]>([]);
 const loading = ref<boolean>(false);
@@ -42,7 +41,7 @@ function onTestSubmit() {
     if (valid) {
       ElNotification({ title: "校验通过:", dangerouslyUseHTMLString: true, message, type: "success" });
     } else {
-      ElNotification({ title: "校验失败:", dangerouslyUseHTMLString: true, message, type: "error" });
+      ElNotification({ title: "校验失败:", dangerouslyUseHTMLString: true, position: "bottom-right", message, type: "error" });
     }
   });
 }
@@ -51,7 +50,7 @@ function onTestSubmit() {
 <template>
   <div class="flex-1 pr-10">
     <div class="flex just-between align-center">
-      <div class="no-wrap block-quote-tip ui-w-100 ml-6 mt-10 mb-10">表单预览<span class="fz-14 color-f00 ml-1">(布局预览、内容查看、表单验证)</span></div>
+      <div class="no-wrap block-quote-tip ui-w-100 ml-8 mt-8 mb-8">表单预览<span class="fz-14 color-f00 ml-1">(布局预览、表单验证)</span></div>
       <el-button type="warning" @click="onTestSubmit" :icon="Finished" class="ml-50">测试提交</el-button>
     </div>
     <div class="flex-1 ui-ovy-a" :style="{ height: props.height + 'px' }">
@@ -61,8 +60,8 @@ function onTestSubmit() {
         :formConfigs="formConfigs"
         :formProps="formProps"
         :formRules="formRules"
+        :formItemGutter="0"
         :loading="false"
-        class="form-config"
       />
     </div>
   </div>

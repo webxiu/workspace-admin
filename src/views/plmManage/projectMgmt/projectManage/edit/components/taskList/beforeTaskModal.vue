@@ -91,7 +91,7 @@ const onDel = () => {
     dataList.value.splice(currentRow.value.index, 1);
     freshBeforeTask();
   } else {
-    message("请选择记录", { type: "warning" });
+    message.warning("请选择记录");
   }
 };
 

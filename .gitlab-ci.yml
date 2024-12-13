@@ -6,13 +6,13 @@ variables:
   PROD_SERVER: 192.168.1.231
   PROD_HOST_DIR: /var/workspace-web/
   PROD_SOURCE_FOLDER: ./dist/
+  TAG_VERSION: 1.0.0
 test-deploy:
   before_script:
     - mkdir -p ~/.ssh/
     - cp $DEPLOY_PRIVATE_KEY ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa
     - cp $KNOWN_HOSTS ~/.ssh/known_hosts
     - git config core.longpaths true
-    - ssh -T git@192.168.1.235
     - echo "$CI_COMMIT_REF_NAME"
     - npm config set registry https://registry.npmmirror.com
     - npm install -g pnpm
@@ -37,17 +37,16 @@ prod-deploy:
     - git config --global user.email "erpmsg@deogra.com"
     - git config --global user.name "Administrator"
     - git remote set-url origin git@192.168.1.235:webui/workspace.web.git
-    - ssh -T git@192.168.1.235
     - git checkout -B "$CI_COMMIT_REF_NAME"
     - npm config set registry https://registry.npmmirror.com/
     - npm install -g pnpm
     - pnpm install --no-frozen-lockfile
   script:
     - sh chgVer.sh
-    - ssh -T git@192.168.1.235
-    - git remote -v
     - git commit ./package.json -m "修改版本号"
-    - git push origin "$CI_COMMIT_REF_NAME":dev
+    - TAG_VERSION=`sed -n '/version/p' ./package.json | sed 's/"/\n/g' | sed '1,3d' | sed '2,3d'`
+    - git tag -a "workspace.web.$TAG_VERSION" -m "$TAG_VERSION"
+    - git push origin "$CI_COMMIT_REF_NAME":dev --follow-tags
     - pnpm build
     - ls -l
   after_script:

@@ -210,7 +210,7 @@ export function useBankTable() {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -352,7 +352,7 @@ export function useBankTable() {
           });
           done();
         } else {
-          message("至少选择一条记录", { type: "warning" });
+          message.warning("至少选择一条记录");
         }
       }
     });

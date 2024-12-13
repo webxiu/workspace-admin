@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-02-27 10:47:11
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-21 14:55:59
+ * @Last Modified time: 2024-12-02 17:48:13
  */
 
 import {
@@ -26,12 +26,13 @@ import { formConfigs, formRules } from "./config";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
 
-import EditForm from "@/components/EditForm/index.vue";
-import { ElMessage } from "element-plus";
+import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
+import { ElMessage, FormRules } from "element-plus";
 import { addDialog } from "@/components/ReDialog";
 import addModal from "../addModal.vue";
 import { getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
 import { useEleHeight } from "@/hooks";
+import { getFormColumns } from "@/utils/form";
 
 export const useConfig = () => {
   const tableRef2 = ref();
@@ -125,7 +126,7 @@ export const useConfig = () => {
   const onAdd = () => openDialog("add", rowData.value);
 
   const onEdit = (row: DeptInfoItemType) => {
-    if (!row.id) return message("不支持修改部门", { type: "error" });
+    if (!row.id) return message.error("不支持修改部门");
     openDialog("edit", row);
   };
 
@@ -134,11 +135,11 @@ export const useConfig = () => {
     roleDelete({ id: row.id })
       .then((res) => {
         if (res.data) {
-          message("删除成功");
+          message.success("删除成功");
           rowData.value = null;
           getTableList();
         } else {
-          message("删除失败", { type: "error" });
+          message.error("删除失败");
         }
       })
       .catch(console.log);
@@ -148,7 +149,8 @@ export const useConfig = () => {
     const title = { add: "新增", edit: "修改" }[type];
     const loading = ref<boolean>(false);
     const formRef = ref();
-
+    const formConfigs2 = ref<FormConfigItemType[]>([]);
+    const formRules2 = ref<FormRules>({});
     const _formData = reactive({
       deptId: row?.deptId ?? +curNodeKey.value > 0 ? curNodeKey.value : undefined,
       roleCode: type === "add" ? "" : row?.roleCode ?? "",
@@ -160,6 +162,18 @@ export const useConfig = () => {
       remark: type === "add" ? "" : row?.remark ?? "",
       id: type === "add" ? "" : row?.id ?? ""
     });
+
+    const customProps = reactive({
+      deptId: { formatAPI: (data) => data.deptInfoTree }
+    });
+    getFormColumns({ customProps, loading, groupCode: "1" })
+      .then((data) => {
+        const { formRules, formColumns } = data;
+        loading.value = false;
+        formRules2.value = formRules;
+        if (formColumns.length) formConfigs2.value = formColumns;
+      })
+      .catch(() => (loading.value = false));
 
     //新增分组时调用
     if (type === "add") {
@@ -177,8 +191,8 @@ export const useConfig = () => {
       props: {
         loading: loading,
         formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ deptOptions }),
+        formRules: formRules2,
+        formConfigs: formConfigs2,
         formProps: { labelWidth: "140px" }
       },
       width: "60%",
@@ -212,7 +226,7 @@ export const useConfig = () => {
     API[type](data)
       .then(({ data }) => {
         callback();
-        message(`${title}成功`);
+        message.success(`${title}成功`);
       })
       .catch(console.log);
   };
@@ -237,7 +251,7 @@ export const useConfig = () => {
   // 新增角色
   const onAdd2 = () => {
     if (!rowData.value) {
-      return message("请先选择需要操作的角色", { type: "error" });
+      return message.error("请选择需要操作的角色");
     }
     openRoleDialog();
   };
@@ -252,7 +266,7 @@ export const useConfig = () => {
   // 提交批量删除
   const onDeleteAlls = (rows: RoleUserItemType[]) => {
     if (!rows?.length) {
-      return message("请选择角色", { type: "error" });
+      return message.error("请选择角色");
     }
     const userRoleIdList: number[] = [];
     const userIdList: number[] = [];
@@ -262,7 +276,7 @@ export const useConfig = () => {
     });
     deleteRuleUser({ userRoleIdList, userIdList })
       .then(({ data }) => {
-        data && message("删除成功");
+        data && message.success("删除成功");
         getRoleList(rowData.value);
       })
       .catch(console.log);
@@ -282,7 +296,7 @@ export const useConfig = () => {
     const modalRef = ref();
     const loading = ref<boolean>(false);
     if (!rowData.value?.id) {
-      return message("请先选择需要操作的角色", { type: "warning" });
+      return message.warning("请选择需要操作的角色");
     }
 
     addDialog({
@@ -295,14 +309,14 @@ export const useConfig = () => {
       contentRenderer: () => h(addModal, { ref: modalRef }),
       beforeSure: (done, { options }) => {
         const refData = modalRef.value.getRef();
-        if (!refData?.length) return message("请选择用户", { type: "error" });
+        if (!refData?.length) return message.error("请选择用户");
         const params = { roleId: rowData.value?.id, userIdList: refData, isPrimarily: false };
         showMessageBox(`确认要提交吗?`).then(() => {
           addDeptRole(params)
             .then(({ data }) => {
               done();
               getRoleList(rowData.value);
-              message("添加成功");
+              message.success("添加成功");
             })
             .catch(console.log);
         });
@@ -332,7 +346,7 @@ export const useConfig = () => {
 
   const onSetK3Role = () => {
     if (!rowData.value) {
-      return message("请先选择需要操作的角色", { type: "error" });
+      return message.error("请选择需要操作的角色");
     }
     showMessageBox(`确认要为【${rowData.value.roleName}】设置金蝶角色吗?`)
       .then(() => {
@@ -361,7 +375,7 @@ export const useConfig = () => {
   });
 
   const onSetQYWXTag = () => {
-    if (!rowData.value) return message("请选择角色", { type: "warning" });
+    if (!rowData.value) return message.warning("请选择角色");
     showMessageBox(`确认创建【${rowData.value.roleName}】企业微信标签吗?`)
       .then(() => {
         setQYWXTag(rowData.value).then((res) => {

@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { ref, PropType, reactive, computed } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { OptAuthDeptTreeItemType } from "@/api/systemManage";
 import { message } from "@/utils/message";
 import { setColumn } from "@/utils/table";
@@ -52,7 +51,7 @@ const handleSelectionChange = (rows: OptAuthDeptTreeItemType[]) => {
   if (!rows.length) return;
   const filterRows = rows.filter((item) => !item.id);
   if (filterRows.length > 0) {
-    return message("目录不能更新角色权限，请选择菜单或者按钮", { type: "error" });
+    return message.error("目录不能更新角色权限，请选择菜单或者按钮");
   }
   const deptID = rows.filter((item) => item.roleCode).map((item) => item.id);
   deptIDs.value = deptID;

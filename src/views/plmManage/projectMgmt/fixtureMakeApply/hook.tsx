@@ -67,7 +67,7 @@ export const useConfig = () => {
       contentRenderer: () => h(detail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -79,7 +79,7 @@ export const useConfig = () => {
   };
 
   const onEdit = () => {
-    if (!currentRow.value) return message("请选择记录", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择记录");
     openDialog("edit", currentRow.value);
   };
 
@@ -88,7 +88,7 @@ export const useConfig = () => {
   };
 
   const onExport = () => {
-    message("功能未开发", { type: "warning" });
+    message.warning("功能未开发");
   };
 
   // 分页相关
@@ -103,7 +103,7 @@ export const useConfig = () => {
   }
 
   const onDel = () => {
-    if (!currentRow.value) return message("请选择记录", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择记录");
     console.log("del", currentRow.value);
   };
 

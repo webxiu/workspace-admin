@@ -125,6 +125,10 @@ export function deleteTimeSetting(params) {
 export function attendanceSummaryList(data) {
   return http.request<TablePagingResType<AttendanceSummaryItemType>>("post", "/oa/hr/attendanceSummary/getattendancedetailsbyparam", { data });
 }
+/** 考勤汇总: 生成 */
+export function generateAttSummary(data) {
+  return http.request("post", "/oa/hr/attendanceSummary/generateMonthReport", { params: data });
+}
 /** 考勤汇总: 上传考勤明细表 */
 export function uploadAttendanceExcel(data) {
   return http.request<boolean>("post", "/oa/hr/attendanceSummary/uploadExcel", { data }, { headers: { "Content-Type": "multipart/form-data" } });
@@ -195,6 +199,21 @@ export function fetchAttendanceRecord(data) {
   return http.request("post", "/oa/hr/attendancerecord/select", { data });
 }
 
+/** 考勤记录: 恢复 */
+export function revertAttendanceRecord(data) {
+  return http.request("post", "/oa/hr/attendancerecord/restoreRecord", { params: data });
+}
+
+/** 考勤记录: 修改 */
+export function updateAttendanceRecord(data) {
+  return http.request("post", "/oa/hr/attendancerecord/update", { data });
+}
+
+/** 考勤记录: 删除 */
+export function delAttendanceRecord(data) {
+  return http.request("post", "/oa/hr/attendancerecord/delete", { params: data });
+}
+
 /** 考勤机操作日志: 查询 */
 export function fetchAttendanceLog(data) {
   return http.request("post", "/oa/hr/AttendanceMachineLog/selectLog", { data });
@@ -208,6 +227,11 @@ export function exportAttendanceRecord(data) {
 /** 考勤人员映射: 查询 */
 export function fetchAttendanceUserList(data) {
   return http.request("post", "/oa/hr/attendanceusermapping/select", { data });
+}
+
+/** 考勤人员映射: 查询包含人脸信息 */
+export function fetchAttendanceUserFaceList(data) {
+  return http.request("post", "/oa/hr/attendanceusermapping/getStaffData", { data });
 }
 
 /** 考勤人员映射: 数据上传 */
@@ -235,6 +259,11 @@ export function fetchAttendanceDetail(data) {
   return http.request("post", "/oa/hr/AttendanceDetailInfo/selectAttDetail", { data });
 }
 
+/** 考勤明细: 查询下表格 */
+export function fetchAttendanceDetailLog(data) {
+  return http.request("get", "/oa/hr/AttendanceDetailInfo/selectAttLog", { params: data });
+}
+
 /** 考勤明细: 导出 */
 export function exportAttendancePageDetail(data) {
   return http.request("post", "/oa/hr/AttendanceDetailInfo/exportAttDetail", { data });
@@ -242,7 +271,7 @@ export function exportAttendancePageDetail(data) {
 
 /** 考勤明细: 补卡提醒 */
 export function sendMissCardNotice(params) {
-  return http.request("get", "/oa/hr/AttendanceDetailInfo/sendReissueRemind", { params });
+  return http.request("post", "/oa/hr/AttendanceDetailInfo/sendReissueRemind", { data: params });
 }
 
 /** 考勤明细: 重算 */

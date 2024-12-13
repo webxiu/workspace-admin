@@ -426,10 +426,12 @@ const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
 .top-label {
   font-weight: 700;
 }
+
 .table-outer1 {
-  border: 1px solid #000;
   padding: 8px;
+  border: 1px solid #000;
 }
+
 .sheet-table {
   border: 1px solid black;
   border-top: none;
@@ -450,8 +452,8 @@ const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
     line-height: 30px;
     text-align: left;
     border-right: 1px solid #000;
-    border-left: 1px solid #000;
     border-bottom: 1px solid #000;
+    border-left: 1px solid #000;
   }
 
   table th {
@@ -460,8 +462,8 @@ const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
   }
 
   table td {
-    border-top: 1px solid #000;
     padding: 8px;
+    border-top: 1px solid #000;
   }
 }
 </style>

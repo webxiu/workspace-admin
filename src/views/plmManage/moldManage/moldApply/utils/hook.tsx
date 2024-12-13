@@ -170,11 +170,11 @@ export const useTestReportConfig = () => {
               const reqApi = { add: addMoldApply, edit: editMoldApply };
               reqApi[type](fd).then((res) => {
                 if (res.data) {
-                  message(`${title}成功`);
+                  message.success(`${title}成功`);
                   getTableList();
                   done();
                 } else {
-                  message(`${title}失败`, { type: "error" });
+                  message.error(`${title}失败`);
                 }
               });
             });
@@ -188,8 +188,8 @@ export const useTestReportConfig = () => {
     const { id, productName } = rowData.value;
     showMessageBox(`确认要删除【${productName}】吗?`).then(() => {
       deleteMoldApply({ id }).then(({ data }) => {
-        if (!data) return message("删除失败", { type: "error" });
-        message("删除成功");
+        if (!data) return message.error("删除失败");
+        message.success("删除成功");
         getTableList();
       });
     });
@@ -198,6 +198,7 @@ export const useTestReportConfig = () => {
   const onPrint = wrapFn(rowData, () => {
     const row = rowData.value;
     const formRef = ref();
+    message.error("没有审批详情");
     addDialog({
       title: "打印开模申请单",
       props: { row },
@@ -234,12 +235,12 @@ export const useTestReportConfig = () => {
   const onSubmit = wrapFn(rowData, () => {
     const { productName, id, billState } = rowData.value;
     if (![BillState.submit, BillState.reject].includes(billState)) {
-      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
+      return message.error("只能提交【待提交/重新审核】的记录");
     }
     showMessageBox(`确认要提交【${productName}】吗?`).then(() => {
       commonSubmit({ id, billId: "10061" }).then(({ data }) => {
-        if (!data) return message("提交失败", { type: "error" });
-        message("提交成功");
+        if (!data) return message.error("提交失败");
+        message.success("提交成功");
         getTableList();
       });
     });
@@ -250,7 +251,7 @@ export const useTestReportConfig = () => {
     showMessageBox(`确认要撤销【${productName}】吗?`).then(() => {
       commonBack({ comment: "", backToActivityId: "startEvent1", billNo }).then(({ data }) => {
         if (data) {
-          message("撤销成功");
+          message.success("撤销成功");
           getTableList();
         }
       });

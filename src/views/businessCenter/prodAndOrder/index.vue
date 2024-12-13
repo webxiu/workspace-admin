@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import { ref } from "vue";
 import { fixed2AndAddcomma } from "@/utils/common";

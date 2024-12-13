@@ -614,7 +614,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.status === 200 || res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -653,7 +653,7 @@ export const useConfig = () => {
         console.log(row, "del row..");
         deleteDR0PageList(row.id).then((res) => {
           if (res.data) {
-            message("删除成功", { type: "success" });
+            message.success("删除成功");
             currentRow.value = null;
             onSearch();
           }
@@ -664,7 +664,7 @@ export const useConfig = () => {
 
   const beforeOnEdit = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      message("请选择一条记录", { type: "warning" });
+      message.warning("请选择一条记录");
       return;
     } else {
       onEdit();
@@ -673,7 +673,7 @@ export const useConfig = () => {
 
   const beforeOnPrint = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      message("请选择一条记录", { type: "warning" });
+      message.warning("请选择一条记录");
       return;
     } else {
       router.push("/plmManage/productMgmt/DR0Apply/print/index?id=" + currentRow.value.id);
@@ -682,7 +682,7 @@ export const useConfig = () => {
 
   const beforeOnDelete = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      message("请选择一条记录", { type: "warning" });
+      message.warning("请选择一条记录");
       return;
     } else {
       onDelete();
@@ -701,13 +701,13 @@ export const useConfig = () => {
 
   const beforeOnSubmit = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      return message("请选择一条记录", { type: "warning" });
+      return message.warning("请选择一条记录");
     } else {
       const { billNo, id } = currentRow.value;
       showMessageBox(`确认要提交【${billNo}】吗?`).then(() => {
         commonSubmit({ id, billId: "10012" }).then(({ data }) => {
           if (data) {
-            message("提交成功");
+            message.success("提交成功");
             onSearch();
           }
         });
@@ -717,13 +717,13 @@ export const useConfig = () => {
 
   const beforeOnRevoke = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      return message("请选择一条记录", { type: "warning" });
+      return message.warning("请选择一条记录");
     } else {
       const { billNo } = currentRow.value;
       showMessageBox(`确认要撤销【${billNo}】吗?`).then(() => {
         commonBack({ comment: "", backToActivityId: "startEvent1", billNo }).then(({ data }) => {
           if (data) {
-            message("撤销成功");
+            message.success("撤销成功");
             onSearch();
           }
         });
@@ -733,7 +733,7 @@ export const useConfig = () => {
 
   const beforeOnViewDetail = () => {
     if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
-      return message("请选择一条记录", { type: "warning" });
+      return message.warning("请选择一条记录");
     } else {
       addDialog({
         title: "查看审批详情",

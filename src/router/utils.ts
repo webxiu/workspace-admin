@@ -173,7 +173,7 @@ const getAsyncRouter = () => {
         resolve(newList);
       })
       .catch(() => {
-        message("菜单列表获取失败", { type: "error", duration: 9000 });
+        message.error("菜单列表获取失败", { duration: 9000 });
         resolve([]);
       })
       .finally(() => useAppStoreHook().setRouteLoading(false));

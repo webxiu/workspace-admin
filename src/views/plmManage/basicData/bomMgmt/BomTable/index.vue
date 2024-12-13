@@ -42,7 +42,6 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
 import { useConfig } from "./utils";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { Plus, Edit, Delete, UploadFilled, Top, Bottom } from "@element-plus/icons-vue";
 
 const route = useRoute();

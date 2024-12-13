@@ -4,6 +4,7 @@ import {
   DeptGroupTreeItemType,
   DeptInfoAgentResType,
   DeptInfoResType,
+  DrawToolItemType,
   GroupLeaderItemType,
   OrgCharItemType,
   RoleAndGroupType,
@@ -27,7 +28,8 @@ export type {
   TeamPostItemType,
   TeamMemberOptionType,
   DeptGroupTreeItemType,
-  TeamDutyItemType
+  TeamDutyItemType,
+  DrawToolItemType
 };
 
 /** =========================  岗位管理(团队管理) ========================= */
@@ -147,7 +149,27 @@ export function updateAuditAgent(data) {
 }
 
 /** =========================  组织架构图 ========================= */
-/** 获取组织架构列表 */
+
+/** 组织架构列表 */
 export function orgchartData(data) {
   return http.request<OrgCharItemType[]>("post", "/work/sys/orgchart/select", { data });
+}
+
+/** =========================  画图工具 ========================= */
+
+/** 画图工具 - 列表 */
+export function drawToolList(data) {
+  return http.request<TablePagingResType<DrawToolItemType>>("post", "/work/wb/drawtool/select", { data });
+}
+/** 画图工具 - 新增 */
+export function addDrawTool(data) {
+  return http.request<boolean>("post", "/work/wb/drawtool/insert", { data });
+}
+/** 画图工具 - 修改 */
+export function updateDrawTool(data) {
+  return http.request<boolean>("post", "/work/wb/drawtool/update", { data });
+}
+/** 画图工具 - 删除 */
+export function deleteDrawTool(data) {
+  return http.request<boolean>("post", "/work/wb/drawtool/delete", { data });
 }

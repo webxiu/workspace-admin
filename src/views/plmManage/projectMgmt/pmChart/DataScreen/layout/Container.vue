@@ -20,9 +20,10 @@ withDefaults(defineProps<Partial<Props>>(), { direction: "column" });
   position: relative;
   display: flex;
   flex: auto;
+  flex-direction: column;
+
   /* background: red; */
   width: 80%;
-  flex-direction: column;
   padding: 15px 0 15px 15px;
   overflow: hidden;
 }

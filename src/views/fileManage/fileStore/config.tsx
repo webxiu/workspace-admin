@@ -81,7 +81,7 @@ export function useTable() {
     })
       .then((res) => {
         if (res.data && res.status === 200) {
-          message(`上传成功`, { type: "success" });
+          message.success(`上传成功`);
 
           fn({ folderPath: path });
         }
@@ -129,7 +129,7 @@ export function useTable() {
     }).then(() => {
       delFileTableData({ path: data.path })
         .then((res) => {
-          res.status === 200 && message(`删除成功`, { type: "success" });
+          res.status === 200 && message.success(`删除成功`);
           // 查询上级
           const upLevelArr = data.path.split("/");
           upLevelArr.pop();
@@ -187,7 +187,7 @@ export function useTable() {
       .then((res) => {
         if (!res.data) throw res.message;
         callback();
-        message(`${title}成功`, { type: "success" });
+        message.success(`${title}成功`);
       })
       .catch(console.log);
   };

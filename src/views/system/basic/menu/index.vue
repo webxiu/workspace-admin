@@ -6,14 +6,10 @@
  */ -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { ConfUrl, useConfig } from "./utils/hook";
-import ButtonList from "@/components/ButtonList/index.vue";
-import { Connection } from "@element-plus/icons-vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "SystemBasicMenuIndex" });
-
 const { columns, dataList, loading, maxHeight, keyword, buttonList, optionList, onRefresh, onEdit, onDelete, onCurrentChange } = useConfig();
 </script>
 

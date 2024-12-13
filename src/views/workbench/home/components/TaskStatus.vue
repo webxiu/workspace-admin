@@ -24,23 +24,23 @@ const onTaskClick = (item: TaskStatusType) => {
 </script>
 <style lang="scss" scoped>
 .task-container {
-  height: 100%;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  grid-column-gap: 15px;
-  grid-row-gap: 15px;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
+  height: 100%;
 
   .task-item {
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 100%;
     padding: 8px;
     cursor: pointer;
     background: var(--el-fill-color-light);
+
     .task-num {
       margin-left: 10px;
       font-size: 32px;

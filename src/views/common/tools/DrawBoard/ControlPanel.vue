@@ -43,5 +43,3 @@ function onControl(type: ControlType) {
   emits("select", type);
 }
 </script>
-
-<style lang="scss" scoped></style>

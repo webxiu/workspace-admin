@@ -1,8 +1,7 @@
 <template>
   <PureTableBar :columns="columns" class="flex-1" :show-icon="false">
-    <template #title>
+    <template #title v-if="props.searchConfig.length">
       <BlendedSearch
-        v-if="props.searchConfig.length"
         @tagSearch="onTagSearch"
         :searchOptions="searchOptions"
         :placeholder="`请输入${props.searchConfig[0].label}`"
@@ -20,7 +19,7 @@
         align-whole="left"
         :loading="loading"
         :size="size"
-        :data="dataList"
+        :data="_dataList"
         :columns="dynamicColumns"
         :paginationSmall="size === 'small'"
         highlight-current-row
@@ -41,8 +40,6 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { type PaginationProps } from "@pureadmin/table";
-import { PureTableBar } from "@/components/RePureTableBar";
-import { QuoteApplyBillItemType } from "@/api/oaManage/marketing";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { setColumn, usePageSelect } from "@/utils/table";
 
@@ -53,6 +50,8 @@ export interface SelectTableProp {
   multiple?: boolean;
   /** 表格最大高度 */
   maxHeight?: number;
+  /** 表格列表数据 */
+  dataList?: Recordable[];
   /** 表格列配置 */
   columns: TableColumnList[];
   /** 查询参数(默认) */
@@ -60,7 +59,7 @@ export interface SelectTableProp {
   /** 搜索配置 */
   searchConfig?: SearchOptionType[];
   /** 查询接口 */
-  api: (arg: any) => Promise<any>;
+  api?: (arg: any) => Promise<any>;
 }
 
 const props = withDefaults(defineProps<SelectTableProp>(), {
@@ -77,12 +76,12 @@ const rowData = ref();
 const rowsData = ref([]);
 const tableRef = ref();
 const loading = ref(false);
-const dataList = ref<QuoteApplyBillItemType[]>([]);
+const _dataList = ref<Recordable[]>([]);
 const searchOptions = reactive<SearchOptionType[]>(props.searchConfig);
 const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize, ...props.paramConfig });
 const emits = defineEmits(["select", "dbClick", "mulSelect"]);
-const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData: rowsData, uniId: props.rowKey });
+const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList: _dataList, rowsData: rowsData, uniId: props.rowKey });
 
 const columns = computed<TableColumnList[]>(() => {
   return setColumn({
@@ -98,17 +97,25 @@ onMounted(() => getTableList());
 watch(rowsData, () => emits("mulSelect", rowsData.value), { deep: true });
 
 function getTableList() {
+  if (props.dataList) {
+    const list = props.dataList;
+    _dataList.value = list;
+    pagination.total = list.length;
+    pagination.pageSize = list.length;
+    return;
+  }
+  if (!props.api) return;
   loading.value = true;
   props
     .api(formData)
     .then(({ data }) => {
       loading.value = false;
       if (data.total !== undefined && data.records) {
-        dataList.value = data.records || [];
+        _dataList.value = data.records || [];
         pagination.total = data.total;
         setSelectCheckbox();
       } else {
-        dataList.value = data || [];
+        _dataList.value = data || [];
         pagination.total = data.length;
         pagination.pageSize = data.length;
       }

@@ -4,20 +4,22 @@ import { ArrowDown } from "@element-plus/icons-vue";
 import { debounce } from "@/utils/common";
 export type LoadingType = { loading: boolean; text: string };
 
-const props = defineProps({
+export interface ButtonListProps {
   /** 是否自动计算布局(为false不显示下拉) */
-  autoLayout: { type: Boolean, default: true },
+  autoLayout?: boolean;
   /** 按钮列表配置 */
-  buttonList: {
-    type: Array as PropType<ButtonItemType[]>,
-    default: () => []
-  },
+  buttonList: ButtonItemType[];
   /** 点击按钮的loading状态 */
-  loadingStatus: {
-    type: Object as PropType<LoadingType>,
-    default: () => ({ loading: false, text: "" })
-  },
-  moreActionText: { type: String as PropType<string>, defautlt: "" }
+  loadingStatus?: LoadingType;
+  /** 更多选项文本 */
+  moreActionText?: string;
+}
+
+const props = withDefaults(defineProps<ButtonListProps>(), {
+  autoLayout: true,
+  buttonList: () => [],
+  loadingStatus: () => ({ loading: false, text: "" }),
+  moreActionText: ""
 });
 
 const sliceNum = ref(1); // 默认显示的个数 除了更多按钮外

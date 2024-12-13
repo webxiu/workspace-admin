@@ -3,7 +3,7 @@
  * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-12 17:03:42
+ * @Last Modified time: 2024-11-27 11:13:19
  */ 
 -->
 
@@ -29,9 +29,9 @@ export interface FormConfigItemType extends Partial<FormItemProps> {
   /** 是否隐藏 (不渲染表单项目) */
   hide?: boolean;
   /** 表单项渲染函数 */
-  render: ((item: RenderParamsType) => JSX.Element) | JSX.Element;
+  render: ((item: RenderParamsType) => JSXElement) | JSXElement;
   /** 表单Item插槽 */
-  slots?: { [key: string]: (slot: Record<string, any>) => JSX.Element };
+  slots?: { [key: string]: (slot: Record<string, any>) => JSXElement };
   style?: CSSProperties;
   class?: string;
 }

@@ -7,7 +7,6 @@
 
 <script setup lang="tsx">
 import { MenuListItemType, billMenuList } from "@/api/systemManage";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { DeptUserItemType } from "@/api/systemManage";
 import { ref, onMounted, reactive } from "vue";
 import { handleTree } from "@/utils/tree";

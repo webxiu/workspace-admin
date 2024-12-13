@@ -204,7 +204,6 @@ import { Plus } from "@element-plus/icons-vue";
 import { roleUserList } from "@/api/systemManage";
 import { getEnumDictList } from "@/utils/table";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 defineProps(["projectStageOpts"]);
 
@@ -279,8 +278,8 @@ defineExpose({ formData });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

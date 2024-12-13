@@ -146,3 +146,46 @@ export interface ProductClassifyManageItemType {
   value: number;
   [key: string]: any;
 }
+/** ========================= 订单模板 ========================= */
+
+/** 订单模板列表类型 */
+export interface OrderTemplateItemType {
+  id: string;
+  productModelId: string;
+  productCode: string;
+  billNo: string;
+  billState: number;
+  createUserId: number;
+  createDate: string;
+  modifyUserId: number;
+  modifyDate: string;
+  orgId: string;
+  partNames: string;
+  remarks: string;
+  modelNumbers: string;
+  createUserName: string;
+  modifyUserName: string;
+  orderTemplateDetailDTOS: OrderTemplatePartNameItemType[];
+  orderTemplatePictureVOS: OrderTemplatePictureItemType[];
+}
+
+/** 订单模板-部件列表类型 */
+export interface OrderTemplatePartNameItemType {
+  id: string;
+  orderTemplateId: string;
+  modelNumber: string;
+  partName: string;
+  remarks: string;
+  orgId: string;
+  isNew?: boolean;
+}
+/** 订单模板-图片列表类型 */
+export interface OrderTemplatePictureItemType {
+  id: string;
+  orderTemplateId: string;
+  resourcePath: string;
+  imageName: string;
+  imageResourceName: string;
+  virtualPath: string;
+  orgId: string;
+}

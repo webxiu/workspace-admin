@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { DeptInfoItemType } from "@/api/systemManage";
 import { getDeptTreeList } from "@/api/systemManage";
 import { setColumn } from "@/utils/table";

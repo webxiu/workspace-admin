@@ -55,7 +55,7 @@ const onOpenDialog = (type: "old" | "new") => {
     beforeSure: (done, { options }) => {
       const userRow = userRef.value.getRef();
       if (!userRow.userCode) {
-        return message("请选择用户", { type: "error" });
+        return message.error("请选择用户");
       }
       if (type === "old") {
         formInline.oldAssign = userRow.userCode;

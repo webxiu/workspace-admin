@@ -5,18 +5,18 @@
       <el-button size="small" type="success" @click="() => onAddTask('down')">下方插入任务</el-button>
       <el-button size="small" type="danger" @click="onDeleteTask">删除</el-button>
     </el-space>
-    <div style="font-size: 14px; margin-left: 16px; color: red">注意：红色字体的任务为已延期任务</div>
-    <div style="font-size: 14px; display: flex">
+    <div style="margin-left: 16px; font-size: 14px; color: red">注意：红色字体的任务为已延期任务</div>
+    <div style="display: flex; font-size: 14px">
       <div style="display: flex; align-items: center">
-        <div style="background-color: #ffbf00; width: 12px; height: 12px; border-radius: 100%; margin-left: 12px; margin-right: 4px" />
+        <div style="width: 12px; height: 12px; margin-right: 4px; margin-left: 12px; background-color: #ffbf00; border-radius: 100%" />
         等待
       </div>
       <div style="display: flex; align-items: center">
-        <div style="background-color: #00cd66; width: 12px; height: 12px; border-radius: 100%; margin-left: 12px; margin-right: 4px" />
+        <div style="width: 12px; height: 12px; margin-right: 4px; margin-left: 12px; background-color: #00cd66; border-radius: 100%" />
         进行中
       </div>
       <div style="display: flex; align-items: center">
-        <div style="background-color: #1e90ff; width: 12px; height: 12px; border-radius: 100%; margin-left: 12px; margin-right: 4px" />
+        <div style="width: 12px; height: 12px; margin-right: 4px; margin-left: 12px; background-color: #1e90ff; border-radius: 100%" />
         已完成
       </div>
     </div>
@@ -299,7 +299,7 @@ watchEffect(() => {
 });
 
 const chooseBeforeTask = (currentTaskRow) => {
-  if (currentTaskRow.status === "STATUS_DONE") return message("已完成状态不能修改", { type: "error" });
+  if (currentTaskRow.status === "STATUS_DONE") return message.error("已完成状态不能修改");
   const beforeTaskModalRef = ref();
 
   addDialog({
@@ -323,13 +323,13 @@ const chooseBeforeTask = (currentTaskRow) => {
         if (filterRequireListNeedValid.length) {
           const validResult = filterRequireListNeedValid.every((item) => /^(?!(0[0-9]{0,}$))[0-9]{1,}[.]{0,}[0-9]{0,}$/.test(item.delayDays + ""));
           if (!validResult) {
-            message("开始时间、结束时间的模式下，延迟天数必须录入大于0的数字。", { type: "error" });
+            message.error("开始时间、结束时间的模式下，延迟天数必须录入大于0的数字。");
             return;
           }
         }
 
-        if (modalRows.some((item) => !item.beforeTaskId)) return message("前置任务名称不能为空", { type: "error" });
-        if (modalRows.some((item) => !item.requireMode)) return message("前置模式不能为空", { type: "error" });
+        if (modalRows.some((item) => !item.beforeTaskId)) return message.error("前置任务名称不能为空");
+        if (modalRows.some((item) => !item.requireMode)) return message.error("前置模式不能为空");
         currentTaskRow.projectTaskRequireVOList = modalRows.map((item) => ({
           requireProjectTaskId: item.beforeTaskId,
           requireMode: item.requireMode,
@@ -346,7 +346,7 @@ const chooseBeforeTask = (currentTaskRow) => {
 };
 
 const chooseDelivery = (currentTaskRow) => {
-  if (currentTaskRow.status === "STATUS_DONE") return message("已完成状态不能修改", { type: "error" });
+  if (currentTaskRow.status === "STATUS_DONE") return message.error("已完成状态不能修改");
   const deliverableModalRef = ref();
 
   addDialog({
@@ -364,8 +364,8 @@ const chooseDelivery = (currentTaskRow) => {
     beforeSure: (done) => {
       const modalRows = deliverableModalRef.value.dataList || [];
       if (modalRows.length) {
-        if (modalRows.some((item) => !item.name)) return message("交付物名称不能为空", { type: "error" });
-        if (modalRows.some((item) => !item.deliverableId || item.deliverableId == "0")) return message("交付物模板不能为空", { type: "error" });
+        if (modalRows.some((item) => !item.name)) return message.error("交付物名称不能为空");
+        if (modalRows.some((item) => !item.deliverableId || item.deliverableId == "0")) return message.error("交付物模板不能为空");
 
         currentTaskRow.projectTaskDeliverableVOList = modalRows.map((item) => ({
           projectTaskId: currentTaskRow.id,
@@ -375,14 +375,14 @@ const chooseDelivery = (currentTaskRow) => {
         }));
         done();
       } else {
-        return message("交付物不能为空", { type: "error" });
+        return message.error("交付物不能为空");
       }
     }
   });
 };
 
 const chooseRelationUser = (currentTaskRow) => {
-  if (currentTaskRow.status === "STATUS_DONE") return message("已完成状态不能修改", { type: "error" });
+  if (currentTaskRow.status === "STATUS_DONE") return message.error("已完成状态不能修改");
 
   if (currentTaskRow.projectTaskRelatePersonnelVOList?.length) return;
   const relationUsersModalRef = ref();
@@ -410,14 +410,14 @@ const chooseRelationUser = (currentTaskRow) => {
         }));
         done();
       } else {
-        return message("请选择至少一条记录", { type: "warning" });
+        return message.warning("请选择至少一条记录");
       }
     }
   });
 };
 
 const chooseResponseUser = (currentTaskRow) => {
-  if (currentTaskRow.status === "STATUS_DONE") return message("已完成状态不能修改", { type: "error" });
+  if (currentTaskRow.status === "STATUS_DONE") return message.error("已完成状态不能修改");
 
   if (currentTaskRow.projectTaskResponsiblePersonnelVOList?.length) return;
   const resUsersModalRef = ref();
@@ -447,7 +447,7 @@ const chooseResponseUser = (currentTaskRow) => {
         ];
         done();
       } else {
-        return message("请选择一条记录", { type: "warning" });
+        return message.warning("请选择一条记录");
       }
     }
   });
@@ -487,7 +487,7 @@ const getRelateUserInfo = (roleId, field) => {
 
 const onAddTask = (type: "up" | "down") => {
   if (!curActiveId.value || curRow.value.taskVOList) {
-    return message("请选择任务", { type: "warning" });
+    return message.warning("请选择任务");
   }
 
   let selectRows: any = [];
@@ -561,7 +561,7 @@ const onAddTask = (type: "up" | "down") => {
         }
         done();
       } else {
-        message("请选择至少一条记录", { type: "warning" });
+        message.warning("请选择至少一条记录");
       }
     }
   });
@@ -569,7 +569,7 @@ const onAddTask = (type: "up" | "down") => {
 
 const onDeleteTask = () => {
   if (!curActiveId.value || curRow.value.taskVOList) {
-    return message("请选择任务", { type: "warning" });
+    return message.warning("请选择任务");
   }
 
   const findTaskGroupIndex = dataList.value.findIndex((item) => item.taskVOList.some((el) => el.id === curActiveId.value));

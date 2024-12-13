@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-26 16:51:20
+ * @Last Modified time: 2024-12-13 14:48:31
  */
 
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
@@ -30,7 +30,7 @@ import { message, showMessageBox } from "@/utils/message";
 
 import { BillState_Color } from "@/config/constant";
 import EditForm from "@/components/EditForm/index.vue";
-import Format from "../../Format.vue";
+import Format from "../Format.vue";
 import { LoadingType } from "@/components/ButtonList/index.vue";
 import { NodeItemProps } from "@/views/system/basic/menu/tableColumn/utils/hook";
 import { Question } from "@/config/elements";
@@ -47,7 +47,7 @@ export const useConfig = () => {
   const dataList = ref<MenuColumnItemType[]>([]);
   const dataListTemp = ref<MenuColumnItemType[]>([]);
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
-  const queryParams2 = ref<NodeItemProps>({ menuId: 0, columnGroupId: "", columnname: "" });
+  const queryParams2 = ref<NodeItemProps>({ menuId: 0, columnGroupId: "" });
 
   onMounted(() => {
     getColumnConfig();
@@ -69,11 +69,11 @@ export const useConfig = () => {
         minWidth: "自适应表格列宽,默认值为140 (日期推荐设置:160)",
         width: "权重高于最小宽度, 设置固定宽度将忽略最小宽度",
         align: "数量、金额 代表数字的数据居右对齐，其它类型的数据都居左",
-        formatType: "自定义单元格数据显示类型(数字、日期、标签)",
+        formatType: "自定义单元格数据显示(数字、日期、标签)",
         fixed: "固定列在表格左右两侧, 不跟随表格滚动",
-        slot: "表格自定义内容插槽, 与 格式化处理 作用相似",
+        slot: "自定义内容插槽, 与自定义渲染作用相似",
         excelHide: "用于控制导出Excel时是否导出该列",
-        format: "layui导出时间格式"
+        excelFormat: "layui导出时间格式"
       };
       return <Question label={column.label} tipMsg={contents[prop]} />;
     };
@@ -140,7 +140,7 @@ export const useConfig = () => {
       },
       { label: "排序", prop: "sortable", headerAlign: "center", cellRenderer: (data) => editCellRender({ type: "select", data, options: sortList }) },
       {
-        label: "格式化处理",
+        label: "自定义渲染",
         prop: "formatType",
         minWidth: 200,
         headerAlign: "center",
@@ -203,7 +203,7 @@ export const useConfig = () => {
       },
       {
         label: "导出Format",
-        prop: "format",
+        prop: "excelFormat",
         align: "left",
         headerAlign: "center",
         headerRenderer: ({ column }) => headToolTip(column),
@@ -211,7 +211,6 @@ export const useConfig = () => {
       },
       { label: "单元格类名", prop: "className", cellRenderer: (data) => editCellRender({ data }) },
       { label: "表名", prop: "tablename", headerAlign: "center", cellRenderer: (data) => editCellRender({ data }) }
-      // { label: "类型", prop: "type" }
     ];
     columns.value = setColumn(
       {
@@ -228,8 +227,16 @@ export const useConfig = () => {
     );
   }
 
+  // 外部查询
+  function onSearch(params) {
+    queryParams2.value = params;
+    getTableList();
+  }
+
   const getTableList = debounce(() => {
-    if (!queryParams2.value.menuId) return message("菜单id错误", { type: "error" });
+    const { columnGroupId, menuId } = queryParams2.value;
+    if (!menuId) return message.error("菜单id不存在");
+    if (!columnGroupId) return message.error("分组id不存在");
     loading.value = true;
     menuColumnList(queryParams2.value)
       .then(({ data }) => {
@@ -318,7 +325,7 @@ export const useConfig = () => {
     }
 
     addDialog({
-      title: `格式化处理【${data.row.label}】`,
+      title: `自定义渲染【${data.row.label}】`,
       props: {
         loading: sLoading,
         formInline: formData,
@@ -358,7 +365,7 @@ export const useConfig = () => {
         if (!typeKeys.includes(type)) return;
         data.row[data.column["property"]] = text;
       })
-      .catch((err) => message("粘贴失败", { type: "error" }));
+      .catch((err) => message.error("粘贴失败"));
   }
 
   // 4.清除格式化配置
@@ -371,7 +378,7 @@ export const useConfig = () => {
   }
 
   function openDialog(type: "table" | "name", cb?) {
-    if (!queryParams2.value.columnGroupId) return message("请选择分组", { type: "error" });
+    if (!queryParams2.value.columnGroupId) return message.error("请选择分组");
     const formRef = ref();
     const tableField = dataList.value.map(({ tablename, label, prop }) => {
       const name = type === "table" ? tablename : label;
@@ -429,18 +436,16 @@ export const useConfig = () => {
                   excelHide: 0,
                   isNew: true,
                   width: 140,
-                  type: undefined,
                   sortable: false,
                   slot: undefined,
                   formatType: undefined,
-                  format: undefined,
+                  excelFormat: undefined,
                   fixed: undefined,
-                  className: undefined,
-                  columnname: undefined
+                  className: undefined
                 } as MenuColumnItemType;
               });
               if (repeatField) {
-                return message(`${repeatField}字段重复, 请重新输入`, { type: "error" });
+                return message.error(`${repeatField}字段重复, 请重新输入`);
               }
               dataList.value = result;
               done();
@@ -481,11 +486,11 @@ export const useConfig = () => {
     const verify = verifyField();
     const emptyLabel = dataList.value.filter((f) => !f.label);
     const emptyProp = dataList.value.filter((f) => !f.prop);
-    if (!queryParams2.value.columnGroupId) return message("请先选择分组", { type: "error" });
-    if (!dataList.value.length) return message("配置表不能为空", { type: "error" });
-    if (emptyLabel.length > 0) return message("名称不能为空", { type: "error" });
-    if (emptyProp.length > 0) return message("字段不能为空", { type: "error" });
-    if (!verify.pass) return message(`${verify.column}填写不正确`, { type: "error" });
+    if (!queryParams2.value.columnGroupId) return message.error("请选择分组");
+    if (!dataList.value.length) return message.error("配置表不能为空");
+    if (emptyLabel.length > 0) return message.error("名称不能为空");
+    if (emptyProp.length > 0) return message.error("字段不能为空");
+    if (!verify.pass) return message.error(`${verify.column}填写不正确`);
 
     // 如果是新添加的列, 不提交ID
     const params: MenuColumnItemType[] = [];
@@ -497,10 +502,10 @@ export const useConfig = () => {
     addBatchMenuColumn(params)
       .then((res) => {
         if (res.data) {
-          message("保存成功");
+          message.success("保存成功");
           getTableList();
         } else {
-          message("保存失败", { type: "error" });
+          message.error("保存失败");
         }
       })
       .catch(console.log)
@@ -509,7 +514,7 @@ export const useConfig = () => {
 
   // 批量删除
   function onBatchDelete() {
-    if (rowDatas.value.length === 0) return message("请选择删除内容", { type: "error" });
+    if (rowDatas.value.length === 0) return message.error("请选择删除内容");
     showMessageBox("确认要删除吗?")
       .then(() => onDelete(rowDatas.value))
       .catch(console.log);
@@ -524,9 +529,9 @@ export const useConfig = () => {
           dataList.value = dataList.value.filter((f) => !ids.includes(f.id));
           onUpdateIndex();
           rowDatas.value = [];
-          return message("删除成功");
+          return message.success("删除成功");
         }
-        message("删除失败", { type: "error" });
+        message.error("删除失败");
       })
       .catch(console.log);
   }
@@ -557,17 +562,17 @@ export const useConfig = () => {
             dataList.value = list.map((item) => ({ ...item, menuId: queryParams2.value.menuId, id: undefined }));
             done();
           } else {
-            message("保存失败", { type: "error" });
+            message.error("保存失败");
           }
         } catch (error) {
-          message("数据格式错误", { type: "error" });
+          message.error("数据格式错误");
         }
       }
     });
 
     // 复制
     function onCopy() {
-      if (!dataListTemp.value.length) return message("配置表格数据为空", { type: "error" });
+      if (!dataListTemp.value.length) return message.error("配置表格数据为空");
       copyText(JSON.stringify(dataListTemp.value, null, 2));
       resultDialog.options.value.visible = false;
     }
@@ -584,7 +589,7 @@ export const useConfig = () => {
           if (formData.content) return;
           formData.content = text;
         })
-        .catch((err) => message("粘贴失败", { type: "error" }));
+        .catch((err) => message.error("粘贴失败"));
     }
     // 清空
     function onClear() {
@@ -615,7 +620,7 @@ export const useConfig = () => {
           beforeSure: (done) => done()
         });
       } catch (error) {
-        message("数据格式错误", { type: "error" });
+        message.error("数据格式错误");
       }
     }
   }
@@ -641,6 +646,7 @@ export const useConfig = () => {
     loading,
     buttonList2,
     loadingStatus,
+    onSearch,
     onRefresh,
     onDelete,
     onRowClick,

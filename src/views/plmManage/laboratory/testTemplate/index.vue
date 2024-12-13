@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useTestReportConfig } from "./utils/hook";
-import ButtonList from "@/components/ButtonList/index.vue";
 import Modal from "@/views/supplyChainMange/orders/modal.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 

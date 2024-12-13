@@ -154,23 +154,17 @@ export const formConfig = ({ onPreviewImg, onTableChange }): TableFormItemType[]
         contentConf: { colspan: 4 },
         render: ({ formModel, row }) => {
           const fileList = ref([
-            { fileName: "休息休息.jpg", id: 1, url: `https://app.deogra.com/api/static/virtual/files/OA/ESOP/jobEngineering/1.png` },
-            { fileName: "休息休息.jpg", id: 2, url: `http://192.168.1.235/uploads/-/system/user/avatar/1/avatar.png?width=32` },
-            { fileName: "休息休息.jpg", id: 3, url: `http://192.168.1.235/uploads/-/system/user/avatar/1/avatar.png?width=32` },
-            { fileName: "休息休息.jpg", id: 4, url: `http://192.168.1.235/uploads/-/system/user/avatar/1/avatar.png?width=32` },
-            { fileName: "休息休息.jpg", id: 5, url: `http://192.168.1.235/uploads/-/system/user/avatar/1/avatar.png?width=32` },
-            { fileName: "休息休息.jpg", id: 6, url: `http://192.168.1.235/uploads/-/system/user/avatar/1/avatar.png?width=32` },
             { fileName: "休息休息.jpg", id: 7, url: `http://192.168.1.235/uploads/-/system/user/avatar/1/avatar.png?width=32` },
             { fileName: "休息休息.jpg", id: 8, url: `http://192.168.1.235/uploads/-/system/user/avatar/1/avatar.png?width=32` }
           ]);
 
           const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
             if (!["image/jpeg", "image/png", "image/bmp", "image/gif"].includes(rawFile.type)) {
-              message("Logo必须为JPG、PNG、BMP或GIF格式!", { type: "error" });
+              message.error("Logo必须为JPG、PNG、BMP或GIF格式!");
               return false;
             }
             if (rawFile.size / 1024 / 1024 > 4) {
-              message("Logo图片大小不能超过4MB！", { type: "error" });
+              message.error("Logo图片大小不能超过4MB！");
               return false;
             }
             return true;

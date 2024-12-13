@@ -77,7 +77,7 @@ export const formConfigs3 = ({ onSelectTemplate, onSelectPath }): FormConfigItem
           formModel[row.prop] = rawFile.name;
           const ext = rawFile.type.split("/")[1];
           if (!accept.includes(`.${ext}`)) {
-            message("文件格式不正确!", { type: "error" });
+            message.error("文件格式不正确!");
             return false;
           }
           return true;

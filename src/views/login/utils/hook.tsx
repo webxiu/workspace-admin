@@ -117,7 +117,7 @@ export const useConfig = () => {
             // }
             // todo 待优化:退出登录移除动态路由会保留上个用户路由, 导致无权限用户也能进入上次路由, 改为跳转首页
             router.push("/workbench/home");
-            message("登录成功", { type: "success" });
+            message.success("登录成功");
             const timer = setTimeout(() => {
               loading.value = false;
               clearTimeout(timer);
@@ -145,7 +145,7 @@ export const useConfig = () => {
       if (valid) {
         getCode(formData.phone).then((res) => {
           if (res.data) {
-            message("验证码发送成功");
+            message.success("验证码发送成功");
             countdown.value = 59;
             timer = setInterval(() => {
               countdown.value = --countdown.value;
@@ -156,7 +156,7 @@ export const useConfig = () => {
           }
         });
       } else {
-        message("请输入正确的手机号", { type: "error" });
+        message.error("请输入正确的手机号");
       }
     });
   }
@@ -197,7 +197,7 @@ export const useConfig = () => {
                 const confirmPassword = md5(formData.confirmPassword).substr(8, 16).toUpperCase();
                 submitResetPassword({ ...formData, newPassword, confirmPassword }).then((res) => {
                   if (res.data) {
-                    message("重置密码成功");
+                    message.success("重置密码成功");
                     done();
                   }
                 });

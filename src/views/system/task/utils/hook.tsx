@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:20:04
+ * @Last Modified time: 2024-12-02 17:47:52
  */
 
 import { Ref, onMounted, h, reactive, ref } from "vue";
@@ -178,11 +178,11 @@ export const useConfig = () => {
         deleteTaskSchedule({ id: row.id })
           .then((res) => {
             if (res.data) {
-              message("删除成功");
+              message.success("删除成功");
               rowData.value = null;
               getTableList();
             } else {
-              message("删除失败", { type: "error" });
+              message.error("删除失败");
             }
           })
           .catch(console.log);
@@ -308,7 +308,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -338,7 +338,7 @@ export const useConfig = () => {
   };
 
   const onAdd2 = () => {
-    if (!rowData.value) return message("请先选择需要操作的调度任务", { type: "error" });
+    if (!rowData.value) return message.error("请选择需要操作的调度任务");
     openDialog2("role");
   };
 
@@ -349,7 +349,7 @@ export const useConfig = () => {
   const onDeleteAll2 = () => {
     const len = rowsData2.value.length;
     if (len <= 0) {
-      return message("请选择角色", { type: "error" });
+      return message.error("请选择角色");
     }
     showMessageBox(`确定要将这${len}个角色移除吗?`)
       .then(() => {
@@ -381,9 +381,9 @@ export const useConfig = () => {
       if (res.data) {
         getTableList2(deleteList);
         getTableList();
-        message("移除成功");
+        message.success("移除成功");
       } else {
-        message("移除失败", { type: "error" });
+        message.error("移除失败");
       }
     });
   };
@@ -419,7 +419,7 @@ export const useConfig = () => {
       beforeSure: (done, { options }) => {
         const FormRef: RoleInfoItemType[] = formRef.value.getRef();
         if (FormRef.length === 0) {
-          return message(`请选择${title}`, { type: "error" });
+          return message.error(`请选择${title}`);
         }
         const toRolesList: string[] = FormRef.map((item) => item.roleCode);
         const toUsersList: string[] = FormRef.map((item) => (item as any).userCode);
@@ -455,9 +455,9 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`添加${title}成功`);
+          message.success(`添加${title}成功`);
         } else {
-          message(`添加${title}失败`, { type: "error" });
+          message.error(`添加${title}失败`);
         }
       })
       .catch(console.log);
@@ -476,7 +476,7 @@ export const useConfig = () => {
   };
 
   const onAdd3 = () => {
-    if (!rowData.value) return message("请先选择需要操作的调度任务", { type: "error" });
+    if (!rowData.value) return message.error("请选择需要操作的调度任务");
     openDialog2("user");
   };
 
@@ -487,7 +487,7 @@ export const useConfig = () => {
   const onDeleteAll3 = () => {
     const len = rowsData3.value.length;
     if (len <= 0) {
-      return message("请选择用户", { type: "error" });
+      return message.error("请选择用户");
     }
     showMessageBox(`确定要将这${len}个用户移除吗?`)
       .then(() => {
@@ -519,9 +519,9 @@ export const useConfig = () => {
       if (res.data) {
         getTableList3(deleteList);
         getTableList();
-        message("移除成功");
+        message.success("移除成功");
       } else {
-        message("移除失败", { type: "error" });
+        message.error("移除失败");
       }
     });
   };

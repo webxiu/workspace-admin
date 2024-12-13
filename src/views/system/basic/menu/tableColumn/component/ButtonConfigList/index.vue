@@ -55,14 +55,12 @@ import {
   tableGroupList,
   TableGroupItemType
 } from "@/api/systemManage";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { addDialog } from "@/components/ReDialog";
 import { Plus, MessageBox, Delete } from "@element-plus/icons-vue";
 import EditForm from "@/components/EditForm/index.vue";
 import { OptionItemType } from "@/api/plmManage";
 import { IconConf } from "@/config/elements";
 
-import ButtonList from "@/components/ButtonList/index.vue";
 import { dropDownList, formRules, formConfigs } from "./config";
 import { ElMessage } from "element-plus";
 
@@ -171,7 +169,7 @@ const onAdd = () => onEdit("add", {});
 
 // 修改
 const onEdit = (type: "add" | "edit", row?: Partial<MenuButtonItemType>) => {
-  if (!formData.columnGroupId) return message("请选择分组", { type: "error" });
+  if (!formData.columnGroupId) return message.error("请选择分组");
   const title = { add: "新增", edit: "修改" }[type];
   const formRef = ref();
   const buttonsList = ref<OptionItemType[]>([]);
@@ -236,16 +234,16 @@ const onEdit = (type: "add" | "edit", row?: Partial<MenuButtonItemType>) => {
     },
     beforeSure: (done, { options }) => {
       const FormRef = formRef.value.getRef();
-      if (!_formData.columnGroupId) return message("请选择分组", { type: "error" });
+      if (!_formData.columnGroupId) return message.error("请选择分组");
       FormRef.validate((valid) => {
         if (valid) {
           showMessageBox("确定要提交吗?").then(() => {
             const API = { add: addMenuButton, edit: updateMenuButton };
             API[type](_formData)
               .then(({ data }) => {
-                if (!data) return message(title + "失败", { type: "error" });
+                if (!data) return message.error(title + "失败");
                 done();
-                message(title + "成功");
+                message.success(title + "成功");
                 getTableList();
               })
               .catch(console.log);
@@ -258,7 +256,7 @@ const onEdit = (type: "add" | "edit", row?: Partial<MenuButtonItemType>) => {
 
 // 批量删除
 const onDeleteAll = () => {
-  if (!rowsData.value.length) return message("请选择要删除的记录", { type: "error" });
+  if (!rowsData.value.length) return message.error("请选择要删除的记录");
   showMessageBox("确认要删除所选记录吗?")
     .then(() => onDelete(rowsData.value))
     .catch(console.log);
@@ -268,9 +266,9 @@ const onDeleteAll = () => {
 const onDelete = (rows) => {
   deleteMenuButton(rows)
     .then(({ data }) => {
-      if (!data) return message("删除失败", { type: "error" });
+      if (!data) return message.error("删除失败");
       getTableList();
-      message("删除成功");
+      message.success("删除成功");
     })
     .catch(console.log);
 };

@@ -132,7 +132,7 @@ export const useHome = () => {
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         if (_formData.menuIds.length > maxCount) {
-          return message(`最多只能设置${maxCount}个快捷入口！`, { type: "warning" });
+          return message.warning(`最多只能设置${maxCount}个快捷入口！`);
         }
         FormRef.validate((valid) => {
           if (valid) {
@@ -141,10 +141,10 @@ export const useHome = () => {
                 .then(({ data }) => {
                   if (data) {
                     done();
-                    message("添加成功");
+                    message.success("添加成功");
                     getFastEntryData();
                   } else {
-                    message("添加失败", { type: "error" });
+                    message.error("添加失败");
                   }
                 })
                 .catch(console.log);
@@ -164,7 +164,7 @@ export const useHome = () => {
 
   // 快捷入口跳转
   const onFastClick = (item: FastEntryItemType) => {
-    if (!item.web_router) return message("跳转地址错误", { type: "error" });
+    if (!item.web_router) return message.error("跳转地址错误");
     router.push({ path: item.web_router, query: { menuId: item.menuId, menuName: item.menuName } });
   };
 

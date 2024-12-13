@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-03-15 16:49:20
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-26 16:36:04
+ * @Last Modified time: 2024-12-13 14:49:03
  */
 
 import { Ref, ref } from "vue";
@@ -19,7 +19,7 @@ import regExp from "@/utils/regExp";
 //======================= 表格配置 =======================
 
 // 输入框选择
-export const inputList: OptionsType[] = [
+export const typeOptions: OptionsType[] = [
   { optionName: "输入框", optionValue: ItemKey.input },
   { optionName: "下拉框", optionValue: ItemKey.select },
   { optionName: "日期框", optionValue: ItemKey.date },
@@ -99,7 +99,7 @@ ${name}
   ];
 };
 
-//======================= 格式化处理弹窗 =======================
+//======================= 自定义渲染弹窗 =======================
 
 function checkApiUrl(formData, message, rule, value, callback) {
   if (formData.apiURL && !value) {
@@ -180,7 +180,7 @@ export const formatConfigs = ({ formData, rowData, enumList }): Ref<FormConfigIt
       render: ({ formModel, row }) => {
         return (
           <el-select v-model={formModel[row.prop]} placeholder="请选择" onChange={onChange} class="ui-w-100">
-            {inputList.map((item) => (
+            {typeOptions.map((item) => (
               <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
             ))}
           </el-select>

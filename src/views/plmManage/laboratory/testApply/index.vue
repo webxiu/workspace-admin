@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useTestReportConfig } from "./utils/hook";
 import { ref } from "vue";
 import dayjs from "dayjs";
-import ButtonList from "@/components/ButtonList/index.vue";
 import Modal from "@/views/supplyChainMange/orders/modal.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 

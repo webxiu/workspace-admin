@@ -5,7 +5,7 @@
         <el-image style="width: 400px; height: 40px" :src="bomLogo" />
       </div>
       <div class="center-txt">
-        <span style="border-bottom: 2px solid; padding: 5px; text-align: center; font-size: 24px">{{ detailInfo.projectInfoListVO?.projectName ?? "" }}</span>
+        <span style="padding: 5px; font-size: 24px; text-align: center; border-bottom: 2px solid">{{ detailInfo.projectInfoListVO?.projectName ?? "" }}</span>
       </div>
     </div>
     <div class="body-info">
@@ -18,18 +18,18 @@
               </div>
             </td>
             <td style="border: none" rowspan="1" colspan="2">
-              <div style="display: flex; justify-content: center; align-items: center">
+              <div style="display: flex; align-items: center; justify-content: center">
                 <div style="margin-left: 3px; font-weight: 600">负责人：{{ detailInfo.projectInfoListVO?.projectUserName ?? "" }}</div>
               </div>
             </td>
             <td style="border: none" rowspan="1" colspan="2">
-              <div style="display: flex; justify-content: center; align-items: center">
+              <div style="display: flex; align-items: center; justify-content: center">
                 <div style="margin-left: 3px; font-weight: 600">产品分类：{{ detailInfo.projectInfoListVO?.categoryName ?? "" }}</div>
               </div>
             </td>
-            <td style="border: none; font-weight: 600">工期：{{ detailInfo.projectInfoListVO?.duration ?? "" }}</td>
-            <td style="border: none; font-weight: 600" rowspan="1" colspan="2">立项日期：{{ detailInfo.projectInfoListVO?.startDate ?? "" }}</td>
-            <td style="border: none; font-weight: 600" rowspan="1" colspan="3">更新时间：{{ detailInfo.projectInfoListVO?.modifyDate ?? "" }}</td>
+            <td style="font-weight: 600; border: none">工期：{{ detailInfo.projectInfoListVO?.duration ?? "" }}</td>
+            <td style="font-weight: 600; border: none" rowspan="1" colspan="2">立项日期：{{ detailInfo.projectInfoListVO?.startDate ?? "" }}</td>
+            <td style="font-weight: 600; border: none" rowspan="1" colspan="3">更新时间：{{ detailInfo.projectInfoListVO?.modifyDate ?? "" }}</td>
           </tr>
           <tr>
             <th align="center" class="head-col" rowspan="2" colspan="1" width="50">序号</th>
@@ -70,13 +70,13 @@
             </td>
           </tr>
           <tr style="border: none">
-            <td style="border: none; font-weight: 900" rowspan="1" colspan="2">制表：</td>
+            <td style="font-weight: 900; border: none" rowspan="1" colspan="2">制表：</td>
             <td style="border: none" />
             <td style="border: none" />
-            <td style="border: none; font-weight: 900">审核：</td>
+            <td style="font-weight: 900; border: none">审核：</td>
             <td style="border: none" />
             <td style="border: none" />
-            <td style="border: none; font-weight: 900" align="center">批准：</td>
+            <td style="font-weight: 900; border: none" align="center">批准：</td>
             <td style="border: none" />
             <td style="border: none" />
           </tr>
@@ -149,7 +149,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .blue {
-  color: rgb(30, 144, 255);
+  color: rgb(30 144 255);
 }
 
 .green {
@@ -165,20 +165,24 @@ onMounted(() => {
     size: a4 landscape; /* A4纸，横向打印 */
     margin: 10mm 3mm; /* 去掉页边距 */
   }
+
   .body-info tbody tr {
     page-break-inside: avoid;
   }
 }
+
 .print-plm {
-  font-family: "Microsoft YaHei", Simsun, Arial, sans-serif;
   width: 1500px;
+  font-family: "Microsoft YaHei", Simsun, Arial, sans-serif;
   font-size: 13px;
+
   .top-info {
     margin-bottom: 16px;
+
     .center-txt {
-      text-align: center;
-      font-weight: bold;
       font-size: 20px;
+      font-weight: bold;
+      text-align: center;
     }
 
     .logo {
@@ -194,20 +198,21 @@ onMounted(() => {
     }
 
     table th {
-      border-top: 1px solid #000;
-      border-left: 1px solid #000;
-      border-right: 1px solid #000;
       padding: 0 5px;
+      border-top: 1px solid #000;
+      border-right: 1px solid #000;
+      border-left: 1px solid #000;
     }
+
     .head-col {
       font-weight: 900;
     }
 
     table td {
-      border-top: 1px solid #000;
-      border-left: 1px solid #000;
-      border-right: 1px solid #000;
       padding: 0 5px;
+      border-top: 1px solid #000;
+      border-right: 1px solid #000;
+      border-left: 1px solid #000;
     }
   }
 }

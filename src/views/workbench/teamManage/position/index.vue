@@ -8,7 +8,6 @@
 <script setup lang="ts">
 import { useConfig } from "./utils/hooks";
 import { Col, Row } from "@/layout/Layout";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "WorkbenchTeamManagePositionIndex" });

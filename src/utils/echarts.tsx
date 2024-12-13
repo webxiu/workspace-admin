@@ -7,7 +7,7 @@
 
 import type { EChartsOption, SeriesOption, ToolboxComponentOption } from "echarts";
 
-import { ECHARTSTHEME } from "@/views/oa/utils/common";
+import { ECHARTSTHEME } from "@/config/constant";
 
 // 暂无数据
 const noDataText = [

@@ -100,7 +100,7 @@ export function useTable() {
 
       delQHUser(data)
         .then((res) => {
-          res.status === 200 && message(`删除成功`, { type: "success" });
+          res.status === 200 && message.success(`删除成功`);
           currentRowData.value = {};
           onSearch();
         })
@@ -207,7 +207,7 @@ export function useTable() {
       .then((res) => {
         if (!res.data) throw res.message;
         callback();
-        message(`${title}成功`, { type: "success" });
+        message.success(`${title}成功`);
       })
       .catch(console.log);
   };

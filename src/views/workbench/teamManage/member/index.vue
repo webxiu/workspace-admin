@@ -63,7 +63,6 @@
 <script setup lang="ts">
 import { useConfig } from "./utils/hook";
 import { Col, Row } from "@/layout/Layout";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import Edit from "@iconify-icons/ep/edit";
 import Delete from "@iconify-icons/ep/delete";
@@ -106,8 +105,8 @@ const handleTagSearch = (values) => {
 
 <style lang="scss" scoped>
 .info-left-tree {
-  height: 100%;
   min-width: 260px;
+  height: 100%;
   min-height: 200px;
   padding: 10px 15px;
 }

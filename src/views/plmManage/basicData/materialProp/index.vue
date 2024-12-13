@@ -74,8 +74,6 @@
 </template>
 <script setup lang="ts">
 import { useTable } from "./config";
-import { PureTableBar } from "@/components/RePureTableBar";
-import ButtonList from "@/components/ButtonList/index.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "PlmManageBasicDataMaterialPropIndex" });

@@ -130,20 +130,20 @@ export interface SearchOptionType extends CascaderOption {
 /** 默认搜索类型 */
 export type QueryParamsType = Record<string, any>;
 
-interface Props {
+export interface BlendedSearchProps {
   /** 是否立即执行(默认立即执行) */
-  immediate: boolean;
+  immediate?: boolean;
   /** 输入提示文本 */
-  placeholder: string;
+  placeholder?: string;
   /** 默认搜索字段 */
-  searchField: string;
+  searchField?: string;
   /** 搜索配置列表 */
-  searchOptions: SearchOptionType[];
+  searchOptions?: SearchOptionType[];
   /** 默认查询配置 */
-  queryParams: QueryParamsType;
+  queryParams?: QueryParamsType;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<BlendedSearchProps>(), {
   immediate: true,
   placeholder: "请输入搜索内容",
   searchField: "search",
@@ -299,7 +299,7 @@ const onSelectNode = (node, data) => {
   if (keys.length === 1) {
     if (data.type) {
       inputType.value = data.type;
-      if (!data.format && data.type !== "daterange") message("请配置日期格式", { type: "warning" });
+      if (!data.format && data.type !== "daterange") message.warning("请配置日期格式");
       dateFormat.value = data.format;
     }
     filterKey.value = fieldName;
@@ -408,7 +408,7 @@ const onTagClick = (k: string | number, v: SearchOptionType) => {
     }
   }
   if (unableChange) {
-    message("当前选项不可编辑", { type: "warning" });
+    message.warning("当前选项不可编辑");
     return;
   }
   if (filterValue.value.length !== 0) {

@@ -8,6 +8,7 @@ $maxHeight: 260px; // 左侧树列表内容区域高度
     display: flex !important;
     justify-content: flex-start;
     padding-bottom: 0;
+
     & > * {
       margin-bottom: 4px !important;
     }
@@ -18,30 +19,36 @@ $maxHeight: 260px; // 左侧树列表内容区域高度
 
     .table-buttons {
       justify-content: flex-start;
+
       .wrapper-btn {
-        justify-content: flex-start;
         flex-wrap: wrap;
+        justify-content: flex-start;
+
         & > * {
           margin: 0 5px 4px 0 !important;
         }
       }
     }
   }
+
   .pure-table {
     .el-pagination__sizes,
     .el-pagination__jump {
       display: none;
     }
   }
+
   // 首页聊天
   .user-role {
     width: 30px;
     height: 30px;
   }
+
   .el-backtop {
     right: 10px !important;
     bottom: 80px !important;
   }
+
   // 人事行政部|零时工档案
   .mobile-tree {
     max-height: $maxHeight;

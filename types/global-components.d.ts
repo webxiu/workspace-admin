@@ -1,3 +1,11 @@
+import type { BlendedSearchProps } from "@/components/BlendedSearch/index.vue";
+import type { ButtonListProps } from "@/components/ButtonList/index.vue";
+import type { SearchListProps } from "@/components/SearchList/index.vue";
+import type { TitleCateProps } from "@/components/TitleCate.vue";
+import type { HxIconProps } from "@/components/HxIcon";
+import type { DefineComponent } from "vue";
+import type { UploadProps } from "element-plus";
+
 declare module "vue" {
   /**
    * 自定义全局组件获得 Volar 提示（自定义的全局组件需要在这里声明下才能获得 Volar 类型提示哦）
@@ -7,6 +15,19 @@ declare module "vue" {
     IconifyIconOnline: typeof import("../src/components/ReIcon")["IconifyIconOnline"];
     FontIcon: typeof import("../src/components/ReIcon")["FontIcon"];
     Auth: typeof import("../src/components/ReAuth")["Auth"];
+    PureTableBar: typeof import("../src/components/RePureTableBar")["PureTableBar"];
+    HxModalInput: typeof import("../src/components/HxModalInput/index.vue")["HxModalInput"];
+    HxIcon: DefineComponent<HxIconProps>;
+    HxUploadButton: DefineComponent<Partial<UploadProps>>;
+    ButtonList: DefineComponent<ButtonListProps>;
+    SearchList: DefineComponent<SearchListProps>;
+    TitleCate: DefineComponent<TitleCateProps>;
+    BlendedSearch: DefineComponent<BlendedSearchProps> & {
+      new (): {
+        $props: BlendedSearchProps;
+        $emit: { (event: "tagSearch", val: Recordable): void; (event: "selectNode", val: Recordable): void };
+      };
+    };
   }
 }
 

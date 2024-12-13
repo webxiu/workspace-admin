@@ -4,11 +4,11 @@
       <tr>
         <td colspan="5" style="border: none">
           <div style="display: flex; align-items: center">
-            <div style="display: flex; width: 33%; align-items: center">
+            <div style="display: flex; align-items: center; width: 33%">
               <div>模号：</div>
               <div><el-input size="small" v-model="formData.modelNum" placeholder=" " /></div>
             </div>
-            <div style="display: flex; width: 33%; align-items: center">
+            <div style="display: flex; align-items: center; width: 33%">
               <div>产品编号：</div>
               <div>
                 <HxModalInput
@@ -32,7 +32,7 @@
                 />
               </div>
             </div>
-            <div style="display: flex; width: 33%; align-items: center">
+            <div style="display: flex; align-items: center; width: 33%">
               <div>日期：</div>
               <div>
                 <el-date-picker
@@ -83,7 +83,6 @@
 import { reactive, ref } from "vue";
 import { dataListConfig } from "./moldDesignConfig";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 const formData: any = reactive({});
 const dataList = ref(dataListConfig);
@@ -111,8 +110,8 @@ defineExpose({ formData, dataList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

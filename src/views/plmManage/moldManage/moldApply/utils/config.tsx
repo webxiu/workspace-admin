@@ -2,7 +2,6 @@ import { FormRules, UploadProps } from "element-plus";
 
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import HxModalInput from "@/components/HxModalInput/index.vue";
-import { PageUrl } from "@/config/constant";
 import { Plus } from "@element-plus/icons-vue";
 import { fetchProductStoreList } from "@/api/plmManage";
 import { reactive } from "vue";

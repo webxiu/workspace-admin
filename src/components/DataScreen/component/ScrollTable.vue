@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, Ref, nextTick, onUnmounted, watch, onMounted } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import Border from "./Border.vue";
 import { mouseInOut } from "./utils";
 

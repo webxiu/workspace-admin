@@ -52,6 +52,7 @@ import { PAGE_CONFIG } from "@/config/constant";
 import { getDeptOptions } from "@/utils/requestApi";
 import { getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
 import { getFormColumns, CustomPropsType } from "@/utils/form";
+import { FormRules } from "element-plus";
 
 export const useConfig = () => {
   const tableRef2 = ref();
@@ -219,6 +220,7 @@ export const useConfig = () => {
     const formRef = ref();
     const loading = ref(false);
     const myFormConfig = ref<FormConfigItemType[]>([]);
+    const formRules2 = ref<FormRules>({});
 
     const _formData = reactive({
       userCode: row?.userCode ?? "",
@@ -241,7 +243,7 @@ export const useConfig = () => {
       deptId: { formatAPI: (data) => data.deptInfoTree }
     });
 
-    getFormColumns({ loading, customProps })
+    getFormColumns({ loading, customProps, groupCode: "1" })
       .then((data) => {
         loading.value = false;
         if (!data.formColumns.length) return;
@@ -249,6 +251,7 @@ export const useConfig = () => {
           if (type === "add") return item.prop !== "k3UserAccount";
           return true;
         });
+        formRules2.value = data.formRules;
       })
       .catch(() => (loading.value = false));
 
@@ -256,8 +259,8 @@ export const useConfig = () => {
       title: `${title}用户`,
       props: {
         formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ type, stateOptions, deptOptions, _formData }),
+        formRules: formRules2,
+        formConfigs: myFormConfig,
         // formConfigs: myFormConfig,
         formProps: { labelWidth: "140px" }
       },
@@ -293,7 +296,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -339,7 +342,7 @@ export const useConfig = () => {
   // 新增角色
   const onAdd2 = () => {
     if (!rowData.value) {
-      return message("请选择要修改的用户", { type: "error" });
+      return message.error("请选择要修改的用户");
     }
     openRoleDialog();
   };
@@ -357,12 +360,12 @@ export const useConfig = () => {
   // 提交批量删除
   const onDeleteAlls = (rows: UserInfoRoleItemType[]) => {
     if (!rows?.length) {
-      return message("请选择角色", { type: "error" });
+      return message.error("请选择角色");
     }
 
     deleteUserRoleInfo({ userRoleIdList: rows.map((item) => item.id) })
       .then((res) => {
-        res.data && message("删除成功");
+        res.data && message.success("删除成功");
         getRoleList(rowData.value);
       })
       .catch(console.log);
@@ -396,7 +399,7 @@ export const useConfig = () => {
       beforeSure: (done, { options }) => {
         const rowItem = modalRef.value.getRef();
         if (!rowItem.id) {
-          return message("请选择具体的角色", { type: "error" });
+          return message.error("请选择具体的角色");
         }
         showMessageBox(`确认要提交吗?`).then(() => {
           const params = {
@@ -408,10 +411,10 @@ export const useConfig = () => {
             .then((res) => {
               if (res.data) {
                 done();
-                message("添加成功");
+                message.success("添加成功");
                 getRoleList(rowData.value);
               } else {
-                message("添加失败", { type: "error" });
+                message.error("添加失败");
               }
             })
             .catch(console.log);
@@ -439,7 +442,7 @@ export const useConfig = () => {
       beforeSure: (done, { options }) => {
         const rowItem = modalRef.value.getRef();
         if (!rowItem) {
-          return message("请选择部门", { type: "error" });
+          return message.error("请选择部门");
         }
         showMessageBox(`确认要提交吗?`).then(() => {
           const params = {
@@ -450,10 +453,10 @@ export const useConfig = () => {
             .then((res) => {
               if (res.data) {
                 done();
-                message("添加成功");
+                message.success("添加成功");
                 getRightDeptList(rowData.value);
               } else {
-                message("添加失败", { type: "error" });
+                message.error("添加失败");
               }
             })
             .catch(console.log);
@@ -515,9 +518,9 @@ export const useConfig = () => {
       resetPassword(row)
         .then((res) => {
           if (res.data) {
-            message("重置密码成功");
+            message.success("重置密码成功");
           } else {
-            message("重置密码失败", { type: "error" });
+            message.error("重置密码失败");
           }
         })
         .catch(console.log);
@@ -530,9 +533,9 @@ export const useConfig = () => {
       createDatabase({ userCode: row.userCode })
         .then((res) => {
           if (res.data) {
-            message("创建成功");
+            message.success("创建成功");
           } else {
-            message("创建失败", { type: "error" });
+            message.error("创建失败");
           }
         })
         .catch(console.log);
@@ -546,10 +549,10 @@ export const useConfig = () => {
       createKingdee(row.id)
         .then((res) => {
           if (res.data) {
-            message("创建成功");
+            message.success("创建成功");
             getTableList();
           } else {
-            message("创建失败", { type: "error" });
+            message.error("创建失败");
           }
         })
         .catch(console.log);
@@ -563,9 +566,9 @@ export const useConfig = () => {
       deleteDatabase({ userCode: row.userCode })
         .then((res) => {
           if (res.data) {
-            message("删除成功");
+            message.success("删除成功");
           } else {
-            message("删除失败", { type: "error" });
+            message.error("删除失败");
           }
         })
         .catch(console.log);
@@ -601,21 +604,21 @@ export const useConfig = () => {
 
   const onAdd3 = () => {
     if (!rowData.value) {
-      return message("请选择要修改的用户", { type: "error" });
+      return message.error("请选择要修改的用户");
     }
     openDeptDialog();
   };
 
   const onDeleteAll3 = () => {
     if (!roleRows2.value?.length) {
-      return message("请选择部门", { type: "error" });
+      return message.error("请选择部门");
     }
 
     const delData = { deleteIds: roleRows2.value.map((item) => item.id), userId: roleRows2.value[0]?.userId };
 
     deleteUserDeptList(delData)
       .then((res) => {
-        res.data && message("删除成功");
+        res.data && message.success("删除成功");
         getRightDeptList(rowData.value);
       })
       .catch(console.log);
@@ -629,7 +632,7 @@ export const useConfig = () => {
   const onSetMainRole = (row) => {
     setMainRole({ id: row.id, isPrimarily: true }).then((res) => {
       if (res.data || res.status === 200) {
-        message("设置成功");
+        message.success("设置成功");
         getTableList();
         onRowClick(rowData.value);
       }
@@ -641,11 +644,11 @@ export const useConfig = () => {
     insertUserDeptList(updateData)
       .then((res) => {
         if (res.data) {
-          message("设置成功");
+          message.success("设置成功");
           getTableList();
           onRowClick(rowData.value);
         } else {
-          message("设置失败", { type: "error" });
+          message.error("设置失败");
         }
       })
       .catch(console.log);

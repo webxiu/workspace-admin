@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { setColumn } from "@/utils/table";
 
 const rowData = ref();

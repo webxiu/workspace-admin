@@ -64,8 +64,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { useTable } from "./config";
-import { PureTableBar } from "@/components/RePureTableBar";
-import ButtonList from "@/components/ButtonList/index.vue";
 import { fetchSearchSelectStockList, getMaterialGroupTreeData } from "@/api/plmManage";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";

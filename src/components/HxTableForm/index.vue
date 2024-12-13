@@ -4,7 +4,7 @@
  * @Author: Hailen 
  * @Date: 2024-11-11 17:55:39 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-20 16:49:52
+ * @Last Modified time: 2024-11-27 11:13:48
  */ 
  -->
 
@@ -41,9 +41,9 @@ export interface TableFormItemType extends Partial<FormItemProps> {
   /** 是否隐藏 */
   hide?: boolean;
   /** 自定义名称 */
-  renderLabel?: ((item: RenderParamsType) => JSX.Element) | JSX.Element;
+  renderLabel?: ((item: RenderParamsType) => JSXElement) | JSXElement;
   /** 自定义内容 */
-  render?: ((item: RenderParamsType) => JSX.Element) | JSX.Element;
+  render?: ((item: RenderParamsType) => JSXElement) | JSXElement;
   /** 名称单元格属性 */
   labelConf?: CellConfigType;
   /** 内容单元格属性 */
@@ -170,10 +170,11 @@ export default defineComponent({
     table-layout: fixed;
     border-collapse: collapse;
     border: 1px solid #111;
+
     tr td {
+      overflow: hidden;
       vertical-align: middle;
       border: 1px solid #111;
-      overflow: hidden;
     }
   }
 
@@ -191,8 +192,9 @@ export default defineComponent({
     width: 79px;
     height: 79px;
     transition: none !important;
+
     &:nth-child(5n) {
-      margin-right: 0px;
+      margin-right: 0;
     }
   }
 

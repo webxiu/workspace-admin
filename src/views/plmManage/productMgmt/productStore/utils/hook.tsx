@@ -162,8 +162,12 @@ export const useConfig = (emits, isModal) => {
       prop: "functionalPerformanceCode",
       render: ({ formModel, row }) => {
         const functionOpts = [];
-        for (let i = 0; i < 9; i++) {
-          functionOpts.push({ optionName: `0${i + 1}`, optionValue: `0${i + 1}` });
+        for (let i = 0; i < 30; i++) {
+          if (i < 9) {
+            functionOpts.push({ optionName: `0${i + 1}`, optionValue: `0${i + 1}` });
+          } else {
+            functionOpts.push({ optionName: `${i + 1}`, optionValue: `${i + 1}` });
+          }
         }
         return (
           <el-select v-model={formModel[row.prop]} placeholder="请选择" style={{ width: "100%" }} filterable>
@@ -294,8 +298,12 @@ export const useConfig = (emits, isModal) => {
     searchOptions[4].children = appearanceStructureCodeArr.map((item) => ({ label: item.optionName, value: item.optionValue }));
 
     const functionOpts = [];
-    for (let i = 0; i < 9; i++) {
-      functionOpts.push({ optionName: `0${i + 1}`, optionValue: `0${i + 1}` });
+    for (let i = 0; i < 30; i++) {
+      if (i < 9) {
+        functionOpts.push({ optionName: `0${i + 1}`, optionValue: `0${i + 1}` });
+      } else {
+        functionOpts.push({ optionName: `${i + 1}`, optionValue: `${i + 1}` });
+      }
     }
     searchOptions[5].children = functionOpts.map((item) => ({ label: item.optionName, value: item.optionValue }));
   };
@@ -412,7 +420,7 @@ export const useConfig = (emits, isModal) => {
         if (res.status === 200 || res.data) {
           deleteFileIds.value = [];
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);

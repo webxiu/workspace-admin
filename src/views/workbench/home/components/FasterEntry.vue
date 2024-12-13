@@ -33,17 +33,17 @@ const onFastClick = (item: FastEntryItemType) => {
 }
 
 .link-item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
   padding: 6px;
+  overflow: hidden;
   cursor: pointer;
   background: var(--el-fill-color-light);
   border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
 }
 </style>

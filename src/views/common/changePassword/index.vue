@@ -59,7 +59,7 @@ export default defineComponent({
               const newpwd = md5(ruleForm.newpwd).substr(8, 16).toUpperCase();
               changePassword({ oldpwd, newpwd })
                 .then((res) => {
-                  message("密码修改成功", { type: "success" });
+                  message.success("密码修改成功");
                   useUserStoreHook().logOut();
                 })
                 .catch(console.log)

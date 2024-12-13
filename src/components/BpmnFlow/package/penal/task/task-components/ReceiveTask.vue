@@ -76,7 +76,7 @@ const openMessageModel = () => {
 };
 const createNewMessage = () => {
   if (messageMap[newMessageForm.id]) {
-    message("该消息已存在，请修改id后重新保存", { type: "error" });
+    message.error("该消息已存在，请修改id后重新保存");
     return;
   }
   const newMessage = window.bpmnInstances.moddle.create("bpmn:Message", newMessageForm);

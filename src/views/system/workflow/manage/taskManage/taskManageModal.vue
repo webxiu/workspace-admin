@@ -11,7 +11,6 @@ import { message, showMessageBox } from "@/utils/message";
 import { ref, PropType, h, computed, reactive } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { FlowTaskItemType } from "@/api/systemManage";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { TaskApprovalInfoItemType, getTaskApprovalInfo } from "@/api/systemManage";
 import EditForm, { FormConfigItemType, FormModelType } from "@/components/EditForm/index.vue";
 
@@ -102,9 +101,9 @@ const onAdd = () => {
   const personType = personFrom === "用户" ? "user" : "role";
 
   if (!["用户", "角色"].includes(personFrom)) {
-    return message("审批方式是用户或角色才能添加", { type: "error" });
+    return message.error("审批方式是用户或角色才能添加");
   } else if (!taskId) {
-    return message("请选择任务列表", { type: "error" });
+    return message.error("请选择任务列表");
   }
 
   addDialog({
@@ -126,10 +125,10 @@ const onAdd = () => {
             const selectIds = tableData.map((item) => item.id);
             const newList = FormRef.filter((item) => !selectIds.includes(item.id));
             dataListObj[newFormInline.value.personFrom] = [...tableData, ...newList];
-            message("添加成功");
+            message.success("添加成功");
             done();
           } else {
-            message("未选择" + personFrom, { type: "warning" });
+            message.warning("未选择" + personFrom);
           }
         })
         .catch(console.log);
@@ -150,7 +149,7 @@ const onDeleteAll = () => {
 // 执行删除
 const onDeleteUpdate = (rows: TaskApprovalInfoItemType[]) => {
   if (rows.length <= 0) {
-    return message("请选择删除" + props.formInline.personFrom, { type: "error" });
+    return message.error("请选择删除" + props.formInline.personFrom);
   }
   showMessageBox(`确认要删除吗?`)
     .then(() => {

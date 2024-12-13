@@ -98,26 +98,30 @@ function onDelete(item) {
 
 <style lang="scss" scoped>
 #signature {
+  box-sizing: border-box;
   width: 100%;
   border: 1px solid #ccc;
-  box-sizing: border-box;
 }
+
 .img-item {
   position: relative;
   margin-right: 8px;
+
   .item-header {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
     padding: 0 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: absolute;
     color: #777;
-    top: 0px;
     cursor: pointer;
-    z-index: 2;
+
     .close {
       color: #4775a3;
+
       &:hover {
         color: #409efc;
       }

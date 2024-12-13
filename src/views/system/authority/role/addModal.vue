@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { ref, PropType } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { DeptInfoItemType } from "@/api/systemManage";
 import { message } from "@/utils/message";
 import { setColumn } from "@/utils/table";
@@ -39,7 +38,7 @@ function getRef() {
 const onCurrentChange = (row: DeptInfoItemType) => {
   if (!row) return;
   if (!row.roleCode) {
-    return message("请选择到子部门", { type: "error" });
+    return message.error("请选择到子部门");
   }
   rowData.value = row;
 };

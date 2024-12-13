@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useTestProjectConfig } from "./utils/hook";
-import ButtonList from "@/components/ButtonList/index.vue";
 import ContextMenu from "./components/contextMenu.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 

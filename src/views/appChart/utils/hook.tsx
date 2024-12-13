@@ -1,13 +1,12 @@
 import { BorderImgType, NumberTitle, ScrollTable } from "../DataScreen/component";
-import type { NumTitleType } from "../DataScreen/component";
 import { computed, h, reactive, ref, watch } from "vue";
-import { useRoute } from "vue-router";
 
 import { GridItemType } from "../DataScreen/index";
-import { message } from "@/utils/message";
-import { v4 as uuidv4 } from "uuid";
-
+import type { NumTitleType } from "../DataScreen/component";
 import { fetchProjectMgmtAppChartData } from "@/api/plmManage";
+import { message } from "@/utils/message";
+import { useRoute } from "vue-router";
+import { v4 as uuidv4 } from "uuid";
 
 export const useConfig = () => {
   const route = useRoute();
@@ -91,7 +90,7 @@ export const useConfig = () => {
       fetchProjectMgmtAppChartData({}).then((res: any) => {
         const data = res.data;
         loading.value = false;
-        if (!data) return message("数据获取失败", { type: "error" });
+        if (!data) return message.error("数据获取失败");
         // 重置->数字动画
         totalObj1.value.number = 0;
         totalObj2.value.number = 0;

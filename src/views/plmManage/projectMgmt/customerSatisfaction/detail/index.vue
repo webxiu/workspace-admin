@@ -4,8 +4,8 @@
       <tr>
         <td class="head-col" width="60px">序号</td>
         <td class="slash">
-          <span style="position: absolute; left: 6px; bottom: 4px; z-index: 1; color: #666">调查内容</span>
-          <span style="position: absolute; right: 6px; top: 4px; z-index: 1; color: #666">满意程度</span>
+          <span style="position: absolute; bottom: 4px; left: 6px; z-index: 1; color: #666">调查内容</span>
+          <span style="position: absolute; top: 4px; right: 6px; z-index: 1; color: #666">满意程度</span>
         </td>
         <td class="head-col">非常满意<br />100分-90分</td>
         <td class="head-col">满意<br />90分-80分</td>
@@ -62,34 +62,35 @@ defineExpose({ scoreDataList, extraDataList });
 
 <style scoped lang="scss">
 .slash {
+  position: relative;
   width: 140px;
   height: 50px;
-  background-color: #000;
-  position: relative;
   padding: 0 !important;
+  background-color: #000;
 }
 
 .slash::before {
-  content: "";
+  position: absolute;
+  top: 0;
   display: block;
   width: 100%;
   height: 100%;
+  clip-path: polygon(0 0.5px, 0 100%, calc(100% - 0.5px) calc(100% + 0.5px));
+  content: "";
   background-color: #fff;
-  clip-path: polygon(0px 0.5px, 0px 100%, calc(100% - 0.5px) calc(100% + 0.5px));
-  position: absolute;
-  top: 0;
 }
 
 .slash::after {
-  content: "";
+  position: absolute;
+  top: 0;
   display: block;
   width: 100%;
   height: 100%;
+  clip-path: polygon(100% calc(100% - 0.5px), 100% 0, 0 -0.5px);
+  content: "";
   background-color: #fff;
-  clip-path: polygon(100% calc(100% - 0.5px), 100% 0px, 0px -0.5px);
-  position: absolute;
-  top: 0;
 }
+
 .trial-detail {
   table {
     width: 100%;
@@ -99,8 +100,8 @@ defineExpose({ scoreDataList, extraDataList });
     }
 
     .line-txt {
-      font-weight: 700;
       padding: 6px;
+      font-weight: 700;
     }
 
     .head-col {
@@ -113,8 +114,8 @@ defineExpose({ scoreDataList, extraDataList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useTestReportConfig } from "./utils/hook";
-import { PureTableBar } from "@/components/RePureTableBar";
 import Modal from "@/views/supplyChainMange/orders/modal.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "BusinessCenterControlledFileIndex" });

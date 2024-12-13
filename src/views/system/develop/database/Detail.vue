@@ -16,7 +16,7 @@ const formData = ref({});
 onMounted(() => getDetail());
 
 const getDetail = () => {
-  if (!props.id) return message("查询id不存在", { type: "error" });
+  if (!props.id) return message.error("查询id不存在");
   loading.value = true;
   dbMaintenanceList({ page: 1, limit: 100000, id: props.id })
     .then(({ data }) => {

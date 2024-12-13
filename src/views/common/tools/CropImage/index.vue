@@ -85,7 +85,7 @@ function onError() {
 
 const getCroppedImage = () => {
   const cropCanvas = cropper.value?.getCroppedCanvas();
-  if (!cropCanvas) return message("图片裁剪失败", { type: "error" });
+  if (!cropCanvas) return message.error("图片裁剪失败");
   cropCanvas?.toBlob((blob) => {
     resultUrl.value = URL.createObjectURL(blob);
     console.log("imageUrl.value", imageUrl.value);
@@ -96,19 +96,21 @@ const getCroppedImage = () => {
 <style lang="scss" scoped>
 .cropper-container {
   display: flex;
+
   .cropper-image {
+    position: relative;
     display: flex;
     flex: 1;
-    overflow: hidden;
-    position: relative;
     max-width: 600px; /* 设置最大宽度 */
+    overflow: hidden;
+
     .cropper-footer {
       position: absolute;
-      left: 0;
       bottom: 4%;
-      width: 100%;
+      left: 0;
       display: flex;
       justify-content: center;
+      width: 100%;
     }
   }
 }

@@ -91,7 +91,6 @@ import { Search } from "@element-plus/icons-vue";
 
 import { getSizeByBit, TSToDate } from "@/utils/getFileSize";
 import { useTable } from "./config";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { IconMap } from "./fileIconMap";
 import { fetchFileRootDirs, fetchFileTableData, searchFileTableData } from "@/api/fileManage";
 
@@ -306,8 +305,7 @@ onMounted(() => {
   width: 35vw;
   height: 34px;
   padding: 0 10px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto hidden;
   font-size: 13px;
   line-height: 34px;
   color: #a8abb2;

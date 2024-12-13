@@ -42,7 +42,6 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import { useUserTable } from "./config";
-import { PureTableBar } from "@/components/RePureTableBar";
 
 const props = defineProps(["setA", "curBuildingsId"]);
 const { columns, dataList, loading, onSearch, rowClick, selectMultipeChange, handleTagSearch, searchOptions, modalTableRef } = useUserTable(props);

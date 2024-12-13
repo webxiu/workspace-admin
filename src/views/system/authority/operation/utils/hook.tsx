@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-21 14:55:07
+ * @Last Modified time: 2024-12-02 17:48:34
  */
 
 import { Delete, Plus } from "@element-plus/icons-vue";
@@ -120,9 +120,9 @@ export const useConfig = () => {
   const onAdd2 = () => {
     const row = rowData.value;
     if (!row) {
-      return message("请先选择要操作的菜单", { type: "error" });
+      return message.error("请选择要操作的菜单");
     } else if (row.menuType === "目录") {
-      return message("目录不能更新角色权限，请选择菜单或者按钮", { type: "error" });
+      return message.error("目录不能更新角色权限，请选择菜单或者按钮");
     }
     openDialog2();
   };
@@ -137,11 +137,11 @@ export const useConfig = () => {
     const rows = rowsData2.value;
     const row = rowData.value;
     if (!row) {
-      return message("请先选择要操作的菜单", { type: "error" });
+      return message.error("请选择要操作的菜单");
     } else if (row.menuType === "目录") {
-      return message("目录不能更新角色权限，请选择菜单或者按钮", { type: "error" });
+      return message.error("目录不能更新角色权限，请选择菜单或者按钮");
     } else if (!rows.length) {
-      return message("请选择角色", { type: "error" });
+      return message.error("请选择角色");
     }
 
     showMessageBox(`确认要删除吗?`).then(() => onDeleteAlls(rows));
@@ -169,7 +169,7 @@ export const useConfig = () => {
     };
     optAuthRoleDelete(params)
       .then((res) => {
-        res.data && message("删除成功");
+        res.data && message.success("删除成功");
         getRoleList(rowData.value);
       })
       .catch(console.log);
@@ -227,7 +227,7 @@ export const useConfig = () => {
       beforeSure: (done, { options }) => {
         const roleIds = modalRef.value.getRef();
         if (!roleIds.length) {
-          return message("未选择角色或角色ID不存在", { type: "error" });
+          return message.error("未选择角色或角色ID不存在");
         }
         let btnIdList: number[] = [];
         let menuIdList = getAllParentIDs(originData.value, [rowData.value.itemId]);
@@ -253,7 +253,7 @@ export const useConfig = () => {
               if (res.data) {
                 done();
                 getRoleList(rowData.value);
-                message("添加成功");
+                message.success("添加成功");
               }
             })
             .catch(console.log);

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 import { PAGE_CONFIG } from "@/config/constant";

@@ -35,7 +35,6 @@
 </template>
 <script setup lang="ts">
 import { useTable } from "./config";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "FileManageQhUserIndex" });
@@ -52,8 +51,7 @@ const { loading, columns, dataList, qhUserRef, maxHeight, buttonList, rowClick, 
   width: 35vw;
   height: 39px;
   padding: 0 10px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto hidden;
   line-height: 39px;
   color: #a8abb2;
   border: 1px solid #dcdfe6;

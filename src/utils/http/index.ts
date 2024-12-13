@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-13 10:10:59
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-13 15:34:48
+ * @Last Modified time: 2024-12-13 16:06:46
  */
 
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken, CustomParamsSerializer } from "axios";
@@ -85,7 +85,7 @@ class PureHttp {
           PureHttp.initConfig.beforeRequestCallback(config);
           return config;
         }
-        const hasAuth = whiteList.some((v) => config.url.indexOf(v) > -1);
+        const hasAuth = whiteList.some((v) => config.url?.indexOf(v) > -1);
         return hasAuth ? config : new Promise((resolve) => resolve(config));
       },
       (error) => Promise.reject(error)
@@ -121,11 +121,11 @@ class PureHttp {
 
         if (STATUS_CODE.includes(data.status)) {
           useUserStoreHook().logOut();
-          message(data.message, { type: "error" });
+          message.error(data.message);
         } else if (data.status === 403) {
-          message("请求未授权", { type: "error" });
+          message.error("请求未授权");
         } else {
-          message(data.message || "服务器错误, 错误代码:" + data.status, { type: "error" });
+          message.error(data.message || "服务器错误, 错误代码:" + data.status);
         }
         return Promise.reject(data);
         // ================ 状态码判断 end ================
@@ -138,11 +138,11 @@ class PureHttp {
         const status = error.response?.status as any;
 
         if (!data) {
-          message(error.message, { type: "error" });
+          message.error(error.message);
         } else if (STATUS_CODE.includes(data.status)) {
-          message(data.error, { type: "error" });
+          message.error(data.error);
         } else if (STATUS_CODE.includes(status)) {
-          message(data.error || error.message, { type: "error" });
+          message.error(data.error || error.message);
         }
 
         if (error?.isCancelRequest) {

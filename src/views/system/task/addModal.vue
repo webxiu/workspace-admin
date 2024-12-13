@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { DeptInfoItemType } from "@/api/systemManage";
 import { getDeptTreeData, getRoleInfoList, getDeptUserList, RoleInfoItemType, DeptUserItemType } from "@/api/systemManage";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";

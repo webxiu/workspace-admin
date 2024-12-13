@@ -44,7 +44,7 @@
         <td class="head-col"><el-checkbox v-model="_formData.checked1" label=" " /></td>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">7</div>
+            <div style="width: 20px; margin-right: 8px">7</div>
             <el-input v-model="_formData.checkInput7" />
           </div>
         </td>
@@ -55,7 +55,7 @@
         <td class="head-col"><el-checkbox v-model="_formData.checked2" label=" " /></td>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">8</div>
+            <div style="width: 20px; margin-right: 8px">8</div>
             <el-input v-model="_formData.checkInput8" />
           </div>
         </td>
@@ -64,14 +64,14 @@
       <tr>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">3</div>
+            <div style="width: 20px; margin-right: 8px">3</div>
             <el-input v-model="_formData.checkInput3" />
           </div>
         </td>
         <td class="head-col"><el-checkbox v-model="_formData.checked3" label=" " /></td>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">9</div>
+            <div style="width: 20px; margin-right: 8px">9</div>
             <el-input v-model="_formData.checkInput9" />
           </div>
         </td>
@@ -80,14 +80,14 @@
       <tr>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">4</div>
+            <div style="width: 20px; margin-right: 8px">4</div>
             <el-input v-model="_formData.checkInput4" />
           </div>
         </td>
         <td class="head-col"><el-checkbox v-model="_formData.checked4" label=" " /></td>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">10</div>
+            <div style="width: 20px; margin-right: 8px">10</div>
             <el-input v-model="_formData.checkInput10" />
           </div>
         </td>
@@ -96,14 +96,14 @@
       <tr>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">5</div>
+            <div style="width: 20px; margin-right: 8px">5</div>
             <el-input v-model="_formData.checkInput5" />
           </div>
         </td>
         <td class="head-col"><el-checkbox v-model="_formData.checked5" label=" " /></td>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">11</div>
+            <div style="width: 20px; margin-right: 8px">11</div>
             <el-input v-model="_formData.checkInput11" />
           </div>
         </td>
@@ -112,14 +112,14 @@
       <tr>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">6</div>
+            <div style="width: 20px; margin-right: 8px">6</div>
             <el-input v-model="_formData.checkInput6" />
           </div>
         </td>
         <td class="head-col"><el-checkbox v-model="_formData.checked6" label=" " /></td>
         <td class="head-col" colspan="3">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">12</div>
+            <div style="width: 20px; margin-right: 8px">12</div>
             <el-input v-model="_formData.checkInput12" />
           </div>
         </td>
@@ -204,7 +204,7 @@
         <td class="head-col"><el-checkbox v-model="_formData.fileChecked4" label=" " /></td>
         <td class="head-col" colspan="3" style="text-align: left">
           <div style="display: flex; align-items: center">
-            <div style="margin-right: 8px; width: 20px">8</div>
+            <div style="width: 20px; margin-right: 8px">8</div>
             <el-input v-model="_formData.fileCheckInput8" />
           </div>
         </td>
@@ -218,7 +218,6 @@
 import dayjs from "dayjs";
 import { reactive } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 const _formData = reactive({
   productModel: "",
@@ -305,9 +304,9 @@ defineExpose({ _formData });
     }
 
     .head-col {
+      color: #000;
       // font-weight: 600;
       text-align: center;
-      color: #000;
     }
 
     .bold {
@@ -315,9 +314,9 @@ defineExpose({ _formData });
     }
 
     td {
-      border: 1px solid #000;
       // text-align: center;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

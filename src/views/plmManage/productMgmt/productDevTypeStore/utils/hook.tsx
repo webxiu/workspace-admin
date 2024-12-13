@@ -206,7 +206,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -257,7 +257,7 @@ export const useConfig = () => {
     console.log(sendAfterSortList, "sendAfterSortList==");
     saveFetchRightValueInfo(sendAfterSortList).then((res) => {
       if (res.data) {
-        message("保存成功", { type: "success" });
+        message.success("保存成功");
         leftRowDbClick(currentLeftRow.value);
         delRows.value = [];
       }

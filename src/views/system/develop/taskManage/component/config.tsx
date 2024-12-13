@@ -166,10 +166,10 @@ export const formConfigs = (options: FormConfigType): FormConfigItemType[] => {
           formModel[row.prop] = files;
           // const ext = rawFile.type?.split("/")[1];
           // if (!accept.includes(`.${ext}`)) {
-          //   return message("文件格式不正确!", { type: "error" });
+          //   return message.error("文件格式不正确!")
           // }
           // if (rawFile.size / 1024 / 1024 > maxSize) {
-          //   return message(`文件大小不能超过${maxSize}MB！`, { type: "warning" });
+          //   return message.warning(`文件大小不能超过${maxSize}MB！`)
           // }
           onUploadChange(files);
         };

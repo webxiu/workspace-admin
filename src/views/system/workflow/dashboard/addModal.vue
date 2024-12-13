@@ -6,7 +6,6 @@
  */ -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { ref, onMounted, reactive } from "vue";
 import { getDeptTreeData, DetartMenttemType, DeptUserItemType, getDeptUserList, queryUserDeptList } from "@/api/systemManage";
 import { setColumn } from "@/utils/table";

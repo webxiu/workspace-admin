@@ -215,10 +215,10 @@ export const useConfig = () => {
         supplierCode: userCode
       }).then((res) => {
         if (res.data) {
-          message("对账单提交成功");
+          message.success("对账单提交成功");
           getTableList(row);
         } else {
-          message("对账单提交失败", { type: "error" });
+          message.error("对账单提交失败");
         }
       });
     });
@@ -239,10 +239,10 @@ export const useConfig = () => {
         supplierCode: userCode
       }).then((res) => {
         if (res.data) {
-          message("发票提交成功");
+          message.success("发票提交成功");
           getTableList(row);
         } else {
-          message("发票提交失败", { type: "error" });
+          message.error("发票提交失败");
         }
       });
     });
@@ -251,7 +251,7 @@ export const useConfig = () => {
   // 校验文件
   const verifyFile = (rawFile: File) => {
     if (!["application/pdf"].includes(rawFile.type)) {
-      message("文件必须为pdf格式!", { type: "warning" });
+      message.warning("文件必须为pdf格式!");
       return false;
     }
     return true;
@@ -271,10 +271,10 @@ export const useConfig = () => {
       .then((res) => {
         loadingStatus.value = { text, loading: false };
         if (res.data) {
-          message("上传成功");
+          message.success("上传成功");
           getTableList(row);
         } else {
-          message("上传失败", { type: "error" });
+          message.error("上传失败");
         }
       })
       .catch(() => {
@@ -304,10 +304,10 @@ export const useConfig = () => {
           .then((res) => {
             loadingStatus.value = { text, loading: false };
             if (res.data) {
-              message("上传发票成功");
+              message.success("上传发票成功");
               getTableList(row);
             } else {
-              message("上传发票失败, 请检查是否有对账单未审批完成", { type: "error" });
+              message.error("上传发票失败, 请检查是否有对账单未审批完成");
             }
           })
           .catch(() => {
@@ -322,7 +322,7 @@ export const useConfig = () => {
   const onDownloadStatement = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     const filePath = row.statementOAVO?.filePath;
-    if (!filePath) return message("没有可下载的单据", { type: "error" });
+    if (!filePath) return message.error("没有可下载的单据");
     downloadStatement({ fbillNo: row.fbillno })
       .then((res: any) => {
         const fileName = filePath.slice(filePath.lastIndexOf("/") + 1);
@@ -335,7 +335,7 @@ export const useConfig = () => {
   const onPreviewStatement = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     const filePath = row.statementOAVO?.filePath;
-    if (!filePath) return message("没有可预览的单据", { type: "error" });
+    if (!filePath) return message.error("没有可预览的单据");
     window.open(getkkViewUrl(filePath));
   });
 
@@ -359,7 +359,7 @@ export const useConfig = () => {
   // 导出
   const onExport = wrapFn(rowData, () => {
     exportStatement({ billNo: rowData.value.fbillno }).then(({ data }) => {
-      if (!data) return message("导出失败", { type: "error" });
+      if (!data) return message.error("导出失败");
       const fileName = getFileNameOnUrlPath(data);
       downloadFile(data, fileName, true);
     });
@@ -410,7 +410,7 @@ export const useConfig = () => {
     const { statementOAVO } = rowData.value;
     const { billNo, billState } = statementOAVO || {};
     if (!billNo || ![StateInfo.audit, StateInfo.audited].includes(billState)) {
-      return message("只有审核中和已审核的单据才能进行回退", { type: "warning" });
+      return message.warning("只有审核中和已审核的单据才能进行回退");
     }
     commonBackLogic(billNo, getTableList);
   });
@@ -419,7 +419,7 @@ export const useConfig = () => {
     const { statementInvoiceOAVO } = rowData.value;
     const { billNo, billState } = statementInvoiceOAVO || {};
     if (!billNo || ![StateInfo.audit, StateInfo.audited].includes(billState)) {
-      return message("只有审核中和已审核的单据才能进行回退", { type: "warning" });
+      return message.warning("只有审核中和已审核的单据才能进行回退");
     }
     commonBackLogic(billNo, getTableList);
   });

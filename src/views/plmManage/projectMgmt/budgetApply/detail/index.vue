@@ -144,7 +144,6 @@
 <script setup lang="tsx">
 import { reactive, ref } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 const singleDataList = ref([
   { content: "裸机材料成本", deptName: "采购部", money: "", recognizeStr: "" },
@@ -197,8 +196,8 @@ defineExpose({ formData, singleDataList, devFeeDataList, extraDevFeeDataList });
     }
 
     .line-txt {
-      font-weight: 700;
       padding: 6px;
+      font-weight: 700;
     }
 
     .head-col {
@@ -211,8 +210,8 @@ defineExpose({ formData, singleDataList, devFeeDataList, extraDevFeeDataList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

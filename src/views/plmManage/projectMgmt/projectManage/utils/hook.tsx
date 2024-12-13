@@ -451,7 +451,7 @@ export const useConfig = () => {
 
     if (copyData.projectModelRelatePersonnel.length) {
       const validRelate = copyData.projectModelRelatePersonnel.some((item) => !item.userInfoVOList.length);
-      if (validRelate) return message("请填写相关人员", { type: "error" });
+      if (validRelate) return message.error("请填写相关人员");
     }
 
     saveProjectMgmtList(type === "add" ? copyData : copyEditData)
@@ -487,7 +487,7 @@ export const useConfig = () => {
   const onDelete = () => {
     if (JSON.stringify(currentLeftRow.value) !== "{}") {
       const row = currentLeftRow.value;
-      if (![0, 3].includes(row.billState)) return message("只能删除【待提交/重新审核】的记录", { type: "error" });
+      if (![0, 3].includes(row.billState)) return message.error("只能删除【待提交/重新审核】的记录");
       ElMessageBox.confirm(`确认要删除名称为【${row.projectName}】的项目吗?`, "系统提示", {
         type: "warning",
         draggable: true,
@@ -541,7 +541,7 @@ export const useConfig = () => {
   const onStart = () => {
     if (JSON.stringify(currentLeftRow.value) !== "{}") {
       console.log(currentLeftRow.value.projectState, "ps");
-      if ([5, 11].includes(currentLeftRow.value?.projectState)) return message("启动失败，项目已终止", { type: "error" });
+      if ([5, 11].includes(currentLeftRow.value?.projectState)) return message.error("启动失败，项目已终止");
       const row = currentLeftRow.value;
       ElMessageBox.confirm(`确认要启动名称为【${row.projectName}】的项目吗?`, "系统提示", {
         type: "warning",
@@ -569,7 +569,7 @@ export const useConfig = () => {
   const onBackAction = () => {
     if (JSON.stringify(currentLeftRow.value) !== "{}") {
       const curRowBillState = currentLeftRow.value?.billState;
-      if (![1, 2].includes(curRowBillState)) return message("当前单据不能回退", { type: "error" });
+      if (![1, 2].includes(curRowBillState)) return message.error("当前单据不能回退");
       const row = currentLeftRow.value;
       ElMessageBox.confirm(`确认要回退名称为【${row.projectName}】的项目吗?`, "系统提示", {
         type: "warning",
@@ -701,7 +701,7 @@ export const useConfig = () => {
         .then(() => {
           stopProjectInfo({ billNo: currentLeftRow.value?.billNo }).then((res) => {
             if (res.status === 200 || res.data) {
-              message("暂停成功", { type: "success" });
+              message.success("暂停成功");
               onSearch();
             }
           });
@@ -728,7 +728,7 @@ export const useConfig = () => {
         .then(() => {
           finishedProjectInfo({ billNo: currentLeftRow.value?.billNo }).then((res) => {
             if (res.status === 200 || res.data) {
-              message("终止成功", { type: "success" });
+              message.success("终止成功");
               onSearch();
             }
           });
@@ -755,7 +755,7 @@ export const useConfig = () => {
       .then(() => {
         restoreProjectInfo({ billNo: currentLeftRow.value?.billNo }).then((res) => {
           if (res.status === 200 || res.data) {
-            message("恢复成功", { type: "success" });
+            message.success("恢复成功");
             onSearch();
           }
         });

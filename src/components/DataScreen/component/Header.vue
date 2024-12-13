@@ -56,7 +56,7 @@ const buttonsConfig = reactive<ButtonOptionType[]>([
 
 const bigTitle = computed(() => {
   if (!route.query.menuName) {
-    message("参数错误", { type: "error" });
+    message.error("参数错误");
   }
   return route.query.menuName;
 });

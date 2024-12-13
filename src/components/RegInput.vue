@@ -21,7 +21,7 @@ function onBlur(e) {
   let value = numValue.value;
   if (value && regex && !regex.test(value)) {
     value = props.modelValue;
-    message(props.error || "输入格式不正确", { type: "error" });
+    message.error(props.error || "输入格式不正确");
   } else {
     if (props.isNumber) {
       value = Number.isNaN(+value) ? props.modelValue : +value;

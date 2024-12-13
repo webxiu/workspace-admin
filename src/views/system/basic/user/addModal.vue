@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { DeptInfoItemType, getRoleInfoList } from "@/api/systemManage";
 import { setColumn } from "@/utils/table";
 import { reactive } from "vue";

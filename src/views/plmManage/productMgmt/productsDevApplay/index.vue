@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import { onMounted, ref } from "vue";
 import { fetchProductTemplateList, fetchProductsDevApplayTemplateList, getBOMTableRowSelectOptions, getBillStateNameList } from "@/api/plmManage";
@@ -90,7 +89,7 @@ onMounted(() => {
             <el-form :model="formData" label-position="left" :rules="rules" ref="formRef">
               <el-form-item label="选择模板" required prop="selectedTemplate">
                 <el-cascader
-                style="width: 100%;"
+                  style="width: 100%"
                   v-model="formData.selectedTemplate"
                   :options="templateOpts"
                   :props="{

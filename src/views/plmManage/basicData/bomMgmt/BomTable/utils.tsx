@@ -241,7 +241,7 @@ export function useConfig(emits) {
         true
       );
     } else {
-      message("请选择一条记录", { type: "warning" });
+      message.warning("请选择一条记录");
     }
   };
   const onDelete = () => {
@@ -259,7 +259,7 @@ export function useConfig(emits) {
         })
         .catch(() => {});
     } else {
-      message("请选择一条记录", { type: "warning" });
+      message.warning("请选择一条记录");
     }
   };
   // 导入
@@ -275,7 +275,7 @@ export function useConfig(emits) {
     if (files.length <= 0) {
       return false;
     } else if (!/\.(xls|xlsx)$/.test(files[0].name.toLowerCase())) {
-      message("上传格式不正确，请上传xls或者xlsx格式", { type: "warning" });
+      message.warning("上传格式不正确，请上传xls或者xlsx格式");
       return false;
     } else {
       // 更新获取文件名
@@ -440,7 +440,7 @@ export function useConfig(emits) {
             });
           done();
         } else {
-          message("至少选择一条记录", { type: "warning" });
+          message.warning("至少选择一条记录");
         }
       }
     });
@@ -449,8 +449,8 @@ export function useConfig(emits) {
   // 行上下移动
   const onRowMove = (type) => {
     const row = rowData.value;
-    if (dataList.value.length < 1) return message("没有可移动的行", { type: "warning" });
-    if (!row) return message("请选择行", { type: "warning" });
+    if (dataList.value.length < 1) return message.warning("没有可移动的行");
+    if (!row) return message.warning("请选择行");
     moveTableRow(dataList, row, "sequence", type, ({ newArr }) => {
       dataList.value = newArr;
       emits("loadData", { formData, tableData: newArr, type: "add" });

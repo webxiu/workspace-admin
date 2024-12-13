@@ -89,7 +89,6 @@ import { reactive } from "vue";
 import { useUserStore } from "@/store/modules/user";
 import dayjs from "dayjs";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 defineProps(["projectStageOpts"]);
 
@@ -139,8 +138,8 @@ defineExpose({ formData });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

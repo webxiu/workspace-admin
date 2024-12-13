@@ -176,7 +176,7 @@ export function useConfig() {
     showMessageBox(`确认要删除【${data.title}】分组吗?`).then(() => {
       deleteDepGroup({ id: data.id })
         .then((res) => {
-          message(`删除成功`, { type: "success" });
+          message.success(`删除成功`);
           getGroupList();
         })
         .catch(console.log);
@@ -268,7 +268,7 @@ export function useConfig() {
       .then((res) => {
         if (!res.data) throw res.message;
         callback();
-        message(`${title}成功`, { type: "success" });
+        message.success(`${title}成功`);
       })
       .catch(console.log);
   };
@@ -339,7 +339,7 @@ export function useConfig() {
                 .then((res) => {
                   done();
                   onSearch();
-                  message("修改成功", { type: "success" });
+                  message.success("修改成功");
                 })
                 .catch(console.log);
             });

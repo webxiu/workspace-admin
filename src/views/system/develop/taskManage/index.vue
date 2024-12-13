@@ -6,10 +6,8 @@
  */ -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import { Search } from "@element-plus/icons-vue";
-import ButtonList from "@/components/ButtonList/index.vue";
 import LogTimeLine from "./component/LogTimeLine.vue";
 
 defineOptions({ name: "SystemDevelopParamTaskManageIndex" });

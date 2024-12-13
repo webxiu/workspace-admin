@@ -186,7 +186,7 @@ export const useFlow = (props, cbs?) => {
       console.log(toRow, "结束行===");
 
       if (fromRow.groupId !== toRow.groupId) {
-        message("不能跨分组进行移动", { type: "error" });
+        message.error("不能跨分组进行移动");
         setTimeout(() => {
           dataList.value = [];
           props.fetchDetailFormData();
@@ -464,18 +464,18 @@ export const useFlow = (props, cbs?) => {
         .map((item) => item.deliverableName)
         .filter(Boolean);
       if (zeroDeliverNames.length) {
-        return message(`交付物【${String(zeroDeliverNames)}】的模版不能为空`, { type: "error" });
+        return message.error(`交付物【${String(zeroDeliverNames)}】的模版不能为空`);
       }
     }
     console.log(reqParams, "reqParams=========");
 
-    if (!reqParams.taskDeliverables?.length) return message("还未添加交付物", { type: "error" });
+    if (!reqParams.taskDeliverables?.length) return message.error("还未添加交付物");
 
     const nameMsg = reqParams.taskDeliverables.some((item) => !item.deliverableName);
-    if (nameMsg) return message("请填写交付物名称", { type: "error" });
+    if (nameMsg) return message.error("请填写交付物名称");
 
     const deliverableMsg = reqParams.taskDeliverables.some((item) => !item.deliverableId);
-    if (deliverableMsg) return message("请选择交付物模版", { type: "error" });
+    if (deliverableMsg) return message.error("请选择交付物模版");
 
     APIs[type](reqParams).then((res) => {
       if (res.status === 200) {
@@ -555,9 +555,9 @@ export const useFlow = (props, cbs?) => {
 
   const handleAdd = () => {
     if (!props.isCurrentProjectUser) {
-      return message("只有当前项目负责人才能操作任务", { type: "warning" });
+      return message.warning("只有当前项目负责人才能操作任务");
     }
-    if (JSON.stringify(currentTreeRow.value) == "{}") return message("请选择新增分组还是任务", { type: "warning" });
+    if (JSON.stringify(currentTreeRow.value) == "{}") return message.warning("请选择新增分组还是任务");
     if (currentTreeRow.value?.taskVOList) {
       maxGroupIndex.value = props.detailPageInfo?.projectTaskGroupVoList.map((item) => item.projectGroup).length;
       // return;
@@ -611,7 +611,7 @@ export const useFlow = (props, cbs?) => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能上传交付物", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能上传交付物");
     }
 
     switch (row.deliverableTemplateId) {
@@ -722,6 +722,42 @@ export const useFlow = (props, cbs?) => {
       case "39":
         // 样品制作计划与清单
         cbs.sampleMakePlanAndListSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "40":
+        // DR1功能样机/客户样机签收单
+        cbs.sampleModelSignListSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "41":
+        // 产品3D结构确认表
+        cbs.productThreeDConfirmSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "42":
+        // 工程BOM
+        cbs.projectBomSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "43":
+        // 手板点检表
+        cbs.handBoardCheckSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "44":
+        // PCBA 板加工及检测要求
+        cbs.pcbaProcessReqSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "45":
+        // 尺寸测量报告
+        cbs.sizeTestReportSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "46":
+        // 订单/样单/试产单
+        cbs.saleAndSampleOrder(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "47":
+        // 样机制作验证自检表
+        cbs.sampleMakeSelfCheckSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "48":
+        // 模具验收报告
+        cbs.moldCheckReport(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
         return;
       default:
         break;
@@ -840,7 +876,7 @@ export const useFlow = (props, cbs?) => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const calcTaskName = fetchDetailFormData?.projectTaskGroupVoList
@@ -966,7 +1002,16 @@ export const useFlow = (props, cbs?) => {
         "36",
         "37",
         "38",
-        "39"
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "48"
       ].includes(item.deliverableTemplateId)
     ) {
       // 手板制作模版、产品设计输入表
@@ -993,7 +1038,7 @@ export const useFlow = (props, cbs?) => {
 
   const handleEdit = () => {
     if (!props.isCurrentProjectUser) {
-      return message("只有当前项目负责人才能操作任务", { type: "warning" });
+      return message.warning("只有当前项目负责人才能操作任务");
     }
     console.log(currentTreeRow.value, "currentTreeRow.value");
     if (JSON.stringify(currentTreeRow.value) == "{}") {
@@ -1030,7 +1075,7 @@ export const useFlow = (props, cbs?) => {
 
         deleteProjectTask(delIds).then((res) => {
           if (res.status === 200 || res.data) {
-            message("删除成功", { type: "success" });
+            message.success("删除成功");
             props.fetchDetailFormData();
           }
         });
@@ -1040,7 +1085,7 @@ export const useFlow = (props, cbs?) => {
 
   const handleDel = () => {
     if (!props.isCurrentProjectUser) {
-      return message("只有当前项目负责人才能操作任务", { type: "warning" });
+      return message.warning("只有当前项目负责人才能操作任务");
     }
     if (selectDelRows.value.length) {
       return delManyTask();
@@ -1114,7 +1159,7 @@ export const useFlow = (props, cbs?) => {
     const rowUserId = currentTreeRow.value.projectTaskResponsiblePersonnelVOList[0]?.userId;
     const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
     if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) {
-      return message("不是当前负责人，不能提交交付物", { type: "error" });
+      return message.error("不是当前负责人，不能提交交付物");
     }
     if ([0, 3].includes(item.generalTemplateVO?.billState)) {
       ElMessageBox.confirm(`确认要提交名称为【${item.deliverableName}】的交付物吗?`, "系统提示", {
@@ -1171,7 +1216,7 @@ export const useFlow = (props, cbs?) => {
     const curUserDeptId = useUserStoreHook().userInfo.deptId;
     const rowUserId = currentTreeRow.value.projectTaskResponsiblePersonnelVOList[0]?.userId;
     const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-    if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能撤销交付物", { type: "error" });
+    if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能撤销交付物");
     if (item.generalTemplateVO?.billState === 1) {
       ElMessageBox.confirm(`确认要撤销名称为【${item.deliverableName}】的交付物吗?`, "系统提示", {
         type: "warning",
@@ -1247,7 +1292,7 @@ export const useFlow = (props, cbs?) => {
     const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
     if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) {
       // commonDeliverChangeAction({ row, type: "view", freshDeliverableNow: true, disabledSomeCtrl: true });
-      return message("不是当前负责人，不能进行变更", { type: "error" });
+      return message.error("不是当前负责人，不能进行变更");
     } else {
       commonDeliverChangeAction({ row, type: "add", freshDeliverableNow: true, disabledSomeCtrl: true, fromTaskList: true }, () => {
         refresh(null, () => {

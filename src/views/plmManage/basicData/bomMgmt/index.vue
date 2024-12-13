@@ -73,7 +73,6 @@
 import { reactive, ref } from "vue";
 import dayjs from "dayjs";
 import { useTable } from "./config";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import ButtonList, { LoadingType } from "@/components/ButtonList/index.vue";
 import ContextMenu from "./components/bomGroup/contextMenu.vue";

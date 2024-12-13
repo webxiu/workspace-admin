@@ -113,15 +113,15 @@ export const useMachine = () => {
   };
 
   const onSubmit = () => {
-    if (!currentRow.value) return message("请选择一条记录", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择一条记录");
     if (![0, 3].includes(currentRow.value.billState)) {
-      return message("当前状态不能进行提交", { type: "error" });
+      return message.error("当前状态不能进行提交");
     }
     showMessageBox(`确认要提交项目名称为【${currentRow.value.projectName}】的变更吗?`)
       .then(() => {
         submitProjectTaskDeliversChange({ billId: "10054", billNo: currentRow.value.billNo }).then((res) => {
           if (res.data || res.status === 200) {
-            message("提交成功");
+            message.success("提交成功");
             onSearch();
           }
         });
@@ -130,7 +130,7 @@ export const useMachine = () => {
   };
 
   const onViewDetail = () => {
-    if (!currentRow.value) return message("请选择一条记录", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择一条记录");
     addDialog({
       title: "查看审批节点详情",
       width: "900px",
@@ -144,14 +144,14 @@ export const useMachine = () => {
   };
 
   const onDelete = () => {
-    if (!currentRow.value) return message("请选择一条记录", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择一条记录");
 
     if (![1, 2].includes(currentRow.value.billState)) {
       showMessageBox(`确认要删除项目名称为【${currentRow.value.projectName}】的变更吗?`)
         .then(() => {
           deleteDeliveralbeChangeInfo({ id: currentRow.value.id }).then((res) => {
             if (res.status === 200 || res.data) {
-              message("删除成功", { type: "success" });
+              message.success("删除成功");
               currentRow.value = null;
               onSearch();
             }
@@ -159,24 +159,24 @@ export const useMachine = () => {
         })
         .catch(console.log);
     } else {
-      message("当前状态不能进行删除", { type: "error" });
+      message.error("当前状态不能进行删除");
     }
   };
   const onRevoke = () => {
-    if (!currentRow.value) return message("请选择一条记录", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择一条记录");
     if (currentRow.value.billState == 1) {
       showMessageBox(`确认要撤销项目名称为【${currentRow.value.projectName}】的变更吗?`)
         .then(() => {
           revokeProjectTaskDeliverableInfo({ billNo: currentRow.value.billNo }).then((res) => {
             if (res.status === 200 || res.data) {
-              message("撤销成功", { type: "success" });
+              message.success("撤销成功");
               onSearch();
             }
           });
         })
         .catch(console.log);
     } else {
-      message("只有审核中才能进行撤销", { type: "error" });
+      message.error("只有审核中才能进行撤销");
     }
   };
 

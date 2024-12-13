@@ -69,6 +69,7 @@ const { route, routeLink, onFavorite, getChildItem } = useConfig();
     background: linear-gradient(to right, #ff9751, #f0f) no-repeat right bottom;
     background-size: 0 2px;
     transition: background-size 0.4s;
+
     &:hover {
       background-position: left bottom;
       background-size: 100% 2px;

@@ -132,7 +132,7 @@ export const useConfig = () => {
   const onEdit = wrapFn(rowData, () => {
     const row: DbMaintenanceItemType = rowData.value;
     if (![BillState.submit, BillState.reject].includes(row.billState)) {
-      return message("只能修改【待提交/重新审核】的记录", { type: "error" });
+      return message.error("只能修改【待提交/重新审核】的记录");
     }
     openDialog("edit", row);
   });
@@ -200,7 +200,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -209,16 +209,16 @@ export const useConfig = () => {
   const onSubmit = wrapFn(rowData, () => {
     const { billState, id } = rowData.value;
     if (![BillState.submit, BillState.reject].includes(billState)) {
-      return message("只能提交【待提交/重新审核】的记录", { type: "error" });
+      return message.error("只能提交【待提交/重新审核】的记录");
     }
     showMessageBox(`确定要提交该申请单吗?`)
       .then(() => {
         commonSubmit({ id: id, billId: "10035" }, { dbKey: "sysmaster" })
           .then((res) => {
             if (res.data) {
-              message("提交成功");
+              message.success("提交成功");
               getTableList();
-            } else message("提交失败", { type: "error" });
+            } else message.error("提交失败");
           })
           .catch(console.log);
       })
@@ -228,18 +228,18 @@ export const useConfig = () => {
   const onExcute = wrapFn(rowData, () => {
     const row: DbMaintenanceItemType = rowData.value;
     if (![BillState.audited].includes(row.billState)) {
-      return message("只能执行【已审批】的记录", { type: "error" });
+      return message.error("只能执行【已审批】的记录");
     } else if (row.isExecute === 1) {
-      return message("SQL已经执行过,不能再次执行", { type: "error" });
+      return message.error("SQL已经执行过,不能再次执行");
     }
     showMessageBox(`确定执行该单据的SQL吗?`)
       .then(() => {
         sqlAuditExecute(row, { dbKey: "sysmaster" })
           .then((res) => {
             if (res.data) {
-              message("执行成功");
+              message.success("执行成功");
               getTableList();
-            } else message("执行失败", { type: "error" });
+            } else message.error("执行失败");
           })
           .catch(console.log);
       })
@@ -261,16 +261,16 @@ export const useConfig = () => {
   const onDelete = wrapFn(rowData, () => {
     const row: DbMaintenanceItemType = rowData.value;
     if (![BillState.submit, BillState.reject].includes(row.billState)) {
-      return message("只能删除【待提交/重新审核】的记录", { type: "error" });
+      return message.error("只能删除【待提交/重新审核】的记录");
     }
     showMessageBox(`确定要删除该申请单吗?`)
       .then(() => {
         sqlAuditDelete({ id: row.id }, { dbKey: "sysmaster" })
           .then((res) => {
             if (res.data) {
-              message("删除成功");
+              message.success("删除成功");
               getTableList();
-            } else message("删除失败", { type: "error" });
+            } else message.error("删除失败");
           })
           .catch(console.log);
       })
@@ -311,7 +311,7 @@ export const useConfig = () => {
       return ElMessage({ message: "请选择一条记录", type: "warning" });
     }
     if (![1, 2].includes(rowData.value.billState)) {
-      return message("当前状态不能进行回退", { type: "error" });
+      return message.error("当前状态不能进行回退");
     }
     commonBackLogic(rowData.value.billNo, getTableList, { dbKey: "sysmaster" });
   };

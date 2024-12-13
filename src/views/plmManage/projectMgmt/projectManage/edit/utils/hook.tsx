@@ -1,3 +1,4 @@
+import { ElMessageBox, dayjs } from "element-plus";
 import {
   fetchAllProjectMsgByProjectId,
   fetchProjectMgmtList,
@@ -6,15 +7,16 @@ import {
   submitProjectList,
   updateProjectNewInfo
 } from "@/api/plmManage";
-import { userInfoList } from "@/api/systemManage";
-import { message } from "@/utils/message";
-import { getDeptOptions } from "@/utils/requestApi";
-import { getProductClassifyList } from "@/views/plmManage/productMgmt/classify/utils/hook";
-import { cloneDeep } from "@pureadmin/utils";
-import { dayjs, ElMessageBox } from "element-plus";
 import { onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+
+import { cloneDeep } from "@pureadmin/utils";
+import { getDeptOptions } from "@/utils/requestApi";
+import { getProductClassifyList } from "@/views/plmManage/productMgmt/classify/utils/hook";
+import { message } from "@/utils/message";
 import minMax from "dayjs/plugin/minMax";
+import { userInfoList } from "@/api/systemManage";
+
 dayjs.extend(minMax);
 
 export const usePMEdit = () => {
@@ -156,7 +158,7 @@ export const usePMEdit = () => {
       .then(() => {
         submitProjectList({ id: route.query.id }).then((res) => {
           if (res.data) {
-            message("提交成功", { type: "success" });
+            message.success("提交成功");
             const projectId = route.query.id;
             const modelId = route.query.modelId;
             router.replace(`/plmManage/projectMgmt/projectManage/add/index?modelId=${modelId}&id=${projectId}`);
@@ -177,13 +179,13 @@ export const usePMEdit = () => {
     const isValidDuration = allTasks.some((el) => !Number.isInteger(+el.duration) || +el.duration <= 0);
     const isValidStartDate = allTasks.some((el) => !el.start);
 
-    if (isValidDuration) return message("工期必须是大于零的整数", { type: "error" });
-    if (isValidStartDate) return message("开始日期必填", { type: "error" });
+    if (isValidDuration) return message.error("工期必须是大于零的整数");
+    if (isValidStartDate) return message.error("开始日期必填");
     const resUserValidInfo = allTasks.find((el) => !el.projectTaskResponsiblePersonnelVOList?.length);
     const deliveryValidInfo = allTasks.find((el) => !el.projectTaskDeliverableVOList?.length);
 
-    if (resUserValidInfo) return message(`任务【${resUserValidInfo.name}】的责任人不能为空`, { type: "error" });
-    if (deliveryValidInfo) return message(`任务【${deliveryValidInfo.name}】的交付物不能为空`, { type: "error" });
+    if (resUserValidInfo) return message.error(`任务【${resUserValidInfo.name}】的责任人不能为空`);
+    if (deliveryValidInfo) return message.error(`任务【${deliveryValidInfo.name}】的交付物不能为空`);
 
     ElMessageBox.confirm(`确认要保存吗?`, "系统提示", {
       type: "warning",
@@ -269,7 +271,7 @@ export const usePMEdit = () => {
         console.log(updateParams, "updateParams====");
         updateProjectNewInfo(updateParams).then((res) => {
           if (res.status === 200 || res.data) {
-            message("修改成功", { type: "success" });
+            message.success("修改成功");
             fetchDetailFormData();
           }
         });

@@ -6,12 +6,10 @@
  */ -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import EditFill from "@iconify-icons/ep/edit";
 import DeleteFill from "@iconify-icons/ep/delete";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import ButtonList from "@/components/ButtonList/index.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "SystemBasicBill" });

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-25 15:50:03
+ * @Last Modified time: 2024-12-11 17:48:22
  */
 
 import { TableGroupItemType, addTableGroup, deleteTableGroup, tableGroupList, updateTableGroup } from "@/api/systemManage";
@@ -11,6 +11,7 @@ import { formGroupConfigs, formGroupRules } from "./config";
 import { message, showMessageBox } from "@/utils/message";
 import { useRoute, useRouter } from "vue-router";
 
+import { ConfUrl } from "../../utils/hook";
 import EditForm from "@/components/EditForm/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { getUserInfo } from "@/utils/storage";
@@ -21,8 +22,6 @@ export interface NodeItemProps {
   menuId: number;
   /** 分组ID */
   columnGroupId: string;
-  /** 分组名称 */
-  columnname: string;
 }
 
 export const useConfig = () => {
@@ -31,15 +30,16 @@ export const useConfig = () => {
     const result = Number.isNaN(mID) ? 0 : mID;
     return result; // 获取菜单ID
   });
-  const treeRef = ref();
+  const tableRef = ref();
   const route = useRoute();
   const router = useRouter();
+  const currentKey = ref<string>("");
   const loading = ref<boolean>(false);
   const gLoading = ref<boolean>(false);
   const selectNode = ref<TableGroupItemType>();
   const treeOptions = ref<TableGroupItemType[]>([]);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 84);
-  const queryParams = reactive<NodeItemProps>({ menuId: menuId.value, columnGroupId: "", columnname: "" });
+  const queryParams = reactive<NodeItemProps>({ menuId: menuId.value, columnGroupId: "" });
 
   onMounted(() => {
     getTableGroupList();
@@ -47,6 +47,7 @@ export const useConfig = () => {
 
   // 分组列表
   function getTableGroupList() {
+    if (!route.query.itemId) return message.error("菜单ID不存在");
     gLoading.value = true;
     tableGroupList({ menuId: route.query.itemId })
       .then(({ data }) => {
@@ -55,23 +56,18 @@ export const useConfig = () => {
         const activeRow = selectNode.value || data[0];
         if (activeRow) {
           queryParams.columnGroupId = activeRow.id;
-          queryParams.columnname = activeRow.groupName;
-          setSelectGroup(activeRow);
+          onNodeClick(activeRow);
         }
       })
       .catch(() => (gLoading.value = false));
   }
 
-  // 设置选中分组
-  function setSelectGroup(row: TableGroupItemType) {
-    treeRef.value?.setCheckedKeys([row.id], false);
-  }
   // 选择分组
   function onNodeClick(row: TableGroupItemType) {
+    currentKey.value = row.id;
     selectNode.value = row;
     queryParams.columnGroupId = row.id;
-    queryParams.columnname = row.groupName;
-    setSelectGroup(row);
+    tableRef.value?.onSearch({ columnGroupId: row.id, menuId: row.menuId });
   }
 
   // 添加分组
@@ -125,7 +121,7 @@ export const useConfig = () => {
         const FormRef = formRef.value.getRef();
         const groupCodes = treeOptions.value.map((item) => `${item.groupCode}`);
         if (groupCodes.includes(`${groupData.groupCode}`) && +groupData.groupCode !== +row.groupCode) {
-          return message("分组编号已存在, 请重新输入", { type: "error" });
+          return message.error("分组编号已存在, 请重新输入");
         }
         let tipMsg = "";
         if (type === "edit" && +groupData.groupCode !== +row.groupCode) {
@@ -138,11 +134,10 @@ export const useConfig = () => {
             const reqApi = { add: addTableGroup, edit: updateTableGroup };
             reqApi[type](groupData)
               .then(({ data }) => {
-                if (!data) return message(`${title}失败`, { type: "error" });
+                if (!data) return message.error(`${title}失败`);
                 done();
-                message(`${title}成功`);
+                message.success(`${title}成功`);
                 getTableGroupList();
-                setSelectGroup(selectNode.value);
               })
               .catch(console.log);
           });
@@ -156,25 +151,30 @@ export const useConfig = () => {
     showMessageBox(`确定要删除分组【${row.groupName}】吗?`).then(() => {
       deleteTableGroup({ id: row.id })
         .then(({ data }) => {
-          if (!data) return message("删除失败", { type: "error" });
-          message("删除成功");
+          if (!data) return message.error("删除失败");
           selectNode.value = undefined;
+          message.success("删除成功");
           getTableGroupList();
         })
         .catch(console.log);
     });
   }
 
+  // 返回
   const onBack = () => router.go(-1);
 
+  // 去配置表单
+  const onGoTo = () => router.push({ path: ConfUrl.form, query: route.query });
+
   return {
-    route,
-    treeRef,
+    tableRef,
     gLoading,
     maxHeight,
+    currentKey,
     treeOptions,
     queryParams,
     onBack,
+    onGoTo,
     onNodeClick,
     onAddGroup,
     onEditGroup,

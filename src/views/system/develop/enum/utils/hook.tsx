@@ -137,7 +137,7 @@ export const useConfig = () => {
     enumDictionaryDelete({ id: row.id })
       .then((res) => {
         getTableList();
-        message("删除成功");
+        message.success("删除成功");
       })
       .catch(console.log);
   };
@@ -202,7 +202,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -221,7 +221,7 @@ export const useConfig = () => {
   };
 
   const onAdd2 = () => {
-    if (!rowData.value) return message("请选择参数编号", { type: "error" });
+    if (!rowData.value) return message.error("请选择参数编号");
     openDialog2("add");
   };
   const onEdit2 = (row: EnumDictionaryOptionItemType) => {
@@ -244,12 +244,12 @@ export const useConfig = () => {
   // 提交批量删除
   const onDeleteAlls = (optionListIdList: number[]) => {
     if (!optionListIdList?.length) {
-      return message("请选择删除信息", { type: "error" });
+      return message.error("请选择删除信息");
     }
     enumDictionaryOptionDelete({ optionListIdList })
       .then((res) => {
         getOptionList(rowData.value);
-        message("删除成功");
+        message.success("删除成功");
       })
       .catch(console.log);
   };
@@ -333,7 +333,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);

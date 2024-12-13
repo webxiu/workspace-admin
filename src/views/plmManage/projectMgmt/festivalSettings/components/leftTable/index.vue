@@ -48,7 +48,6 @@ import { reactive } from "vue";
 import { useBankTable } from "./config";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useEleHeight } from "@/hooks";
 
 const emits = defineEmits(["leftTableDbClick", "clearRightList"]);

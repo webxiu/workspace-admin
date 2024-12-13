@@ -24,7 +24,7 @@ const props = {
   /** 页面标识 PageUrl 配置的值(引入其他菜单入口页面) */
   pageKey: { type: String },
   /** 弹窗渲染组件属性 */
-  componentProp: { type: Object as PropType<SelectTableProp> },
+  componentProp: { type: Object as PropType<SelectTableProp>, default: () => ({}) },
   /** 弹窗渲染组件(非必传) */
   component: { type: Object as PropType<DefineComponent<{}, {}, any>>, default: SelectTable },
   /** 按钮属性 */
@@ -38,7 +38,7 @@ const props = {
   modelValue: { type: [String, Number] }
 };
 
-export default defineComponent({
+export const HxModalInput = defineComponent({
   props: props,
   emits: ["update:modelValue", "select", "blur", "change", "mulSelect"],
   setup(props, { emit, expose, attrs, slots }) {
@@ -60,13 +60,13 @@ export default defineComponent({
       // 多选
       if (multiple) {
         const rows = rowsData.value;
-        if (!rows.length) return message("请勾选记录", { type: "error" });
+        if (!rows.length) return message.error("请勾选记录");
         emit("mulSelect", rows);
         return callback();
       }
       // 单选
       const row = rowData.value;
-      if (!row) return message("请选择记录", { type: "error" });
+      if (!row) return message.error("请选择记录");
       value.value = row[props.valueKey];
       emit("update:modelValue", value.value);
       emit("select", row);
@@ -96,6 +96,14 @@ export default defineComponent({
         beforeSure: (done) => onFinish(() => done())
       });
     }
+
+    function onChange(val) {
+      emit("change", val);
+      emit("update:modelValue", value.value);
+    }
+    function onBlur(val) {
+      emit("blur", val);
+    }
     return () => (
       <>
         {props.showButton ? (
@@ -105,8 +113,8 @@ export default defineComponent({
             readonly={props.readonly}
             disabled={props.disabled}
             placeholder={props.placeholder}
-            onBlur={(e) => emit("blur", e)}
-            onChange={(e) => emit("change", e)}
+            onBlur={onBlur}
+            onChange={onChange}
           >
             {{
               append: () => (
@@ -117,10 +125,20 @@ export default defineComponent({
             }}
           </el-input>
         ) : (
-          <el-input v-model={value.value} readonly={props.readonly} disabled={props.disabled} placeholder={props.placeholder} onClick={showModal} />
+          <el-input
+            v-model={value.value}
+            readonly={props.readonly}
+            disabled={props.disabled}
+            placeholder={props.placeholder}
+            onBlur={onBlur}
+            onChange={onChange}
+            onClick={showModal}
+          />
         )}
       </>
     );
   }
 });
+
+export default HxModalInput;
 </script>

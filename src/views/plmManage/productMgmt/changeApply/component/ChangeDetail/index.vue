@@ -296,6 +296,7 @@ defineExpose({ onPrint, getRef });
 <style lang="scss">
 $color: #111;
 $size: 16px;
+
 @media print {
   @page {
     size: a4 portrait;
@@ -303,8 +304,8 @@ $size: 16px;
   }
 
   .el-checkbox__inner {
-    print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .apply-item {
@@ -319,13 +320,16 @@ $size: 16px;
     .el-upload-list__item {
       width: 46px !important;
       height: 40px !important;
+
       &:nth-child(4n) {
-        margin-right: 0px;
+        margin-right: 0;
       }
+
       &:nth-child(5n) {
         margin-right: 8px !important;
       }
     }
+
     .el-upload.el-upload--picture-card {
       display: none !important;
     }
@@ -334,48 +338,57 @@ $size: 16px;
 
 .apply-item {
   padding: 0 2px;
+
   .change-bill {
     display: flex;
     justify-content: space-between;
-    font-size: 14px;
     padding-bottom: 2px;
+    font-size: 14px;
   }
+
   .table-form {
     .el-table .cell {
       overflow: hidden !important;
-      font-weight: normal !important;
       font-size: 10px !important;
+      font-weight: normal !important;
     }
   }
+
   .table-form table tr td {
     padding: 0 2px !important;
-    color: $color !important;
     font-family: "宋体", Arial, sans-serif, serif;
+    color: $color !important;
   }
+
   .el-input__prefix {
     display: none;
   }
+
   .el-form-item label,
   .el-input__inner,
   .el-textarea__inner {
-    font-size: $size;
     font-family: "宋体", Arial, sans-serif, serif;
+    font-size: $size;
     color: $color;
     cursor: default;
   }
+
   .el-checkbox__inner,
   .el-checkbox__inner::after {
     border-color: $color;
   }
+
   .el-checkbox__input.is-checked .el-checkbox__inner,
   .el-checkbox__input.is-disabled .el-checkbox__inner,
   .el-checkbox__input.is-disabled.is-checked .el-checkbox__inner::after {
     background-color: transparent;
     border-color: $color;
   }
+
   .el-checkbox__input.is-checked + .el-checkbox__label {
     color: $color !important;
   }
+
   .el-checkbox.el-checkbox--small .el-checkbox__label {
     font-size: $size;
     color: $color;

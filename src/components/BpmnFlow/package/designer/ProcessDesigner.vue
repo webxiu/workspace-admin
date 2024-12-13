@@ -483,7 +483,7 @@ const elementsAlign = (align: string) => {
   const Selection = bpmnModeler.value.get("selection");
   const SelectedElements = Selection.get();
   if (!SelectedElements || SelectedElements.length <= 1) {
-    message("请按住 Shift 键选择多个元素对齐", { type: "warning" });
+    message.warning("请按住 Shift 键选择多个元素对齐");
     return;
   }
   ElMessageBox.confirm("自动对齐可能造成图形变形，是否继续？", "警告", {

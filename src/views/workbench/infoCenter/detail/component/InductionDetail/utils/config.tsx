@@ -4,7 +4,7 @@ import { reactive, ref, toRaw } from "vue";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import { Loading } from "@element-plus/icons-vue";
-import { TemporaryFlag } from "@/views/oa/humanResources/inductionAudit/utils/config";
+import { TemporaryFlag } from "@/views/humanResources/inductionAudit/utils/config";
 
 interface OptionType {
   formData?: any;

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-22 14:30:45
+ * @Last Modified time: 2024-12-11 13:45:18
  */
 
 import dayjs from "dayjs";
@@ -172,7 +172,7 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
   const fixedItem = columnData.find((f) => f.fixed === "left"); // 是否有左固定列
 
   // 配置表格折叠图标
-  const rendererExpend = (data): JSX.Element => {
+  const rendererExpend = (data): JSXElement => {
     const { row, column, store } = data;
     const renderEle = expendRow?.cellRenderer?.(data) || <span>{row[column["property"]]}</span>;
     return isCustomExpend ? (
@@ -185,7 +185,7 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
         {renderEle}
       </div>
     ) : (
-      (renderEle as JSX.Element)
+      (renderEle as JSXElement)
     );
   };
 
@@ -385,7 +385,7 @@ export const exportImgToExcel = (options: DownloadDataType | DownloadDataType[],
 
     // 插入数据
     function getData(dataList: any[]) {
-      dataList.map((row, rowIndex) => {
+      dataList.map(async (row, rowIndex) => {
         const cellArr: any[] = [];
         option.columns.forEach((column) => {
           const prop = typeof column.prop === "function" ? column["property"] : column.prop;
@@ -409,8 +409,9 @@ export const exportImgToExcel = (options: DownloadDataType | DownloadDataType[],
           const colNum = option.columns.findIndex((column) => column.prop === imgProp); // 动态获取图片列索引
           const width = imgSize[0];
           const height = imgSize[1] || width;
+          const offset = 0.1; // 水平垂直偏移量
           worksheet.addImage(imageId, {
-            tl: { col: colNum - 1, row: rowNum - 1 },
+            tl: { col: colNum - 1 + offset, row: rowNum - 1 + offset },
             ext: { width: width, height: height }
           });
           worksheet.getRow(rowNum).height = height;
@@ -427,7 +428,7 @@ export const exportImgToExcel = (options: DownloadDataType | DownloadDataType[],
       const blob = new Blob([buffer], { type: "application/octet-stream" });
       onDownload(blob, `${_fileName}.xlsx`);
     })
-    .catch(() => message("导出失败", { type: "error" }));
+    .catch(() => message.error("导出失败"));
 };
 
 // 数字转千分位格式(decimal: 默认保留2位有效数字)
@@ -636,8 +637,10 @@ interface TableEditOptionType {
   editBefore?: (data: CallBackParamType) => boolean;
   /** 编辑完成回调 */
   editFinish?: (data: CallBackParamType) => void;
-  /** 自定义渲染函数(返回null则不显示自定义内容) */
-  customRender?: (data: CustomCellParamType) => JSX.Element;
+  /** 自定义渲染显示内容 */
+  customCell?: (data?: CallBackParamType) => JSXElement | number;
+  /** 自定义渲染表单控件 */
+  customRender?: (data: CustomCellParamType) => JSXElement;
 }
 
 /**
@@ -646,7 +649,7 @@ interface TableEditOptionType {
  * @param customRender 自定义渲染函数
  */
 export function tableEditRender(options: TableEditOptionType = {}) {
-  const { editFinish, customRender, editBefore } = options;
+  const { editBefore, editFinish, customRender, customCell } = options;
   const editMap = ref({}); // 记录编辑行列及编辑状态
 
   // 记录编辑单元格行列索引和行数据
@@ -666,9 +669,8 @@ export function tableEditRender(options: TableEditOptionType = {}) {
     const prop = column["property"];
     const isEditable = editMap.value[index]?.editable;
     const colIndex = editMap.value[index]?.colIndex;
+    const onBlur = () => onFinish({ index, prop, row, column });
     if (isEditable && isEdit && colIndex === column["rawColumnKey"]) {
-      const onBlur = () => onFinish({ index, prop, row, column });
-
       // 1.输入框编辑
       const InputCom = () => <RegInput v-model={row[prop]} autoFocus={true} placeholder="请输入" autoSelect={true} {...eleProps} onBlur={onBlur} />;
       // 2.下拉框编辑
@@ -759,7 +761,7 @@ export function tableEditRender(options: TableEditOptionType = {}) {
     }
     return (
       <span onClick={onClickEdit} style={boxStyle} class="ui-w-100 ui-d-ib pointer ui-va-m ellipsis flex-1">
-        {cellValue}
+        {customCell?.({ index, prop, row, column }) || cellValue}
       </span>
     );
   }
@@ -1013,7 +1015,7 @@ export const getMenuColumns = async (renderConfig: Array<Record<string, Renderer
       });
     }
   } catch (error) {
-    message(error.toString(), { type: "error" });
+    message.error(error.toString());
     console.error("menu:", error);
   }
   return { columnArrs, groupArrs, buttonArrs };
@@ -1033,18 +1035,18 @@ export const setUserMenuColumns = async (type: "save" | "recover", columns: Tabl
     });
     nColumns.forEach((item, index) => (item.seq = index + 1));
     const { data } = await updateUserMenuColumn(nColumns);
-    if (data) return message("修改成功");
-    message("修改失败", { type: "error" });
+    if (data) return message.success("修改成功");
+    message.error("修改失败");
   } else {
     const { menuId, columnGroupId, groupName } = columns.find((item) => item.menuId && item.columnGroupId) || {};
-    if (!menuId || !groupName) return message("未配置表格列", { type: "error" });
+    if (!menuId || !groupName) return message.error("未配置表格列");
     showMessageBox(`确定要恢复【${groupName}】到默认配置吗?`).then(async () => {
       const { data } = await recoverUserMenuColumn({ menuId, columnGroupId });
       if (data) {
         cb && cb();
-        message("恢复成功");
+        message.success("恢复成功");
       } else {
-        message("恢复失败", { type: "error" });
+        message.error("恢复失败");
       }
     });
   }

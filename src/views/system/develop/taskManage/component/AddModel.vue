@@ -5,7 +5,7 @@
         :formInline="formInline"
         :formConfigs="formConfigs({ onUploadChange, taskOptions, type })"
         :formProps="{ labelWidth: '80px' }"
-        style="min-width: 460px; flex: 1"
+        style="flex: 1; min-width: 460px"
       />
       <div class="flex-1">
         <PureTableBar :columns="columns" :showIcon="false" style="padding-top: 0">
@@ -60,7 +60,6 @@ import { formConfigs } from "./config";
 import { downloadFile } from "@/utils/common";
 import { setColumn } from "@/utils/table";
 import EditForm from "@/components/EditForm/index.vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { MarkDown, MarkDownActionType, MarkdownViewer } from "./Markdown";
 import { taskFileList, TaskFileItemType, TaskManageItemType, TaskMangeOptionType, deleteTaskFile } from "@/api/systemManage";
 import { getkkViewUrl } from "@/utils/storage";
@@ -119,7 +118,7 @@ function handleChange(v: string) {
 function onUploadChange(files: File[]) {
   files.forEach((file) => {
     const repeatFile = dataList.value.find((item) => item.fileName === file.name);
-    if (repeatFile) return message("文件重复:" + repeatFile.fileName, { type: "warning" });
+    if (repeatFile) return message.warning("文件重复:" + repeatFile.fileName);
     dataList.value.push({ fileName: file.name });
     fileList.push(file);
   });

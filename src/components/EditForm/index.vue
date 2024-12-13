@@ -3,7 +3,7 @@
  * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-24 14:21:52
+ * @Last Modified time: 2024-11-27 11:09:49
  */ 
 -->
 
@@ -29,9 +29,9 @@ export interface FormConfigItemType extends Partial<FormItemProps> {
   /** 是否隐藏 (不渲染表单项目) */
   hide?: boolean;
   /** 表单项渲染函数 */
-  render: ((item: RenderParamsType) => JSX.Element) | JSX.Element;
+  render: ((item: RenderParamsType) => JSXElement) | JSXElement;
   /** 表单Item插槽 */
-  slots?: { [key: string]: (slot: Record<string, any>) => JSX.Element };
+  slots?: { [key: string]: (slot: Record<string, any>) => JSXElement };
   style?: CSSProperties;
   class?: string;
 }
@@ -198,17 +198,17 @@ $borderColor: #111;
 
 /** 表单添加边框 */
 .border-form {
+  padding: 0 !important;
   // 添加右、下表框
   border-right: 1px solid $borderColor;
   border-bottom: 1px solid $borderColor;
-  padding: 0 !important;
 
   // 添加左、上表框
   .el-form-item {
+    height: 100%;
+    margin: 0 !important;
     border-top: 1px solid $borderColor;
     border-left: 1px solid $borderColor;
-    margin: 0 !important;
-    height: 100%;
   }
 
   .el-form-item__label {
@@ -216,11 +216,11 @@ $borderColor: #111;
   }
 
   .el-form-item__content {
-    border-left: 1px solid $borderColor;
-    align-items: center;
     position: relative;
+    align-items: center;
     height: 100%;
     padding: 2px 4px;
+    border-left: 1px solid $borderColor;
     // 错误提示靠右
     .el-form-item__error {
       position: absolute;
@@ -240,25 +240,26 @@ $borderColor: #111;
 
   // 标题两端对齐
   .justify .el-form-item__label {
-    align-items: center;
-    text-align: justify;
     display: block;
-    padding: 0 6px;
+    align-items: center;
     align-self: center;
+    padding: 0 6px;
+    text-align: justify;
+
     &::after {
+      display: inline-block;
       width: 100%;
       content: "" !important;
-      display: inline-block;
     }
   }
 
   // 居中label
   .center-label .el-form-item__label {
     display: inline-block;
-    padding: 0 4px !important;
-    text-align: center !important;
     height: auto;
+    padding: 0 4px !important;
     line-height: 1.5em;
+    text-align: center !important;
   }
   // 隐藏边框
   .hide-content-left .el-form-item__content {
@@ -274,8 +275,8 @@ $borderColor: #111;
   }
   // 合并标题内容居中
   .cell-merge .el-form-item__content {
-    margin-left: -1px !important;
     width: 100%;
+    margin-left: -1px !important;
     text-align: center;
   }
 }

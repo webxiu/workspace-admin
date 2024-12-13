@@ -90,7 +90,7 @@ export const useConfig = () => {
   /** 选中表格行 */
   const onRowClick = (row: DeptInfoItemType) => {
     rowData.value = row;
-    if (!row?.roleCode) return message("角色编号不存在", { type: "warning" });
+    if (!row?.roleCode) return message.warning("角色编号不存在");
     getAuthorityTree(row.id);
     // 清空右侧按钮表格的数据
     if (rightTableRef.value) rightTableRef.value.dataList = [];
@@ -116,7 +116,7 @@ export const useConfig = () => {
               if (res.data) {
                 done();
                 getTableList();
-                message(`${title}成功`);
+                message.success(`${title}成功`);
               }
             })
             .catch(console.log);
@@ -231,9 +231,9 @@ export const useConfig = () => {
     const params = { roleid: rowData.value.id, ...result, menuId: currentMenuId.value };
     saveAuthority(params).then((res) => {
       if (res.data) {
-        message("保存成功");
+        message.success("保存成功");
       } else {
-        message("保存失败", { type: "error" });
+        message.error("保存失败");
       }
     });
   });

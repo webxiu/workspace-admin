@@ -9,7 +9,6 @@
 import { useConfig } from "./utils/hook";
 import { Col, Row } from "@/layout/Layout";
 import { Edit } from "@element-plus/icons-vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "WorkbenchTeamManageApprovalIndex" });

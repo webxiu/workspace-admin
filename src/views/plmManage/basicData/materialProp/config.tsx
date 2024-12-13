@@ -63,6 +63,8 @@ export function useTable() {
         if (value != 1) {
           dataList.value[index]["enumCode"] = "";
           dataList.value[index]["enumName"] = "";
+        } else {
+          dataList.value[index]["optionType"] = "单选";
         }
       }
       if (prop === "enumCode") {
@@ -76,14 +78,28 @@ export function useTable() {
   // 编辑表格2
   const table2CellRender = tableEditRender();
 
+  const optionTypeOpts = [
+    { optionName: "单选", optionValue: "单选" },
+    { optionName: "多选", optionValue: "多选" }
+  ];
+
   const getConfig = async (buttonList) => {
     const propNoRender = (data) => editCellRender({ data, isEdit: isEditTable1.value });
     const propNameRender = (data) => editCellRender({ data, isEdit: isEditTable1.value });
+    const defaultValueRender = (data) => editCellRender({ data, isEdit: isEditTable1.value });
     const enumCodeRender = (data) =>
       editCellRender({
         type: "select",
         data,
         options: selectEnumOptsValue.value,
+        isEdit: isEditTable1.value && data.row.propertyType == "1",
+        cellStyle: { color: "#606266", textAlign: "left" }
+      });
+    const optionTypeRender = (data) =>
+      editCellRender({
+        type: "select",
+        data,
+        options: optionTypeOpts,
         isEdit: isEditTable1.value && data.row.propertyType == "1",
         cellStyle: { color: "#606266", textAlign: "left" }
       });
@@ -100,12 +116,21 @@ export function useTable() {
       { label: "属性id", prop: "id" },
       { label: "属性编号", prop: "propertyCode", cellRenderer: propNoRender },
       { label: "属性值类型", prop: "propertyType", cellRenderer: propTypeRender },
+      { label: "默认值", prop: "defaultValue", cellRenderer: defaultValueRender },
       { label: "枚举编码", prop: "enumCode", cellRenderer: enumCodeRender },
-      { label: "枚举名称", prop: "enumName" }
+      { label: "枚举名称", prop: "enumName" },
+      { label: "选项类型", prop: "optionType", cellRenderer: optionTypeRender }
     ];
 
     const { columnArrs, buttonArrs } = await getMenuColumns([
-      { propertyCode: propNoRender, propertyName: propNameRender, propertyType: propTypeRender, enumCode: enumCodeRender }
+      {
+        propertyCode: propNoRender,
+        propertyName: propNameRender,
+        propertyType: propTypeRender,
+        enumCode: enumCodeRender,
+        defaultValue: defaultValueRender,
+        optionType: optionTypeRender
+      }
     ]);
     const menuCols = columnArrs[0];
 
@@ -269,7 +294,7 @@ export function useTable() {
     );
   };
   const onDelete = () => {
-    if (!currentRow.value) return message("请选择行记录", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择行记录");
     if (currentRow.value?.id) {
       showMessageBox(`确认要删除名称为【${currentRow.value.propertyName}】的属性吗?`)
         .then(() => {
@@ -288,20 +313,25 @@ export function useTable() {
   };
 
   const onSave = () => {
-    showMessageBox(`确认要保存吗?`)
-      .then(() => {
-        saveMaterialGroupAttr(dataList.value).then((res) => {
-          if (res.data || res.status === 200) {
-            ElMessage({ message: "保存成功", type: "success" });
-            onCancelAction();
-            onSearch();
-          }
-        });
-      })
-      .catch(console.log);
+    if (dataList.value.length) {
+      showMessageBox(`确认要保存吗?`)
+        .then(() => {
+          saveMaterialGroupAttr(dataList.value).then((res) => {
+            if (res.data || res.status === 200) {
+              ElMessage({ message: "保存成功", type: "success" });
+              onCancelAction();
+              onSearch();
+            }
+          });
+        })
+        .catch(console.log);
+    } else {
+      message.error("数据不能为空");
+    }
   };
 
   const onImport = () => {
+    onEditAction();
     const dom = document.getElementById("importMaterialProp");
     dom.click();
   };
@@ -379,14 +409,18 @@ export function useTable() {
       beforeSure: (done) => {
         if (formRef.value.rowDatas?.length) {
           dataList.value = formRef.value.rowDatas.map((el) => {
-            return {
+            const elObj = {
               ...el,
-              propertyType: selectOptionValue.value.find((item) => item.optionName == el.propertyType)?.optionValue
+              propertyType: selectOptionValue.value.find((item) => item.optionName == el.propertyType)?.optionValue,
+              defaultValue: ""
             };
+            // TODO: 导入时模版未处理默认值和选项类型
+            if (elObj.propertyType == 1) elObj.optionType = "单选";
+            return elObj;
           });
           done();
         } else {
-          message("请选择至少一条记录", { type: "warning" });
+          message.warning("请选择至少一条记录");
         }
       }
     });
@@ -435,7 +469,7 @@ export function useTable() {
   };
 
   const onDelete2 = () => {
-    if (!currentRow2.value) return message("请选择枚举记录", { type: "warning" });
+    if (!currentRow2.value) return message.warning("请选择枚举记录");
     if (currentRow2.value?.id) {
       showMessageBox(`确认要删除名称为【${currentRow2.value.optionName}】的枚举属性吗?`)
         .then(() => {

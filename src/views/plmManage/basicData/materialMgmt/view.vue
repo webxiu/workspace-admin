@@ -48,8 +48,8 @@ onMounted(() => {
 
 .materialProp-box {
   position: absolute;
-  margin-top: 4px;
   z-index: 3;
+  margin-top: 4px;
 }
 
 .el-upload.el-upload--picture-card,

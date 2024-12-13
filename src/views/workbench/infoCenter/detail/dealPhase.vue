@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { setColumn } from "@/utils/table";
 import { dealPhaseOptionList, DealPhaseOptionItemType } from "@/api/workbench/infoCenter";
 

@@ -105,7 +105,7 @@ export const useConfig = () => {
 
   // 2.职责列表
   const getTableList2 = (roleInfoId: number) => {
-    if (!roleInfoId) return message("请选择岗位");
+    if (!roleInfoId) return message.error("请选择岗位");
     loading2.value = true;
     teamDutyList({ ...queryForm, roleInfoId })
       .then(({ data }) => {
@@ -119,7 +119,7 @@ export const useConfig = () => {
   };
   // 3.模板列表
   const getTableList3 = (responsibilitiesId: number) => {
-    if (!responsibilitiesId) return message("请选择职责");
+    if (!responsibilitiesId) return message.error("请选择职责");
     loading3.value = true;
     teamTemplateList({ ...queryForm, responsibilitiesId })
       .then(({ data }) => {
@@ -151,10 +151,10 @@ export const useConfig = () => {
     deleteTeamPost({ id: row.id })
       .then(({ data }) => {
         if (data) {
-          message("删除成功");
+          message.success("删除成功");
           getTableList();
         } else {
-          message("删除失败", { type: "error" });
+          message.error("删除失败");
         }
       })
       .catch(console.log);
@@ -203,10 +203,10 @@ export const useConfig = () => {
                   .then((res) => {
                     if (res.data) {
                       done();
-                      message(`${title}成功`);
+                      message.success(`${title}成功`);
                       getTableList();
                     } else {
-                      message(`${title}失败`, { type: "error" });
+                      message.error(`${title}失败`);
                     }
                   })
                   .catch(console.log);
@@ -231,10 +231,10 @@ export const useConfig = () => {
     deleteTeamDuty({ id: row.id })
       .then(({ data }) => {
         if (data) {
-          message("删除成功");
+          message.success("删除成功");
           getTableList2(rowData.value.id);
         } else {
-          message("删除失败", { type: "error" });
+          message.error("删除失败");
         }
       })
       .catch(console.log);
@@ -281,10 +281,10 @@ export const useConfig = () => {
                   .then((res) => {
                     if (res.data) {
                       done();
-                      message(`${title}成功`);
+                      message.success(`${title}成功`);
                       getTableList2(rowData.value.id);
                     } else {
-                      message(`${title}失败`, { type: "error" });
+                      message.error(`${title}失败`);
                     }
                   })
                   .catch(console.log);
@@ -310,10 +310,10 @@ export const useConfig = () => {
     deleteTeamTemplate({ id: row.id })
       .then(({ data }) => {
         if (data) {
-          message("删除成功");
+          message.success("删除成功");
           getTableList3(rowData2.value.id);
         } else {
-          message("删除失败", { type: "error" });
+          message.error("删除失败");
         }
       })
       .catch(console.log);
@@ -321,7 +321,7 @@ export const useConfig = () => {
 
   function openDialog3(type: "add" | "edit", row?: TeamDutyItemType) {
     if (!rowData2.value?.id) {
-      return message("请选择岗位职责", { type: "error" });
+      return message.error("请选择岗位职责");
     }
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
@@ -364,10 +364,10 @@ export const useConfig = () => {
                   .then((res) => {
                     if (res.data) {
                       done();
-                      message(`${title}成功`);
+                      message.success(`${title}成功`);
                       getTableList3(rowData2.value.id);
                     } else {
-                      message(`${title}失败`, { type: "error" });
+                      message.error(`${title}失败`);
                     }
                   })
                   .catch(console.log);

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useApiList } from "./utils/hook";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "SystemAuthorityApiListIndex" });

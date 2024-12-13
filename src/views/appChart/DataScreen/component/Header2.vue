@@ -89,9 +89,9 @@ function onRefresh() {
     justify-content: center;
 
     .header-title {
-      font-weight: 700;
       margin-top: -10px;
       font-size: 18px;
+      font-weight: 700;
       text-align: center;
       letter-spacing: 5px;
     }
@@ -145,9 +145,9 @@ function onRefresh() {
     flex: 1;
     flex-direction: column;
     align-items: flex-end;
-    padding-right: 24px;
     justify-content: center;
     height: 100%;
+    padding-right: 24px;
     font-size: 10px;
 
     .right-btn {

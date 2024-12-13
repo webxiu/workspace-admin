@@ -144,7 +144,7 @@ export const useTestProjectConfig = () => {
 
   const onAdd = () => {
     if (!nodeItem.value || nodeItem.value.id == "0") {
-      return message("请先选择项目分类", { type: "warning" });
+      return message.warning("请选择项目分类");
     }
     openDialog("add");
   };
@@ -247,7 +247,7 @@ export const useTestProjectConfig = () => {
       .then(() => {
         deleteTestProjectList({ id: rowData.value.id }).then((res) => {
           if (res.data) {
-            message(`删除成功`, { type: "success" });
+            message.success(`删除成功`);
             getTableList();
           }
         });

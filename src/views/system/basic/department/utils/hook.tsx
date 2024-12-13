@@ -37,6 +37,7 @@ import { Plus } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
 import { handleTree } from "@/utils/tree";
 import { useEleHeight } from "@/hooks";
+import { FormRules } from "element-plus";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -107,7 +108,7 @@ export const useConfig = () => {
 
   const onEdit = (row: DetartMenttemType) => {
     if (row.parentId === -1) {
-      return message("不能修改顶级", { type: "error" });
+      return message.error("不能修改顶级");
     }
     openDepDialog("edit", row);
   };
@@ -115,7 +116,7 @@ export const useConfig = () => {
   const onDelete = (row: DetartMenttemType) => {
     detartMentDelete({ id: row.itemId })
       .then((res) => {
-        message("删除成功");
+        message.success("删除成功");
         getTableList();
       })
       .catch(console.log);
@@ -131,8 +132,7 @@ export const useConfig = () => {
     const clerkId = row?.clerkId ? row?.clerkId.split(",").map((c) => Number(c)) : 0;
     const myFormConfig = ref<FormConfigItemType[]>([]);
 
-    const examineFlagMap = { 否: 0, 是: 1 };
-    const examineReverseFlag = { 0: "否", 1: "是" };
+    const formRules2 = ref<FormRules>({});
 
     const _formData = reactive({
       deptCode: type === "edit" ? row?.deptCode : "",
@@ -146,7 +146,7 @@ export const useConfig = () => {
       itemId: type === "edit" ? row?.itemId : "",
       level: type === "add" ? undefined : row?.level,
       select: clerkId,
-      examineFlag: type === "edit" ? [examineReverseFlag[row.examineFlag]] : [examineReverseFlag["0"]],
+      examineFlag: type === "edit" ? (row.examineFlag ? row.examineFlag + "" : "") : "0",
       clerkId: type === "add" ? undefined : clerkId
     });
 
@@ -154,39 +154,41 @@ export const useConfig = () => {
       level: { disabled: type === "add" },
       clerkId: { formatAPI: (data) => data.userinfoList },
       principalId: { formatAPI: (data) => data.userinfoList },
-      parentId: { formatAPI: (data) => data.deptInfoTree }
+      parentId: { formatAPI: (data) => data.deptInfoTree },
+      examineFlag: {
+        formatAPI: (data) => {
+          const result = data.find((el) => el.optionCode === "BeOrNot")?.optionList || [];
+          return result;
+        }
+      }
     });
 
-    getFormColumns({ loading, customProps })
+    getFormColumns({ loading, customProps, groupCode: "1" })
       .then((data) => {
+        console.log(data, "data...");
         loading.value = false;
         if (!data.formColumns.length) return;
         myFormConfig.value = data.formColumns;
+        formRules2.value = data.formRules;
       })
       .catch(() => (loading.value = false));
 
-    // 获取修改弹出部门下拉数据
-    getDetartMenuOptionList().then((res) => {
-      if (res.data) {
-        depUserInfo.value = res.data.userinfoList;
-        deptInfoTree.value = res.data.deptInfoTree;
-        loading.value = false;
-      }
-    });
-
-    const changeExamineFlag = () => {
-      if (_formData.examineFlag.length > 1) {
-        _formData.examineFlag.splice(0, 1);
-      }
-    };
+    // // 获取修改弹出部门下拉数据
+    // getDetartMenuOptionList().then((res) => {
+    //   if (res.data) {
+    //     depUserInfo.value = res.data.userinfoList;
+    //     deptInfoTree.value = res.data.deptInfoTree;
+    //     loading.value = false;
+    //   }
+    // });
 
     addDialog({
       title: `${title}部门`,
       props: {
         loading: loading,
         formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ depUserInfo, deptInfoTree, type, changeExamineFlag }),
+        formRules: formRules2,
+        formConfigs: myFormConfig,
         formProps: { labelWidth: "140px" }
       },
       width: "860px",
@@ -208,8 +210,7 @@ export const useConfig = () => {
           ..._formData,
           clerkId: newClerkId,
           select: newClerkId,
-          level: type === "add" ? undefined : _formData.level,
-          examineFlag: examineFlagMap[_formData.examineFlag[0]]
+          level: type === "add" ? undefined : _formData.level
         };
         FormRef.validate((valid) => {
           if (valid) {
@@ -231,7 +232,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -261,7 +262,7 @@ export const useConfig = () => {
   // 分组修改
   const onAdd2 = () => {
     if (!rowData.value) {
-      return message("请选择部门", { type: "error" });
+      return message.error("请选择部门");
     }
     const { deptCode, deptName, itemId } = rowData.value;
     openGroupDialog("add", { deptCode, deptName, deptId: itemId });
@@ -272,7 +273,7 @@ export const useConfig = () => {
   const onDelete2 = (row: detartMentGroupItemType) => {
     detartGroupDelete({ id: row.itemId })
       .then((res) => {
-        res.data && message("删除成功");
+        res.data && message.success("删除成功");
         getGroupList(rowData.value.itemId);
       })
       .catch(console.log);
@@ -284,10 +285,13 @@ export const useConfig = () => {
     const title = titleObj[type];
     const formRef = ref();
     const loading = ref<boolean>(true);
+    const myFormConfig = ref([]);
     const depGroupLeaderList = ref<GroupLeaderTreeItemType[]>([]);
     const belongGroupList = ref<BelongGroupItemType[]>([]);
 
     const parentId = [undefined, null].includes(row?.parentId) ? "" : `${row?.parentId}`;
+
+    const formRules2 = ref<FormRules>({});
 
     const _formData = reactive({
       groupCode: row?.groupCode ?? "",
@@ -300,6 +304,26 @@ export const useConfig = () => {
       id: row?.itemId ?? ""
     });
 
+    const customProps = reactive<{ [key: string]: CustomPropsType }>({
+      leaderId: {
+        formatAPI: (data) => data,
+        apiParams: { deptId: row.deptId }
+      },
+      parentId: {
+        formatAPI: (data) => data,
+        apiParams: { deptId: row.deptId }
+      }
+    });
+
+    getFormColumns({ loading, customProps, groupCode: "2" })
+      .then((data) => {
+        loading.value = false;
+        if (!data.formColumns.length) return;
+        myFormConfig.value = data.formColumns;
+        formRules2.value = data.formRules;
+      })
+      .catch(() => (loading.value = false));
+
     //新增分组时调用
     if (type === "add") {
       addGroupSelectMax()
@@ -311,25 +335,25 @@ export const useConfig = () => {
     }
 
     // 获取编辑下拉选项列表
-    const p1 = detartGroupLeaderTree({ deptId: rowData.value.itemId });
-    const p2 = detartGroupTree({ deptId: rowData.value.itemId });
-    Promise.all([p1, p2])
-      .then((data) => {
-        loading.value = false;
-        const res1 = data[0] as any;
-        const res2 = data[1] as any;
-        if (res1.status === 200) depGroupLeaderList.value = res1.data;
-        if (res2.status === 200) belongGroupList.value = res2.data;
-      })
-      .catch(() => (loading.value = false));
+    // const p1 = detartGroupLeaderTree({ deptId: rowData.value.itemId });
+    // const p2 = detartGroupTree({ deptId: rowData.value.itemId });
+    // Promise.all([p1, p2])
+    //   .then((data) => {
+    //     loading.value = false;
+    //     const res1 = data[0] as any;
+    //     const res2 = data[1] as any;
+    //     if (res1.status === 200) depGroupLeaderList.value = res1.data;
+    //     if (res2.status === 200) belongGroupList.value = res2.data;
+    //   })
+    //   .catch(() => (loading.value = false));
 
     addDialog({
       title: `${title}分组`,
       props: {
         loading: loading,
         formInline: _formData,
-        formRules: formGroupRules,
-        formConfigs: formConfigGroups({ depGroupLeaderList, belongGroupList }),
+        formRules: formRules2,
+        formConfigs: myFormConfig,
         formProps: { labelWidth: "140px" }
       },
       width: "60%",
@@ -364,7 +388,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);

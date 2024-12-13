@@ -1,7 +1,6 @@
 <script setup lang="tsx">
 import { Delete, Plus } from "@element-plus/icons-vue";
 
-import { PureTableBar } from "@/components/RePureTableBar";
 import { tableEditRender, setColumn } from "@/utils/table";
 import { message, showMessageBox } from "@/utils/message";
 import { ref, watch } from "vue";
@@ -58,7 +57,7 @@ function onAdd() {
 }
 
 function onDeleteAll() {
-  if (!rowsData.value.length) return message("请选择要删除的记录", { type: "error" });
+  if (!rowsData.value.length) return message.error("请选择要删除的记录");
   showMessageBox("确认要删除所选记录吗?")
     .then(() => {
       dataList.value = dataList.value.filter((item) => !rowsData.value.includes(item));

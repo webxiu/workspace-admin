@@ -159,9 +159,11 @@ defineExpose({ loading });
 <style scoped>
 .under-table {
   margin-top: 16px;
+
   :deep(.el-table__inner-wrapper::before) {
     height: 0;
   }
+
   :deep(td.el-table__cell) {
     border: none;
   }

@@ -1,35 +1,45 @@
 import { h, ref } from "vue";
+
+import DesignInputSheet from "./designInputSheet/index.vue";
 import { ElMessageBox } from "element-plus";
+import HandleMakeSheet from "./handleMakeSheet/index.vue";
 import { addDialog } from "@/components/ReDialog";
-import { useUserStoreHook } from "@/store/modules/user";
-import { message } from "@/utils/message";
-import loseModeListDetail from "@/views/plmManage/projectMgmt/loseModeList/detail/index.vue";
-import handleAuditSheetDetail from "@/views/plmManage/projectMgmt/handleAudit/detail/index.vue";
+import admitBookDetail from "@/views/plmManage/projectMgmt/admitBookList/detail/index.vue";
+import auditRecordDetail from "@/views/plmManage/projectMgmt/auditRecord/detail/index.vue";
+import budgetApplySheetDetail from "@/views/plmManage/projectMgmt/budgetApply/detail/index.vue";
 import buildDesignDetail from "@/views/plmManage/projectMgmt/buildDesignCheck/detail/index.vue";
+import ceControlDetail from "@/views/plmManage/projectMgmt/ceControlList/detail/index.vue";
+import customerSheetDetail from "@/views/plmManage/projectMgmt/customerSatisfaction/detail/index.vue";
+import designChangeApplyDetail from "@/views/plmManage/projectMgmt/designChangeApply/detail/index.vue";
+import devWorkTimeFeeTotalDetail from "@/views/plmManage/projectMgmt/devWorkTimeTotal/detail/index.vue";
+import editFixMoldConfirmDetail from "@/views/plmManage/projectMgmt/editAndFixMold/detail/index.vue";
+import fixtureMakeApplyDetail from "@/views/plmManage/projectMgmt/fixtureMakeApply/detail/index.vue";
+import handBoardCheckSheetDetail from "@/views/plmManage/projectMgmt/handBoardSheet/detail/index.vue";
+import handleAuditSheetDetail from "@/views/plmManage/projectMgmt/handleAudit/detail/index.vue";
 import idDesignDetail from "@/views/plmManage/projectMgmt/idDesignCheck/detail/index.vue";
 import idDetail from "@/views/plmManage/projectMgmt/idEffect/detail/index.vue";
-import HandleMakeSheet from "./handleMakeSheet/index.vue";
-import DesignInputSheet from "./designInputSheet/index.vue";
-import auditRecordDetail from "@/views/plmManage/projectMgmt/auditRecord/detail/index.vue";
-import tryApplySheetDetail from "@/views/plmManage/projectMgmt/trialProd/detail/index.vue";
+import loseModeListDetail from "@/views/plmManage/projectMgmt/loseModeList/detail/index.vue";
+import { message } from "@/utils/message";
 import moldDesignSheetDetail from "@/views/plmManage/projectMgmt/moldDesignAudit/detail/index.vue";
-import tryMoldNoticeDetail from "@/views/plmManage/projectMgmt/tryMoldNotice/detail/index.vue";
-import partSampleApplyDetail from "@/views/plmManage/projectMgmt/partApply/detail/index.vue";
-import editFixMoldConfirmDetail from "@/views/plmManage/projectMgmt/editAndFixMold/detail/index.vue";
 import moldEditHistorySheetDetail from "@/views/plmManage/projectMgmt/moldHistory/detail/index.vue";
-import seriesComparisonSheetDetail from "@/views/plmManage/projectMgmt/seriesComparison/detail/index.vue";
-import budgetApplySheetDetail from "@/views/plmManage/projectMgmt/budgetApply/detail/index.vue";
-import customerSheetDetail from "@/views/plmManage/projectMgmt/customerSatisfaction/detail/index.vue";
-import sampleTestApplySheetDetail from "@/views/plmManage/projectMgmt/sampleTestApply/detail/index.vue";
+import partSampleApplyDetail from "@/views/plmManage/projectMgmt/partApply/detail/index.vue";
+import pcbaProcessReqSheetDetail from "@/views/plmManage/projectMgmt/pcbaProcessTestReq/detail/index.vue";
 import pmImproveProcessSheetDetail from "@/views/plmManage/projectMgmt/pmProgress/detail/index.vue";
-import ceControlDetail from "@/views/plmManage/projectMgmt/ceControlList/detail/index.vue";
-import admitBookDetail from "@/views/plmManage/projectMgmt/admitBookList/detail/index.vue";
+import productThreeDConfirmSheetDetail from "@/views/plmManage/projectMgmt/productThreeDConfirm/detail/index.vue";
+import projectBomSheetDetail from "@/views/plmManage/projectMgmt/projectBom/detail/index.vue";
 import publicPartDetail from "@/views/plmManage/projectMgmt/publicAndReferList/detail/index.vue";
-import fixtureMakeApplyDetail from "@/views/plmManage/projectMgmt/fixtureMakeApply/detail/index.vue";
-import designChangeApplyDetail from "@/views/plmManage/projectMgmt/designChangeApply/detail/index.vue";
-import tryMeetCheckDetail from "@/views/plmManage/projectMgmt/preTrialMeetCheck/detail/index.vue";
-import devWorkTimeFeeTotalDetail from "@/views/plmManage/projectMgmt/devWorkTimeTotal/detail/index.vue";
 import sampleMakePlanAndListDetail from "@/views/plmManage/projectMgmt/sampleMakePlanAndList/detail/index.vue";
+import sampleModelSignListSheetDetail from "@/views/plmManage/projectMgmt/DR1SampleSignList/detail/index.vue";
+import sampleTestApplySheetDetail from "@/views/plmManage/projectMgmt/sampleTestApply/detail/index.vue";
+import seriesComparisonSheetDetail from "@/views/plmManage/projectMgmt/seriesComparison/detail/index.vue";
+import sizeTestReportSheetDetail from "@/views/plmManage/projectMgmt/sizeTestReport/detail/index.vue";
+import tryApplySheetDetail from "@/views/plmManage/projectMgmt/trialProd/detail/index.vue";
+import tryMeetCheckDetail from "@/views/plmManage/projectMgmt/preTrialMeetCheck/detail/index.vue";
+import tryMoldNoticeDetail from "@/views/plmManage/projectMgmt/tryMoldNotice/detail/index.vue";
+import saleAndSampleOrderDetail from "@/views/plmManage/projectMgmt/saleAndSampleOrder/detail/index.vue";
+import sampleMakeSelfCheckSheetDetail from "@/views/plmManage/projectMgmt/sampleMakeSelfCheck/detail/index.vue";
+import moldCheckReportDetail from "@/views/plmManage/projectMgmt/moldCheckReport/detail/index.vue";
+import { useUserStoreHook } from "@/store/modules/user";
 
 export const useCommonTemplate = () => {
   const onEditDeliver7 = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
@@ -43,7 +53,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -62,7 +72,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(loseModeListDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value.tableConfList, "tableConfList===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -93,7 +103,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -112,7 +122,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(buildDesignDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value._formData, "_formData===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -129,7 +139,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -148,7 +158,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(idDesignDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value._formData, "_formData===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -165,7 +175,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -184,7 +194,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(handleAuditSheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value._formData, "_formData===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -201,7 +211,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -220,7 +230,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(idDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value._formData, "_formData===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -250,7 +260,7 @@ export const useCommonTemplate = () => {
             })
               .then(() => {
                 console.log(modalRef.formData, "收集数据");
-                message("接口未完善", { type: "warning" });
+                message.warning("接口未完善");
               })
               .catch(console.log);
           }
@@ -283,7 +293,7 @@ export const useCommonTemplate = () => {
             })
               .then(() => {
                 console.log(modalRef.formData, "收集数据");
-                message("接口未完善", { type: "warning" });
+                message.warning("接口未完善");
               })
               .catch(console.log);
           }
@@ -304,7 +314,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -323,7 +333,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(auditRecordDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value.formData, "formData===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -340,7 +350,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -359,7 +369,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(tryApplySheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value.formData, "formData===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -376,7 +386,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -395,7 +405,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(moldDesignSheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "dataInfo...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -412,7 +422,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -431,7 +441,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(tryMoldNoticeDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value.formData, "formData...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -448,7 +458,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -467,7 +477,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(partSampleApplyDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -484,7 +494,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -503,7 +513,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(editFixMoldConfirmDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -520,7 +530,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -539,7 +549,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(moldEditHistorySheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -556,7 +566,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -575,7 +585,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(seriesComparisonSheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -592,7 +602,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -610,7 +620,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(budgetApplySheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -627,7 +637,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -645,7 +655,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(customerSheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -662,7 +672,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -680,7 +690,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(sampleTestApplySheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -697,7 +707,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -715,7 +725,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(pmImproveProcessSheetDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -732,7 +742,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -750,7 +760,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(ceControlDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -767,7 +777,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -785,7 +795,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(admitBookDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -802,7 +812,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -820,7 +830,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(publicPartDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -837,7 +847,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -855,7 +865,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(fixtureMakeApplyDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -872,7 +882,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -890,7 +900,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(designChangeApplyDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -907,7 +917,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -925,7 +935,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(tryMeetCheckDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -942,7 +952,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -960,7 +970,7 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(devWorkTimeFeeTotalDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
         done();
       }
     });
@@ -977,7 +987,7 @@ export const useCommonTemplate = () => {
 
     if (actionType !== "view") {
       const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
-      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message("不是当前负责人，不能进行操作", { type: "error" });
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
     }
 
     const titleMap = {
@@ -995,7 +1005,317 @@ export const useCommonTemplate = () => {
       contentRenderer: () => h(sampleMakePlanAndListDetail, { ref: detailRef }),
       beforeSure: (done) => {
         console.log(detailRef.value, "detailRef...===");
-        message("接口未接入", { type: "warning" });
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const projectBomSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+
+    addDialog({
+      title: `${titleMap[actionType]}工程BOM`,
+      width: "1700px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(projectBomSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const sampleModelSignListSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+
+    addDialog({
+      title: `${titleMap[actionType]}DR1功能样机/客户样机签收单`,
+      width: "1000px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(sampleModelSignListSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const productThreeDConfirmSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+
+    addDialog({
+      title: `${titleMap[actionType]}产品3D结构确认表`,
+      width: "1400px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(productThreeDConfirmSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const handBoardCheckSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+
+    addDialog({
+      title: `${titleMap[actionType]}手板点检表`,
+      width: "1200px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(handBoardCheckSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const pcbaProcessReqSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}PCBA板加工及检测要求`,
+      width: "1000px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(pcbaProcessReqSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const sizeTestReportSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}尺寸测量报告`,
+      width: "1800px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(sizeTestReportSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const saleAndSampleOrder = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}订单/样单/试产单`,
+      width: "1400px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(saleAndSampleOrderDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const sampleMakeSelfCheckSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}样机制作验证自检表`,
+      width: "1600px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(sampleMakeSelfCheckSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const moldCheckReport = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}模具验收报告`,
+      width: "1800px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(moldCheckReportDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
         done();
       }
     });
@@ -1003,6 +1323,15 @@ export const useCommonTemplate = () => {
 
   return {
     clickOtherDeliverName,
+    moldCheckReport,
+    saleAndSampleOrder,
+    sampleMakeSelfCheckSheet,
+    sizeTestReportSheet,
+    pcbaProcessReqSheet,
+    handBoardCheckSheet,
+    sampleModelSignListSheet,
+    productThreeDConfirmSheet,
+    projectBomSheet,
     devWorkTimeFeeTotalSheet,
     sampleMakePlanAndListSheet,
     designChangeApplySheet,

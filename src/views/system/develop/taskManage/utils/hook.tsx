@@ -302,10 +302,10 @@ export const useConfig = () => {
           try {
             const API = isAdd ? addMainTask : editTask; // 未填写上级任务, 按照主任务新增
             const result = await API(fd);
-            if (!result.data) return message(`${title}任务失败`, { type: "error" });
+            if (!result.data) return message.error(`${title}任务失败`);
             done();
             getTableList();
-            message(`${title}任务成功`);
+            message.success(`${title}任务成功`);
           } catch (error) {
             console.log("error", error);
           }
@@ -319,9 +319,9 @@ export const useConfig = () => {
     const row = rowData.value;
     showMessageBox(`确认要删除编号为【${row.billNo}】的任务吗?`).then(() => {
       deleteTask({ id: row.id, parentId: row.parentId }).then(({ data }) => {
-        if (!data) return message("删除失败", { type: "error" });
+        if (!data) return message.error("删除失败");
         getTableList();
-        message("删除成功");
+        message.success("删除成功");
       });
     });
   });
@@ -372,14 +372,14 @@ export const useConfig = () => {
       showMessageBox(`确认要${title}吗?`)
         .then(() => {
           updateTaskStatus({ ...row, newStatus }).then(({ data }) => {
-            if (!data) return message("操作失败", { type: "error" });
-            message("操作成功");
+            if (!data) return message.error("操作失败");
+            message.success("操作成功");
             getTableList();
           });
         })
         .catch(() => {});
     } else {
-      message(`当前任务状态不可${title}`, { type: "error" });
+      message.error(`当前任务状态不可${title}`);
     }
   };
 
@@ -389,7 +389,7 @@ export const useConfig = () => {
   const onStart = (row: TaskManageItemType) => {
     rowData.value = row;
     if (!row.responsibleUserCode) {
-      message("任务未设置责任人，不能开始", { type: "error" });
+      message.error("任务未设置责任人，不能开始");
       return;
     }
     commonActionFn([TaskStatus.pending, TaskStatus.stop], TaskStatus.start, "开始");
@@ -409,8 +409,8 @@ export const useConfig = () => {
     showMessageBox("确认要终止该任务吗?")
       .then(() => {
         updateTaskStatus({ ...row, newStatus: "4" }).then(({ data }) => {
-          if (!data) return message("操作失败", { type: "error" });
-          message("操作成功");
+          if (!data) return message.error("操作失败");
+          message.success("操作成功");
           getTableList();
         });
       })

@@ -9,7 +9,6 @@
 import { ref } from "vue";
 import { onMounted } from "vue";
 import { setColumn } from "@/utils/table";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { onlineUserInfoDetail, UserinfoOnlineItemType } from "@/api/systemManage";
 
 const columns = ref<TableColumnList[]>([]);

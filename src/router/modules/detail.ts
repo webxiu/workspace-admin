@@ -61,22 +61,22 @@ export default {
       component: () => import("@/views/plmManage/basicData/bomMgmt/print.vue")
     },
     {
-      path: "/oa/financeDept/payrollMgmt/payslip/detail",
+      path: "/financeDept/payrollMgmt/payslip/detail",
       name: "PayslipDetail",
       meta: { title: "工资条详情", keepAlive: true },
-      component: () => import("@/views/oa/financeDept/payrollMgmt/payslip/detail.vue")
+      component: () => import("@/views/financeDept/payrollMgmt/payslip/detail.vue")
     },
     {
-      path: "/oa/financeDept/payrollMgmt/payslip/templateConfig",
+      path: "/financeDept/payrollMgmt/payslip/templateConfig",
       name: "TemplateConfig",
       meta: { title: "工资条模板", keepAlive: true },
-      component: () => import("@/views/oa/financeDept/payrollMgmt/payslip/templateConfig/index.vue")
+      component: () => import("@/views/financeDept/payrollMgmt/payslip/templateConfig/index.vue")
     },
     {
-      path: "/oa/humanResources/staffInfo/print",
+      path: "/humanResources/staffInfo/print",
       name: "StaffInfoPrint",
       meta: { title: "人事档案打印", keepAlive: true },
-      component: () => import("@/views/oa/humanResources/staffInfo/print.vue")
+      component: () => import("@/views/humanResources/staffInfo/print.vue")
     },
     {
       path: "/plmManage/productMgmt/productsDevApplay/add/index",
@@ -145,16 +145,16 @@ export default {
       component: () => import("@/views/system/basic/menu/tableColumn/index.vue")
     },
     {
-      path: "/oa/humanResources/businessRecord/print",
+      path: "/humanResources/businessRecord/print",
       name: "PrintBusinessRecord",
       meta: { title: "打印外出申请", keepAlive: true },
-      component: () => import("@/views/oa/humanResources/businessRecord/print.vue")
+      component: () => import("@/views/humanResources/businessRecord/print.vue")
     },
     {
-      path: "/oa/productMkCenter/engineerDept/operateBook/sopInfo",
+      path: "/productMkCenter/engineerDept/operateBook/sopInfo",
       name: "OperateBookSopInfo",
       meta: { title: "指导书排位表", keepAlive: true },
-      component: () => import("@/views/oa/productMkCenter/engineerDept/operateBook/sopInfo/index.vue")
+      component: () => import("@/views/productMkCenter/engineerDept/operateBook/sopInfo/index.vue")
     },
     {
       path: "/plmManage/productMgmt/DR0Apply/add/index",
@@ -169,16 +169,16 @@ export default {
       component: () => import("@/views/plmManage/productMgmt/DR0Apply/print/index.vue")
     },
     {
-      path: "/oa/marketing/saleManage/handleMake/add/index",
+      path: "/marketing/saleManage/handleMake/add/index",
       name: "OaMarketingHandleMakeAddIndex",
       meta: { title: "手板制作申请单", keepAlive: true },
-      component: () => import("@/views/oa/marketing/saleManage/handleMake/add/index.vue")
+      component: () => import("@/views/marketing/saleManage/handleMake/add/index.vue")
     },
     {
-      path: "/oa/marketing/saleManage/handleMake/print/index",
+      path: "/marketing/saleManage/handleMake/print/index",
       name: "OaMarketingHandleMakePrintIndex",
       meta: { title: "手板制作申请单-打印", keepAlive: true },
-      component: () => import("@/views/oa/marketing/saleManage/handleMake/print/index.vue")
+      component: () => import("@/views/marketing/saleManage/handleMake/print/index.vue")
     }
   ]
 } as RouteConfigsTable;

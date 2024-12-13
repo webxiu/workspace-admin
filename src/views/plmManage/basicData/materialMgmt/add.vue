@@ -43,14 +43,14 @@ const { loading, formData, formRef, opts, submit } = useConfig(props);
 <style lang="scss">
 .upload-box {
   position: absolute;
-  margin-top: 16px;
   z-index: 3;
+  margin-top: 16px;
 }
 
 .materialProp-box {
   position: absolute;
-  margin-top: 4px;
   z-index: 3;
+  margin-top: 4px;
 }
 
 .el-upload.el-upload--picture-card,

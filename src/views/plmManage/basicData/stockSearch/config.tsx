@@ -255,7 +255,7 @@ export function useTable() {
         .then(() => {
           delMaterialInfo({ id: currentRow.value.id }).then((res) => {
             if (res.data) {
-              message(`删除成功`, { type: "success" });
+              message.success(`删除成功`);
               onSearch();
             }
           });
@@ -295,7 +295,7 @@ export function useTable() {
           }
           res.then((res) => {
             if (res.data) {
-              message(`操作成功`, { type: "success" });
+              message.success(`操作成功`);
               onSearch();
             }
           });

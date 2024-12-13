@@ -136,7 +136,7 @@ export const useConfig = () => {
 
   // 参数编号相关操作
   const onAdd2 = () => {
-    if (!rowData.value) return message("请选择菜单树", { type: "error" });
+    if (!rowData.value) return message.error("请选择菜单树");
     openDialog("add");
   };
   const onEdit2 = (row: SystemParamsNumberItemType) => {
@@ -146,7 +146,7 @@ export const useConfig = () => {
     systemParamsNumbeDelete({ id: row.id })
       .then((res) => {
         getMiddleList(rowData.value.itemId);
-        message("删除成功");
+        message.success("删除成功");
       })
       .catch(console.log);
   };
@@ -209,7 +209,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -228,7 +228,7 @@ export const useConfig = () => {
   };
 
   const onAdd3 = () => {
-    if (!rowData2.value) return message("请选择参数编号", { type: "error" });
+    if (!rowData2.value) return message.error("请选择参数编号");
     openDialog2("add", { systemparamId: rowData2.value.id });
   };
   const onEdit3 = (row: SystemParamsValueItemType) => {
@@ -239,7 +239,7 @@ export const useConfig = () => {
     systemParamsValueDelete({ id: row.id })
       .then((res) => {
         getMiddleList(rowData.value.itemId);
-        message("删除成功");
+        message.success("删除成功");
       })
       .catch(console.log);
   };
@@ -295,7 +295,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);

@@ -20,7 +20,7 @@ export function setChatMsg(item: ChatItemType) {
   _data.push(item);
   const maxCount = 200; // 最多保留200条
   if (_data.length > maxCount) {
-    message(`消息记录已超过限制, 将保存最近的${maxCount}条`, { type: "warning", duration: 5000 });
+    message.warning(`消息记录已超过限制, 将保存最近的${maxCount}条`, { duration: 5000 });
     _data = _data.slice(-maxCount);
   }
   localStorage.setItem(Chat_List, JSON.stringify(_data));
@@ -28,7 +28,7 @@ export function setChatMsg(item: ChatItemType) {
 }
 export function removeChatMsg(kimiChatRef) {
   showMessageBox("确定要清除聊天记录吗?").then(() => {
-    message("已清除聊天记录");
+    message.success("已清除聊天记录");
     localStorage.removeItem(Chat_List);
     kimiChatRef.value?.onClear();
   });

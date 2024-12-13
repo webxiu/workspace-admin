@@ -128,6 +128,16 @@ export function getProroductScheduleEditAuth() {
   return http.request<string>("get", "/oa/mfg/mc/ProductionScheduling/batchEdit", { headers: { hideLoading: true } });
 }
 
+/** 生产欠料 - 查询  */
+export function fetchOweMaterialList(data) {
+  return http.request("post", "/oa/mfg/mc/productshortofmaterial/select", { data });
+}
+
+/** 生产欠料 - 导出  */
+export function exportOweMaterialList(data) {
+  return http.request("post", "/oa/mfg/mc/productshortofmaterial/export", { data });
+}
+
 /** ========================= 生产部 ========================= */
 
 /** 单机成本 查询图表的数据 */

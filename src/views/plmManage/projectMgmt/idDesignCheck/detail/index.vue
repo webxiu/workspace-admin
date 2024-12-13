@@ -167,7 +167,7 @@
         <td class="head-col"><el-input v-model="_formData.patentRemark3" autosize type="textarea" placeholder=" " /></td>
       </tr>
       <tr>
-        <td colspan="6" style="text-align: left; padding: 6px; font-size: 15px">
+        <td colspan="6" style="padding: 6px; font-size: 15px; text-align: left">
           <div style="color: #000">评审结论：</div>
           <div><el-input v-model="_formData.auditResult" :autosize="{ minRows: 2 }" type="textarea" placeholder=" " /></div>
         </td>
@@ -180,7 +180,6 @@
 import dayjs from "dayjs";
 import { reactive } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 const _formData = reactive({
   productModel: "",
@@ -280,9 +279,9 @@ defineExpose({ _formData });
     }
 
     td {
-      border: 1px solid #000;
       // text-align: center;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

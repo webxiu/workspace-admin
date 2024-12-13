@@ -100,7 +100,7 @@ const openFileModel = (type, row) => {
       ),
     beforeSure: (done) => {
       if (!row.imgs.length) {
-        message("还没有上传文件", { type: "warning" });
+        message.warning("还没有上传文件");
       } else {
         done();
       }
@@ -118,8 +118,8 @@ defineExpose({ dataList });
     width: 100%;
 
     .line-txt {
-      font-weight: 700;
       padding: 6px;
+      font-weight: 700;
     }
 
     .fw {
@@ -137,8 +137,8 @@ defineExpose({ dataList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 

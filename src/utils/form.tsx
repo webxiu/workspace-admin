@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2024-03-19 16:12:48
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-22 16:50:05
+ * @Last Modified time: 2024-12-02 10:07:09
  */
 
 import { DictResultType, OptionKeys, getEnumDictList } from "@/utils/table";
-import { FormColumnItemType, formColumnList } from "@/api/systemManage";
+import { FormColumnItemType, formColumnList, menuFormColumnList, tableGroupList } from "@/api/systemManage";
 import type { FormItemRule, FormRules, UploadProps } from "element-plus";
 import { Ref, reactive, ref } from "vue";
 import { getUrlParameters, toParse } from "@/utils/common";
@@ -85,7 +85,7 @@ interface CustomMergeType {
     [key: string]: CustomPropsType;
   };
   /** 自定义元素(复杂输入框, 可从外部配置覆盖) */
-  customElement?: { [key: string]: ({ formModel, row }) => JSX.Element };
+  customElement?: { [key: string]: ({ formModel, row }) => JSXElement };
 }
 
 // 获取渲染表单组件类型
@@ -100,7 +100,7 @@ interface RenderComponentType extends CustomMergeType {
  * @param options 自定义属性、事件绑定
  * @param formatData 格式化配置
  */
-export const renderComponent = ({ column, customProps = {}, formatData, customElement = {} }: RenderComponentType): ((...arg) => JSX.Element) => {
+export const renderComponent = ({ column, customProps = {}, formatData, customElement = {} }: RenderComponentType): ((...arg) => JSXElement) => {
   return ({ formModel, row }) => {
     const { formatAPI, apiParams, ...customObj } = customProps[row.prop] ?? {};
     const statusObj = formatData["editInput"] ? { [formatData["editInput"]]: true } : {}; // 输入框输入状态
@@ -118,13 +118,13 @@ export const renderComponent = ({ column, customProps = {}, formatData, customEl
         formModel[row.prop] = rawFile.name;
         const ext = rawFile.type.split("/")[1];
         if (!formatData.accept.includes(`.${ext}`)) {
-          message("文件格式不正确!", { type: "error" });
+          message.error("文件格式不正确!");
           return false;
         }
         return true;
       };
     }
-    const dynamicRender = (Comp: JSX.Element) => {
+    const dynamicRender = (Comp: JSXElement) => {
       return column.dataOption?.length ? Comp : NoData;
     };
 
@@ -221,11 +221,18 @@ export const renderComponent = ({ column, customProps = {}, formatData, customEl
   };
 };
 
-/** 获取配置参数类型 */
+/** 表单配置参数类型 */
 export interface FormConfigParamType extends CustomMergeType {
-  columnList: FormColumnItemType[];
+  /** 加载状态 */
   loading?: Ref<boolean>;
+  /** 表单配置列表 */
+  columnList: FormColumnItemType[];
+  /** 菜单id */
   menuId?: number;
+  /** 分组编码 */
+  groupCode?: string;
+  /** 自定义表单名称插槽(key为字段名) */
+  slots?: { [key: string]: (...arg) => JSXElement };
 }
 
 /** 配置返回类型 */
@@ -237,14 +244,15 @@ export interface FormConfigReturnType {
 
 /**
  * 获取配表单配置
+ * @param param.loading 下拉框所有请求loading
  * @param param.columnList 表单配置项目列表
+ * @param param.slots 自定义表单名称插槽
  * @param param.customProps 自定义输入框属性或事件: { username: { class: 'xxx', onClick: ()=>{} }}
  * @param param.customElement 自定义输入框元素: { username: <div>xxx</div> }
- * @param param.loading 下拉框所有请求loading
  */
 export const getFormConfigs = (options: FormConfigParamType): FormConfigReturnType => {
   let { columnList } = options;
-  const { customProps = {}, customElement = {}, loading = ref(false) } = options;
+  const { customProps = {}, customElement = {}, slots = {}, loading = ref(false) } = options;
   const formRules = reactive<FormRules>({});
 
   if (!columnList.length) return { formData: {}, formColumns: [], formRules: {} };
@@ -265,7 +273,10 @@ export const getFormConfigs = (options: FormConfigParamType): FormConfigReturnTy
       const valueFomat: FormatDataType = toParse(column.valueFormat);
       if (valueFomat.rules) {
         valueFomat.rules.forEach((item) => {
-          item.pattern && (item.pattern = new RegExp(item.pattern));
+          if (item.pattern) {
+            const pattern = item.pattern.toString().slice(1, -1);
+            item.pattern = new RegExp(pattern);
+          }
         });
         // 如果配置表单校验就添加
         formRules[column.prop] = valueFomat.rules;
@@ -300,10 +311,11 @@ export const getFormConfigs = (options: FormConfigParamType): FormConfigReturnTy
   getDictData(columnList);
 
   const formColumns = columnList.map((column) => {
-    const { label, prop, valueFormat } = column;
+    const { label, prop, valueFormat, ...reset } = column;
     const { layout, ...formatData } = toParse(valueFormat) as FormatDataType;
     const _render = renderComponent({ column, customProps, formatData, customElement });
-    return { label, prop, render: _render, colProp: { span: layout || 12 } };
+    const _slots = column.slots && slots[prop] ? { label: slots[prop] } : undefined;
+    return { ...reset, label, prop, render: _render, slots: _slots, colProp: { span: layout || 12 } };
   });
   return { formData, formColumns, formRules };
 };
@@ -317,11 +329,24 @@ export const getFormColumns = async (options: Omit<FormConfigParamType, "columnL
     const { menuId: _menuId, ...option } = options;
     if (_menuId) menuId = _menuId;
     if (!menuId) throw new Error("菜单id不存在");
-    formColumnList(menuId, { headers: { hideLoading: true } })
-      .then(({ data }) => {
-        const res = getFormConfigs({ columnList: data, ...option });
-        resolve(res);
-      })
-      .catch(() => resolve([]));
+
+    tableGroupList({ menuId }).then(({ data }) => {
+      const group = data.find((item) => item.groupCode === option.groupCode);
+      if (!group?.id) {
+        message.error("表格分组未配置, 请到菜单管理中添加分组");
+        return resolve([]);
+      }
+      menuFormColumnList({ menuId, columnGroupId: group.id }, { headers: { hideLoading: true } })
+        .then(({ data }) => {
+          const { sysMenuFormItemVO } = data?.[0] || { sysMenuFormItemVO: [] };
+          if (!sysMenuFormItemVO.length) {
+            message.error("配置列表为空");
+            return resolve([]);
+          }
+          const res = getFormConfigs({ columnList: sysMenuFormItemVO, ...option });
+          resolve(res);
+        })
+        .catch(() => resolve([]));
+    });
   });
 };

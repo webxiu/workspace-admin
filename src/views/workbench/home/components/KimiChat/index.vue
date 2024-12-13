@@ -113,7 +113,7 @@ function onSubmit() {
   const content = formData.message.trim();
   if (!content) {
     formData.message = "";
-    return message("请输入您的问题", { type: "warning" });
+    return message.warning("请输入您的问题");
   }
   setMessage(content, "user", userInfo.value.userName);
   loading.value = true;
@@ -151,7 +151,7 @@ function onSubmit2() {
       const reply = data.data;
       setMessage(reply, "ai");
     })
-    .catch((error) => message(error, { type: "error" }))
+    .catch((error) => message.error(error))
     .finally(() => (loading.value = false));
 }
 
@@ -168,36 +168,42 @@ defineExpose({ onClear });
     height: 653px !important;
   }
 }
+
 .kimi-container {
   width: 100%;
-  height: 100%;
   min-width: 250px;
+  height: 100%;
   border-radius: 8px;
+
   .message-cont {
     flex: 1;
+    height: 633px;
     padding: 10px 10px 30px;
     overflow-y: auto;
-    border-radius: 4px;
     background-color: var(--el-fill-color-light);
-    height: 633px;
+    border-radius: 4px;
   }
+
   .user-role {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
     background: #dbdbdb;
+    border-radius: 50%;
   }
+
   .message {
-    padding: 10px;
-    border-radius: 10px;
     max-width: 100%;
+    padding: 10px;
     margin: 0 10px 10px;
     overflow-x: hidden;
+    border-radius: 10px;
   }
+
   .ai-item .message {
     margin-right: 50px;
     background: var(--el-color-primary-light-6);
   }
+
   .user-item .message {
     margin-left: 50px;
     background: var(--el-menu-border-color);

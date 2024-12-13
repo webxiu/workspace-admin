@@ -11,12 +11,10 @@ import {
 import { h, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import ButtonList from "@/components/ButtonList/index.vue";
 import ColorModal from "./ColorModal.vue";
 import HxModalInput from "@/components/HxModalInput/index.vue";
 import MaterialPropTable from "./materialPropTable.vue";
 import MyUpload from "./MyUpload.vue";
-import { PageUrl } from "@/config/constant";
 import { addDialog } from "@/components/ReDialog";
 import { useMultiTagsStore } from "@/store/modules/multiTags";
 

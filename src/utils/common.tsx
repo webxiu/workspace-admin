@@ -138,6 +138,25 @@ export function fileToBase64(file: File) {
   });
 }
 
+/**
+ * 将图片 URL 转换为 Base64
+ * @param url 图片地址
+ * @returns Base64 字符串
+ */
+export const imgUrlToBase64 = async (url: string) => {
+  return new Promise<string>((resolve, reject) => {
+    http
+      .get<object, Blob>(url, { responseType: "blob" })
+      .then((blob: any) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(blob);
+      })
+      .catch((err) => reject(err));
+  });
+};
+
 // 数字保留两位小数并且加千分位
 export const fixed2AndAddcomma = (num: number | string): string => {
   if (!num && num !== 0) return "";
@@ -245,8 +264,8 @@ export const getChildIDs = <T extends Record<string, any>, R>(arr: T[], field: s
 /** 复制文本 */
 export function copyText(text: string, msg?: string) {
   navigator.clipboard.writeText(text).then(
-    () => message(msg || "复制成功"),
-    (error: Error) => message("复制失败!" + error.message, { type: "error" })
+    () => message.success(msg || "复制成功"),
+    (error: Error) => message.error("复制失败!" + error.message)
   );
 }
 

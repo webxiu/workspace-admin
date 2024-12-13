@@ -67,7 +67,6 @@ import { onMounted } from "vue";
 import { ref } from "vue";
 import { useMaterialTable } from "./selectMaterialConfig";
 import { Search } from "@element-plus/icons-vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { getMaterialGroupTreeData } from "@/api/plmManage";
 
 const {

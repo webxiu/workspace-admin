@@ -166,10 +166,10 @@ export const useConfig = () => {
             showMessageBox(`提交后不可修改, 确认要${title}?`).then(() => {
               addEsopVersion(fd)
                 .then(({ data }) => {
-                  if (!data) message(`${title}失败`, { type: "error" });
+                  if (!data) message.error(`${title}失败`);
                   done();
                   getTableList();
-                  message(`${title}成功`);
+                  message.success(`${title}成功`);
                 })
                 .catch(console.log);
             });

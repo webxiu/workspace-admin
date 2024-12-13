@@ -52,7 +52,7 @@ const fetchDataList = (billNo, billType) => {
     operateBook: "10053",
     openModeApply: "10061",
     dr0DevApply: "10012",
-    palmApply: "10062",
+    palmApply: "10062"
   };
   getNodeDetailList({ billId: reqType[billType], billNo, searchType: 2 })
     .then((res: any) => {

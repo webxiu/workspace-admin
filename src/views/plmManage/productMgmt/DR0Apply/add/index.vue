@@ -293,7 +293,7 @@ const changeDept = (val) => {
 };
 
 const onBack = () => {
-  router.push("/plmManage/productMgmt/DR0Apply/index?menuCode=11&from=/oa/marketing&menuId=322&menuName=DR0开发申请");
+  router.push("/plmManage/productMgmt/DR0Apply/index?menuCode=11&from=/marketing&menuId=322&menuName=DR0开发申请");
 };
 
 const fetchOpts = () => {
@@ -390,7 +390,7 @@ const onSave = () => {
   typeApi[type](reqParams).then((res) => {
     if (res.data) {
       console.log(res.data, " res.dat===");
-      message(`${title}成功`, { type: "success" });
+      message.success(`${title}成功`);
     }
   });
 };
@@ -466,14 +466,14 @@ onMounted(() => {
   table,
   table td,
   table th {
-    border: 1px solid #000000;
     padding: 5px 10px;
+    border: 1px solid #000;
   }
 
   .devide-td {
     padding: 8px auto;
-    background-color: #ccc;
     font-weight: 700;
+    background-color: #ccc;
   }
 
   table {
@@ -495,16 +495,16 @@ onMounted(() => {
   }
 
   .top-area-dr0 {
-    width: 1600px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 1600px;
     margin: auto;
 
     .title {
-      text-align: center;
-      font-weight: 700;
       font-size: 30px;
+      font-weight: 700;
+      text-align: center;
     }
   }
 }

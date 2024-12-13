@@ -18,12 +18,13 @@
 @mixin scrollBar($width: 10px, $color: var(--scrollbar-thumb-bg-color), $bgColor: var(--scrollbar-bg-color), $shadowColor: rgba(0, 0, 0, 0.2), $radius: 10px) {
   &::-webkit-scrollbar {
     width: $width;
-    border-radius: $radius;
     background-color: $bgColor;
+    border-radius: $radius;
   }
+
   &::-webkit-scrollbar-thumb {
+    background-color: $color;
     border-radius: $radius;
     box-shadow: inset 0 0 10px $shadowColor;
-    background-color: $color;
   }
 }

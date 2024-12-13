@@ -89,25 +89,29 @@ defineExpose({ onPrint });
     size: a4 portrait;
     margin: 10mm;
   }
+
   .el-checkbox__inner {
-    print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 
 .mold-wrap {
   padding: 1px;
+
   .title {
     flex: 1;
+    margin-left: 50px;
+    font-family: "宋体", Arial, sans-serif, serif;
     font-size: 28px;
     color: #111;
-    margin-left: 50px;
     text-decoration: underline;
-    font-family: "宋体", Arial, sans-serif, serif;
   }
+
   .el-input__prefix {
     display: none;
   }
+
   .el-checkbox {
     margin-right: 10px;
   }
@@ -118,9 +122,11 @@ defineExpose({ onPrint });
     height: 130px;
     transition: none !important;
   }
+
   .el-upload--picture-card {
     display: none;
   }
+
   .el-upload-list__item-status-label {
     display: none !important;
   }

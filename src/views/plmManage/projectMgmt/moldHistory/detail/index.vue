@@ -103,7 +103,6 @@
 <script setup lang="tsx">
 import { reactive, ref } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 const dataList = ref([
   [
@@ -170,8 +169,8 @@ defineExpose({ formData, dataList });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

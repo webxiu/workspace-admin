@@ -149,7 +149,7 @@ export const useConfig = () => {
   const onBack = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     if (row.processStatus !== StatusText.audit) {
-      return message(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`, { type: "error" });
+      return message.error(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`);
     }
     showMessageBox(`确定要回退当前业务单号【${row.billNo}】到第一个审批任务吗？`).then(() => {
       const params = {
@@ -161,9 +161,9 @@ export const useConfig = () => {
         .then((res) => {
           if (res.data) {
             getTableList();
-            message("回退成功");
+            message.success("回退成功");
           } else {
-            message("回退失败", { type: "error" });
+            message.error("回退失败");
           }
         })
         .catch(console.log);
@@ -174,7 +174,7 @@ export const useConfig = () => {
   const onRevoke = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     if (row.processStatus !== StatusText.audit) {
-      return message(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`, { type: "error" });
+      return message.error(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`);
     }
     const formRef = ref();
     const _formData = reactive({
@@ -202,9 +202,9 @@ export const useConfig = () => {
                   if (res.data) {
                     done();
                     getTableList();
-                    message("撤销成功");
+                    message.success("撤销成功");
                   } else {
-                    message("撤销失败", { type: "error" });
+                    message.error("撤销失败");
                   }
                 })
                 .catch(console.log);
@@ -219,7 +219,7 @@ export const useConfig = () => {
   const onPause = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     if (row.processStatus !== StatusText.audit) {
-      return message(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`, { type: "error" });
+      return message.error(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`);
     }
     const _formData = reactive({
       thirdBillNo: row.billNo ?? "",
@@ -230,9 +230,9 @@ export const useConfig = () => {
         .then((res) => {
           if (res.data) {
             getTableList();
-            message("暂停成功");
+            message.success("暂停成功");
           } else {
-            message("暂停失败", { type: "error" });
+            message.error("暂停失败");
           }
         })
         .catch(console.log);
@@ -243,7 +243,7 @@ export const useConfig = () => {
   const onRestore = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     if (row.processStatus !== StatusText.pause) {
-      return message(`当前业务单号状态未处于【${StatusText.pause}】，禁止操作`, { type: "error" });
+      return message.error(`当前业务单号状态未处于【${StatusText.pause}】，禁止操作`);
     }
     const _formData = reactive({
       thirdBillNo: row.billNo ?? "",
@@ -254,9 +254,9 @@ export const useConfig = () => {
         .then((res) => {
           if (res.data) {
             getTableList();
-            message("恢复成功");
+            message.success("恢复成功");
           } else {
-            message("恢复失败", { type: "error" });
+            message.error("恢复失败");
           }
         })
         .catch(console.log);
@@ -305,7 +305,7 @@ export const useConfig = () => {
   const onStopBill = wrapFn(rowData, ({ text }) => {
     const row = rowData.value;
     // if (row.processStatus !== StatusText.audit) {
-    //   return message(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`, { type: "error" });
+    //   return message.error(`当前业务单号状态未处于【${StatusText.audit}】，禁止操作`)
     // }
     const _formData = reactive({
       processInsId: row.processInstanceId ?? ""
@@ -315,9 +315,9 @@ export const useConfig = () => {
         .then((res) => {
           if (res.data) {
             getTableList();
-            message("终止成功");
+            message.success("终止成功");
           } else {
-            message("终止失败", { type: "error" });
+            message.error("终止失败");
           }
         })
         .catch(console.log);

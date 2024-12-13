@@ -244,18 +244,18 @@ export const useTaskTable = (props) => {
               const validResult = filterRequireListNeedValid.every((item) => /^(?!(0[0-9]{0,}$))[0-9]{1,}[.]{0,}[0-9]{0,}$/.test(item.delayDays + ""));
 
               if (!validResult) {
-                message("开始时间、结束时间的模式下，延迟天数必须录入大于0的数字。", { type: "error" });
+                message.error("开始时间、结束时间的模式下，延迟天数必须录入大于0的数字。");
                 return;
               }
             }
 
-            if (!_formData.deliverable?.length) return message("还未添加交付物", { type: "error" });
+            if (!_formData.deliverable?.length) return message.error("还未添加交付物");
 
             const nameMsg = _formData.deliverable.some((item) => !item.name);
-            if (nameMsg) return message("请填写交付物名称", { type: "error" });
+            if (nameMsg) return message.error("请填写交付物名称");
 
             const deliverableMsg = _formData.deliverable.some((item) => !item.deliverableId);
-            if (deliverableMsg) return message("请选择交付物模版", { type: "error" });
+            if (deliverableMsg) return message.error("请选择交付物模版");
 
             const findGroupInfo = props.taskTreeData.value.find((item) => item.projectGroup?.id === currentRow.value.groupId);
             console.log(findGroupInfo, "findGroupInfo=>>>>>>>>>>>");
@@ -298,8 +298,8 @@ export const useTaskTable = (props) => {
   };
 
   const onAdd = () => {
-    // if (!currentRow.value) return message("请选择分组或者任务", { type: "warning" });
-    if (!currentRow.value) return message("请选择任务", { type: "warning" });
+    // if (!currentRow.value) return message.warning("请选择分组或者任务")
+    if (!currentRow.value) return message.warning("请选择任务");
     if (currentRow.value.groupId) {
       taskAction("add");
     } else {
@@ -308,8 +308,8 @@ export const useTaskTable = (props) => {
   };
 
   const onEdit = () => {
-    // if (!currentRow.value) return message("请选择分组或者任务", { type: "warning" });
-    if (!currentRow.value) return message("请选择任务", { type: "warning" });
+    // if (!currentRow.value) return message.warning("请选择分组或者任务")
+    if (!currentRow.value) return message.warning("请选择任务");
     if (currentRow.value.groupId) {
       taskAction("edit", currentRow.value);
     } else {
@@ -318,7 +318,7 @@ export const useTaskTable = (props) => {
   };
 
   const onDelete = () => {
-    if (!currentRow.value) return message("请选择任务", { type: "warning" });
+    if (!currentRow.value) return message.warning("请选择任务");
 
     if (currentRow.value.groupId) {
       const { groupId, id } = currentRow.value;

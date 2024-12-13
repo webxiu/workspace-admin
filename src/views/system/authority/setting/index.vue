@@ -6,7 +6,6 @@
  */ -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
@@ -40,7 +39,7 @@ const {
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <div class="dept-tree" style="width: 260px; padding-top: 10px; height: 782px; overflow-y: auto">
+      <div class="dept-tree" style="width: 260px; height: 782px; padding-top: 10px; overflow-y: auto">
         <el-tree
           :data="deptTreeData"
           :props="{ children: 'children', label: 'name' }"

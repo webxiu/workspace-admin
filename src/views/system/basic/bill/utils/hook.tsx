@@ -177,7 +177,7 @@ export const useConfig = () => {
         contentRenderer: () => h(SelectMenu, { ref: formRef }),
         beforeSure: (done, { options }) => {
           const FormRef = formRef.value.getRef();
-          if (!FormRef?.itemId) return message("请选择菜单", { type: "warning" });
+          if (!FormRef?.itemId) return message.warning("请选择菜单");
           _formData.menuId = FormRef.itemId;
           _formData.menuName = FormRef.menuName;
           done();
@@ -195,7 +195,7 @@ export const useConfig = () => {
       }
     };
 
-    getFormColumns({ loading, customElement })
+    getFormColumns({ loading, customElement, groupCode: "1" })
       .then((data) => {
         loading.value = false;
         if (!data.formColumns.length) return;
@@ -259,7 +259,7 @@ export const useConfig = () => {
       .then((res) => {
         if (res.data) {
           callback();
-          message(`${title}成功`);
+          message.success(`${title}成功`);
         }
       })
       .catch(console.log);
@@ -270,11 +270,11 @@ export const useConfig = () => {
     billNumberDelete({ id: row.id })
       .then((res) => {
         if (res.data) {
-          message("删除成功");
+          message.success("删除成功");
           rowData.value = null;
           getTableList();
         } else {
-          message("删除失败，请联系开发人员处理", { type: "error" });
+          message.error("删除失败，请联系开发人员处理");
         }
       })
       .catch(console.log);

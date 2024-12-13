@@ -168,7 +168,7 @@ export const useConfig = () => {
                   if (!res.data) return;
                   done();
                   getTableList();
-                  message("修改成功");
+                  message.success("修改成功");
                 })
                 .catch(console.log);
             });

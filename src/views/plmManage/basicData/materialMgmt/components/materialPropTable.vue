@@ -30,6 +30,28 @@ const { editCellRender } = tableEditRender({
   editFinish: ({ prop, index, row }) => {
     const value = row[prop];
     dataList.value[index][prop] = value;
+  },
+  customCell({ prop, row }) {
+    const value = row[prop];
+    const defVal = row.defaultValue;
+    const defaultName = getCurEnumData(row).find((el) => el.optionValue == defVal)?.optionName;
+    if (row.propertyType === 1) {
+      if (row.optionType === "多选") {
+        // TODO: 给属性值设置默认值
+        // if (defVal) {
+        //   row.propertyValue = [defVal];
+        // }
+        const names = row.propertyValue?.map((item) => getCurEnumData(row).find((el) => el.optionValue === item)?.optionName);
+        return names?.join(",") || defaultName;
+      } else {
+        // if (defVal) {
+        //   row.propertyValue = defVal;
+        // }
+        const name = getCurEnumData(row).find((el) => el.optionValue == row.propertyValue)?.optionName;
+        return name || defaultName;
+      }
+    }
+    return value || defVal;
   }
 });
 
@@ -46,7 +68,8 @@ const getConfig = () => {
         data,
         type: "select",
         options: getCurEnumData(data.row),
-        cellStyle: { textAlign: "left" }
+        cellStyle: { textAlign: "left" },
+        eleProps: { multiple: data.row.optionType === "多选", "collapse-tags": data.row.optionType === "多选", "max-collapse-tags": 2 }
       });
     }
     return editCellRender({ data });
@@ -64,5 +87,3 @@ onMounted(() => {
 
 defineExpose({ dataList, materialPropEnumList });
 </script>
-
-<style lang="scss" scoped></style>

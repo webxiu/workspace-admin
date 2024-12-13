@@ -1,8 +1,26 @@
-import { ChangeApplyItemType, MaterialGroupItemType, MoldApplyItemType, MoldFileItemType, ProductClassifyManageItemType } from "./types";
+import {
+  ChangeApplyItemType,
+  MaterialGroupItemType,
+  MoldApplyItemType,
+  MoldFileItemType,
+  OrderTemplateItemType,
+  OrderTemplatePartNameItemType,
+  OrderTemplatePictureItemType,
+  ProductClassifyManageItemType
+} from "./types";
 
 import { http } from "@/utils/http";
 
-export type { MaterialGroupItemType, ProductClassifyManageItemType, MoldApplyItemType, MoldFileItemType, ChangeApplyItemType };
+export type {
+  MaterialGroupItemType,
+  ProductClassifyManageItemType,
+  MoldApplyItemType,
+  MoldFileItemType,
+  ChangeApplyItemType,
+  OrderTemplateItemType,
+  OrderTemplatePartNameItemType,
+  OrderTemplatePictureItemType
+};
 
 /** ========================= PLM ========================= */
 /** 基础数据 -  查询物料列表 */
@@ -937,4 +955,30 @@ export function deleteMoldApply(data) {
 /** 开模申请 - 打印 */
 export function printMoldApply(data) {
   return http.request<MoldApplyItemType>("post", "/plm/plm/ModelOpening/xxxx", { data });
+}
+/** ========================= 订单模板 ========================= */
+
+/** 订单模板 - 列表 */
+export function orderTemplateList(data) {
+  return http.request<TablePagingResType<OrderTemplateItemType>>("post", "/plm/pm/orderTemplate/select", { data });
+}
+/** 订单模板 - 新增 */
+export function addOrderTemplate(data) {
+  return http.request<boolean>("post", "/plm/pm/orderTemplate/insert", { data, headers: { "Content-Type": "multipart/form-data" } });
+}
+/** 订单模板 - 修改 */
+export function updateOrderTemplate(data) {
+  return http.request<boolean>("post", "/plm/pm/orderTemplate/update", { data, headers: { "Content-Type": "multipart/form-data" } });
+}
+/** 订单模板 - 删除 */
+export function deleteOrderTemplate(params) {
+  return http.request<boolean>("post", "/plm/pm/orderTemplate/delete", { params });
+}
+/** 订单模板 - 详情 */
+export function detailOrderTemplate(id) {
+  return http.request<OrderTemplateItemType>("get", `/plm/pm/orderTemplate/selectbyid/${id}`);
+}
+/** 订单模板 - 导出 */
+export function exportOrderTemplate(data) {
+  return http.request<string>("post", "/plm/pm/orderTemplate/export", { data });
 }

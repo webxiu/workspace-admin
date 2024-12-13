@@ -63,7 +63,7 @@ const buttonsConfig = reactive<ButtonOptionType[]>([
 
 const bigTitle = computed(() => {
   if (!route.query.menuName) {
-    message("参数错误", { type: "error" });
+    message.error("参数错误");
   }
   return route.query.menuName;
 });
@@ -118,8 +118,8 @@ function onBack() {
     height: 100%;
 
     .header-title {
-      font-weight: 700;
       margin-top: -10px;
+      font-weight: 700;
       text-align: center;
       letter-spacing: 5px;
     }

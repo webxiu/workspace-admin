@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
-import ButtonList from "@/components/ButtonList/index.vue";
-
 import { useConfig } from "./utils/hook";
 
 const {

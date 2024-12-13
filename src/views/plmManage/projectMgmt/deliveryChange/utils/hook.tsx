@@ -1,11 +1,5 @@
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { addDialog } from "@/components/ReDialog";
-import { getkkViewUrl } from "@/utils/storage";
 import { ElMessage, FormRules } from "element-plus";
-import { h, reactive, ref } from "vue";
-import SelectProjectModal from "../selectProjectModal/index.vue";
-import SelectTaskModal from "../selectTaskModal/index.vue";
-import { message, showMessageBox } from "@/utils/message";
 import {
   addProjectTaskDeliversChange,
   fetchAllProjectMsgByProjectId,
@@ -15,6 +9,13 @@ import {
   getProjectTaskDeliversChangeFileList,
   submitProjectTaskDeliversChange
 } from "@/api/plmManage";
+import { h, reactive, ref } from "vue";
+import { message, showMessageBox } from "@/utils/message";
+
+import SelectProjectModal from "../selectProjectModal/index.vue";
+import SelectTaskModal from "../selectTaskModal/index.vue";
+import { addDialog } from "@/components/ReDialog";
+import { getkkViewUrl } from "@/utils/storage";
 
 export const commonDeliverChangeAction = (
   {
@@ -105,7 +106,7 @@ export const commonDeliverChangeAction = (
       beforeSure: (done) => {
         const formIns = formRef.value;
         if (!formIns.currentLeftRow) {
-          message("请选择项目", { type: "warning" });
+          message.warning("请选择项目");
         } else {
           _formData.projectId = formIns.currentLeftRow.id;
           _formData.projectName = formIns.currentLeftRow.projectName;
@@ -146,7 +147,7 @@ export const commonDeliverChangeAction = (
       beforeSure: (done) => {
         const formIns = formRef.value;
         if (!formIns.currentLeftRow) {
-          message("请选择任务", { type: "warning" });
+          message.warning("请选择任务");
         } else {
           _formData.taskId = formIns.currentLeftRow.id;
           _formData.taskName = formIns.currentLeftRow.name;

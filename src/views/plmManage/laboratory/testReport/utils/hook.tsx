@@ -415,7 +415,7 @@ export const useTestReportConfig = () => {
         .then(() => {
           delTestReportList({ id: currentRow.value.id }).then((res) => {
             if (res.data) {
-              message(`删除成功`, { type: "success" });
+              message.success(`删除成功`);
               currentRow.value = {};
               onSearch();
             }
@@ -497,7 +497,7 @@ export const useTestReportConfig = () => {
       .then(() => {
         commonSubmit({ id: row.id, billId: "10039" }).then((res) => {
           if (res.data) {
-            message(`提交  成功`, { type: "success" });
+            message.success(`提交  成功`);
             currentRow.value = {};
             onSearch();
           }
@@ -511,7 +511,7 @@ export const useTestReportConfig = () => {
       return ElMessage({ message: "请选择一条记录", type: "warning" });
     }
     if (![1, 2].includes(currentRow.value.billState)) {
-      return message("当前状态不能进行回退", { type: "error" });
+      return message.error("当前状态不能进行回退");
     }
     commonBackLogic(currentRow.value.billNo, onSearch);
   };

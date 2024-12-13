@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ElTree } from "element-plus";
 import { Col, Row } from "@/layout/Layout";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { Search } from "@element-plus/icons-vue";
 import { useConfig } from "./utils/hook";
 import { infoTreeData } from "./utils/config";
-import ButtonList from "@/components/ButtonList/index.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "WorkbenchInfoCenterIndex" });

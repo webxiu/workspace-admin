@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-04-17 09:22:45
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-28 17:18:25
+ * @Last Modified time: 2024-11-27 11:17:08
  */
 
 import "./index.scss";
@@ -21,7 +21,7 @@ export interface CustomItemType {
   /** 布局方向(排成行、列) */
   direction?: "column" | "row";
   /** 组件 */
-  comp?: JSX.Element;
+  comp?: JSXElement;
   style?: CSSProperties;
   children?: Array<GridItemType>;
 }

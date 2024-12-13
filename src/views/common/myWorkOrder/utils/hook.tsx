@@ -38,7 +38,7 @@ export const useConfig = () => {
 
   const queryParams = reactive({ date: `${before90DayDate} ~ ${nowDate}` });
 
-  let formData: any = reactive({
+  const formData: any = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
@@ -225,7 +225,7 @@ export const useConfig = () => {
       return ElMessage({ message: "请选择一条记录", type: "warning" });
     }
     if (![1, 2].includes(currentRow.value.billState)) {
-      return message("当前状态不能进行回退", { type: "error" });
+      return message.error("当前状态不能进行回退");
     }
     commonBackLogic(currentRow.value.billNo, onSearch);
   };

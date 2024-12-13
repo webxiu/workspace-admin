@@ -49,41 +49,11 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from "vue";
 import "vue-json-pretty/lib/styles.css";
 import { useConfig } from "./utils/hook";
-import { PureTableBar } from "@/components/RePureTableBar";
-import ButtonList from "@/components/ButtonList/index.vue";
-import { NodeItemProps } from "@/views/system/basic/menu/tableColumn/utils/hook";
+defineProps<{ height: number }>();
+const { tableRef, columns, dataList, loading, buttonList2, loadingStatus, onSearch, onRefresh, onDelete, onRowClick, onCopyColumn, handleSelectionChange } =
+  useConfig();
 
-defineOptions({ name: "TableConfigList" });
-
-const props = defineProps<{ queryParams: NodeItemProps; height: number }>();
-const {
-  tableRef,
-  queryParams2,
-  columns,
-  dataList,
-  loading,
-  buttonList2,
-  loadingStatus,
-  onRefresh,
-  onDelete,
-  onRowClick,
-  onCopyColumn,
-  getTableList,
-  handleSelectionChange
-} = useConfig();
-
-watch(
-  props,
-  ({ queryParams }) => {
-    const { columnGroupId, columnname, menuId } = queryParams;
-    if (columnGroupId && columnname && menuId) {
-      queryParams2.value = queryParams;
-      getTableList();
-    }
-  },
-  { immediate: true }
-);
+defineExpose({ onSearch });
 </script>

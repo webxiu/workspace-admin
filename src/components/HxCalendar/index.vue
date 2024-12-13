@@ -255,36 +255,40 @@ $color: var(--el-text-color-primary);
 $borderColor: var(--el-card-border-color);
 
 .hx-calendar {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--el-fill-color-blank);
   border-top: 1px solid $borderColor;
   border-left: 1px solid $borderColor;
-  flex-direction: column;
-  display: flex;
-  flex: 1;
-  overflow: hidden;
 
   .calendar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 42px;
     white-space: nowrap;
     user-select: none;
     border-right: 1px solid $borderColor;
-    height: 42px;
+
     .calendar-month {
       width: 100px;
+      font-size: 18px;
       text-align: center;
       border: none;
-      font-size: 18px;
       box-shadow: none;
+
       .el-input__wrapper,
       .el-input__wrapper.is-focus {
         box-shadow: none;
       }
+
       .el-input__prefix-inner {
         display: none;
       }
     }
+
     .calendar-today {
       flex: 1;
       font-size: 20px;
@@ -294,13 +298,15 @@ $borderColor: var(--el-card-border-color);
   }
 
   .calendar-body {
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
+
     .week-item {
       display: flex;
       font-size: 14px;
       background: rgb(145 219 224 / 35%);
+
       .week-cell {
         flex: 1;
         padding: 5px;
@@ -309,6 +315,7 @@ $borderColor: var(--el-card-border-color);
         user-select: none;
         border: 1px solid $borderColor;
         border-left: none;
+
         &:nth-child(1) {
           color: $weekColor;
         }
@@ -320,10 +327,12 @@ $borderColor: var(--el-card-border-color);
       flex: 1;
       width: 100%;
       color: $color;
+
       .today {
         color: #fff !important;
         background: var(--el-color-primary);
       }
+
       .festival {
         color: var(--el-color-primary);
       }
@@ -331,6 +340,7 @@ $borderColor: var(--el-card-border-color);
       .current-month {
         font-size: 14px;
       }
+
       .other-month {
         color: #b5b5b5;
       }
@@ -340,34 +350,36 @@ $borderColor: var(--el-card-border-color);
       }
 
       .day-cell {
-        flex: 1;
-        padding: 4px;
-        cursor: pointer;
+        box-sizing: border-box;
         display: flex;
-        align-items: center;
+        flex: 1;
         flex-direction: column;
+        align-items: center;
         justify-content: center;
+        padding: 4px;
         line-height: $cell-height;
-        border-right: 1px solid $borderColor;
-        border-bottom: 1px solid $borderColor;
         text-align: center;
         white-space: nowrap;
-        box-sizing: border-box;
+        cursor: pointer;
+        border-right: 1px solid $borderColor;
+        border-bottom: 1px solid $borderColor;
 
         &:hover,
         &.select {
           color: #fff !important;
           background: #1bac46;
         }
+
         .day {
           font-size: 18px;
           line-height: 1em;
         }
+
         .lunar {
-          opacity: 0.7;
           margin-top: 2px;
           font-size: 12px;
           line-height: 1em;
+          opacity: 0.7;
         }
       }
     }

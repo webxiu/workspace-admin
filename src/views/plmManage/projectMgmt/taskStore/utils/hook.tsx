@@ -203,8 +203,8 @@ export const useConfig = () => {
   const saveRight = () => {
     const flag = dataList2.value.some((item) => item.deliverableId == "0" || !item.deliverableId);
     const flag2 = dataList2.value.some((item) => !item.name);
-    if (flag) return message("还未选择交付物模版", { type: "error" });
-    if (flag2) return message("请填写交付物名称", { type: "error" });
+    if (flag) return message.error("还未选择交付物模版");
+    if (flag2) return message.error("请填写交付物名称");
 
     const reqParams = {
       id: currentRow.value.id,
@@ -321,7 +321,7 @@ export const useConfig = () => {
         FormRef.validate(async (valid) => {
           if (valid) {
             const isUniqueName = allTaskNames.value.includes(_formData.taskName);
-            if (type === "add" && isUniqueName) return message("不能添加已存在的任务名称", { type: "error" });
+            if (type === "add" && isUniqueName) return message.error("不能添加已存在的任务名称");
             ElMessageBox.confirm(`确认要${title}吗?`, "系统提示", {
               type: "warning",
               draggable: true,
@@ -341,13 +341,13 @@ export const useConfig = () => {
   };
 
   const onSubmitChange = (type: string, title: string, data, callback) => {
-    if (!data.deliverablesTemplateVOS?.length) return message("还未添加交付物", { type: "error" });
+    if (!data.deliverablesTemplateVOS?.length) return message.error("还未添加交付物");
 
     const nameMsg = data.deliverablesTemplateVOS.some((item) => !item.name);
-    if (nameMsg) return message("请填写交付物名称", { type: "error" });
+    if (nameMsg) return message.error("请填写交付物名称");
 
     const deliverableMsg = data.deliverablesTemplateVOS.some((item) => !item.deliverableId);
-    if (deliverableMsg) return message("请选择交付物模版", { type: "error" });
+    if (deliverableMsg) return message.error("请选择交付物模版");
     console.log(data, "save back");
     // 组装请求参数
 

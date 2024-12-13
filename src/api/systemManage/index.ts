@@ -33,6 +33,9 @@ import {
   FlowTaskManageItemType,
   FlowWechatItemType,
   FormColumnItemType,
+  FormGroupConfigItemType,
+  FormGroupItemType,
+  FormTypeItemType,
   GroupLeaderTreeItemType,
   MenuButtonItemType,
   MenuColumnItemType,
@@ -135,7 +138,10 @@ export type {
   FormColumnItemType,
   MenuButtonItemType,
   MyWorkOrderItemType,
-  EsopVersionItemType
+  EsopVersionItemType,
+  FormGroupItemType,
+  FormTypeItemType,
+  FormGroupConfigItemType
 };
 
 /** ========================= 菜单管理(基础信息) ========================= */
@@ -156,6 +162,10 @@ export function menuAdd(data) {
 /** 修改菜单 */
 export function menuUpdate(data) {
   return http.request<boolean>("post", "/sys/sys/menulist/update", { data });
+}
+
+export function menuFormColumnList({ menuId, columnGroupId }, params) {
+  return http.request<FormGroupConfigItemType[]>("get", `/sys/sys/SysMenuFormItem/select/${menuId}/${columnGroupId}`, { ...params });
 }
 
 /** 删除菜单 */
@@ -215,24 +225,16 @@ export function deleteformColumn(data) {
 /** ========================= 表单分组(菜单管理) ========================= */
 
 /** 表单分组: 列表 */
-export function formGroupList(data) {
-  return http.request<boolean>("post", "/oa/sys/quoterequest/list", { data });
+export function formGroupList(params) {
+  return http.request<FormGroupItemType[]>("get", "/sys/sys/menuFormGroup/selectlistbymenuid", { params });
 }
-/** 表单分组: 新增 */
+/** 表单分组: 新增(传id为修改) */
 export function addFormGroup(data) {
-  return http.request<boolean>("post", "/oa/sys/quoterequest/insert", { data });
-}
-/** 表单分组: 修改 */
-export function updateFormGroup(data) {
-  return http.request<boolean>("post", "/oa/sys/quoterequest/update", { data });
+  return http.request<boolean>("post", "/sys/sys/menuFormGroup/fetch", { data });
 }
 /** 表单分组: 删除(批量) */
 export function deleteFormGroup(data) {
-  return http.request<boolean>("post", "/oa/sys/quoterequest/deleteBatch", { data });
-}
-/** 表单分组: 获取分组详情 */
-export function formGroupDetail(data) {
-  return http.request<boolean>("post", "/oa/sys/quoterequest/selectbyid", { data });
+  return http.request<boolean>("post", "/sys/sys/menuFormGroup/deleteBatch", { data });
 }
 
 /** ========================= 表格配置(菜单管理) ========================= */

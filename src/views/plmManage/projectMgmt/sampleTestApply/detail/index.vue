@@ -171,7 +171,6 @@
 <script setup lang="tsx">
 import { reactive, ref } from "vue";
 import { fetchProductStoreList } from "@/api/plmManage";
-import HxModalInput from "@/components/HxModalInput/index.vue";
 
 const formData: any = reactive({});
 const showOther = ref(false);
@@ -243,8 +242,8 @@ defineExpose({ formData });
     width: 100%;
 
     .line-txt {
-      font-weight: 700;
       padding: 6px;
+      font-weight: 700;
     }
 
     .fw {
@@ -262,8 +261,8 @@ defineExpose({ formData });
 
     td,
     th {
-      border: 1px solid #000;
       padding: 4px 8px;
+      border: 1px solid #000;
     }
   }
 }

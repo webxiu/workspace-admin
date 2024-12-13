@@ -34,7 +34,6 @@
 
 <script setup lang="ts">
 import { useRolesTable } from "./selectRolesConfig";
-import { PureTableBar } from "@/components/RePureTableBar";
 
 const { columns, dataList, loading, rowClick } = useRolesTable();
 

@@ -1,6 +1,5 @@
+import { InjectCancel, http } from "@/utils/http";
 import { MaterialManageItemType, PayslipDataItemType, StandardCostItemType } from "./types/financeDept";
-
-import { http } from "@/utils/http";
 
 export type { StandardCostItemType, MaterialManageItemType, PayslipDataItemType };
 
@@ -160,6 +159,19 @@ export function dispatchPayslipDataInfo(data) {
 /** 工资条管理 — 导入 */
 export function importPayslipDataInfo(data) {
   return http.request("post", "/oa/fin/payslipmanage/importpayslipdata", { data });
+}
+/** 工资条管理 — 导入(工资条导入改造测试) */
+export function importPayslipDataInfo2(data, onUploadProgress) {
+  return http.request<boolean>(
+    "post",
+    "/oa/fin/payslipmanage/importpayslipdata2",
+    { data },
+    {
+      headers: { "Content-Type": "multipart/form-data", hideLoading: true },
+      onUploadProgress,
+      cancelToken: InjectCancel(importPayslipDataInfo2)
+    }
+  );
 }
 
 /** 工资条管理 — 撤销导入 */

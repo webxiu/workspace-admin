@@ -152,11 +152,11 @@ export const useConfig = () => {
         //       const reqApi = { add: addTabletManage, edit: updateTabletManage };
         //       reqApi[type]({}).then((res) => {
         //         if (res.data) {
-        //           message(`${title}成功`);
+        //           message.success(`${title}成功`);
         //           getTableList();
         //           done();
         //         } else {
-        //           message(`${title}失败`, { type: "error"});
+        //           message.error(`${title}失败`);
         //         }
         //       });
         //     });
@@ -171,8 +171,8 @@ export const useConfig = () => {
     showMessageBox("确认删除吗").then(() => {
       // deleteTabletManage({ id: rowData.value?.id })
       //   .then((res) => {
-      //     if (!res.data) return message("删除失败", { type: "error"});
-      //     message("删除成功");
+      //     if (!res.data) return message.error("删除失败");
+      //     message.success("删除成功");
       //     getTableList();
       //   })
       //   .catch(console.log);
@@ -180,13 +180,13 @@ export const useConfig = () => {
   });
 
   const onSubmit = () => {
-    message("提交申请流程");
+    message.success("提交申请流程");
   };
   const onDetail = () => {
-    message("查看审批流程");
+    message.success("查看审批流程");
   };
   const onRevoke = () => {
-    message("撤销");
+    message.success("撤销");
   };
   const onPrint = wrapFn(rowData, () => {
     const row = rowData.value;

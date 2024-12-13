@@ -27,7 +27,6 @@ import { bomHistoryListByBomId, bomHistoryTableData } from "@/api/plmManage";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useHistoryConfig } from "./hook";
-import { PureTableBar } from "@/components/RePureTableBar";
 
 const { columns, maxHeight, setHeight } = useHistoryConfig();
 

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useEleHeight } from "@/hooks";
 
 const loading = ref(false);

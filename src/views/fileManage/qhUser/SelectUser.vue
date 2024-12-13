@@ -60,7 +60,6 @@ import { onMounted, reactive } from "vue";
 import { ref } from "vue";
 import { useUserTable } from "./selectUserConfig";
 import { Search } from "@element-plus/icons-vue";
-import { PureTableBar } from "@/components/RePureTableBar";
 import { getDeptTreeData } from "@/api/systemManage";
 
 const { columns, dataList, loading, onSearch, rowClick } = useUserTable();

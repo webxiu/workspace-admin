@@ -112,7 +112,7 @@ export const useConfig = () => {
 
   function openDialog(rows: DeptInfoAgentResType[]) {
     if (rows.length === 0) {
-      return message("请选择需要设置代理人的部署名称", { type: "error" });
+      return message.error("请选择需要设置代理人的部署名称");
     }
 
     const formRef = ref();
@@ -127,7 +127,7 @@ export const useConfig = () => {
       beforeSure: (done, { options }) => {
         const selectRow: DeptUserItemType = formRef.value.getRef();
         if (!selectRow.id) {
-          return message("请选择用户", { type: "error" });
+          return message.error("请选择用户");
         }
         showMessageBox(`确认要修改审批代理人为【${selectRow.userName}】吗?`).then(() => {
           const newData = rows.map((item) => ({ ...item, deptId: rowData.value.itemId, userId: selectRow.id }));
@@ -135,10 +135,10 @@ export const useConfig = () => {
             .then(({ data }) => {
               if (data) {
                 done();
-                message("修改成功");
+                message.success("修改成功");
                 getTableList2(rowData.value);
               } else {
-                message("修改失败", { type: "error" });
+                message.error("修改失败");
               }
             })
             .catch(console.log);
@@ -154,10 +154,10 @@ export const useConfig = () => {
         updateAuditAgent(newData)
           .then(({ data }) => {
             if (data) {
-              message("清空成功");
+              message.success("清空成功");
               getTableList2(rowData.value);
             } else {
-              message("清空失败", { type: "error" });
+              message.error("清空失败");
             }
           })
           .catch(console.log);
