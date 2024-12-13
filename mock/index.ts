@@ -49,7 +49,6 @@ const routes = Object.keys(modules).reduce((prev, key, index) => {
   return prev;
 }, []);
 
-console.log("routes", routes);
 // 执行mock
 routes.forEach((route) => Mock.mock(route.url, route.method, route.response));
 

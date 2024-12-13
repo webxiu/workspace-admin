@@ -1,4 +1,4 @@
-import { LOGIN_INFO, setKkViewInfo, useLocalStorage } from "@/utils/storage";
+import { LOGIN_INFO, setCookie, setKkViewInfo, useLocalStorage } from "@/utils/storage";
 import { LoginAppInfoType, fetchkkViewIpUrl, getCode, queryLoginParamsInfo, submitResetPassword } from "@/api/user/user";
 import { formConfigs, formRules } from "./config";
 import { getTopMenu, initRouter } from "@/router/utils";
@@ -117,6 +117,7 @@ export const useConfig = () => {
             // }
             // todo 待优化:退出登录移除动态路由会保留上个用户路由, 导致无权限用户也能进入上次路由, 改为跳转首页
             router.push("/workbench/home");
+            setCookie(Date.now().toString());
             message.success("登录成功");
             const timer = setTimeout(() => {
               loading.value = false;

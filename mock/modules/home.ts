@@ -76,7 +76,7 @@ export default [
           status: 200,
           message: "操作成功",
           data: "https://dlpctest.deogra.com/",
-          timestamp: 1734081038657
+          timestamp: 1734081976442
         };
       }
     },
@@ -89,7 +89,7 @@ export default [
           status: 200,
           message: "操作成功",
           data: {"responsibilityWait":0,"createSuspend":0,"responsibilitySuspend":0,"createWait":0},
-          timestamp: 1734081039565
+          timestamp: 1734081977074
         };
       }
     },
@@ -102,7 +102,7 @@ export default [
           status: 200,
           message: "操作成功",
           data: [{"controller":"/work/wb/infocenter/index","web_router":"/workbench/infoCenter/index","icon":"iconfont icon-caiwubaobiao","menuId":87,"menuName":"信息中心"},{"controller":"/sys/sys/sqlexecuteapproval/index","web_router":"/system/develop/database/index","icon":"layui-icon layui-icon-note","menuId":241,"menuName":"数据库维护"},{"controller":"/sys/sys/userinfo/index","web_router":"/system/basic/user/index","icon":"iconfont icon-jiaosequnti","menuId":68,"menuName":"用户管理"},{"controller":"/system/develop/taskManage/index","web_router":"/system/develop/taskManage/index","icon":"","menuId":277,"menuName":"任务管理"}],
-          timestamp: 1734081039542
+          timestamp: 1734081977062
         };
       }
     },
@@ -115,7 +115,7 @@ export default [
           status: 200,
           message: "操作成功",
           data: [{"item":"百岁倒计时","auxiliary":"12046","value":"33.0%"},{"item":"加入德龙","auxiliary":"569","value":"1.5"},{"item":"本年倒计时","auxiliary":"348","value":"95.1%"},{"item":"本月倒计时","auxiliary":"13","value":"41.9%"},{"item":"本周倒计时","auxiliary":"5","value":"71.4%"}],
-          timestamp: 1734081039529
+          timestamp: 1734081977070
         };
       }
     }] as MockMethod[];
