@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-14 17:16:59
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-13 15:05:06
+ * @Last Modified time: 2024-12-16 17:28:04
  */
 
 import { BelongGroupItemType, MenuTreeItemType } from "@/api/systemManage/types";
@@ -457,9 +457,19 @@ export interface OrgCharItemType {
 /** 画图工具 - 列表类型 */
 export interface DrawToolItemType {
   id: string;
-  limit: number;
-  page: number;
   processName: string;
+  processCode: string;
+  billNo: string;
+  billState: number;
   version: number;
-  xml: string;
+  filePath: string;
+  fileName: string;
+  resourceName: string;
+  virtualPath: string;
+  createDate: string;
+  modifyDate: string;
+  createUserId: number;
+  createUserName: string;
+  modifyUserId: number;
+  modifyUserName: string;
 }

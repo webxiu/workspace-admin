@@ -321,3 +321,4 @@ writingDirection=Skrivriktning
 zoom=Zooma
 zoomIn=Zooma in
 zoomOut=Zooma ut
+modifyTitle=Modify Title

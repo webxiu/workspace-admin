@@ -324,4 +324,5 @@ writingDirection=编写方向
 zoom=缩放
 zoomIn=放大
 zoomOut=缩小
+modifyTitle=修改标题
 

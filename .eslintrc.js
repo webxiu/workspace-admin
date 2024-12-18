@@ -46,6 +46,8 @@ module.exports = {
       tsx: true
     }
   },
+  /** public下的文件不检查 */
+  ignorePattern: ['public/**/*'],
   overrides: [
     {
       files: ["*.ts", "*.vue"],
@@ -70,17 +72,17 @@ module.exports = {
     }
   ],
   rules: {
-    "vue/no-v-html": "off",
-    "vue/require-default-prop": "off",
-    "vue/require-explicit-emits": "off",
-    "vue/multi-word-component-names": "off",
-    "@typescript-eslint/no-explicit-any": "off", // any
-    "no-debugger": "off",
-    "@typescript-eslint/explicit-module-boundary-types": "off", // setup()
-    "@typescript-eslint/ban-types": "off",
-    "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
+    "vue/no-v-html": "off", // 不允许使用v-html
+    "vue/require-default-prop": "off", // 需要默认prop
+    "vue/require-explicit-emits": "off", // 需要显式emit
+    "vue/multi-word-component-names": "off", // 多个单词组件名称
+    "@typescript-eslint/no-explicit-any": "off",  // 不允许使用any
+    "no-debugger": "off", // 不允许使用debugger
+    "@typescript-eslint/explicit-module-boundary-types": "off", // 禁用指定函数返回类型和参数类型
+    "@typescript-eslint/ban-types": "off", // 禁止使用特定类型
+    "@typescript-eslint/ban-ts-comment": "off", // 禁用ts注释
+    "@typescript-eslint/no-empty-function": "off", // 禁用空函数
+    "@typescript-eslint/no-non-null-assertion": "off", // 禁用非空断言
     "@typescript-eslint/no-this-alias": "off", // 关闭this起别名限制
     "vue/html-self-closing": [
       "error",

@@ -549,6 +549,42 @@ Actions.prototype.init = function () {
     null,
     Editor.ctrlKey + "+O"
   );
+
+  /**
+   * 添加自定义按钮
+   */
+  this.addAction(
+    "modifyTitle",
+    mxUtils.bind(this, function () {
+      console.log('111', "修改标题 点击事件");
+      var cell = graph.getSelectionCell() || graph.getModel().getRoot();
+      var dlg = new TextareaDialog(
+        this.editorUi,
+        mxResources.get("modifyTitle") + ":",
+        cell.value,
+        function (newValue) {
+          if (!cell) return console.error("未找到具有指定 ID 的单元格: cellId")
+          cell.setValue(newValue);
+          cell.data = JSON.stringify({ name: "节点数据2", value: 2024 });
+          graph.refresh();
+          console.log("cell2", cell);
+        },
+        null,
+        null,
+        400,
+        220,
+        null,
+        null,
+        null,
+        '确定',
+      );
+      this.editorUi.showDialog(dlg.container, 420, 300, true, true);
+      dlg.init();
+    }),
+    null,
+    null,
+  );
+
   this.addAction(
     "editTooltip",
     function () {
@@ -641,7 +677,7 @@ Actions.prototype.init = function () {
               title,
               new mxGeometry(0, 0, 100, 40),
               "fontColor=#0000EE;fontStyle=4;rounded=1;overflow=hidden;" +
-                (icon != null ? "shape=label;imageWidth=16;imageHeight=16;spacingLeft=26;align=left;image=" + icon : "spacing=10;")
+              (icon != null ? "shape=label;imageWidth=16;imageHeight=16;spacingLeft=26;align=left;image=" + icon : "spacing=10;")
             );
             linkCell.vertex = true;
 
@@ -1608,7 +1644,7 @@ Actions.prototype.init = function () {
         title,
         value,
         function (newValue, w, h) {
-          console.log("操作_上传图片", arguments);
+          console.log('111', "上传图片", arguments);
           // Inserts image into HTML text
           if (graph.cellEditor.isContentEditing()) {
             graph.cellEditor.restoreSelection(selectionState);

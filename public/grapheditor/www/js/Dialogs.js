@@ -1230,7 +1230,7 @@ ExportDialog.exportFile = function (editorUi, name, format, bg, s, b, dpi) {
  * key=value, where value should be URL encoded.
  */
 ExportDialog.saveLocalFile = function (editorUi, data, filename, format) {
-  console.log("操作_导出xml|svg", arguments);
+  console.log('111', "导出xml|svg", arguments);
   return;
   if (data.length < MAX_REQUEST_SIZE) {
     editorUi.hideDialog();

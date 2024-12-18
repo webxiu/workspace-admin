@@ -352,7 +352,7 @@ Editor.prototype.defaultGraphOverflow = "hidden";
 /**
  * Initializes the environment.
  */
-Editor.prototype.init = function () {};
+Editor.prototype.init = function () { };
 
 /**
  * Sets the XML node for the current diagram.
@@ -662,7 +662,7 @@ Editor.prototype.createUndoManager = function () {
 /**
  * Adds basic stencil set (no namespace).
  */
-Editor.prototype.initStencilRegistry = function () {};
+Editor.prototype.initStencilRegistry = function () { };
 
 /**
  * Creates and returns a new undo manager.
@@ -1802,7 +1802,7 @@ PageSetupDialog.getFormats = function () {
  * Constructs a new filename dialog.
  */
 var FilenameDialog = function (editorUi, filename, buttonText, fn, label, validateFn, content, helpLink, closeOnBtn, cancelFn, hints, w) {
-  console.log("操作_保存回显文件名", arguments);
+  console.log('111', "保存回显文件名", arguments);
   closeOnBtn = closeOnBtn != null ? closeOnBtn : true;
   var row, td;
 
@@ -1822,6 +1822,7 @@ var FilenameDialog = function (editorUi, filename, buttonText, fn, label, valida
 
   var nameInput = document.createElement("input");
   nameInput.setAttribute("value", filename || "");
+  nameInput.setAttribute("placeholder", "文件名必须以.xml结尾");
   nameInput.style.marginLeft = "4px";
   nameInput.style.width = w != null ? w + "px" : "180px";
 
@@ -2358,13 +2359,13 @@ FilenameDialog.createFileTypes = function (editorUi, nameInput, types) {
           var pts =
             breaks == this.horizontalPageBreaks
               ? [
-                  new mxPoint(Math.round(bounds2.x), Math.round(bounds2.y + (i + 1) * bounds.height)),
-                  new mxPoint(Math.round(right), Math.round(bounds2.y + (i + 1) * bounds.height))
-                ]
+                new mxPoint(Math.round(bounds2.x), Math.round(bounds2.y + (i + 1) * bounds.height)),
+                new mxPoint(Math.round(right), Math.round(bounds2.y + (i + 1) * bounds.height))
+              ]
               : [
-                  new mxPoint(Math.round(bounds2.x + (i + 1) * bounds.width), Math.round(bounds2.y)),
-                  new mxPoint(Math.round(bounds2.x + (i + 1) * bounds.width), Math.round(bottom))
-                ];
+                new mxPoint(Math.round(bounds2.x + (i + 1) * bounds.width), Math.round(bounds2.y)),
+                new mxPoint(Math.round(bounds2.x + (i + 1) * bounds.width), Math.round(bottom))
+              ];
 
           if (breaks[i] != null) {
             breaks[i].points = pts;

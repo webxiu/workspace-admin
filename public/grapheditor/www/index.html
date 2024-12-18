@@ -58,7 +58,7 @@
         // 创建图表操作对象
         window.opt = new Operate(function (e) {
           if (e.data.eventName === window.GRAPH_CREATE) {
-            window.xmlStr = e.data.data;
+            window.xmlData = e.data;
           }
           var editorUiInit = EditorUi.prototype.init;
           EditorUi.prototype.init = function () {

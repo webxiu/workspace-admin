@@ -2634,8 +2634,8 @@ TextFormatPanel.prototype.addFont = function (container) {
     mxResources.get("left"),
     graph.cellEditor.isContentEditing()
       ? function (evt) {
-          graph.cellEditor.alignText(mxConstants.ALIGN_LEFT, evt);
-        }
+        graph.cellEditor.alignText(mxConstants.ALIGN_LEFT, evt);
+      }
       : callFn(this.editorUi.menus.createStyleChangeFunction([mxConstants.STYLE_ALIGN], [mxConstants.ALIGN_LEFT])),
     stylePanel3
   );
@@ -2644,8 +2644,8 @@ TextFormatPanel.prototype.addFont = function (container) {
     mxResources.get("center"),
     graph.cellEditor.isContentEditing()
       ? function (evt) {
-          graph.cellEditor.alignText(mxConstants.ALIGN_CENTER, evt);
-        }
+        graph.cellEditor.alignText(mxConstants.ALIGN_CENTER, evt);
+      }
       : callFn(this.editorUi.menus.createStyleChangeFunction([mxConstants.STYLE_ALIGN], [mxConstants.ALIGN_CENTER])),
     stylePanel3
   );
@@ -2654,8 +2654,8 @@ TextFormatPanel.prototype.addFont = function (container) {
     mxResources.get("right"),
     graph.cellEditor.isContentEditing()
       ? function (evt) {
-          graph.cellEditor.alignText(mxConstants.ALIGN_RIGHT, evt);
-        }
+        graph.cellEditor.alignText(mxConstants.ALIGN_RIGHT, evt);
+      }
       : callFn(this.editorUi.menus.createStyleChangeFunction([mxConstants.STYLE_ALIGN], [mxConstants.ALIGN_RIGHT])),
     stylePanel3
   );
@@ -3073,30 +3073,30 @@ TextFormatPanel.prototype.addFont = function (container) {
 
   var bgPanel = graph.cellEditor.isContentEditing()
     ? this.createColorOption(
-        mxResources.get("backgroundColor"),
-        function () {
-          return currentBgColor;
+      mxResources.get("backgroundColor"),
+      function () {
+        return currentBgColor;
+      },
+      function (color) {
+        document.execCommand("backcolor", false, color != mxConstants.NONE ? color : "transparent");
+      },
+      "#ffffff",
+      {
+        install: function (apply) {
+          bgColorApply = apply;
         },
-        function (color) {
-          document.execCommand("backcolor", false, color != mxConstants.NONE ? color : "transparent");
-        },
-        "#ffffff",
-        {
-          install: function (apply) {
-            bgColorApply = apply;
-          },
-          destroy: function () {
-            bgColorApply = null;
-          }
-        },
-        null,
-        true
-      )
+        destroy: function () {
+          bgColorApply = null;
+        }
+      },
+      null,
+      true
+    )
     : this.createCellColorOption(mxResources.get("backgroundColor"), mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, "#ffffff", null, function (color) {
-        graph.updateLabelElements(graph.getSelectionCells(), function (elt) {
-          elt.style.backgroundColor = null;
-        });
+      graph.updateLabelElements(graph.getSelectionCells(), function (elt) {
+        elt.style.backgroundColor = null;
       });
+    });
   bgPanel.style.fontWeight = "bold";
 
   var borderPanel = this.createCellColorOption(mxResources.get("borderColor"), mxConstants.STYLE_LABEL_BORDERCOLOR, "#000000");
@@ -3105,100 +3105,100 @@ TextFormatPanel.prototype.addFont = function (container) {
   var defs = ss.vertices.length >= 1 ? graph.stylesheet.getDefaultVertexStyle() : graph.stylesheet.getDefaultEdgeStyle();
   var panel = graph.cellEditor.isContentEditing()
     ? this.createColorOption(
-        mxResources.get("fontColor"),
-        function () {
-          return currentFontColor;
-        },
-        function (color) {
-          if (mxClient.IS_FF) {
-            // Workaround for Firefox that adds the font element around
-            // anchor elements which ignore inherited colors is to move
-            // the font element inside anchor elements
-            var tmp = graph.cellEditor.textarea.getElementsByTagName("font");
-            var oldFonts = [];
+      mxResources.get("fontColor"),
+      function () {
+        return currentFontColor;
+      },
+      function (color) {
+        if (mxClient.IS_FF) {
+          // Workaround for Firefox that adds the font element around
+          // anchor elements which ignore inherited colors is to move
+          // the font element inside anchor elements
+          var tmp = graph.cellEditor.textarea.getElementsByTagName("font");
+          var oldFonts = [];
 
-            for (var i = 0; i < tmp.length; i++) {
-              oldFonts.push({
-                node: tmp[i],
-                color: tmp[i].getAttribute("color")
-              });
-            }
+          for (var i = 0; i < tmp.length; i++) {
+            oldFonts.push({
+              node: tmp[i],
+              color: tmp[i].getAttribute("color")
+            });
+          }
 
-            document.execCommand("forecolor", false, color != mxConstants.NONE ? color : "transparent");
+          document.execCommand("forecolor", false, color != mxConstants.NONE ? color : "transparent");
 
-            // Finds the new or changed font element
-            var newFonts = graph.cellEditor.textarea.getElementsByTagName("font");
+          // Finds the new or changed font element
+          var newFonts = graph.cellEditor.textarea.getElementsByTagName("font");
 
-            for (var i = 0; i < newFonts.length; i++) {
-              if (
-                i >= oldFonts.length ||
-                newFonts[i] != oldFonts[i].node ||
-                (newFonts[i] == oldFonts[i].node && newFonts[i].getAttribute("color") != oldFonts[i].color)
-              ) {
-                var child = newFonts[i].firstChild;
+          for (var i = 0; i < newFonts.length; i++) {
+            if (
+              i >= oldFonts.length ||
+              newFonts[i] != oldFonts[i].node ||
+              (newFonts[i] == oldFonts[i].node && newFonts[i].getAttribute("color") != oldFonts[i].color)
+            ) {
+              var child = newFonts[i].firstChild;
 
-                // Moves the font element to inside the anchor element and adopts all children
-                if (child != null && child.nodeName == "A" && child.nextSibling == null && child.firstChild != null) {
-                  var parent = newFonts[i].parentNode;
-                  parent.insertBefore(child, newFonts[i]);
-                  var tmp = child.firstChild;
+              // Moves the font element to inside the anchor element and adopts all children
+              if (child != null && child.nodeName == "A" && child.nextSibling == null && child.firstChild != null) {
+                var parent = newFonts[i].parentNode;
+                parent.insertBefore(child, newFonts[i]);
+                var tmp = child.firstChild;
 
-                  while (tmp != null) {
-                    var next = tmp.nextSibling;
-                    newFonts[i].appendChild(tmp);
-                    tmp = next;
-                  }
-
-                  child.appendChild(newFonts[i]);
+                while (tmp != null) {
+                  var next = tmp.nextSibling;
+                  newFonts[i].appendChild(tmp);
+                  tmp = next;
                 }
 
-                break;
+                child.appendChild(newFonts[i]);
               }
+
+              break;
             }
-          } else {
-            document.execCommand("forecolor", false, color != mxConstants.NONE ? color : "transparent");
           }
-        },
-        defs[mxConstants.STYLE_FONTCOLOR] != null ? defs[mxConstants.STYLE_FONTCOLOR] : "#000000",
-        {
-          install: function (apply) {
-            fontColorApply = apply;
-          },
-          destroy: function () {
-            fontColorApply = null;
-          }
-        },
-        null,
-        true
-      )
-    : this.createCellColorOption(
-        mxResources.get("fontColor"),
-        mxConstants.STYLE_FONTCOLOR,
-        defs[mxConstants.STYLE_FONTCOLOR] != null ? defs[mxConstants.STYLE_FONTCOLOR] : "#000000",
-        function (color) {
-          if (color == mxConstants.NONE) {
-            bgPanel.style.display = "none";
-          } else {
-            bgPanel.style.display = "";
-          }
-
-          borderPanel.style.display = bgPanel.style.display;
-        },
-        function (color) {
-          if (color == mxConstants.NONE) {
-            graph.setCellStyles(mxConstants.STYLE_NOLABEL, "1", graph.getSelectionCells());
-          } else {
-            graph.setCellStyles(mxConstants.STYLE_NOLABEL, null, graph.getSelectionCells());
-          }
-
-          graph.updateCellStyles(mxConstants.STYLE_FONTCOLOR, color, graph.getSelectionCells());
-
-          graph.updateLabelElements(graph.getSelectionCells(), function (elt) {
-            elt.removeAttribute("color");
-            elt.style.color = null;
-          });
+        } else {
+          document.execCommand("forecolor", false, color != mxConstants.NONE ? color : "transparent");
         }
-      );
+      },
+      defs[mxConstants.STYLE_FONTCOLOR] != null ? defs[mxConstants.STYLE_FONTCOLOR] : "#000000",
+      {
+        install: function (apply) {
+          fontColorApply = apply;
+        },
+        destroy: function () {
+          fontColorApply = null;
+        }
+      },
+      null,
+      true
+    )
+    : this.createCellColorOption(
+      mxResources.get("fontColor"),
+      mxConstants.STYLE_FONTCOLOR,
+      defs[mxConstants.STYLE_FONTCOLOR] != null ? defs[mxConstants.STYLE_FONTCOLOR] : "#000000",
+      function (color) {
+        if (color == mxConstants.NONE) {
+          bgPanel.style.display = "none";
+        } else {
+          bgPanel.style.display = "";
+        }
+
+        borderPanel.style.display = bgPanel.style.display;
+      },
+      function (color) {
+        if (color == mxConstants.NONE) {
+          graph.setCellStyles(mxConstants.STYLE_NOLABEL, "1", graph.getSelectionCells());
+        } else {
+          graph.setCellStyles(mxConstants.STYLE_NOLABEL, null, graph.getSelectionCells());
+        }
+
+        graph.updateCellStyles(mxConstants.STYLE_FONTCOLOR, color, graph.getSelectionCells());
+
+        graph.updateLabelElements(graph.getSelectionCells(), function (elt) {
+          elt.removeAttribute("color");
+          elt.style.color = null;
+        });
+      }
+    );
   panel.style.fontWeight = "bold";
 
   colorPanel.appendChild(panel);
@@ -3980,6 +3980,7 @@ StyleFormatPanel.prototype.init = function () {
   }
 
   this.container.appendChild(this.addStyleOps(opsPanel));
+  this.container.appendChild(this.addmodifyTitle(opsPanel));
 };
 
 /**
@@ -4049,9 +4050,9 @@ StyleFormatPanel.prototype.addSvgRule = function (container, rule, svg, styleEle
 
       return rgb && rgb.length === 4
         ? "#" +
-            ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2) +
-            ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2) +
-            ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2)
+        ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2) +
+        ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2) +
+        ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2)
         : "";
     }
 
@@ -4111,7 +4112,7 @@ StyleFormatPanel.prototype.addSvgRule = function (container, rule, svg, styleEle
 StyleFormatPanel.prototype.addEditOps = function (div) {
   var ss = this.format.getSelectionState();
   var btn = null;
-
+  console.log('111', '编辑样式')
   if (this.editorUi.editor.graph.getSelectionCount() == 1) {
     btn = mxUtils.button(
       mxResources.get("editStyle"),
@@ -4126,6 +4127,8 @@ StyleFormatPanel.prototype.addEditOps = function (div) {
 
     div.appendChild(btn);
   }
+
+  console.log('111', '编辑图片', ss)
 
   if (ss.image) {
     var btn2 = mxUtils.button(
@@ -5800,11 +5803,12 @@ StyleFormatPanel.prototype.addEffects = function (div) {
 StyleFormatPanel.prototype.addStyleOps = function (div) {
   div.style.paddingTop = "10px";
   div.style.paddingBottom = "10px";
+  console.log('111', '设置为默认样式', mxUtils)
 
   var btn = mxUtils.button(
     mxResources.get("setAsDefaultStyle"),
     mxUtils.bind(this, function (evt) {
-      this.editorUi.actions.get("setAsDefaultStyle").funct();
+      this.editorUi.actions.get("setAsDefaultStyle").funct(evt);
     })
   );
 
@@ -5812,6 +5816,28 @@ StyleFormatPanel.prototype.addStyleOps = function (div) {
   btn.style.width = "202px";
   div.appendChild(btn);
 
+  return div;
+};
+
+/**
+ * Adds my Button.
+ */
+StyleFormatPanel.prototype.addmodifyTitle = function (div) {
+  mxUtils.br(div);
+  div.style.paddingTop = "10px";
+  div.style.paddingBottom = "10px";
+  console.log('111', '我的按钮', mxUtils)
+  var btn = mxUtils.button(
+    mxResources.get("modifyTitle"),
+    mxUtils.bind(this, function (evt) {
+      this.editorUi.actions.get("modifyTitle").funct(evt);
+    })
+  );
+
+  btn.setAttribute("title", mxResources.get("modifyTitle"));
+  btn.style.width = "202px";
+  btn.style.marginTop = "2px";
+  div.appendChild(btn);
   return div;
 };
 

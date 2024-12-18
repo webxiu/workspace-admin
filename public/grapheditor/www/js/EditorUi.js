@@ -935,7 +935,7 @@ EditorUi.prototype.hsplitClickEnabled = false;
 EditorUi.prototype.init = function () {
   // 回显开始
   try {
-    let doc = mxUtils.parseXml(window.xmlStr);
+    let doc = mxUtils.parseXml(window.xmlData.xml);
     this.editor.setGraphXml(doc.documentElement);
     this.editor.setModified(false);
     this.editor.undoManager.clear();
@@ -2103,7 +2103,7 @@ EditorUi.prototype.initCanvas = function () {
           this.scrollLeft = graph.container.scrollLeft;
           this.scrollTop = graph.container.scrollTop;
         },
-        mouseMove: function (sender, me) {},
+        mouseMove: function (sender, me) { },
         mouseUp: function (sender, me) {
           if (mxEvent.isTouchEvent(me.getEvent())) {
             if (
@@ -2361,10 +2361,10 @@ EditorUi.prototype.initCanvas = function () {
           (ignoreCursorPosition
             ? graph.container.clientWidth / 2 + graph.container.scrollLeft - page.offsetLeft + "px"
             : cursorPosition.x + graph.container.scrollLeft - page.offsetLeft - graph.container.offsetLeft + "px") +
-            " " +
-            (ignoreCursorPosition
-              ? graph.container.clientHeight / 2 + graph.container.scrollTop - page.offsetTop + "px"
-              : cursorPosition.y + graph.container.scrollTop - page.offsetTop - graph.container.offsetTop + "px")
+          " " +
+          (ignoreCursorPosition
+            ? graph.container.clientHeight / 2 + graph.container.scrollTop - page.offsetTop + "px"
+            : cursorPosition.y + graph.container.scrollTop - page.offsetTop - graph.container.offsetTop + "px")
         );
         mxUtils.setPrefixedStyle(page.style, "transform", "scale(" + this.cumulativeZoomFactor + ")");
       }
@@ -3848,7 +3848,7 @@ EditorUi.prototype.isCompatibleString = function (data) {
  * Adds the label menu items to the given menu and parent.
  */
 EditorUi.prototype.saveFile = function (forceDialog) {
-  console.log("操作_保存", this.editor.filename, this.editor.getOrCreateFilename());
+  console.log('111', forceDialog ? '另存为' : "保存", this.editor.filename, this.editor.getOrCreateFilename());
   if (!forceDialog && this.editor.filename != null) {
     this.save(this.editor.getOrCreateFilename());
   } else {
@@ -3858,16 +3858,13 @@ EditorUi.prototype.saveFile = function (forceDialog) {
       mxResources.get("save"),
       mxUtils.bind(this, function (name) {
         this.save(name);
-        console.log("操作_确认保存", name);
       }),
       null,
       mxUtils.bind(this, function (name) {
         if (name != null && name.length > 0) {
           return true;
         }
-
         mxUtils.confirm(mxResources.get("invalidName"));
-
         return false;
       })
     );
@@ -4074,7 +4071,7 @@ EditorUi.prototype.showOrderDialog = function (cell) {
       wxOpenid: null
     }
   ];
-  console.log("操作_元素右键点击_关联单据:", cell);
+  console.log('111', "元素右键_关联单据:", cell);
 
   if (cell != null) {
     let dlg = new EditDataDialog(this, cell);
@@ -4227,11 +4224,11 @@ EditorUi.prototype.showBackgroundImageDialog = function (apply, img) {
     apply != null
       ? apply
       : mxUtils.bind(this, function (image) {
-          var change = new ChangePageSetup(this, null, image);
-          change.ignoreColor = true;
+        var change = new ChangePageSetup(this, null, image);
+        change.ignoreColor = true;
 
-          this.editor.graph.model.execute(change);
-        });
+        this.editor.graph.model.execute(change);
+      });
 
   var newValue = mxUtils.prompt(mxResources.get("backgroundImage"), img != null ? img.src : "");
 
@@ -4566,7 +4563,7 @@ EditorUi.prototype.createKeyHandler = function (editor) {
 
   // Ignores enter keystroke. Remove this line if you want the
   // enter keystroke to stop editing. N, W, T are reserved.
-  keyHandler.enter = function () {};
+  keyHandler.enter = function () { };
 
   keyHandler.bindControlShiftKey(36, function () {
     graph.exitGroup();

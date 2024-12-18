@@ -38,7 +38,7 @@ const messageCallback = (event) => {
   console.log("接收message:", data);
   if (!data.eventName) return;
   emits("saveGraph", data.data);
-  message("保存成功");
+  message.success("保存成功");
 };
 
 // 请求xml数据
@@ -54,7 +54,7 @@ const loadData = () => {
 
 const loaded = () => {
   if (!xml.value) return;
-  const postMsg = { eventName: "create", data: xml.value };
+  const postMsg = { eventName: "create", xml: xml.value };
   iframeRef.value?.contentWindow.postMessage(postMsg, "*");
 };
 </script>

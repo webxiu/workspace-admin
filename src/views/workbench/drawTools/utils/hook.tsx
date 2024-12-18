@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-11 16:37:00
+ * @Last Modified time: 2024-12-18 10:35:53
  */
 
 import { Delete, Plus } from "@element-plus/icons-vue";
@@ -120,7 +120,7 @@ export const useConfig = () => {
       contentRenderer: () => h(Mxgraph, { onSaveGraph: saveGraph }),
       beforeSure: (done, { options }) => {
         showMessageBox(`确定要提交吗?`).then(() => {
-          if (!graphData.value) return message("请保存图形", { type: "warning" });
+          if (!graphData.value) return message.warning("请保存图形");
           const { fileName, ...reset } = graphData.value;
           const createTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
           const itemData = { ...reset, name: fileName, createTime };
@@ -140,7 +140,7 @@ export const useConfig = () => {
 
   // 批量删除
   function onBatchDelete() {
-    if (rowDatas.value.length === 0) return message("请选择删除内容", { type: "error" });
+    if (rowDatas.value.length === 0) return message.error("请选择删除内容");
     showMessageBox("确认要删除吗?")
       .then(() => onDelete(rowDatas.value))
       .catch(console.log);

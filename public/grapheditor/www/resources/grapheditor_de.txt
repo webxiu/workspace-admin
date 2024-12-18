@@ -323,3 +323,4 @@ writingDirection=Textrichtung
 zoom=Zoom
 zoomIn=Hineinzoomen
 zoomOut=Herauszoomen
+modifyTitle=Modify Title

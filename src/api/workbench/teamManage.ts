@@ -163,11 +163,11 @@ export function drawToolList(data) {
 }
 /** 画图工具 - 新增 */
 export function addDrawTool(data) {
-  return http.request<boolean>("post", "/work/wb/drawtool/insert", { data });
+  return http.request<boolean>("post", "/work/wb/drawtool/insert", { data, headers: { "Content-Type": "multipart/form-data" } });
 }
 /** 画图工具 - 修改 */
 export function updateDrawTool(data) {
-  return http.request<boolean>("post", "/work/wb/drawtool/update", { data });
+  return http.request<boolean>("post", "/work/wb/drawtool/update", { data, headers: { "Content-Type": "multipart/form-data" } });
 }
 /** 画图工具 - 删除 */
 export function deleteDrawTool(data) {

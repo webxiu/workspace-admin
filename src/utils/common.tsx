@@ -88,7 +88,7 @@ export const throttle = (fn: Function, delay = 300) => {
  * 请求接口导出(下载)
  * @param url 下载地址
  * @param fileName 文件名(可带后缀)
- * @param NoNeedTimeNow 是否添加时间戳
+ * @param NoNeedTimeNow 是否添加时间戳(可选)
  */
 export const downloadFile = (url: string, fileName: string, NoNeedTimeNow = false) => {
   // 给文件名添加时间戳, 判断文件名是否存在后缀名
