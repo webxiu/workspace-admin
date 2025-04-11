@@ -3,7 +3,7 @@
  * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-27 11:13:19
+ * @Last Modified time: 2024-12-20 15:59:58
  */ 
 -->
 
@@ -31,7 +31,7 @@ export interface FormConfigItemType extends Partial<FormItemProps> {
   /** 表单项渲染函数 */
   render: ((item: RenderParamsType) => JSXElement) | JSXElement;
   /** 表单Item插槽 */
-  slots?: { [key: string]: (slot: Record<string, any>) => JSXElement };
+  slot?: { [key: string]: (slot: Record<string, any>) => JSXElement };
   style?: CSSProperties;
   class?: string;
 }
@@ -134,9 +134,9 @@ export default defineComponent({
           {...props.formProps}
         >
           {configList.value.map((item, index) => {
-            const { render, colProp, hide, slots, ...itemProps } = item;
+            const { render, colProp, hide, slot, ...itemProps } = item;
             const formItem = typeof render === "function" ? render({ formModel: newFormInline.value, row: item, index }) : render;
-            const innerEle = slots ? { ...toRaw(slots), default: () => formItem } : formItem;
+            const innerEle = slot ? { ...toRaw(slot), default: () => formItem } : formItem;
             return hide ? null : (
               <>
                 <el-form-item {...itemProps} key={item.prop}>

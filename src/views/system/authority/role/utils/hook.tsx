@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-10 09:04:01
+ * @Last Modified time: 2025-02-20 16:09:35
  */
 
 import {
@@ -62,7 +62,7 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, isCustomExpend: true, dragSelector: ".role-authority", operationColumn: { width: 100 } });
+    columns.value = setColumn({ columnData, isCustomExpend: true, operationColumn: { width: 100 } });
   };
 
   const onRefresh = () => {
@@ -90,7 +90,7 @@ export const useConfig = () => {
   /** 选中表格行 */
   const onRowClick = (row: DeptInfoItemType) => {
     rowData.value = row;
-    if (!row?.roleCode) return message.warning("角色编号不存在");
+    if (!row.id) return message.warning("所选角色不存在");
     getAuthorityTree(row.id);
     // 清空右侧按钮表格的数据
     if (rightTableRef.value) rightTableRef.value.dataList = [];

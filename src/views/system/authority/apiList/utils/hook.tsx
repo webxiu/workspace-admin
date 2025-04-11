@@ -11,8 +11,12 @@ import { getApiList, initApiList, updateApiList } from "@/api/systemManage";
 import { showMessageBox } from "@/utils/message";
 import { ElMessage } from "element-plus";
 import { MessageBox, PriceTag, Download } from "@element-plus/icons-vue";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import type { ColDef } from "ag-grid-community";
 
 export const useApiList = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref([]);
@@ -66,6 +70,7 @@ export const useApiList = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
   };
 
   const onRefresh = () => {
@@ -138,7 +143,10 @@ export const useApiList = () => {
       })
       .catch(console.log);
   };
-
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onSave, type: "success", text: "保存", icon: MessageBox, isDropDown: false },
     { clickHandler: onInit, type: "primary", text: "获取接口", icon: PriceTag, isDropDown: true },
@@ -146,6 +154,8 @@ export const useApiList = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     columns,
     dataList,
     loading,
@@ -157,6 +167,7 @@ export const useApiList = () => {
     onTagSearch,
     onCurrentChange,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    onSwitchTable
   };
 };

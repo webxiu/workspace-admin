@@ -24,6 +24,7 @@ import { getIdCardInfo } from "@/utils/common";
 import { setColumn, getEnumDictList } from "@/utils/table";
 import { showMessageBox } from "@/utils/message";
 import { v4 as uuidv4 } from "uuid";
+import { boolOptions, numberOptions } from "@/config/constant";
 
 export interface StaffOptionDataType {
   /** 有无驾驶证 */
@@ -101,14 +102,13 @@ export const formRules = reactive<FormRules>({
   registeredResidence: [{ required: true, message: "请输入户口所在地", trigger: "blur" }],
   emergencyName: [{ required: true, message: "请输入紧急联系人", trigger: "blur" }],
   emergencyPhone: [{ required: true, message: "请输入紧急联系人电话", trigger: "blur" }],
-  startDate: [{ required: true, message: "请选择工资开始核算日", trigger: "blur" }],
+  startDate: [{ required: true, message: "请选择入厂日期", trigger: "blur" }],
   workRuleId: [{ required: true, message: "请选择考勤", trigger: "blur" }],
   state: [{ required: true, message: "请选择状态", trigger: "blur" }],
   accommodation: [{ required: true, message: "请选择是否住宿", trigger: "blur" }],
   employeKind: [{ required: true, message: "请选择雇员种类", trigger: "blur" }],
   deptId: [{ required: true, message: "请选择部门", trigger: "blur" }],
   laborServiceCompany: [{ required: true, message: "请选择劳务公司", trigger: "blur" }],
-  position: [{ required: true, message: "请输入岗位", trigger: "blur" }],
   tryDate: [{ required: true, message: "请输入试用期", trigger: "blur" }]
 });
 
@@ -176,15 +176,11 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
   const machineList = ref<AttendanceMachineItemType[]>([]);
   const optionList = ref([]);
   const levelOptions = ref([]);
-  const exmpetAttendanceOptions = ref([
-    { optionName: "是", optionValue: true },
-    { optionName: "否", optionValue: false }
-  ]);
 
   getEnumDictList(["DegreeType", "EmployeeLevel"])
-    .then((res) => {
-      optionList.value = res.DegreeType;
-      levelOptions.value = res.EmployeeLevel;
+    .then(({ DegreeType, EmployeeLevel }) => {
+      optionList.value = DegreeType;
+      levelOptions.value = EmployeeLevel;
     })
     .catch(console.log);
 
@@ -730,19 +726,13 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
       label: "贫困人员",
       prop: "isPoorPeople",
       colProp: layout,
-      render: ({ formModel, row }) => {
-        const isPoorPeopleOpts = [
-          { optionName: "是", optionValue: 1 },
-          { optionName: "否", optionValue: 0 }
-        ];
-        return (
-          <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
-            {isPoorPeopleOpts.map((item) => (
-              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
-            ))}
-          </el-select>
-        );
-      }
+      render: ({ formModel, row }) => (
+        <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
+          {numberOptions.map((item) => (
+            <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+          ))}
+        </el-select>
+      )
     },
     {
       label: "雇员种类",
@@ -828,7 +818,7 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
       colProp: layout,
       render: ({ formModel, row }) => (
         <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
-          {exmpetAttendanceOptions.value.map((item) => (
+          {boolOptions.map((item) => (
             <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
           ))}
         </el-select>
@@ -886,7 +876,7 @@ export const formConfigs = (options: OptionType): FormConfigItemType[] => {
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入联系人现居地址" clearable />
     },
     {
-      label: "身高(米)",
+      label: "身高(厘米)",
       prop: "height",
       colProp: layout,
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入身高(米)" clearable />

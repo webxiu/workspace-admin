@@ -74,6 +74,8 @@ export function useDataThemeChange() {
 
   /** 日间、夜间主题切换 */
   function dataThemeChange() {
+    /* ag-grid表格主题切换 */
+    document.body.dataset.agThemeMode = dataTheme.value ? "dark" : "light";
     /* 如果当前是light夜间主题，默认切换到default主题 */
     if (useEpThemeStoreHook().epTheme === "light" && dataTheme.value) {
       setLayoutThemeColor("default");

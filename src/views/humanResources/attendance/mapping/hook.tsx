@@ -17,11 +17,14 @@ import { utils, write } from "xlsx";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessage } from "element-plus";
+import { FormItemConfigType } from "@/utils/form";
+import HxModalInput from "@/components/HxModalInput/index.vue";
 import MachineUserModal from "./machineUserModal/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import SelectUserModal from "./selectUserModal/modal.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { cloneDeep } from "@pureadmin/utils";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
@@ -39,9 +42,6 @@ export const useMachine = () => {
   const faceImageUrl = ref("");
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const treeSelectData = ref([]);
-  const curMultipeUserList: any = ref([]);
-  const machineOptions = ref([]);
 
   const formData: any = reactive({
     page: 1,
@@ -49,6 +49,7 @@ export const useMachine = () => {
   });
 
   const searchOptions = reactive<SearchOptionType[]>([
+    { label: "姓名", value: "staffName" },
     { label: "工号", value: "staffId" },
     { label: "部门", value: "deptId", children: [] }
     // { label: "考勤机名称", value: "attMachineName", children: [] },
@@ -103,8 +104,7 @@ export const useMachine = () => {
 
   const getOptions = () => {
     getDeptOptions().then((data: any) => {
-      treeSelectData.value = data;
-      searchOptions[1].children = data;
+      searchOptions[2].children = data;
     });
   };
 
@@ -149,7 +149,6 @@ export const useMachine = () => {
   const openDialog = async (type: "add" | "view" | "edit", row?) => {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const formLoading = ref(false);
     const modalRow = ref();
     const _formData = reactive({
       id: row?.id ?? "",
@@ -161,36 +160,37 @@ export const useMachine = () => {
       name: row?.name ?? ""
     });
 
-    const handleAddUserNames = () => {
-      const setA = (v) => (modalRow.value = v);
-      addDialog({
-        title: "选择人员",
-        width: "900px",
-        draggable: true,
-        fullscreenIcon: true,
-        closeOnClickModal: false,
-        contentRenderer: () => h(SelectUserModal, { setA, curRows: currentRow }),
-        beforeSure: (done) => {
-          if (!modalRow.value) {
-            ElMessage({ message: "未选定人员", type: "warning" });
-            return;
-          } else {
-            _formData.deptId = modalRow.value.deptId + "";
-            _formData.staffCode = modalRow.value.userCode;
-            _formData.staffName = modalRow.value.userName;
-            done();
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        customElement: {
+          staffCode: ({ formModel, row }) => {
+            return (
+              <HxModalInput
+                title="选择工号"
+                placeholder="请选择工号"
+                valueKey={row.prop}
+                v-model={formModel[row.prop]}
+                readonly={true}
+                showButton={true}
+                showModel="user"
+                onSelect={(row) => {
+                  _formData.deptId = row.deptId + "";
+                  _formData.staffCode = row.userCode;
+                  _formData.staffName = row.userName;
+                }}
+              />
+            );
           }
-        }
-      });
-    };
-
+        },
+        formProps: { labelWidth: "120px" }
+      }
+    ];
     addDialog({
       title: `${title}`,
       props: {
-        loading: formLoading,
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ treeSelectData, formData: _formData, handleAddUserNames })
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "700px",
       draggable: true,
@@ -198,10 +198,11 @@ export const useMachine = () => {
       okButtonText: "保存",
       closeOnClickModal: false,
       hideFooter: type === "view",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done) => {
-        const formIns = formRef.value.getRef();
-        formIns?.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`)
               .then(() => {

@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2023-07-05 11:45:27
  * @Last Modified by:   Hailen
- * @Last Modified time: 2023-07-05 11:45:27
+ * @Last Modified time: 2024-02-06 11:01:27
  */ -->
 
 <script setup lang="tsx">
-import { setColumn } from "@/utils/table";
+import { setColumn, RendererType } from "@/utils/table";
 import { downloadFile, formatDate } from "@/utils/common";
 import { onMounted, reactive, ref } from "vue";
 import {
@@ -21,9 +21,18 @@ import {
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { showMessageBox, message } from "@/utils/message";
 import { StateInfo } from "../utils/hook";
+import TableEditList from "@/components/TableEditList/index.vue";
+import { FormItemConfigType, FormTableConfigType } from "@/utils/form";
+
+interface Props {
+  id?: string;
+  fbillNo?: string;
+  type?: "edit" | "view";
+  pageUrl?: string;
+}
 
 /** 信息中心的查看单据id */
-const props = defineProps<{ id?: string; fbillNo?: string; type?: "edit" | "view" }>();
+const props = defineProps<Props>();
 const baseApi = import.meta.env.VITE_BASE_API;
 
 const maxHeight = 200;
@@ -100,7 +109,7 @@ const formConfigs = ({ type }): FormConfigItemType[] => [
 
 onMounted(() => {
   getDataList();
-  getColumnConfig();
+  // getColumnConfig();
 });
 
 const getColumnConfig = () => {
@@ -190,12 +199,14 @@ const hasDelete = (row: FileListItemType, formData) => {
 };
 
 const onDelete = (row: FileListItemType) => {
-  showMessageBox(`确认删除文件【${row.fileName}】吗?`).then(() => {
+  const index = row.filePath?.lastIndexOf("/");
+  const fileName = row.filePath?.slice(index + 1);
+  showMessageBox(`确认删除文件【${fileName}】吗?`).then(() => {
     deleteStatement({
       billNo: row.billNo,
       date: formData.fdate,
       fbillNo: formData.statementOAVO.kingdeeBillNo,
-      fileName: row.fileName,
+      fileName: fileName,
       id: formData.id,
       statementBillNo: formData.statementOAVO.billNo,
       status: row.billState,
@@ -209,10 +220,68 @@ const onDelete = (row: FileListItemType) => {
       .catch(console.log);
   });
 };
+
+const custmRender = (): Record<string, RendererType> => {
+  return {
+    filePath: ({ row }) => {
+      const index = row.filePath?.lastIndexOf("/");
+      return <span>{row.filePath?.slice(index + 1)}</span>;
+    },
+    status: ({ row }) => (
+      <el-tag type={statusObj[row.status].type} effect="dark" size="small" style={{ maxWidth: "46px", minWidth: "46px" }}>
+        {statusObj[row.status].name}
+      </el-tag>
+    )
+  };
+};
+
+const tableSlots = () => {
+  return {
+    operation: ({ row }) => (
+      <>
+        <el-button size="small" type="primary" onClick={() => onView(row)} disabled={isDisabled.value}>
+          查看
+        </el-button>
+        <el-button size="small" type="success" onClick={() => onDownload(row)} disabled={isDisabled.value}>
+          下载
+        </el-button>
+        {props.type === "edit" && hasDelete(row, formData) ? (
+          <el-button size="small" type="danger" onClick={() => onDelete(row)} disabled={isDisabled.value}>
+            删除
+          </el-button>
+        ) : null}
+      </>
+    )
+  };
+};
+
+const formConfig: FormItemConfigType[] = [
+  {
+    formData: formData,
+    formProps: { labelWidth: "100px" }
+  }
+];
+
+const tableConfig: FormTableConfigType[] = [
+  {
+    dataList: dataList2,
+    tableProps: { height: 150, maxHeight: 150 },
+    custmRender: custmRender(),
+    tableSlots: tableSlots(),
+    tableColumnOption: {
+      operationColumn: { minWidth: 200 }
+    }
+  },
+  {
+    dataList: dataList,
+    tableProps: { height: 200, maxHeight: 200 }
+  }
+];
 </script>
 <template>
   <div class="statement-detail" v-loading="loading">
-    <title-cate name="对账单详情" style="margin-bottom: 10px" />
+    <TableEditList v-loading="loading" :params="{ groupCode: '1', pageUrl: props.pageUrl }" :formConfig="formConfig" :tableConfig="tableConfig" />
+    <!-- <title-cate name="对账单详情" style="margin-bottom: 10px" />
     <EditForm :formInline="formData" :formProps="{ labelWidth: '120px' }" :formConfigs="formConfigs({ type })" class="preview-disabled-form" />
     <title-cate name="文件列表" style="margin: 5px 0" />
     <PureTableBar :columns="columns2" :show-icon="false">
@@ -242,7 +311,6 @@ const onDelete = (row: FileListItemType) => {
         </pure-table>
       </template>
     </PureTableBar>
-
     <title-cate name="对账单明细" style="margin: 5px 0" />
     <PureTableBar :columns="columns" :show-icon="false" style="padding: 15px 0 0">
       <template v-slot="{ size, dynamicColumns }">
@@ -263,6 +331,6 @@ const onDelete = (row: FileListItemType) => {
           :show-overflow-tooltip="true"
         />
       </template>
-    </PureTableBar>
+    </PureTableBar> -->
   </div>
 </template>

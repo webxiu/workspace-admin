@@ -13,7 +13,9 @@ import { message, showMessageBox } from "@/utils/message";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessage } from "element-plus";
+import { FormItemConfigType } from "@/utils/form";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { useEleHeight } from "@/hooks";
 
@@ -93,29 +95,28 @@ export const useConfig = () => {
       vinNo: row?.vinNo ?? "",
       color: row?.color ?? "",
       initMileage: row?.initMileage ?? "",
-      createUserId: row?.createUserId ?? "",
+      createUserName: row?.createUserName ?? "",
       createDate: row?.createDate ?? "",
-      modifyUserId: row?.modifyUserId ?? "",
-      modifyDate: row?.modifyDate ?? "",
-      orgId: row?.orgId ?? ""
+      modifyUserName: row?.modifyUserName ?? "",
+      modifyDate: row?.modifyDate ?? ""
     });
+    const formConfig: FormItemConfigType[] = [{ formData: formData, formProps: { labelWidth: "120px" } }];
     addDialog({
       title: `${title}车辆`,
       props: {
-        formInline: formData,
-        formRules: formRules,
-        formConfigs: formConfigs(),
-        formProps: { labelWidth: "120px" }
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "960px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       okButtonText: "保存",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认提交吗?`).then(() => {
               const API = { add: addCarInfo, edit: updateCarInfo };

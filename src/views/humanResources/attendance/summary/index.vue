@@ -12,6 +12,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "HumanResourcesAttendanceSummaryIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   tableRef,
   loading,
   columns,
@@ -31,14 +33,34 @@ const {
   onRowClick,
   rowDbClick,
   onSizeChange,
-  onCurrentChange
+  onCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :loading="loading"
+        :rowData="dataList"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 12"
+        :paginations="pagination"
+        @switch="onSwitchTable"
+        @refresh="onRefresh"
+        @rowSelected="onSelect"
+        @cellClicked="onRowClick"
+        @cellDoubleClicked="rowDbClick"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, queryParams, searchOptions, placeholder: '请输入姓名', searchField: 'staffName' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" :queryParams="queryParams" placeholder="请输入姓名" searchField="staffName" />
         </template>

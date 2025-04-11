@@ -9,6 +9,7 @@
 import { ItemKey } from "@/utils/form";
 import { Plus, Delete } from "@element-plus/icons-vue";
 import { defineComponent, PropType, watch, reactive } from "vue";
+import HxModalInput from "@/components/HxModalInput/index.vue";
 
 export interface RulesItemType {
   id: number;
@@ -65,7 +66,7 @@ export default defineComponent({
       const { label, itemType } = props.rowData;
       let msgType = "请选择";
       if ([ItemKey.input, ItemKey.inputNumber].includes(itemType)) msgType = "请输入";
-      space.push({ id: Date.now(), required: false, message: msgType + label, pattern: "", trigger: ["blur"] });
+      space.push({ id: Date.now(), required: true, message: msgType + label, pattern: "", trigger: ["blur"] });
     }
     function removeSpecs(domain) {
       space.splice(space.indexOf(domain), 1);

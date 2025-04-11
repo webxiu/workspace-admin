@@ -57,7 +57,7 @@ const getDeptList = () => {
   loading.value = true;
   getDeptTreeData()
     .then((res) => {
-      const data = JSON.parse(res.data);
+      const data = res.data;
       dataSource.value = data;
       loading.value = false;
     })

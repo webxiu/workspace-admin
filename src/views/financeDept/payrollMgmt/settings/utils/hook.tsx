@@ -1,21 +1,27 @@
-import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { ElMessage, ElMessageBox, FormRules } from "element-plus";
 import { QueryParamsType, SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import { deleteClassifyTableInfo, insertClassifyTableInfo } from "@/api/plmManage";
-import { downloadFile, getChildIDs, getFileNameOnUrlPath, getTreeArrItem, onDownload } from "@/utils/common";
-import { getExportConfig, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { downloadFile, getFileNameOnUrlPath, onDownload } from "@/utils/common";
+import { getChildDeptIds, getExportConfig, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { getMoneySettingsList, moneySettingsExport, updateMoneySettingsInfo, uploadMoneySettingsInfo } from "@/api/oaManage/financeDept";
 import { h, onMounted, reactive, ref } from "vue";
+import { message, showMessageBox } from "@/utils/message";
 
+import type { ColDef } from "ag-grid-community";
+import { ElMessage } from "element-plus";
+import { FormItemConfigType } from "@/utils/form";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
+import TableEditList from "@/components/TableEditList/index.vue";
+import { Upload } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
 import axios from "axios";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { getDeptOptions } from "@/utils/requestApi";
-import { message } from "@/utils/message";
+import { insertClassifyTableInfo } from "@/api/plmManage";
 import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref([]);
@@ -24,11 +30,6 @@ export const useConfig = () => {
   const moneyRef = ref(null);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const treeData = ref([]);
-
-  const formRules = reactive<FormRules>({
-    categoryName: [{ required: true, message: "产品分类名称为必填项", trigger: "submit" }],
-    categoryNo: [{ required: true, message: "产品分类编码为必填项", trigger: "submit" }]
-  });
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
@@ -71,85 +72,6 @@ export const useConfig = () => {
     wageAccountingType: { value: "职员", valueLabel: "职员" }
   });
 
-  const formConfigs = (): FormConfigItemType[] => [
-    {
-      label: "姓名",
-      prop: "staffName",
-      colProp: { span: 8 },
-      render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} disabled />;
-      }
-    },
-    {
-      label: "工号",
-      prop: "staffCode",
-      colProp: { span: 8 },
-      render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} disabled />;
-      }
-    },
-    {
-      label: "正班工资",
-      colProp: { span: 8 },
-      prop: "regularSalary",
-      render: ({ formModel, row }) => <el-input-number v-model={formModel[row.prop]} min={0} controls={false} placeholder="请输入正班工资" class="ui-w-100" />
-    },
-    {
-      label: "级别工资",
-      colProp: { span: 8 },
-      prop: "levelSalary",
-      render: ({ formModel, row }) => <el-input-number v-model={formModel[row.prop]} min={0} controls={false} placeholder="请输入" class="ui-w-100" />
-    },
-    {
-      label: "岗位津贴",
-      colProp: { span: 8 },
-      prop: "positionSubsidy",
-      render: ({ formModel, row }) => <el-input-number v-model={formModel[row.prop]} min={0} controls={false} placeholder="请输入" class="ui-w-100" />
-    },
-    {
-      label: "房屋补贴",
-      colProp: { span: 8 },
-      prop: "rentAllowance",
-      render: ({ formModel, row }) => <el-input-number v-model={formModel[row.prop]} min={0} controls={false} placeholder="请输入" class="ui-w-100" />
-    },
-    {
-      label: "工龄金额/年",
-      colProp: { span: 8 },
-      prop: "workAgeSubsidy",
-      render: ({ formModel, row }) => <el-input-number v-model={formModel[row.prop]} min={0} controls={false} placeholder="请输入" class="ui-w-100" />
-    },
-    {
-      label: "保密费",
-      colProp: { span: 8 },
-      prop: "confidentialitySubsidy",
-      render: ({ formModel, row }) => <el-input-number v-model={formModel[row.prop]} min={0} controls={false} placeholder="请输入" class="ui-w-100" />
-    },
-    {
-      label: "大周加班费",
-      colProp: { span: 8 },
-      prop: "bigWeekOverTime",
-      render: ({ formModel, row }) => <el-input-number v-model={formModel[row.prop]} min={0} controls={false} placeholder="请输入" class="ui-w-100" />
-    },
-    {
-      label: "是否计算",
-      colProp: { span: 8 },
-      prop: "isSalary",
-      render: ({ formModel, row }) => {
-        const options = [
-          { label: "是", value: "是" },
-          { label: "否", value: "否" }
-        ];
-        return (
-          <el-select style={{ width: "100%" }} v-model={formModel[row.prop]} placeholder="请选择">
-            {options.map((item) => (
-              <el-option key={item.value} label={item.label} value={item.value} />
-            ))}
-          </el-select>
-        );
-      }
-    }
-  ];
-
   onMounted(() => {
     getColumnConfig();
     getOptions();
@@ -173,6 +95,7 @@ export const useConfig = () => {
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ formData, columnData: JSON.parse(JSON.stringify(columnData)), operationColumn: false });
+    columnDefs.value = getAgGridColumns({ formData, columnData, operationColumn: false });
     return columnData;
   };
 
@@ -209,23 +132,18 @@ export const useConfig = () => {
       .catch((err) => (loading.value = false));
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     formData.staffCode = values.staffCode;
     formData.staffName = values.staffName;
     formData.state = values.state;
     formData.wageAccountingType = values.wageAccountingType;
     formData.deptId = values.deptId;
     formData.entryDeadline = values.entryDeadline;
-    formData.deptIdList = [];
-    if (values.deptId) {
-      const result = getTreeArrItem(treeData.value, "value", values.deptId);
-      formData.deptIdList = getChildIDs([result], "value");
-    }
+    formData.deptIdList = getChildDeptIds(treeData.value, values.deptId);
     onSearch();
   };
 
   const onEdit = () => {
-    console.log(moneyRef.value.getTableRef().setCurrentRow, "table ref");
     const row = currentRow.value;
     currentId.value = row.staffCode;
     openDialog("edit", row);
@@ -237,6 +155,7 @@ export const useConfig = () => {
     const formRef = ref();
 
     const _formData = reactive({
+      ...row,
       regularSalary: row?.regularSalary,
       levelSalary: row?.levelSalary,
       positionSubsidy: row?.positionSubsidy,
@@ -247,39 +166,43 @@ export const useConfig = () => {
       isSalary: row?.isSalary ?? "",
       staffName: row?.staffName ?? "",
       staffCode: row?.staffCode ?? "",
-      staffId: row?.staffId
+      staffId: row?.staffId,
+      standardSalary: row?.standardSalary
     });
+
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        formProps: { labelWidth: "90px" },
+        customColumn: {
+          positionSubsidy: { hide: row?.wageAccountingType === "职员" }
+        }
+      }
+    ];
 
     addDialog({
       title: `${title}`,
       props: {
-        formInline: _formData,
-        formRules: formRules,
-        formProps: { labelWidth: 90 },
-        formConfigs: formConfigs()
+        params: { groupCode: "1" },
+        formConfig
       },
       width: "900px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
+      beforeSure: (done) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
-            ElMessageBox.confirm(`确认要${title}吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitChange(type, title, _formData, () => {
-                done();
-                const _rowIndex = dataList.value.findIndex((item) => item.staffCode === currentRow.value.staffCode);
-                onSearch(_rowIndex);
-              });
-            });
+            showMessageBox(`确认要${title}吗?`)
+              .then(() => {
+                onSubmitChange(type, title, _formData, () => {
+                  done();
+                  const _rowIndex = dataList.value.findIndex((item) => item.staffCode === currentRow.value.staffCode);
+                  onSearch(_rowIndex);
+                });
+              })
+              .catch(console.log);
           }
         });
       }
@@ -312,60 +235,23 @@ export const useConfig = () => {
       .catch(() => {});
   };
 
-  const onImport = () => {
-    console.log("导入模板");
-    const dom = document.getElementById("imporMoneyInputSettings");
-    dom.click();
-  };
-
   // 上传导入
-  const onChangeFileInput = (e) => {
-    const files = e.target.files;
-    if (files.length <= 0) {
-      return false;
-    } else if (!/\.(xls|xlsx)$/.test(files[0].name.toLowerCase())) {
-      ElMessage({
-        message: "上传格式不正确，请上传xls或者xlsx格式",
-        type: "warning"
-      });
+  const onImport = (file) => {
+    const files = file.raw;
+    if (!files) return message.warning("请选择文件");
+    if (!/\.(xls|xlsx)$/.test(files.name.toLowerCase())) {
+      message.warning("上传格式不正确，请上传xls或者xlsx格式");
       return false;
     } else {
       loading.value = true;
       const formData = new FormData();
-      formData.append("files", files[0]);
+      formData.append("files", files);
       uploadMoneySettingsInfo(formData)
         .then((res) => {
-          if (res.data) {
-            ElMessage({ type: "success", message: "导入成功" });
-          }
+          if (res.data) message.success("导入成功");
         })
-        .finally(() => {
-          loading.value = false;
-          const dom = document.getElementById("imporMoneyInputSettings");
-          (dom as any).value = null;
-        });
+        .finally(() => (loading.value = false));
     }
-  };
-
-  const onDelete = (row) => {
-    ElMessageBox.confirm(`确认要删除编码为【${row.categoryNo}】的分类吗?`, "系统提示", {
-      type: "warning",
-      draggable: true,
-      cancelButtonText: "取消",
-      confirmButtonText: "确定",
-      dangerouslyUseHTMLString: true
-    })
-      .then(() => {
-        loading.value = true;
-        deleteClassifyTableInfo({ id: row.id }).then((res) => {
-          if (res.data) {
-            ElMessage({ message: `删除成功`, type: "success" });
-            onSearch();
-          }
-        });
-      })
-      .catch(() => {})
-      .finally(() => (loading.value = false));
   };
 
   // 分页相关
@@ -411,9 +297,21 @@ export const useConfig = () => {
     onEdit();
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onBeforeEdit, type: "warning", text: "修改", isDropDown: false },
-    { clickHandler: onImport, type: "primary", text: "导入", isDropDown: true },
+    {
+      type: "primary",
+      text: "导入",
+      icon: Upload,
+      disabled: false,
+      isDropDown: true,
+      uploadProp: { action: "#", accept: ".xls,.xlsx", autoUpload: false, multiple: true, onChange: onImport }
+    },
     { clickHandler: onExport, type: "info", text: "下载模板", isDropDown: true },
     { clickHandler: onExport2, type: "info", text: "导出", isDropDown: true }
   ]);
@@ -428,12 +326,14 @@ export const useConfig = () => {
     queryParams,
     pagination,
     buttonList,
+    columnDefs,
+    isAgTable,
     onRefresh,
     handleSizeChange,
     handleCurrentChange,
-    onChangeFileInput,
-    handleTagSearch,
+    onTagSearch,
     rowDbClick,
-    rowClick
+    rowClick,
+    onSwitchTable
   };
 };

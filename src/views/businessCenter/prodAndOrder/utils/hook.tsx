@@ -14,12 +14,8 @@ export const useConfig = () => {
   const loading = ref<boolean>(false);
   const dataList = ref([]);
   const rowData = ref();
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 90);
-
-  const formData: any = reactive({
-    page: 1,
-    limit: PAGE_CONFIG.pageSize
-  });
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 50);
+  const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
 
   onMounted(() => {
     getColumnConfig();
@@ -40,7 +36,7 @@ export const useConfig = () => {
             prop: "saleQty",
             align: "right",
             sortable: true,
-            width: 100,
+            width: 80,
             headerAlign: "center",
             cellRenderer(data) {
               return data.row.saleQty ? <span>{(+data.row.saleQty).toLocaleString()}</span> : <span />;
@@ -69,7 +65,7 @@ export const useConfig = () => {
             prop: "outQtyBefore",
             sortable: true,
             align: "right",
-            width: 100,
+            width: 105,
             headerAlign: "center",
             cellRenderer(data) {
               return data.row.outQtyBefore ? <span>{(+data.row.outQtyBefore).toLocaleString()}</span> : <span />;
@@ -80,7 +76,7 @@ export const useConfig = () => {
             prop: "outQty",
             sortable: true,
             align: "right",
-            width: 100,
+            width: 105,
             headerAlign: "center",
             cellRenderer(data) {
               return data.row.outQty ? <span>{(+data.row.outQty).toLocaleString()}</span> : <span />;
@@ -101,7 +97,7 @@ export const useConfig = () => {
             label: "前期订单出货金额(万元)",
             prop: "outAmountBefore",
             sortable: true,
-            width: 100,
+            width: 110,
             align: "right",
             headerAlign: "center",
             cellRenderer(data) {
@@ -111,7 +107,7 @@ export const useConfig = () => {
           {
             label: "本期订单出货金额(万元)",
             sortable: true,
-            width: 100,
+            width: 110,
             prop: "outAmount",
             align: "right",
             headerAlign: "center",
@@ -122,7 +118,7 @@ export const useConfig = () => {
           {
             label: "本期出货总金额(万元)",
             sortable: true,
-            width: 100,
+            width: 110,
             prop: "outAmountTotal",
             align: "right",
             headerAlign: "center",
@@ -142,7 +138,7 @@ export const useConfig = () => {
             sortable: true,
             prop: "saleRemainBefore",
             align: "right",
-            width: 100,
+            width: 120,
             headerAlign: "center",
             cellRenderer(data) {
               return data.row.saleRemainBefore ? <span>{(+data.row.saleRemainBefore).toLocaleString()}</span> : <span />;
@@ -153,7 +149,7 @@ export const useConfig = () => {
             sortable: true,
             prop: "saleRemain",
             align: "right",
-            width: 100,
+            width: 120,
             headerAlign: "center",
             cellRenderer(data) {
               return data.row.saleRemain ? <span>{(+data.row.saleRemain).toLocaleString()}</span> : <span />;
@@ -164,7 +160,7 @@ export const useConfig = () => {
             sortable: true,
             prop: "saleRemainTotal",
             align: "right",
-            width: 100,
+            width: 80,
             headerAlign: "center",
             cellRenderer(data) {
               return data.row.saleRemainTotal ? <span>{(+data.row.saleRemainTotal).toLocaleString()}</span> : <span />;
@@ -177,7 +173,7 @@ export const useConfig = () => {
         headerAlign: "center",
         prop: "doneInfo",
         children: [
-          { label: "本期订单出货达成率(%)", sortable: true, prop: "saleOutRate", width: 100, headerAlign: "center", align: "right" },
+          { label: "本期订单出货达成率(%)", sortable: true, prop: "saleOutRate", width: 108, headerAlign: "center", align: "right" },
           { label: "订单生产完成率(%)", sortable: true, prop: "saleInRqte", width: 100, headerAlign: "center", align: "right" }
         ]
       },
@@ -191,7 +187,7 @@ export const useConfig = () => {
             sortable: true,
             prop: "inQty",
             align: "right",
-            width: 100,
+            width: 80,
             headerAlign: "center",
             cellRenderer(data) {
               return data.row.inQty ? <span>{(+data.row.inQty).toLocaleString()}</span> : <span />;
@@ -243,7 +239,6 @@ export const useConfig = () => {
   // 导出单据
   const onExport = () => {
     // 考虑到多级表头的复杂处理，暂时不用纯表格数据导出列
-    // downloadDataToExcel({ columns: getColumnConfig(), dataList: dataList.value, sheetName: "产销存、订单对比表" });
 
     const workbook = utils.table_to_book(document.querySelector("#businessId"), {
       raw: true //有的是日期、小数等格式，直接乱码#。所以这里直接保留原始字符串

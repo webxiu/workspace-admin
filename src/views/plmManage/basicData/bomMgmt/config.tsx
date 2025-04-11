@@ -1,18 +1,16 @@
 /*
- * @Author: Hailen
+ * @Author: 661
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-21 15:44:43
+ * @Last Modified time: 2025-03-18 11:37:23
  */
 
-import { h, onMounted, reactive, ref } from "vue";
-import { TeamMemberItemType, addDepGroup, editDepGroup, updateDepGroup } from "@/api/workbench/teamManage";
+import { onMounted, reactive, ref } from "vue";
+import { TeamMemberItemType } from "@/api/workbench/teamManage";
 
 import { message } from "@/utils/message";
 import { type PaginationProps } from "@pureadmin/table";
-import { addDialog } from "@/components/ReDialog";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { getUserInfo } from "@/utils/storage";
 import { useEleHeight } from "@/hooks";
 import {
   backBomData,
@@ -26,9 +24,15 @@ import {
   unDisabledBomData
 } from "@/api/plmManage";
 import { useRoute, useRouter } from "vue-router";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { getMenuColumns, setColumn, updateButtonList, RendererType } from "@/utils/table";
 import { PAGE_CONFIG } from "@/config/constant";
 import { commonSubmit } from "@/api/systemManage";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { LoadingType } from "@/components/ButtonList/index.vue";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import ContextMenu from "./components/bomGroup/contextMenu.vue";
+import { ContextMenuItem } from "./components/bomGroup/contextMenu.vue";
 
 /** 组别类型 */
 export interface DepGroupItemTree {
@@ -52,110 +56,94 @@ export interface DepGroupItemTree {
 
 export type HandleType = "add" | "edit";
 
-const columnsDragDom = ref([]);
-const formData = reactive({
-  materialName: "",
-  state: "",
-  page: 1,
-  limit: PAGE_CONFIG.pageSize,
-  groupIdList: []
-});
-
-export const getConfig = async (buttonList) => {
-  const columnsDrag: TableColumnList[] = [
-    { label: "选择" },
-    { label: "序号", prop: "index" },
-    { label: "BOM编号", prop: "number" },
-    { label: "BOM名称", prop: "name" },
-    { label: "BOM分组", prop: "groupName" },
-    { label: "父级物料编码", prop: "materialNumber" },
-    { label: "父级物料名称", prop: "materialName" },
-    { label: "父级物料规格", prop: "specification" },
-    { label: "审核状态", prop: "stateName" },
-    { label: "下推状态", prop: "pushName" },
-    { label: "禁用状态", prop: "disableStatus" },
-    { label: "禁用人", prop: "disableUserName" },
-    { label: "禁用时间", prop: "disableDate" },
-    { label: "创建人", prop: "createUserName" },
-    { label: "创建时间", prop: "createDate" },
-    { label: "最后修改人", prop: "modifyUserName" },
-    { label: "最后修改时间", prop: "modifyDate" }
-  ];
-
-  let columns: TableColumnList[] = [
-    { label: "", align: "center", width: 62, fixed: true, cellRenderer: () => <el-radio label="&nbsp;" size="small" /> },
-    { label: "序号", type: "index", width: 65, fixed: true, cellRenderer: ({ $index }) => <span>{(formData.page - 1) * formData.limit + $index + 1}</span> },
-    { label: "BOM编号", fixed: true, prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 200 },
-    { label: "BOM名称", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 240, fixed: true },
-    { label: "BOM分组", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "父级物料编码", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "父级物料名称", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "父级物料规格", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "审核状态", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "下推状态", slot: "pushState", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "禁用状态", slot: "disableStatus", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "禁用人", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "禁用时间", slot: "disableDate", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 220 },
-    { label: "创建人", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "创建时间", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 220 },
-    { label: "最后修改人", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "最后修改时间", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 220 }
-  ];
-
-  columnsDragDom.value = columnsDrag;
-
-  const { columnArrs, buttonArrs } = await getMenuColumns();
-  const [menuCols] = columnArrs;
-
-  if (menuCols?.length) {
-    columns = setColumn({ columnData: menuCols, indexColumn: { fixed: true }, radioColumn: { fixed: true }, operationColumn: false });
-  }
-
-  updateButtonList(buttonList, buttonArrs[0]);
-
-  return columns;
-};
-
-export function useTable(contextMenuRef) {
-  const formRef = ref();
+export function useTable() {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
+  const route = useRoute();
+  const router = useRouter();
   const currentRow: any = ref({});
   const curNodeName = ref("0");
   const curNodeLabel = ref();
-  const depGroupTree = ref<DepGroupItemTree[]>([]);
   const loading = ref<boolean>(false);
-  const dataList = ref<TeamMemberItemType[]>([]);
   const columns = ref<TableColumnList[]>([]);
+  const dataList = ref<TeamMemberItemType[]>([]);
   const categoryTreeData = ref([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 40 + 54);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
+  const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
+  const formData = reactive({
+    materialName: "",
+    billState: "",
+    page: 1,
+    limit: PAGE_CONFIG.pageSize,
+    groupIdList: []
+  });
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "父级物料名称", value: "materialName" },
+    {
+      label: "审核状态",
+      value: "billState",
+      children: [
+        { label: "待提交", value: "0" },
+        { label: "审核中", value: "1" },
+        { label: "已审核", value: "2" },
+        { label: "重新审核", value: "3" }
+      ]
+    }
+  ]);
 
-  const router = useRouter();
-  const route = useRoute();
+  const contextMenuRef = ref<InstanceType<typeof ContextMenu>>();
+  const menuItems = ref<ContextMenuItem[]>([
+    { name: "新增", action: (item) => contextMenuRef.value.onAdd(item, fetchLeftData) },
+    { name: "修改", action: (item) => contextMenuRef.value.onEdit(item, fetchLeftData) },
+    { name: "删除", action: (item) => contextMenuRef.value.onDelete(item, fetchLeftData) }
+  ]);
+
+  onMounted(() => {
+    getColumnConfig();
+    fetchLeftData();
+  });
+
+  const getColumnConfig = async () => {
+    const disableStatus: RendererType = ({ row }) => (row.disableStatus == 1 ? "禁用11" : "未禁用");
+    let columnData: TableColumnList[] = [
+      { label: "BOM编号", fixed: true, prop: "number", minWidth: 200 },
+      { label: "BOM名称", prop: "name", minWidth: 240, fixed: true },
+      { label: "BOM分组", prop: "groupName", minWidth: 120 },
+      { label: "父级物料编码", prop: "materialNumber", minWidth: 120 },
+      { label: "父级物料名称", prop: "materialName", minWidth: 120 },
+      { label: "父级物料规格", prop: "specification", minWidth: 120 },
+      { label: "审核状态", prop: "stateName", minWidth: 120 },
+      { label: "下推状态", prop: "pushName", minWidth: 120 },
+      { label: "禁用状态", slot: "disableStatus", prop: "disableStatus", minWidth: 120 },
+      { label: "禁用人", prop: "disableUserName", minWidth: 120 },
+      { label: "禁用时间", prop: "disableDate", minWidth: 220 },
+      { label: "创建人", prop: "createUserName", minWidth: 120 },
+      { label: "创建时间", prop: "createDate", minWidth: 220 },
+      { label: "最后修改人", prop: "modifyUserName", minWidth: 120 },
+      { label: "最后修改时间", prop: "modifyDate", minWidth: 220 }
+    ];
+    const { columnArrs, buttonArrs } = await getMenuColumns();
+    const [data] = columnArrs;
+    if (data?.length) columnData = data;
+    updateButtonList(buttonList, buttonArrs[0]);
+    columns.value = setColumn({ columnData, formData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, formData, operationColumn: false, columnsRender: { disableStatus } });
+  };
 
   const fetchLeftData = () => {
-    console.log("left fetch");
     fetchBomLeftTreeData({}).then((res: any) => {
       categoryTreeData.value = res.data.bomGroupSelectTree;
       contextMenuRef.value.treeSelectData = res.data.bomGroupSelectTree;
     });
   };
 
-  onMounted(async () => {
-    columns.value = await getConfig(buttonList);
-    fetchLeftData();
-    onSearch();
-  });
-
   const handleNodeClick = (treeItem) => {
     curNodeName.value = treeItem.id;
     curNodeLabel.value = treeItem.id;
-    console.log(treeItem, "当前的tree");
-
     const finalArr = [];
-
     const loopFindId = (item) => {
       finalArr.push(item.id);
-
       if (item.children && Array.isArray(item.children) && item.children.length) {
         item.children.forEach((el) => {
           loopFindId(el);
@@ -163,11 +151,8 @@ export function useTable(contextMenuRef) {
       }
     };
     loopFindId(treeItem);
-
     formData.groupIdList = finalArr;
     onSearch();
-
-    console.log(finalArr, "ids");
   };
 
   /**
@@ -196,80 +181,45 @@ export function useTable(contextMenuRef) {
   };
 
   const onFresh = () => {
-    getConfig(buttonList);
     const rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
     onSearch(rowIndex);
+    getColumnConfig();
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     formData.page = 1;
     onSearch();
   };
 
-  const resetForm = (formEl) => {
-    if (!formEl) return;
-    formEl.resetFields();
-    onSearch();
-  };
-
-  function GetDeptName(data: DepGroupItemTree[], id: number) {
-    if (data.length) {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i].id == id) return data[i].title;
-        return GetDeptName(data[i].children, id);
-      }
-    }
-    return null;
-  }
-
-  // 点击当前组节点
-  const onNodeClick = (data: DepGroupItemTree) => {
-    // if (!data.parentId) {
-    //   formData.deptId = data.id;
-    //   delete formData.groupId;
-    // } else {
-    //   formData.groupId = data.id;
-    //   delete formData.deptId;
-    // }
-    // onSearch("single");
-  };
-
   // 新增分组
   const onAdd = () => {
-    router.push(`/plmManage/basicData/bomMgmt/add?type=add&isNewTag=yes&menuId=${route.query.menuId}`);
-  };
-
-  // 双击行
-  const dblclick = (row) => {
-    if (row.billState === 2) {
-      router.push(`/plmManage/basicData/bomMgmt/view?id=${row.id}&type=view&isNewTag=yes&menuId=${route.query.menuId}`);
-      return;
-    }
-
-    if (row.billState === 0) {
-      router.push(`/plmManage/basicData/bomMgmt/edit?id=${row.id}&type=edit&state=${row.billState}&isNewTag=yes&menuId=${route.query.menuId}`);
-      return;
-    }
+    router.push({
+      path: "/plmManage/basicData/bomMgmt/add",
+      query: { type: "add", isNewTag: "yes", menuId: route.query.menuId }
+    });
   };
 
   // 修改分组
   const onEdit = () => {
     if (JSON.stringify(currentRow.value) !== "{}") {
       if (currentRow.value.billState === 2) {
-        ElMessage({
-          message: "已审核的BOM不能直接修改",
-          type: "warning"
-        });
+        message.warning("已审核的BOM不能直接修改");
         return;
       }
-      router.push(`/plmManage/basicData/bomMgmt/edit?id=${currentRow.value.id}&type=edit&isNewTag=yes&menuId=${route.query.menuId}`);
+      router.push({
+        path: `/plmManage/basicData/bomMgmt/edit`,
+        query: {
+          id: currentRow.value.id,
+          type: "edit",
+          isNewTag: "yes",
+          menuId: route.query.menuId,
+          title: currentRow.value.number
+        }
+      });
       return;
     }
-    ElMessage({
-      message: "请选择一条记录",
-      type: "warning"
-    });
+    message.warning("请选择一条记录");
   };
 
   // 删除分组
@@ -311,7 +261,16 @@ export function useTable(contextMenuRef) {
   const businessAction = ({ text }) => {
     if (JSON.stringify(currentRow.value) !== "{}") {
       if (text === "履历") {
-        router.push(`/plmManage/basicData/bomMgmt/history/index?id=${currentRow.value.id}&type=view&isNewTag=yes&menuId=${route.query.menuId}`);
+        router.push({
+          path: `/plmManage/basicData/bomMgmt/history/index`,
+          query: {
+            id: currentRow.value.id,
+            type: "view",
+            isNewTag: "yes",
+            menuId: route.query.menuId,
+            title: currentRow.value.number
+          }
+        });
         return;
       }
       ElMessageBox.confirm(`确认要${text}名称为【${currentRow.value.name}】的BOM吗?`, "系统提示", {
@@ -357,27 +316,10 @@ export function useTable(contextMenuRef) {
       return;
     }
   };
-
-  // 分页相关
-  function handleSizeChange(val: number) {
-    formData.limit = val;
-    onSearch();
-  }
-
-  function handleCurrentChange(val: number) {
-    formData.page = val;
-    onSearch();
-  }
-
-  // 点击表格行
-  const rowClick = (row) => {
-    currentRow.value = row;
-  };
-
   // 导出
   const onExport = () => {
     loading.value = true;
-    const excelHeader = columnsDragDom.value
+    const excelHeader = columns.value
       .map((item, index) => {
         return { field: item.prop, title: item.label, width: 160, key: `0-${index}`, hide: false, colspan: 1, rowspan: 1, type: "normal", colGroup: false };
       })
@@ -403,6 +345,48 @@ export function useTable(contextMenuRef) {
       .finally(() => (loading.value = false));
   };
 
+  // 双击行
+  const rowDbClick = (row) => {
+    if (row.billState === 2) {
+      router.push({
+        path: `/plmManage/basicData/bomMgmt/view`,
+        query: { id: row.id, type: "view", isNewTag: "yes", menuId: route.query.menuId, title: row.number }
+      });
+    } else if (row.billState === 0) {
+      router.push({
+        path: `/plmManage/basicData/bomMgmt/edit`,
+        query: { id: row.id, type: "edit", state: row.billState, isNewTag: "yes", menuId: route.query.menuId, title: row.number }
+      });
+    }
+  };
+
+  // 点击表格行
+  const rowClick = (row) => {
+    currentRow.value = row;
+  };
+
+  // 分页相关
+  function handleSizeChange(val: number) {
+    formData.limit = val;
+    onSearch();
+  }
+
+  function handleCurrentChange(val: number) {
+    formData.page = val;
+    onSearch();
+  }
+
+  const rowStyle = ({ row, data }) => {
+    if ((row?.disableStatus || data?.disableStatus) === 1) {
+      return { color: "red" };
+    }
+  };
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
     { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
@@ -417,41 +401,29 @@ export function useTable(contextMenuRef) {
     { clickHandler: businessAction, type: "primary", text: "反禁用", isDropDown: true }
   ]);
 
-  const rowStyle = ({ row }) => {
-    if (row.disableStatus === 1) {
-      return {
-        color: "red"
-      };
-    }
-  };
-
   return {
-    depGroupTree,
+    isAgTable,
+    columnDefs,
+    loading,
     dataList,
     columns,
-    formData,
-    loading,
     pagination,
+    curNodeName,
     maxHeight,
-    rowStyle,
-    onAdd,
-    dblclick,
-    onEdit,
-    remove,
-    businessAction,
-    onSearch,
-    onFresh,
-    resetForm,
-    fetchLeftData,
     buttonList,
+    loadingStatus,
+    searchOptions,
     categoryTreeData,
-    onNodeClick,
+    menuItems,
+    contextMenuRef,
+    rowStyle,
+    onFresh,
     rowClick,
-    onExport,
-    handleSizeChange,
-    handleTagSearch,
-    handleCurrentChange,
+    rowDbClick,
+    onTagSearch,
     handleNodeClick,
-    curNodeName
+    handleSizeChange,
+    handleCurrentChange,
+    onSwitchTable
   };
 }

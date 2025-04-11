@@ -57,7 +57,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       prop: "isNeedFinishExecute",
       colProp: { span: 24 },
       render: ({ formModel, row }) => {
-        return <el-switch v-model={formModel[row.prop]} active-value={1} inactive-value={0} />;
+        return <el-switch v-model={formModel[row.prop]} active-value={true} inactive-value={false} />;
       }
     },
     {
@@ -91,7 +91,7 @@ export const lookFormConfigs = (): FormConfigItemType[] => {
       prop: "billState",
       colProp: { span: 24 },
       render: ({ formModel, row }) => {
-        const value = BillState_Color[formModel[row.prop]].name;
+        const value = BillState_Color[formModel[row.prop]]?.name;
         return <el-input v-model={value} disabled />;
       }
     },

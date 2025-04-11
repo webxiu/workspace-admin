@@ -14,15 +14,7 @@
             readonly
             showButton
             @select="(val) => onSelect1(val, idx)"
-            :componentProp="{
-              searchConfig: [{ label: '产品型号', value: 'productCode' }],
-              maxHeight: 520,
-              columns: [
-                { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-              ],
-              api: fetchProductStoreList
-            }"
+            showModel="product"
           />
           <el-input v-else placeholder=" " v-model="item.model1" />
         </td>
@@ -36,15 +28,7 @@
             readonly
             showButton
             @select="(val) => onSelect2(val, idx)"
-            :componentProp="{
-              searchConfig: [{ label: '产品型号', value: 'productCode' }],
-              maxHeight: 520,
-              columns: [
-                { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-              ],
-              api: fetchProductStoreList
-            }"
+            showModel="product"
           />
           <el-input v-else placeholder=" " v-model="item.model1" />
         </td>
@@ -58,15 +42,7 @@
             readonly
             showButton
             @select="(val) => onSelect3(val, idx)"
-            :componentProp="{
-              searchConfig: [{ label: '产品型号', value: 'productCode' }],
-              maxHeight: 520,
-              columns: [
-                { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-              ],
-              api: fetchProductStoreList
-            }"
+            showModel="product"
           />
           <el-input v-else placeholder=" " v-model="item.model1" />
         </td>
@@ -80,15 +56,7 @@
             v-if="idx === 0"
             showButton
             @select="(val) => onSelect4(val, idx)"
-            :componentProp="{
-              searchConfig: [{ label: '产品型号', value: 'productCode' }],
-              maxHeight: 520,
-              columns: [
-                { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-              ],
-              api: fetchProductStoreList
-            }"
+            showModel="product"
           />
           <el-input v-else placeholder=" " v-model="item.model1" />
         </td>
@@ -123,7 +91,6 @@
 
 <script setup lang="tsx">
 import { reactive, ref } from "vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 
 const dataList = ref([
   { title: "产品型号", model1: "", model2: "", model3: "", model4: "" },

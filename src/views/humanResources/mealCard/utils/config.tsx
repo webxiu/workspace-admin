@@ -67,7 +67,7 @@ const formConfigs1 = () => [
     }
   },
   {
-    slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
+    slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
     labelWidth: 100,
     prop: "file",
     render: ({ formModel, row }) => {
@@ -111,7 +111,7 @@ const formConfigs1Exit = () => [
     }
   },
   {
-    slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
+    slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
     labelWidth: 100,
     prop: "file",
     render: ({ formModel, row }) => {

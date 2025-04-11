@@ -106,7 +106,7 @@ export const formConfigs = ({ treeData, type, formData, fileList, rowFileName })
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>附件</span> },
+      slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>附件</span> },
       prop: "file",
       labelWidth: 80,
       colProp: { span: 24 },

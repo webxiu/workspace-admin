@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-02-27 10:47:19
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-14 11:46:04
+ * @Last Modified time: 2024-12-25 16:31:52
  */
 
 import {
@@ -33,11 +33,12 @@ import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 
+import { FormRules } from "element-plus";
 import { Plus } from "@element-plus/icons-vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { handleTree } from "@/utils/tree";
 import { useEleHeight } from "@/hooks";
-import { FormRules } from "element-plus";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -126,13 +127,7 @@ export const useConfig = () => {
     const titleObj = { add: "新增", edit: "修改" };
     const title = titleObj[type];
     const formRef = ref();
-    const loading = ref<boolean>(true);
-    const depUserInfo = ref<DeptUserInfoItemType[]>([]);
-    const deptInfoTree = ref<DeptInfoTreeOptionType[]>([]);
-    const clerkId = row?.clerkId ? row?.clerkId.split(",").map((c) => Number(c)) : 0;
-    const myFormConfig = ref<FormConfigItemType[]>([]);
-
-    const formRules2 = ref<FormRules>({});
+    const clerkId = row?.clerkId ? row?.clerkId.split(",").map((c) => Number(c)) : [];
 
     const _formData = reactive({
       deptCode: type === "edit" ? row?.deptCode : "",
@@ -163,56 +158,29 @@ export const useConfig = () => {
       }
     });
 
-    getFormColumns({ loading, customProps, groupCode: "1" })
-      .then((data) => {
-        console.log(data, "data...");
-        loading.value = false;
-        if (!data.formColumns.length) return;
-        myFormConfig.value = data.formColumns;
-        formRules2.value = data.formRules;
-      })
-      .catch(() => (loading.value = false));
-
-    // // 获取修改弹出部门下拉数据
-    // getDetartMenuOptionList().then((res) => {
-    //   if (res.data) {
-    //     depUserInfo.value = res.data.userinfoList;
-    //     deptInfoTree.value = res.data.deptInfoTree;
-    //     loading.value = false;
-    //   }
-    // });
-
     addDialog({
       title: `${title}部门`,
       props: {
-        loading: loading,
-        formInline: _formData,
-        formRules: formRules2,
-        formConfigs: myFormConfig,
-        formProps: { labelWidth: "140px" }
+        params: { groupCode: "1" },
+        formConfig: [{ formData: _formData, customProps, formProps: { labelWidth: "140px" } }]
       },
       width: "860px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        // const curData = options.props.formInline;
-        const FormRef = formRef.value.getRef();
-        const { clerkId } = options.props.formInline;
-        const newClerkId = clerkId.join(",");
+        const newClerkId = _formData.clerkId.join(",");
         const params = {
           ..._formData,
           clerkId: newClerkId,
           select: newClerkId,
           level: type === "add" ? undefined : _formData.level
         };
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          // const _formData = data.forms[0];
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(() => {
               onSubmitChange(type, title, params, () => {
@@ -285,13 +253,7 @@ export const useConfig = () => {
     const title = titleObj[type];
     const formRef = ref();
     const loading = ref<boolean>(true);
-    const myFormConfig = ref([]);
-    const depGroupLeaderList = ref<GroupLeaderTreeItemType[]>([]);
-    const belongGroupList = ref<BelongGroupItemType[]>([]);
-
     const parentId = [undefined, null].includes(row?.parentId) ? "" : `${row?.parentId}`;
-
-    const formRules2 = ref<FormRules>({});
 
     const _formData = reactive({
       groupCode: row?.groupCode ?? "",
@@ -304,26 +266,6 @@ export const useConfig = () => {
       id: row?.itemId ?? ""
     });
 
-    const customProps = reactive<{ [key: string]: CustomPropsType }>({
-      leaderId: {
-        formatAPI: (data) => data,
-        apiParams: { deptId: row.deptId }
-      },
-      parentId: {
-        formatAPI: (data) => data,
-        apiParams: { deptId: row.deptId }
-      }
-    });
-
-    getFormColumns({ loading, customProps, groupCode: "2" })
-      .then((data) => {
-        loading.value = false;
-        if (!data.formColumns.length) return;
-        myFormConfig.value = data.formColumns;
-        formRules2.value = data.formRules;
-      })
-      .catch(() => (loading.value = false));
-
     //新增分组时调用
     if (type === "add") {
       addGroupSelectMax()
@@ -334,41 +276,27 @@ export const useConfig = () => {
         .catch(() => (loading.value = false));
     }
 
-    // 获取编辑下拉选项列表
-    // const p1 = detartGroupLeaderTree({ deptId: rowData.value.itemId });
-    // const p2 = detartGroupTree({ deptId: rowData.value.itemId });
-    // Promise.all([p1, p2])
-    //   .then((data) => {
-    //     loading.value = false;
-    //     const res1 = data[0] as any;
-    //     const res2 = data[1] as any;
-    //     if (res1.status === 200) depGroupLeaderList.value = res1.data;
-    //     if (res2.status === 200) belongGroupList.value = res2.data;
-    //   })
-    //   .catch(() => (loading.value = false));
+    const customProps = reactive<{ [key: string]: CustomPropsType }>({
+      leaderId: { apiParams: { deptId: row.deptId }, formatAPI: (data) => data },
+      parentId: { apiParams: { deptId: row.deptId }, formatAPI: (data) => data }
+    });
 
     addDialog({
       title: `${title}分组`,
       props: {
-        loading: loading,
-        formInline: _formData,
-        formRules: formRules2,
-        formConfigs: myFormConfig,
-        formProps: { labelWidth: "140px" }
+        params: { groupCode: "2" },
+        formConfig: [{ formData: _formData, customProps, formProps: { labelWidth: "140px" } }]
       },
       width: "60%",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          // const _formData = data.forms[0];
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(() => {
               onGroupChange(type, title, _formData, () => {

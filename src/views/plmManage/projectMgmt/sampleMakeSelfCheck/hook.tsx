@@ -24,10 +24,8 @@ export const useConfig = () => {
   const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
 
   const getOpts = () => {
-    getEnumDictList(["ProjectStage"]).then((res) => {
-      if (res) {
-        searchOptions[0].children = res["ProjectStage"].map((item) => ({ label: item.optionName, value: item.optionValue }));
-      }
+    getEnumDictList(["ProjectStage"]).then(({ ProjectStage }) => {
+      searchOptions[0].children = ProjectStage;
     });
   };
 

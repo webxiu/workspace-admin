@@ -25,15 +25,7 @@
             readonly
             showButton
             @select="(val) => onSelect(val, item)"
-            :componentProp="{
-              searchConfig: [{ label: '产品型号', value: 'productCode' }],
-              maxHeight: 520,
-              columns: [
-                { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-              ],
-              api: fetchProductStoreList
-            }"
+            showModel="product"
           />
         </td>
         <td width="100px">
@@ -99,7 +91,6 @@
 
 <script setup lang="tsx">
 import { onMounted, reactive, ref } from "vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 import { getEnumDictList } from "@/utils/table";
 
 const dataListConfig = reactive([]);
@@ -126,10 +117,8 @@ const onSelect = (val, item) => {
 };
 
 onMounted(() => {
-  getEnumDictList(["CountryCode"]).then((res) => {
-    if (res) {
-      countryOpts.value = res["CountryCode"];
-    }
+  getEnumDictList(["CountryCode"]).then(({ CountryCode }) => {
+    countryOpts.value = CountryCode;
   });
 });
 

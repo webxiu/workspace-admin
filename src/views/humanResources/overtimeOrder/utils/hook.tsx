@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-09 14:29:20
+ * @Last Modified time: 2025-03-12 15:31:09
  */
 
 import { OvertimeOrderItemType, overtimeOrderList, deleteOvertimeOrder, exportOvertimeOrder } from "@/api/oaManage/humanResources";
@@ -12,15 +12,17 @@ import Detail from "../detail/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
-import { downloadFile, getTreeArrItem, getChildIDs, getFileNameOnUrlPath, commonBackLogic } from "@/utils/common";
-import { setColumn, getExportConfig, getMenuColumns, updateButtonList } from "@/utils/table";
+import { downloadFile, getFileNameOnUrlPath, commonBackLogic } from "@/utils/common";
+import { setColumn, getExportConfig, getMenuColumns, updateButtonList, getChildDeptIds } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { type PaginationProps } from "@pureadmin/table";
 import { message, showMessageBox } from "@/utils/message";
 import { getDeptOptions } from "@/utils/requestApi";
-import { commonSubmit, getDeptTreeData } from "@/api/systemManage";
+import { commonSubmit } from "@/api/systemManage";
 import { PAGE_CONFIG } from "@/config/constant";
 import { ElMessage, dayjs } from "element-plus";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export enum AuditState {
   /** 待提交 */
@@ -34,6 +36,8 @@ export enum AuditState {
 }
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const treeData = ref([]);
   const currentRow = ref();
   const loading = ref<boolean>(false);
@@ -56,6 +60,7 @@ export const useConfig = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "姓名", value: "staffName" },
     { label: "工号", value: "staffCode" },
+    { label: "单据编号", value: "billNo" },
     { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
     { label: "部门", value: "deptId", children: [] }
   ]);
@@ -72,7 +77,7 @@ export const useConfig = () => {
   const getOptionList = () => {
     getDeptOptions().then((data: any) => {
       treeData.value = data;
-      searchOptions[3].children = data;
+      searchOptions[4].children = data;
     });
   };
 
@@ -103,20 +108,26 @@ export const useConfig = () => {
     columns.value = setColumn({
       columnData,
       formData,
-      dragSelector: ".overtime-order",
-      indexColumn: { fixed: true, width: 80 },
-      radioColumn: { fixed: true },
       operationColumn: { minWidth: 200 }
+    });
+    columnDefs.value = getAgGridColumns<OvertimeOrderItemType>({
+      formData,
+      columnData,
+      operationColumn: { minWidth: 200 },
+      renderButtons: (row) => {
+        const isEditState = [AuditState.submit, AuditState.reAudit].includes(row.billState);
+        return [
+          { name: isEditState ? "修改" : "查看", type: "default", onClick: () => onEdit(row) },
+          { name: "提交", type: "default", disabled: !isEditState, onClick: () => onSubmit(row) },
+          { name: "删除", type: "danger", disabled: !isEditState, onClick: () => onDelete(row), confirm: (row) => `确认删除\n【${row.staffName}】的加班单吗?` }
+        ];
+      }
     });
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
-    formData.deptIdList = [];
-    if (values.deptId) {
-      const result = getTreeArrItem(treeData.value, "value", values.deptId);
-      formData.deptIdList = getChildIDs([result], "value");
-    }
+    formData.deptIdList = getChildDeptIds(treeData.value, values.deptId);
     onSearch();
   };
 
@@ -254,6 +265,11 @@ export const useConfig = () => {
     commonBackLogic(currentRow.value.billNo, onSearch);
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
     { clickHandler: onExport, type: "default", text: "导出", isDropDown: true },
@@ -262,24 +278,25 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     loading,
     columns,
     dataList,
     maxHeight,
+    queryParams,
     pagination,
     buttonList,
     searchOptions,
     onSearch,
     rowClick,
-    onAdd,
     onEdit,
-    queryParams,
     onDelete,
     onSubmit,
-    onExport,
-    onSizeChange,
     rowDbClick,
-    handleTagSearch,
-    onCurrentChange
+    onTagSearch,
+    onSizeChange,
+    onCurrentChange,
+    onSwitchTable
   };
 };

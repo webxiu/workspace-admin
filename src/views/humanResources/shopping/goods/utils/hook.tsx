@@ -16,16 +16,21 @@ import {
   updateGoodsManage
 } from "@/api/oaManage/humanResources";
 import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
-import { getExportConfig, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { getEnumDictList, getExportConfig, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 
 import AddModel from "../addModel.vue";
+import DynamicAddFormItems from "@/components/DynamicAddFormItems.vue";
+import { FormItemConfigType } from "@/utils/form";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
+import regExp from "@/utils/regExp";
+import { spec } from "node:test/reporters";
 import { useEleHeight } from "@/hooks";
 import { v4 as uuidv4 } from "uuid";
 
@@ -85,16 +90,10 @@ export const useConfig = () => {
   });
 
   const getOptionList = () => {
-    getBOMTableRowSelectOptions({ optioncode: "ProductCategroy,BrandList" }).then((res: any) => {
-      if (res.data) {
-        const classifyList = res.data.find((item) => item.optionCode === "ProductCategroy")?.optionList;
-        const brandList = res.data.find((item) => item.optionCode === "BrandList")?.optionList;
-        goodsOptions.value = { classifyList, brandList };
-        const brandListData = brandList.map((item) => ({ label: item.optionName, value: item.optionValue }));
-        const classifyListData = classifyList.map((item) => ({ label: item.optionName, value: item.optionValue }));
-        searchOptions[2].children = brandListData;
-        searchOptions[3].children = classifyListData;
-      }
+    getEnumDictList(["ProductCategroy", "BrandList"]).then(({ ProductCategroy, BrandList }) => {
+      goodsOptions.value = { classifyList: ProductCategroy as any, brandList: BrandList as any };
+      searchOptions[2].children = ProductCategroy;
+      searchOptions[3].children = BrandList;
     });
   };
 
@@ -206,7 +205,12 @@ export const useConfig = () => {
 
   async function openDialog(type: "add" | "edit", row?: Partial<GoodsManageItemType>) {
     const title = { add: "新增", edit: "修改" }[type];
-    const formEditRef = ref();
+    const formRef = ref();
+
+    const images = row?.images?.map(({ fileName, filePath, ...m }) => {
+      return { name: fileName, url: baseApi + filePath + fileName, ...m };
+    });
+
     const formData = reactive({
       commodityName: row?.commodityName ?? "",
       billNo: row?.billNo,
@@ -216,21 +220,75 @@ export const useConfig = () => {
       state: row?.state ?? 0,
       commodityDescription: row?.commodityDescription ?? "",
       specs: row?.specs ?? [{ uuid: Date.now(), spec: "", officialPrice: "", discountPrice: "", stock: "", createDate: "", createId: "" }],
-      images: row?.images ?? [],
+      images: row?.images ? images : [],
       id: row?.id ?? ""
     });
 
+    const itemConfigs = [
+      {
+        label: "规格",
+        prop: "spec",
+        span: 6,
+        rules: [{ required: true, message: "规格不能为空", trigger: "blur" }],
+        render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+      },
+      {
+        label: "官方价格",
+        prop: "officialPrice",
+        span: 5,
+        rules: [
+          { required: true, message: "官方价格不能为空", trigger: "blur" },
+          { message: "价格格式不正确", trigger: "blur", pattern: regExp.price }
+        ],
+        render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+      },
+      {
+        label: "折扣价格",
+        prop: "discountPrice",
+        span: 5,
+        rules: [
+          { required: true, message: "折扣价格不能为空", trigger: "blur" },
+          { message: "价格格式不正确", trigger: "blur", pattern: regExp.price }
+        ],
+        render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+      },
+      {
+        label: "库存数量",
+        prop: "stock",
+        span: 5,
+        rules: [
+          { required: true, message: "库存数量不能为空", trigger: "blur" },
+          { message: "数量格式不正确", trigger: "blur", pattern: regExp.quantity }
+        ],
+        render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+      }
+    ];
+
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: formData,
+        formProps: { labelWidth: "90px" },
+        customElement: {
+          specs: ({ formModel, row }) => (
+            <DynamicAddFormItems v-model={formModel[row.prop]} listProp="specs" itemConfigs={itemConfigs} addButton={{ name: "新增一条规格" }} />
+          )
+        },
+        customColumn: { specs: { isHideItem: true } }
+      }
+    ];
+
     addDialog({
       title: `${title}商品`,
-      props: { formInline: formData, baseUrl, baseApi, goodsOptions },
+      props: { params: { groupCode: "1" }, formConfig: formConfig },
       width: "1000px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(AddModel, { ref: formEditRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const { formRef, formData } = formEditRef.value.getRef();
-        formRef.value.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认${title}吗?`).then(() => {
               const API = { add: addGoodsManage, edit: updateGoodsManage };

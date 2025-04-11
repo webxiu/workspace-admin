@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-08-20 15:26:18
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-08-20 18:48:51
+ * @Last Modified time: 2025-01-09 15:03:16
  */
 
 import {
@@ -73,7 +73,7 @@ export const useConfig = (props) => {
     // 1.获取部门菜单树
     getDeptTreeData()
       .then(({ data }) => {
-        const deptList = JSON.parse(data)[0]?.children || [];
+        const deptList = data[0]?.children || [];
         staffInfoOptions.value.deptInfoTree = deptList;
       })
       .catch(console.log);

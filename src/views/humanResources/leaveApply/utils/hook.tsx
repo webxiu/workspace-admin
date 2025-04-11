@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-13 14:05:12
+ * @Last Modified time: 2025-03-12 15:29:45
  */
 
 import { LeaveApplyItemType, leaveApplyList, exportLeaveApply, deleteLeaveApply } from "@/api/oaManage/humanResources";
@@ -13,15 +13,17 @@ import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 import { downloadFile, getTreeArrItem, getChildIDs, getFileNameOnUrlPath, commonBackLogic } from "@/utils/common";
-import { setColumn, getExportConfig, getMenuColumns, updateButtonList } from "@/utils/table";
+import { setColumn, getExportConfig, getMenuColumns, updateButtonList, getChildDeptIds, RendererType } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { type PaginationProps } from "@pureadmin/table";
 import { message, showMessageBox } from "@/utils/message";
 import { getDeptOptions } from "@/utils/requestApi";
 import { commonSubmit } from "@/api/systemManage";
 import { PAGE_CONFIG } from "@/config/constant";
-import { ElMessage, dayjs } from "element-plus";
+import { ElMessage, UploadProps, dayjs } from "element-plus";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export enum AuditState {
   /** 待提交 */
@@ -35,6 +37,8 @@ export enum AuditState {
 }
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const treeData = ref([]);
   const currentRow = ref();
   const columns = ref<TableColumnList[]>([]);
@@ -42,6 +46,7 @@ export const useConfig = () => {
   const loading = ref<boolean>(false);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
+  const baseApi = import.meta.env.VITE_BASE_API;
 
   const formData = reactive({
     page: 1,
@@ -86,6 +91,27 @@ export const useConfig = () => {
   };
 
   const getColumnConfig = async () => {
+    const imgsRenderer: RendererType = ({ row }) => {
+      return (
+        <div class="flex-center">
+          {row.attrImgs?.length ? (
+            <el-image
+              src={baseApi + row.attrImgs[0]?.url}
+              preview-src-list={row.attrImgs?.map((item) => baseApi + item.url)}
+              preview-teleported={true}
+              hide-on-click-modal={true}
+              z-index={2222}
+              fit="cover"
+              style="height: 20px; width: 60px; border: 1px solid #eee"
+            >
+              {{ error: () => <div class="lh-20 ui-ta-c fz-12 pl-2 pr-2"> 暂无附件 </div> }}
+            </el-image>
+          ) : (
+            <div class="lh-20 ui-ta-c fz-12 pl-2 pr-2"> 暂无附件 </div>
+          )}
+        </div>
+      );
+    };
     let columnData: TableColumnList[] = [
       { label: "单据编号", prop: "billNo", fixed: true, minWidth: 140 },
       { label: "工号", prop: "userId", fixed: true, minWidth: 80 },
@@ -108,26 +134,36 @@ export const useConfig = () => {
       { label: "序号", prop: "id" },
       { label: "项次", prop: "itemSequence", align: "right" }
     ];
-    const { columnArrs, buttonArrs } = await getMenuColumns();
+    const { columnArrs, buttonArrs } = await getMenuColumns([{ attrImgs: imgsRenderer }]);
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({
       columnData,
       formData,
-      dragSelector: ".leave-apply",
-      indexColumn: { fixed: true },
-      radioColumn: { fixed: true },
       operationColumn: { minWidth: 200 }
+    });
+    columnDefs.value = getAgGridColumns<LeaveApplyItemType>({
+      formData,
+      columnData,
+      operationColumn: { minWidth: 200 },
+      columnsRender: { attrImgs: imgsRenderer },
+      renderButtons: (row) => {
+        const isEditState = [AuditState.submit, AuditState.reAudit].includes(row.billState);
+        return [
+          { name: isEditState ? "修改" : "查看", type: "default", onClick: () => onEdit(row) },
+          { name: "提交", type: "default", disabled: !isEditState, onClick: () => onSubmit(row) },
+          { name: "删除", type: "danger", disabled: !isEditState, onClick: () => onDelete(row), confirm: (row) => `确认删除\n【${row.userName}】的请假单吗?` }
+        ];
+      }
     });
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     formData.deptIdList = [];
     if (values.deptId) {
-      const result = getTreeArrItem(treeData.value, "value", values.deptId);
-      formData.deptIdList = getChildIDs([result], "value");
+      formData.deptIdList = getChildDeptIds(treeData.value, values.deptId);
     }
     onSearch();
   };
@@ -275,33 +311,56 @@ export const useConfig = () => {
     }
     commonBackLogic(currentRow.value.billNo, onSearch);
   };
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+  }
+
+  const onAttrUpload = () => {
+    if (!currentRow.value) return message.warning("请选择一条记录");
+    console.log("upload...", currentRow.value);
+  };
+
+  // const onUploadAttr: UploadProps["onChange"] = (uploadFile, uploadFiles) => {
+  //   console.log(uploadFiles, "uploadFiles==");
+  // };
 
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
     { clickHandler: onExport, type: "default", text: "导出", isDropDown: true },
     { clickHandler: onBack, type: "default", text: "回退", isDropDown: true },
-    { clickHandler: viewNodeDetail, type: "default", text: "审批详情", isDropDown: true }
+    { clickHandler: viewNodeDetail, type: "default", text: "审批详情", isDropDown: true },
+    { clickHandler: onAttrUpload, type: "default", text: "附件上传", isDropDown: true }
+
+    // {
+    //   type: "primary",
+    //   text: "附件上传",
+    //   disabled: false,
+    //   isDropDown: true,
+    //   uploadProp: { action: "#", accept: "image/*", multiple: true, autoUpload: false, onChange: onUploadAttr }
+    // }
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     loading,
     columns,
     dataList,
     maxHeight,
     pagination,
-    searchOptions,
     buttonList,
-    onSearch,
-    onAdd,
-    onSubmit,
     queryParams,
+    searchOptions,
+    onSearch,
+    onSubmit,
     onEdit,
     onDelete,
     rowClick,
-    handleTagSearch,
-    onExport,
+    onTagSearch,
     onSizeChange,
     rowDbClick,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

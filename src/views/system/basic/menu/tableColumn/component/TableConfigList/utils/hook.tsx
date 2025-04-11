@@ -2,11 +2,12 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-13 14:48:31
+ * @Last Modified time: 2025-03-18 10:09:35
  */
 
+import { BillState_Color, boolOptions, tagColors } from "@/config/constant";
 import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
-import { FormatDataType, FormatKey, getEnumDictList, moveTableRow, setColumn, tableEditRender } from "@/utils/table";
+import { FormatDataType, FormatKey, OptionKeys, getEnumDictList, moveTableRow, setColumn, tableEditRender } from "@/utils/table";
 import { MenuColumnItemType, addBatchMenuColumn, deleteMenuColumn, menuColumnList } from "@/api/systemManage";
 import {
   SplitChar,
@@ -18,7 +19,6 @@ import {
   formatList,
   getAlign,
   getSlot,
-  hideList,
   pasteConfigs,
   sortList,
   typeOptions
@@ -28,7 +28,6 @@ import { copyText, debounce, readClipboard } from "@/utils/common";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 
-import { BillState_Color } from "@/config/constant";
 import EditForm from "@/components/EditForm/index.vue";
 import Format from "../Format.vue";
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -115,6 +114,7 @@ export const useConfig = () => {
         label: "最小宽度",
         prop: "minWidth",
         headerAlign: "center",
+        width: 100,
         headerRenderer: ({ column }) => headToolTip(column),
         cellRenderer: (data) => editCellRender({ data, cellStyle: { textAlign: "center" } })
       },
@@ -122,6 +122,7 @@ export const useConfig = () => {
         label: "固定宽度",
         prop: "width",
         headerAlign: "center",
+        width: 100,
         headerRenderer: ({ column }) => headToolTip(column),
         cellRenderer: (data) => editCellRender({ data })
       },
@@ -129,6 +130,7 @@ export const useConfig = () => {
         label: "对齐方式",
         prop: "align",
         headerAlign: "center",
+        width: 100,
         headerRenderer: ({ column }) => headToolTip(column),
         cellRenderer: (data) => editCellRender({ type: "select", data, options: getAlign() })
       },
@@ -136,9 +138,16 @@ export const useConfig = () => {
         label: "表头对齐方式",
         prop: "headerAlign",
         headerAlign: "center",
+        width: 110,
         cellRenderer: (data) => editCellRender({ type: "select", data, options: getAlign() })
       },
-      { label: "排序", prop: "sortable", headerAlign: "center", cellRenderer: (data) => editCellRender({ type: "select", data, options: sortList }) },
+      {
+        label: "排序",
+        prop: "sortable",
+        headerAlign: "center",
+        width: 80,
+        cellRenderer: (data) => editCellRender({ type: "select", data, options: sortList })
+      },
       {
         label: "自定义渲染",
         prop: "formatType",
@@ -168,7 +177,7 @@ export const useConfig = () => {
           );
           if (!value.type) return <DefaultDom />;
           const ContentDom = () => (
-            <div style={{ width: "400px", overflowY: "auto" }}>
+            <div style={{ width: "400px", maxHeight: window.innerHeight * 0.8 + "px", overflowY: "auto" }}>
               <VueJsonPretty data={value} showLine={true} showLineNumber={true} showLength={true} showIcon={true} />
             </div>
           );
@@ -180,9 +189,17 @@ export const useConfig = () => {
         }
       },
       {
+        label: "是否隐藏",
+        prop: "hide",
+        headerAlign: "center",
+        width: 80,
+        cellRenderer: (data) => editCellRender({ type: "select", data, options: boolOptions })
+      },
+      {
         label: "固定列位置",
         prop: "fixed",
         headerAlign: "center",
+        width: 110,
         headerRenderer: ({ column }) => headToolTip(column),
         cellRenderer: (data) => editCellRender({ type: "select", data, options: getAlign(["center"]) })
       },
@@ -190,14 +207,15 @@ export const useConfig = () => {
         label: "插槽",
         prop: "slot",
         headerAlign: "center",
+        width: 100,
         headerRenderer: ({ column }) => headToolTip(column),
         cellRenderer: (data) => editCellRender({ type: "select", data, options: getSlot(data) })
       },
-      { label: "是否隐藏", prop: "hide", headerAlign: "center", cellRenderer: (data) => editCellRender({ type: "select", data, options: hideList }) },
       {
         label: "Excel隐藏",
         prop: "excelHide",
         headerAlign: "center",
+        width: 100,
         headerRenderer: ({ column }) => headToolTip(column),
         cellRenderer: (data) => editCellRender({ type: "select", data, options: excelHideList })
       },
@@ -206,6 +224,7 @@ export const useConfig = () => {
         prop: "excelFormat",
         align: "left",
         headerAlign: "center",
+        width: 110,
         headerRenderer: ({ column }) => headToolTip(column),
         cellRenderer: (data) => editCellRender({ type: "select", data, options: formatList })
       },
@@ -270,7 +289,7 @@ export const useConfig = () => {
   function onClickFormat(data: TableColumnRenderer) {
     const formRef = ref();
     const sLoading = ref(false);
-    const formatCache = reactive({ bill: [] });
+    const formatCache = reactive({});
     const formatRow: FormatDataType = JSON.parse(data.row?.formatType ?? "{}");
     const specs = formatRow.specs || [{ uuid: Date.now(), value: "", label: "", color: "", background: "" }];
     const formData = reactive<FormatDataType>({ paddingV: "3", paddingH: "6", borderRadius: "4", ...formatRow, specs: specs });
@@ -290,21 +309,20 @@ export const useConfig = () => {
     }
 
     // 获取单据状态列表
-    async function onChangeType(type: FormatKey) {
-      if (type === FormatKey.bill) {
-        if (formatCache[FormatKey.bill].length) {
-          formData.specs = formatCache[FormatKey.bill];
+    async function onChangeType(enumKey: OptionKeys) {
+      if (enumKey && formData.type === FormatKey.enum) {
+        if (formatCache[enumKey]?.length) {
+          formData.specs = formatCache[enumKey];
           return;
         }
         sLoading.value = true;
-        const { BillStatus } = await getEnumDictList(["BillStatus"]);
-        const billResult = BillStatus.map(({ id, optionName, optionValue }) => {
-          const background = BillState_Color[optionValue].color;
-          return { uuid: id, value: optionValue, label: optionName, color: "#fff", background };
+        const res = await getEnumDictList([enumKey]);
+        const billResult = res[enumKey].map(({ id, optionName, optionValue }, index) => {
+          return { uuid: id, value: optionValue, label: optionName, ...tagColors[index] };
         });
         sLoading.value = false;
         formData.specs = billResult as any;
-        formatCache[FormatKey.bill] = billResult;
+        formatCache[enumKey] = billResult;
       } else {
         formData.specs = specs;
       }
@@ -382,7 +400,7 @@ export const useConfig = () => {
     const formRef = ref();
     const tableField = dataList.value.map(({ tablename, label, prop }) => {
       const name = type === "table" ? tablename : label;
-      return [name, prop].filter(Boolean).join(SplitChar);
+      return [name, prop].join(SplitChar);
     });
     const _formData = reactive({ columns: tableField.join("\n") });
     const props = {
@@ -404,53 +422,57 @@ export const useConfig = () => {
         const FormRef = formRef.value.getRef();
         FormRef.validate((valid) => {
           if (valid) {
-            showMessageBox(`确定要提交吗?`).then(() => {
-              const propList: string[] = [];
-              let repeatField = "";
-              const result = _formData.columns.split("\n").map((config, i) => {
-                const splitArr: string[] = config.split(SplitChar);
-                const [table, prop] = splitArr.length === 2 ? splitArr : [undefined, splitArr[0]];
-                const existRow = dataList.value.find((item) => item.prop === prop);
-                // 检测是否重复输入
-                if (propList.includes(prop)) {
-                  repeatField = prop;
-                } else {
-                  propList.push(prop);
-                }
-                const seq = i + 1;
-                if (existRow) return { ...existRow, seq: seq };
-
-                const label = type === "table" ? undefined : table;
-                const tablename = type === "name" ? undefined : table;
-                return {
-                  id: uuidv4(),
-                  seq: seq,
-                  menuId: queryParams2.value.menuId,
-                  label: label,
-                  prop: prop,
-                  minWidth: undefined,
-                  align: "left",
-                  headerAlign: "center",
-                  tablename: tablename,
-                  hide: false,
-                  excelHide: 0,
-                  isNew: true,
-                  width: 140,
-                  sortable: false,
-                  slot: undefined,
-                  formatType: undefined,
-                  excelFormat: undefined,
-                  fixed: undefined,
-                  className: undefined
-                } as MenuColumnItemType;
-              });
-              if (repeatField) {
-                return message.error(`${repeatField}字段重复, 请重新输入`);
+            const propList: string[] = [];
+            let repeatField = "";
+            const result = _formData.columns.split("\n").map((config, i) => {
+              const splitArr: string[] = config.split(SplitChar);
+              const [table, prop] = splitArr.length === 2 ? splitArr : [undefined, splitArr[0]];
+              const existRow = dataList.value.find((item) => item.prop === prop);
+              // 检测是否重复输入
+              if (propList.includes(prop)) {
+                repeatField = prop;
+              } else {
+                propList.push(prop);
               }
-              dataList.value = result;
-              done();
-              cb?.();
+              const seq = i + 1;
+              if (existRow) {
+                const _label = existRow.label;
+                const width = { 2: 120, 3: 120, 4: 140, 5: 150, 6: 170, 7: 180, 8: 200 }[_label.length];
+                if (width && existRow.width < width) existRow.width = width;
+                if (_label.length > 8) existRow.width = 200;
+                return { ...existRow, seq: seq };
+              }
+
+              const label = type === "table" ? undefined : table;
+              const tablename = type === "name" ? undefined : table;
+              return {
+                id: uuidv4(),
+                seq: seq,
+                menuId: queryParams2.value.menuId,
+                label: label,
+                prop: prop,
+                minWidth: 120,
+                align: "left",
+                headerAlign: "center",
+                tablename: tablename,
+                hide: false,
+                excelHide: 0,
+                isNew: true,
+                width: 140,
+                sortable: false,
+                slot: undefined,
+                formatType: undefined,
+                excelFormat: undefined,
+                fixed: undefined,
+                className: undefined
+              } as MenuColumnItemType;
             });
+            if (repeatField) {
+              return message.error(`${repeatField}字段重复, 请重新输入`);
+            }
+            dataList.value = result;
+            done();
+            cb?.();
           }
         });
       }
@@ -484,19 +506,31 @@ export const useConfig = () => {
   // 保存及更新
   const onSave = debounce(() => {
     const verify = verifyField();
-    const emptyLabel = dataList.value.filter((f) => !f.label);
-    const emptyProp = dataList.value.filter((f) => !f.prop);
+    const { emptyList } = dataList.value
+      .filter((item) => !item.hide)
+      .reduce(
+        (acc, cur) => {
+          if (!cur.label) acc.emptyList.push("名称不能为空");
+          if (!cur.prop) acc.emptyList.push("字段不能为空");
+          return acc;
+        },
+        { emptyList: [] }
+      );
+    const emptyMsg = emptyList.find((item) => item);
+    if (emptyMsg) return message.error(emptyMsg);
     if (!queryParams2.value.columnGroupId) return message.error("请选择分组");
     if (!dataList.value.length) return message.error("配置表不能为空");
-    if (emptyLabel.length > 0) return message.error("名称不能为空");
-    if (emptyProp.length > 0) return message.error("字段不能为空");
     if (!verify.pass) return message.error(`${verify.column}填写不正确`);
 
     // 如果是新添加的列, 不提交ID
     const params: MenuColumnItemType[] = [];
-    dataList.value.forEach((item) => {
-      const id = item.isNew ? undefined : item.id;
-      params.push({ ...item, headerAlign: "center", id, columnGroupId: queryParams2.value.columnGroupId });
+    dataList.value.forEach(({ id, isNew, ...item }) => {
+      params.push({
+        ...item,
+        headerAlign: "center",
+        id: isNew ? undefined : id,
+        columnGroupId: queryParams2.value.columnGroupId
+      });
     });
     loadingStatus.value = { loading: true, text: "保存" };
     addBatchMenuColumn(params)
@@ -562,7 +596,7 @@ export const useConfig = () => {
             dataList.value = list.map((item) => ({ ...item, menuId: queryParams2.value.menuId, id: undefined }));
             done();
           } else {
-            message.error("保存失败");
+            message.error("保存失败, 请检查名称、字段是否填写");
           }
         } catch (error) {
           message.error("数据格式错误");

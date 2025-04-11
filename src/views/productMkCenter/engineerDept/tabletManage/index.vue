@@ -12,6 +12,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "ProductMkCenterEngineerDeptTabletManageIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   loading,
   columns,
   dataList,
@@ -24,14 +26,33 @@ const {
   onDbClick,
   onRowClick,
   handleSizeChange,
-  handleCurrentChange
+  handleCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :loading="loading"
+        :rowData="dataList"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 12"
+        :paginations="pagination"
+        @switch="onSwitchTable"
+        @refresh="onRefresh"
+        @cellClicked="onRowClick"
+        @cellDoubleClicked="onDbClick"
+        @sizeChange="handleSizeChange"
+        @currentChange="handleCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, searchOptions, placeholder: '请输入平板名称', searchField: 'tabletsName' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入平板名称" searchField="tabletsName" />
         </template>

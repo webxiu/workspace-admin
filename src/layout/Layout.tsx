@@ -2,11 +2,11 @@
  * @Author: Hailen
  * @Date: 2024-09-12 14:34:28
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-04 11:53:07
+ * @Last Modified time: 2025-03-14 18:17:24
  */
 
 import type { ColProps, RowProps } from "element-plus";
-import { defineComponent, h, useSlots } from "vue";
+import { computed, defineComponent, h, useSlots } from "vue";
 
 import { useEleHeight } from "@/hooks";
 
@@ -16,14 +16,14 @@ import { useEleHeight } from "@/hooks";
  */
 export const Container = defineComponent({
   props: {
-    height: { type: String, default: "100%" },
+    height: { type: String },
     offset: { type: Number, default: -20 }
   },
   setup(props) {
     const slots = useSlots();
     const maxHeight = useEleHeight(".app-main > .el-scrollbar", props.offset);
     return () => (
-      <div style={{ height: props.height, minHeight: maxHeight.value + "px", display: "flex", flexDirection: "column" }} {...props}>
+      <div style={{ height: (props.height || maxHeight.value) + "px", display: "flex", flexDirection: "column" }} {...props}>
         {slots.default?.()}
       </div>
     );
@@ -35,15 +35,16 @@ export const Container = defineComponent({
  */
 export const Row = defineComponent({
   props: {
-    gutter: { type: Number, default: 0 },
+    height: { type: Number },
+    gutter: { type: [Number, String], default: 0 },
     align: { type: String as PropType<RowProps["align"]>, default: "start" },
     justify: { type: String as PropType<RowProps["justify"]>, default: "" }
   },
   setup(props) {
     const slots = useSlots();
-    const maxHeight = useEleHeight(".app-main > .el-scrollbar");
+    const height = computed(() => props.height || useEleHeight(".app-main > .el-scrollbar").value);
     return () => (
-      <div style={{ minHeight: maxHeight.value + "px" }}>
+      <div style={{ minHeight: height.value + "px" }}>
         <el-row {...props}>{slots.default?.()}</el-row>
       </div>
     );

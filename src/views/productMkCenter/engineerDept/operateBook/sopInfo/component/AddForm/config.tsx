@@ -17,7 +17,7 @@ export const formConfigs = ({ disabled, onHandleImg }): FormConfigItemType[] => 
     label: "工具及治具",
     prop: "withToolFixture",
     colProp: layout,
-    slots: { label: () => <strong>工具及治具</strong> },
+    slot: { label: () => <strong>工具及治具</strong> },
     render: ({ formModel, row }) => {
       return <WangEditor v-model={formModel[row.prop]} placeholder="请输入工具及治具" disabled={disabled} height={80} />;
     }
@@ -26,7 +26,7 @@ export const formConfigs = ({ disabled, onHandleImg }): FormConfigItemType[] => 
     label: "作业内容",
     prop: "jobContent",
     colProp: layout,
-    slots: { label: () => <strong>作业内容</strong> },
+    slot: { label: () => <strong>作业内容</strong> },
     render: ({ formModel, row }) => {
       return <WangEditor v-model={formModel[row.prop]} placeholder="请输入作业内容" disabled={disabled} height={220} />;
     }
@@ -35,7 +35,7 @@ export const formConfigs = ({ disabled, onHandleImg }): FormConfigItemType[] => 
     label: "注意事项",
     prop: "precautions",
     colProp: layout,
-    slots: { label: () => <strong>注意事项</strong> },
+    slot: { label: () => <strong>注意事项</strong> },
     render: ({ formModel, row }) => {
       return <WangEditor v-model={formModel[row.prop]} placeholder="请输入注意事项" disabled={disabled} height={120} />;
     }
@@ -45,7 +45,7 @@ export const formConfigs = ({ disabled, onHandleImg }): FormConfigItemType[] => 
     prop: "imgList",
     colProp: layout,
     required: true,
-    slots: { label: () => <strong>作业工程</strong> },
+    slot: { label: () => <strong>作业工程</strong> },
     render: ({ formModel, row }) => <InputUpload v-model={formModel[row.prop]} disabled={disabled} onHandleImg={onHandleImg} />
   }
 ];

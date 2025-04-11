@@ -106,7 +106,7 @@ function removeAction(item: DomainItem) {
 }
 </script>
 <style lang="scss">
-.dynamic-form-item > .el-form-item__content {
+.merge-item > .el-form-item__content {
   padding: 0;
 }
 

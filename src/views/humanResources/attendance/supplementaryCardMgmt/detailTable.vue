@@ -99,10 +99,18 @@ const setCol = () => {
       eleProps: { format: "HH:mm", arrowControl: true }
     });
 
+  const supCardDateRender = (data) =>
+    tableCellRender.editCellRender({
+      type: "date",
+      data,
+      cellStyle: { color: "#606266", textAlign: "left" },
+      eleProps: { format: "YYYY-MM-DD" }
+    });
+
   const columnData: TableColumnList[] = [
     { label: "补签卡人员", prop: "supCardUserName" },
     { label: "补签考勤", prop: "supCardAttendance", cellRenderer: supCardAttendanceRender },
-    { label: "补卡日期", prop: "supCardDate" },
+    { label: "补卡日期", prop: "supCardDate", cellRenderer: supCardDateRender },
     { label: "补卡时间", prop: "supCardTime", cellRenderer: supCardTimeRender },
     {
       label: "操作",

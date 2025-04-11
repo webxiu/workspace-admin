@@ -40,6 +40,10 @@ import saleAndSampleOrderDetail from "@/views/plmManage/projectMgmt/saleAndSampl
 import sampleMakeSelfCheckSheetDetail from "@/views/plmManage/projectMgmt/sampleMakeSelfCheck/detail/index.vue";
 import moldCheckReportDetail from "@/views/plmManage/projectMgmt/moldCheckReport/detail/index.vue";
 import { useUserStoreHook } from "@/store/modules/user";
+import pmTestAuditSheetDetail from "@/views/plmManage/projectMgmt/pmTestSheet/detail/index.vue";
+import safePartConfirmListDetail from "@/views/plmManage/projectMgmt/safePartList/detail/index.vue";
+import measuringCheckRecordSheetDetail from "@/views/plmManage/projectMgmt/measuringCheckRecord/detail/index.vue";
+import deviceUseRecordSheetDetail from "@/views/plmManage/projectMgmt/deviceUseRecord/detail/index.vue";
 
 export const useCommonTemplate = () => {
   const onEditDeliver7 = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
@@ -1321,8 +1325,148 @@ export const useCommonTemplate = () => {
     });
   };
 
+  const pmTestAuditSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}项目工程测试评估表`,
+      width: "1800px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(pmTestAuditSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const safePartConfirmList = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}安全部品确认清单`,
+      width: "1700px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(safePartConfirmListDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const measuringCheckRecordSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}量具（仪器）定期检查记录表`,
+      width: "1600px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(measuringCheckRecordSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
+  const deviceUseRecordSheet = (row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds) => {
+    const projectUserId = fetchDetailFormData.projectInfoListVO?.projectUserId;
+    const curUserId = useUserStoreHook().userInfo.id;
+    const curUserDeptId = useUserStoreHook().userInfo.deptId;
+    const rowUserId = currentTreeRow.projectTaskResponsiblePersonnelVOList[0]?.userId;
+    const actionType = row.generalTemplateVO?.id ? ([1, 2].includes(row.generalTemplateVO?.billState) ? "view" : "edit") : "add";
+
+    const detailRef = ref();
+
+    if (actionType !== "view") {
+      const isHasAuth = resourceAuthDeptIds.map(Number).includes(curUserDeptId);
+      if (![rowUserId, projectUserId].includes(curUserId) && !isHasAuth) return message.error("不是当前负责人，不能进行操作");
+    }
+
+    const titleMap = {
+      add: "新增",
+      edit: "修改",
+      view: "查看"
+    };
+    addDialog({
+      title: `${titleMap[actionType]}仪器设备使用记录表`,
+      width: "1200px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(deviceUseRecordSheetDetail, { ref: detailRef }),
+      beforeSure: (done) => {
+        console.log(detailRef.value, "detailRef...===");
+        message.warning("接口未接入");
+        done();
+      }
+    });
+  };
+
   return {
     clickOtherDeliverName,
+    deviceUseRecordSheet,
+    measuringCheckRecordSheet,
+    safePartConfirmList,
+    pmTestAuditSheet,
     moldCheckReport,
     saleAndSampleOrder,
     sampleMakeSelfCheckSheet,

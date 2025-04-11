@@ -12,6 +12,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "HumanResourcesShoppingOrder" });
 
 const {
+  columnDefs,
+  isAgTable,
   tableRef,
   loading,
   columns,
@@ -26,14 +28,33 @@ const {
   onSelectAll,
   onRowClick,
   onSizeChange,
-  onCurrentChange
+  onCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" :show-icon="true" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :loading="loading"
+        :rowData="dataList"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 12"
+        :paginations="pagination"
+        @switch="onSwitchTable"
+        @refresh="onRefresh"
+        @rowSelected="onSelect"
+        @cellClicked="onRowClick"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, searchOptions, searchField: 'billNo', placeholder: '请输入订单编号' }"
+      />
+      <PureTableBar v-else :columns="columns" :show-icon="true" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入订单编号" searchField="billNo" />
         </template>

@@ -6,12 +6,10 @@ import { appType } from "./types";
 import { defineStore } from "pinia";
 import { store } from "@/store";
 
-const { setItem, getItem } = useLocalStorage<StorageConfigs>(App_INFO);
-
 export const useAppStore = defineStore({
   id: "pure-app",
   state: (): appType => ({
-    appConfig: getItem(),
+    appConfig: useLocalStorage(App_INFO).getItem(),
     sidebar: {
       opened: storageLocal().getItem<StorageConfigs>(`${responsiveStorageNameSpace()}layout`)?.sidebarStatus ?? getConfig().SidebarStatus,
       withoutAnimation: false,
@@ -51,7 +49,7 @@ export const useAppStore = defineStore({
   actions: {
     // 设置应用配置(动态公司名称,logo，官网地址等)
     setAppConfig(appConfig: Partial<StorageConfigs>) {
-      this.appConfig = setItem(appConfig);
+      this.appConfig = useLocalStorage(App_INFO).setItem(appConfig);
     },
     TOGGLE_SIDEBAR(opened?: boolean, resize?: string) {
       const layout = storageLocal().getItem<StorageConfigs>(`${responsiveStorageNameSpace()}layout`);

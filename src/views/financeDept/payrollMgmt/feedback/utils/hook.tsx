@@ -125,33 +125,22 @@ export const useConfig = () => {
     }).then(() => {
       const ids = selectFeedBackList.value.map((item) => item.id);
       const codes = selectFeedBackList.value.map((item) => item.gh);
+      const { orgId, userCode } = getUserInfo();
 
-      getMoneySaltDataInfo({
-        gzDate: formData.yearMonth,
-        gzStatus: "4",
-        gzmbb: selectFeedBackList.value[0].mbb,
-        payslipIds: String(ids),
-        userCodes: String(codes)
-      }).then((res) => {
-        if (res.data) {
-          saltInfo.value = res.data;
-          const dispatchData = {
-            mbNo: selectFeedBackList.value[0].mbNo,
-            mbb: selectFeedBackList.value[0].mbb,
-            gzDate: selectDate.value,
-            salt: saltInfo.value.salt,
-            keyIn: saltInfo.value.data[0].KeyIn,
-            userCode: String(codes),
-            payslipIds: String(ids)
-          };
-          // console.log(dispatchData, "分发的请求参数");
+      const dispatchData = {
+        gzmbNo: selectFeedBackList.value[0].mbNo,
+        // mbb: selectFeedBackList.value[0].mbb,
+        // gzDate: selectDate.value,
+        // userCode: String(codes),
+        // keyIn: userCode,
+        payslipIds: String(ids)
+        // orgId
+      };
 
-          dispatchPayslipDataInfo(dispatchData).then((resp: any) => {
-            if (resp.data) {
-              ElMessage({ message: `成功分发：${resp.data?.success}个，分发失败：${resp.data?.fail}个`, type: "success" });
-              onSearch();
-            }
-          });
+      dispatchPayslipDataInfo(dispatchData).then((resp: any) => {
+        if (resp.data) {
+          ElMessage({ message: `成功分发：${resp.data?.success}个，分发失败：${resp.data?.fail}个`, type: "success" });
+          onSearch();
         }
       });
     });

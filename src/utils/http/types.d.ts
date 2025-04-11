@@ -15,6 +15,8 @@ export interface PureHttpResponse extends AxiosResponse {
 }
 
 export interface PureHttpRequestConfig extends AxiosRequestConfig {
+  /** 是否需要提示错误信息(在headers中配置) */
+  hideMessage?: boolean;
   beforeRequestCallback?: (request: PureHttpRequestConfig) => void;
   beforeResponseCallback?: (response: PureHttpResponse) => void;
 }

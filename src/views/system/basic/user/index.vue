@@ -12,7 +12,10 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "SystemBasicUserIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   tableRef2,
+  loading,
   loading2,
   loading3,
   columns,
@@ -45,14 +48,31 @@ const {
   onSetMainDept,
   onCurrentChange,
   handleSelectionChange3,
-  handleSelectionChange2
+  handleSelectionChange2,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" style="width: 60%" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        rowKey="id"
+        :rowData="dataList"
+        :loading="loading"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 15"
+        :paginations="pagination"
+        @refresh="onRefresh"
+        @switch="onSwitchTable"
+        @cellClicked="onRowClick"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, loadingStatus, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, queryParams, searchOptions, searchField: 'userName', placeholder: '请输入姓名' }"
+      />
+      <PureTableBar v-else :columns="columns" style="width: 60%" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" :queryParams="queryParams" placeholder="请输入姓名" searchField="userName" />
         </template>
@@ -65,12 +85,12 @@ const {
             :height="maxHeight"
             :max-height="maxHeight"
             ref="userTableRef"
-            row-key="itemId"
-            class="user-manage"
+            row-key="id"
             :adaptive="true"
             align-whole="center"
             :size="size"
             :data="dataList"
+            :loading="loading"
             :columns="dynamicColumns"
             :pagination="pagination"
             :paginationSmall="size === 'small'"

@@ -5,10 +5,11 @@ import { saveAs } from "file-saver";
 
 import { setColumn, getMenuColumns, updateButtonList, usePageSelect } from "@/utils/table";
 import EditForm from "@/components/EditForm/index.vue";
-
+import { FormItemConfigType } from "@/utils/form";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { useEleHeight } from "@/hooks";
 import { addDialog } from "@/components/ReDialog";
-import { formConfigs, formConfigs2, formRules, formRules2 } from "./config";
+import { formRules2, formConfigs2, formRules, formConfigs } from "./config";
 import { message, showMessageBox } from "@/utils/message";
 import dayjs from "dayjs";
 
@@ -95,12 +96,11 @@ export const useConfig = () => {
   };
 
   const onEdit = (row) => openDialog("edit", row);
-  const onImport = () => openDialog("import");
+  const onImport = () => openDialog2("import");
 
-  const openDialog = async (type: "import" | "edit", row?: MealCostManageListItemType) => {
-    const title = { import: "导入", edit: "修改" }[type];
+  const openDialog = async (type: "edit", row?: MealCostManageListItemType) => {
+    const title = { edit: "修改" }[type];
     const formRef = ref();
-    // 修改
     const _formData = reactive({
       id: row?.id ?? "",
       staffCode: row?.staffCode ?? "",
@@ -110,7 +110,42 @@ export const useConfig = () => {
       yearMonth: row?.yearMonth ?? ""
     });
 
-    // 导入
+    const formConfig: FormItemConfigType[] = [{ formData: _formData, formProps: { labelWidth: "90px" } }];
+
+    addDialog({
+      title: `${title}餐费`,
+      props: {
+        params: { groupCode: "1" },
+        formConfig: formConfig
+      },
+      width: "650px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
+      beforeSure: (done, { options }) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          if (valid) {
+            showMessageBox(`确认要${title}吗?`).then(() => {
+              updateMealCostManage(_formData)
+                .then(({ data }) => {
+                  if (!data) return message.error(`${title}失败`);
+                  done();
+                  onSearch();
+                  message.success(`${title}成功`);
+                })
+                .catch(console.log);
+            });
+          }
+        });
+      }
+    });
+  };
+  const openDialog2 = async (type: "import") => {
+    const title = { import: "导入" }[type];
+    const formRef = ref();
     const importFormData = reactive({
       dataStartRow: "3",
       // staffCodeCol: "2",
@@ -121,16 +156,10 @@ export const useConfig = () => {
       file: ""
     });
 
-    const formInline = type === "import" ? importFormData : _formData;
-
     addDialog({
       title: title,
-      props: {
-        formInline: formInline,
-        formRules: type === "import" ? formRules2 : formRules,
-        formConfigs: type === "import" ? formConfigs2() : formConfigs()
-      },
-      width: type === "import" ? "400px" : "650px",
+      props: { formInline: importFormData, formRules: formRules2, formConfigs: formConfigs2() },
+      width: "400px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
@@ -140,43 +169,21 @@ export const useConfig = () => {
         FormRef.validate(async (valid) => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`).then(() => {
-              onSubmitChange(type, title, formInline, () => {
+              const { file, ...reset } = importFormData;
+              const fData = new FormData();
+              fData.append("files", file);
+              fData.append("param", JSON.stringify(reset));
+              importMealCostManage(fData).then((res) => {
+                if (!res.data) return message.error(`${title}失败`);
                 done();
                 onSearch();
+                message.success(`${title}成功`);
               });
             });
           }
         });
       }
     });
-  };
-
-  const onSubmitChange = (type: "import" | "edit", title: string, data, callback) => {
-    if (type === "import") {
-      const { file, ...reset } = data;
-      const fData = new FormData();
-      fData.append("files", file);
-      fData.append("param", JSON.stringify(reset));
-      importMealCostManage(fData).then((res) => {
-        if (data) {
-          callback();
-          message.success(`${title}成功`);
-        } else {
-          message.error(`${title}失败`);
-        }
-      });
-      return;
-    }
-    updateMealCostManage(data)
-      .then(({ data }) => {
-        if (data) {
-          callback();
-          message.success(`${title}成功`);
-        } else {
-          message.error(`${title}失败`);
-        }
-      })
-      .catch(console.log);
   };
 
   // 批量删除

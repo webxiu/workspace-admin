@@ -12,32 +12,24 @@ import { setColumn } from "@/utils/table";
 import { onMounted } from "vue";
 
 defineProps({
-  deptOptions: {
-    type: Array as PropType<DetartMenttemType[]>,
-    default: () => []
-  },
+  deptOptions: { type: Array as PropType<DetartMenttemType[]>, default: () => [] },
   loading: { type: Boolean, default: false }
 });
 
-const userIdList = ref([]);
-const tableRef = ref();
-const dataList = ref<DeptUserItemType[]>([]);
-
-const formData = reactive({
-  userName: "",
-  deptId: 0,
-  userCode: ""
-});
-
 const maxHeight = 400;
+const tableRef = ref();
+const userIdList = ref([]);
 const columns = ref<TableColumnList[]>([]);
+const dataList = ref<DeptUserItemType[]>([]);
+const formData = reactive({ userName: "", deptId: 0, userCode: "" });
 const columnData: TableColumnList[] = [
-  { label: "用户编号", prop: "wxOpenid", align: "left" },
+  { label: "用户编号", prop: "userCode", align: "left" },
   { label: "用户名称", prop: "userName" }
 ];
+
 columns.value = setColumn({ columnData, operationColumn: false, selectionColumn: { hide: false }, radioColumn: { hide: true } });
 
-const handleSelectionChange = (rows: DeptUserItemType[]) => {
+const onSelectionChange = (rows: DeptUserItemType[]) => {
   userIdList.value = rows.map((item) => item.id);
 };
 
@@ -80,7 +72,7 @@ defineExpose({ getRef });
         :default-expand-all="true"
         @node-click="handleNodeClick"
         :props="{ children: 'children', label: 'name' }"
-        :style="{ minWidth: '220px', height: `${maxHeight}px` }"
+        :style="{ minWidth: '220px', height: `${maxHeight + 65}px` }"
       />
       <PureTableBar :columns="columns" :showIcon="false">
         <template #title>
@@ -113,7 +105,7 @@ defineExpose({ getRef });
             highlight-current-row
             :show-overflow-tooltip="true"
             @row-click="onRowClick"
-            @selection-change="handleSelectionChange"
+            @selection-change="onSelectionChange"
           />
         </template>
       </PureTableBar>

@@ -20,15 +20,7 @@
                   size="small"
                   showButton
                   @select="onSelect"
-                  :componentProp="{
-                    searchConfig: [{ label: '产品型号', value: 'productCode' }],
-                    maxHeight: 520,
-                    columns: [
-                      { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                      { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-                    ],
-                    api: fetchProductStoreList
-                  }"
+                  showModel="product"
                 />
               </div>
             </div>
@@ -115,7 +107,6 @@
 
 <script setup lang="tsx">
 import { h, reactive, ref } from "vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 import { Upload, Edit, Plus } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
 import { message } from "@/utils/message";

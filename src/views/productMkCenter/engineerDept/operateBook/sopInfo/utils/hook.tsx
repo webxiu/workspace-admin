@@ -2,9 +2,10 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-02 17:49:02
+ * @Last Modified time: 2025-03-13 17:57:55
  */
 
+import { BillState, PAGE_CONFIG } from "@/config/constant";
 import {
   CheckRecordItemType,
   MaterialItemType,
@@ -18,7 +19,7 @@ import {
 } from "@/api/oaManage/productMkCenter";
 import { MessageBox, Printer } from "@element-plus/icons-vue";
 import { OptionsType, getEnumDictList, setColumn, tableEditRender } from "@/utils/table";
-import { h, nextTick, onMounted, reactive, ref, watch } from "vue";
+import { computed, h, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 
@@ -26,7 +27,6 @@ import ChildMaterialModal from "../component/ChildMaterialModal.vue";
 import DeptModal from "../component/DeptModal.vue";
 import { ImageItemType } from "../component/AddForm/index.vue";
 import { OptionItemType } from "@/api/plmManage";
-import { PAGE_CONFIG } from "@/config/constant";
 import Print from "../print.vue";
 import { Question } from "@/config/elements";
 import RegInput from "@/components/RegInput.vue";
@@ -79,6 +79,7 @@ export const useConfig = () => {
   const materialList = ref<OptionItemType[]>([]);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 50);
   const formData = reactive({ page: 1, id: "", limit: PAGE_CONFIG.pageSize });
+  const isEdit = computed(() => [BillState.submit, BillState.reject].includes(+route.query.billState));
 
   onMounted(() => {
     getOption();
@@ -208,16 +209,16 @@ export const useConfig = () => {
       { label: "数量", prop: "quantity", align: "center", minWidth: 55 },
       { label: "标准设定参数", prop: "standardParam" }
     ];
-
-    columnData.forEach((item) => (item.cellRenderer = (data) => editTable1.editCellRender({ data })));
-    columnData2.forEach((item) => (item.cellRenderer = (data) => editTable2.editCellRender({ data })));
-    columnData3.forEach((item) => (item.cellRenderer = (data) => editTable3.editCellRender({ data })));
-    columnData4.forEach((item) => (item.cellRenderer = (data) => editTable4.editCellRender({ data })));
-
+    if (isEdit.value) {
+      columnData.forEach((item) => (item.cellRenderer = (data) => editTable1.editCellRender({ data })));
+      columnData2.forEach((item) => (item.cellRenderer = (data) => editTable2.editCellRender({ data })));
+      columnData3.forEach((item) => (item.cellRenderer = (data) => editTable3.editCellRender({ data })));
+      columnData4.forEach((item) => (item.cellRenderer = (data) => editTable4.editCellRender({ data })));
+    }
     columns.value = setColumn(
       {
         columnData: columnData,
-        isDragRow: true,
+        isDragRow: isEdit.value,
         dragSelector: ".position-table",
         dataList,
         operationColumn: { hide: true }
@@ -283,6 +284,7 @@ export const useConfig = () => {
     }
     if (type === "sort") {
       dataList.value.push(getEmptyRow(dataList.value));
+      dataListTemp.value = cloneDeep(dataList.value);
     }
     if (type === "material") {
       if (rowData.value.materialVOS.length >= 5) {
@@ -354,6 +356,9 @@ export const useConfig = () => {
         dataList.value = dataList.value.filter((f) => f.id !== rowData.value.id);
         if (rowData.value.id && !rowData.value.isNew) {
           onDeleteSortList(rowData.value.id);
+        }
+        if (dataList.value.length === 0) {
+          rowData.value = null;
         }
       }
       if (type === "material") {
@@ -461,19 +466,20 @@ export const useConfig = () => {
     if (rowData.value?.id) {
       dataList.value.forEach((f) => {
         if (f.id === rowData.value.id) {
+          if (!f.contentVO) f.contentVO = {};
           // 缓存到排位表中
-          if (jobContent) f.contentVO.jobContent = jobContent;
-          if (precautions) f.contentVO.precautions = precautions;
-          if (withToolFixture) f.contentVO.withToolFixture = withToolFixture;
+          f.contentVO.jobContent = jobContent;
+          f.contentVO.precautions = precautions;
+          f.contentVO.withToolFixture = withToolFixture;
         }
       });
     }
   }
 
   async function onSave() {
-    if (dataList.value.length === 0) {
-      return message.error("请先添加排位");
-    }
+    const noContent = dataList.value.find((f) => !f.workContent);
+    if (dataList.value.length === 0) return message.error("请添加作业内容");
+    if (noContent) return message.error(`请填写排位序号为【${noContent.stationNo}】的作业内容`);
     await nextTick();
 
     // 获取排位表选中行最新数据
@@ -539,13 +545,15 @@ export const useConfig = () => {
     fd.append("param", JSON.stringify(param));
     const title = workStationId ? "修改" : "新增";
     const reqApi = workStationId ? updateEsopStation : addEsopStation;
-    showMessageBox(`确认保存作业【${newRowData.workContent}】${title}内容吗?`).then(() => {
-      reqApi(fd).then(({ data }) => {
-        if (!data) return message.error(`${title}失败`);
-        message.success(`${title}成功`);
-        getTableList();
-      });
-    });
+    showMessageBox(`确认保存作业【${newRowData.workContent}】${title}内容吗?`)
+      .then(() => {
+        reqApi(fd).then(({ data }) => {
+          if (!data) return message.error(`${title}失败`);
+          message.success(`${title}成功`);
+          getTableList();
+        });
+      })
+      .catch(() => {});
   }
 
   function onPrint() {
@@ -574,10 +582,12 @@ export const useConfig = () => {
     });
   }
 
-  const buttonList2 = ref<ButtonItemType[]>([
-    { clickHandler: onSave, type: "primary", text: "保存", icon: MessageBox, isDropDown: false },
-    { clickHandler: onPrint, type: "success", text: "预览", icon: Printer, isDropDown: false }
-  ]);
+  const buttonList2 = computed<ButtonItemType[]>(() =>
+    [
+      { clickHandler: onSave, type: "primary", text: "保存", icon: MessageBox, isDropDown: false },
+      { clickHandler: onPrint, type: "success", text: "预览", icon: Printer, isDropDown: false }
+    ].filter((f) => (f.text === "保存" ? isEdit.value : true))
+  );
 
   return {
     tableRef,
@@ -588,6 +598,7 @@ export const useConfig = () => {
     columns3,
     columns4,
     dataList,
+    isEdit,
     toolIndex,
     maxHeight,
     buttonList2,

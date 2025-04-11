@@ -5,7 +5,9 @@
     </div>
     <div class="tabs-info">
       <el-tabs v-model="activeName" type="card" class="demo-tabs" @tab-click="handleClick">
-        <el-tab-pane label="回签附件" name="first"><FileListModal :disabled="true" ref="fileRef" /></el-tab-pane>
+        <el-tab-pane label="回签附件" name="first"
+          ><FileListModal :disabled="true" ref="fileRef" :onFresh="onFresh" :currentLeftRow="currentLeftRow" :formData="formData"
+        /></el-tab-pane>
         <el-tab-pane label="物料信息" name="second"><MaterialTable ref="materialRef" /></el-tab-pane>
       </el-tabs>
     </div>
@@ -35,7 +37,7 @@ const fileRef = ref();
 const materialRef = ref();
 const activeName = ref("first");
 
-const props = defineProps(["fbillno", "source"]);
+const props = defineProps(["fbillno", "source", "onFresh", "currentLeftRow"]);
 console.log(props.fbillno, "props.fbillno");
 
 const handleClick = ({ paneName }) => {

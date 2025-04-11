@@ -17,8 +17,9 @@
           <el-option v-for="item in goodsOptions.brandList" :key="item.optionValue" :value="item.optionValue" :label="item.optionName" />
         </el-select>
       </el-form-item>
+      <DynamicAddFormItems v-model="formData.specs" listProp="specs" :itemConfigs="itemConfigs" />
 
-      <el-row v-for="(domain, index) in formData?.specs" :key="domain.uuid">
+      <!-- <el-row v-for="(domain, index) in formData?.specs" :key="domain.uuid">
         <el-col :span="6">
           <el-form-item label="规格" :prop="'specs.' + index + '.spec'" :rules="{ required: true, message: '规格不能为空', trigger: 'blur' }">
             <el-input v-model="domain.spec" placeholder="请输入" clearable />
@@ -68,7 +69,7 @@
       </el-row>
       <el-form-item>
         <el-button @click="addDomain" type="primary" :icon="Plus">新增一条规格</el-button>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item prop="state" label="商品状态">
         <el-switch v-model="formData.state" :active-value="1" :inactive-value="0" />
       </el-form-item>
@@ -96,16 +97,56 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script lang="tsx" setup>
 import { reactive, ref } from "vue";
 import type { FormInstance } from "element-plus";
 import { FormRules } from "element-plus";
 import type { UploadProps, UploadUserFile } from "element-plus";
 import { message } from "@/utils/message";
-import { Plus, Delete, UploadFilled } from "@element-plus/icons-vue";
-import { onMounted } from "vue";
+import { Plus } from "@element-plus/icons-vue";
 import regExp from "@/utils/regExp";
 import { GoodsManageOptionType } from "@/api/oaManage/humanResources";
+import DynamicAddFormItems from "@/components/DynamicAddFormItems.vue";
+
+const itemConfigs = [
+  {
+    label: "规格",
+    prop: "spec",
+    span: 6,
+    rules: [{ required: true, message: "规格不能为空", trigger: "blur" }],
+    render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+  },
+  {
+    label: "官方价格",
+    prop: "officialPrice",
+    span: 5,
+    rules: [
+      { required: true, message: "官方价格不能为空", trigger: "blur" },
+      { message: "价格格式不正确", trigger: "blur", pattern: regExp.price }
+    ],
+    render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+  },
+  {
+    label: "折扣价格",
+    prop: "discountPrice",
+    span: 5,
+    rules: [
+      { required: true, message: "折扣价格不能为空", trigger: "blur" },
+      { message: "价格格式不正确", trigger: "blur", pattern: regExp.price }
+    ],
+    render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+  },
+  {
+    label: "库存数量",
+    prop: "stock",
+    span: 5,
+    rules: [
+      { required: true, message: "库存数量不能为空", trigger: "blur" },
+      { message: "数量格式不正确", trigger: "blur", pattern: regExp.quantity }
+    ],
+    render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+  }
+];
 
 interface DomainItem {
   uuid: number;

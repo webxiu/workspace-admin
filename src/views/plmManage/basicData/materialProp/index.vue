@@ -1,7 +1,38 @@
+<script setup lang="ts">
+import { useTable } from "./config";
+import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
+
+defineOptions({ name: "PlmManageBasicDataMaterialPropIndex" });
+
+const {
+  loading,
+  dataList,
+  columns,
+  maxHeight,
+  loading2,
+  buttonList,
+  categoryTreeData,
+  searchOptions,
+  buttonList2,
+  dataList2,
+  columns2,
+  curNodeName,
+  onFresh,
+  rowClick,
+  rowClick2,
+  rowClassName,
+  changeSelection,
+  onChangeFileInput,
+  handleNodeClick,
+  handleTagSearch
+} = useTable();
+</script>
+
 <template>
-  <div class="main flex ui-h-100">
-    <div class="info-left-tree border-line">
+  <Row :gutter="8">
+    <Col :xs="24" :sm="24" :md="4" :lg="4" :xl="4">
       <el-tree
+        class="ui-ovy-a border-line mobile-tree mb-10"
         :data="categoryTreeData"
         node-key="id"
         :default-expanded-keys="['0']"
@@ -9,15 +40,13 @@
         accordion
         :expand-on-click-node="false"
         highlight-current
-        :props="{
-          children: 'children',
-          label: 'title'
-        }"
+        :style="{ height: `${maxHeight + 50}px` }"
+        :props="{ children: 'children', label: 'title' }"
         @node-click="handleNodeClick"
       />
-    </div>
-    <div class="ui-ov-h" style="width: 70%">
-      <PureTableBar :columns="columns" @refresh="onFresh" style="padding-top: 0" @change-column="setUserMenuColumns">
+    </Col>
+    <Col :xs="24" :sm="24" :md="13" :lg="13" :xl="13">
+      <PureTableBar :columns="columns" @refresh="onFresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="属性名称" searchField="propertyName" />
         </template>
@@ -33,7 +62,6 @@
             :height="maxHeight"
             :max-height="maxHeight"
             row-key="id"
-            class="team-member"
             :adaptive="true"
             align-whole="left"
             :loading="loading"
@@ -43,78 +71,36 @@
             :columns="dynamicColumns"
             show-overflow-tooltip
             highlight-current-row
+            @selection-change="changeSelection"
             @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
           />
         </template>
       </PureTableBar>
-    </div>
-    <div class="ui-ov-h" style="width: 30%; padding-top: 8px">
-      <div style="margin-bottom: 8px">
-        <ButtonList :buttonList="buttonList2" :auto-layout="false" moreActionText="更多操作" />
-      </div>
-      <pure-table
-        border
-        class="material-prop-table2"
-        @row-click="rowClick2"
-        :height="maxHeight"
-        :max-height="maxHeight"
-        row-key="id"
-        :adaptive="true"
-        align-whole="left"
-        size="small"
-        :loading="loading2"
-        :data="dataList2"
-        :columns="columns2"
-        :row-class-name="rowClassName"
-        show-overflow-tooltip
-        highlight-current-row
-      />
-    </div>
-  </div>
+    </Col>
+    <Col :xs="24" :sm="24" :md="7" :lg="7" :xl="7">
+      <PureTableBar :columns="columns2">
+        <template #buttons>
+          <ButtonList :buttonList="buttonList2" :auto-layout="false" moreActionText="更多操作" />
+        </template>
+        <template v-slot="{ size, dynamicColumns }">
+          <pure-table
+            border
+            class="material-prop-table2"
+            @row-click="rowClick2"
+            :height="maxHeight"
+            :max-height="maxHeight"
+            row-key="id"
+            :adaptive="true"
+            align-whole="left"
+            size="small"
+            :loading="loading2"
+            :data="dataList2"
+            :columns="dynamicColumns"
+            :row-class-name="rowClassName"
+            show-overflow-tooltip
+            highlight-current-row
+        /></template>
+      </PureTableBar>
+    </Col>
+  </Row>
 </template>
-<script setup lang="ts">
-import { useTable } from "./config";
-import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
-
-defineOptions({ name: "PlmManageBasicDataMaterialPropIndex" });
-
-const {
-  loading,
-  dataList,
-  columns,
-  maxHeight,
-  loading2,
-  rowClassName,
-  onFresh,
-  rowClick,
-  buttonList,
-  categoryTreeData,
-  searchOptions,
-  handleNodeClick,
-  onChangeFileInput,
-  buttonList2,
-  dataList2,
-  columns2,
-  rowClick2,
-  handleTagSearch,
-  curNodeName
-} = useTable();
-</script>
-
-<style lang="scss" scoped>
-.info-left-tree {
-  width: 250px;
-  height: calc(100vh - 179.5px);
-  padding: 10px 15px;
-  overflow-y: auto;
-}
-
-.custom-tree-node {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: space-between;
-  padding-right: 8px;
-  font-size: 14px;
-}
-</style>

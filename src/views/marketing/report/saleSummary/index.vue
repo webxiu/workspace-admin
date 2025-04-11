@@ -10,11 +10,40 @@ import { onHeaderDragend } from "@/utils/table";
 
 defineOptions({ name: "MarketingReportSaleSummaryIndex" });
 
-const { columns, columns2, dataList, dataList2, loading, buttonList, loading2, maxHeight, searchOptions, onTagSearch } = useConfig();
+const {
+  columnDefs,
+  columnDefs2,
+  isAgTable,
+  columns,
+  columns2,
+  dataList,
+  dataList2,
+  loading,
+  buttonList,
+  loading2,
+  maxHeight,
+  searchOptions,
+  onSearch,
+  onTagSearch,
+  onSwitchTable
+} = useConfig();
 </script>
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
-    <PureTableBar :columns="columns" :show-icon="false">
+    <AgGridTable
+      v-if="isAgTable"
+      ref="tableRef"
+      :loading="loading"
+      :rowData="dataList"
+      :columnDefs="columnDefs"
+      :height="maxHeight * 0.5"
+      @refresh="onSearch"
+      @switch="onSwitchTable"
+      :headButtons="{ buttonList, autoLayout: false }"
+      :blendedSearch="{ onTagSearch, searchOptions, placeholder: '请选择销售员' }"
+    />
+    <AgGridTable v-if="isAgTable" :loading="loading" :rowData="dataList2" :columnDefs="columnDefs2" :height="maxHeight * 0.5" :showIcon="false" />
+    <PureTableBar v-if="!isAgTable" :columns="columns" @refresh="onSearch" :show-icon="false">
       <template #title>
         <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请选择销售员" />
       </template>
@@ -41,13 +70,13 @@ const { columns, columns2, dataList, dataList2, loading, buttonList, loading2, m
         />
       </template>
     </PureTableBar>
-    <PureTableBar :columns="columns2" :showIcon="false">
+    <PureTableBar v-if="!isAgTable" :columns="columns2" :showIcon="false">
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
           border
           :height="maxHeight / 2"
           :max-height="maxHeight / 2"
-          row-key="menuId"
+          row-key="id"
           class="sale-summary-achievement"
           :adaptive="true"
           align-whole="center"

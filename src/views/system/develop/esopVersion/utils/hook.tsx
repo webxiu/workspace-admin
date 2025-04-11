@@ -12,7 +12,9 @@ import { formConfigs, formRules, timeTypeList, updateTypeList } from "./config";
 import { message, showMessageBox } from "@/utils/message";
 
 import EditForm from "@/components/EditForm/index.vue";
+import HxUploadButton from "@/components/HxUploadButton/index.vue";
 import { Plus } from "@element-plus/icons-vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { useEleHeight } from "@/hooks";
 
@@ -142,22 +144,34 @@ export const useConfig = () => {
       downloadUrl: row?.downloadUrl ? [{ file: null, raw: row.downloadUrl }] : []
     });
 
+    const customElement = {
+      downloadUrl: ({ formModel, row }) => {
+        return <HxUploadButton v-model:fileList={formModel[row.prop]} limit={1} accept={".apk"} />;
+      }
+    };
+
     addDialog({
       title: title + "版本发布",
       props: {
-        formInline: formData,
-        formRules: formRules(formData),
-        formConfigs: formConfigs({ timeTypeList }),
-        formProps: { labelWidth: "100px" }
+        params: { groupCode: "1" },
+        formConfig: [
+          {
+            formData: formData,
+            dataOption: { timeType: timeTypeList },
+            customElement: customElement,
+            formProps: { labelWidth: "120px" }
+          }
+        ]
       },
       width: "740px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             const { downloadUrl, ...param } = formData;
             const fd = new FormData();

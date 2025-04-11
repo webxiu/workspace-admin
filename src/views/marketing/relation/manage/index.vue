@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-09-07 16:01:43 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-09-07 16:01:43 
+ * @Author: Hailen
+ * @Date: 2023-09-07 16:01:43
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-09-07 16:01:43
  */ -->
 
 <script setup lang="ts">
@@ -46,3 +46,23 @@ const { columns, dataList, loading, maxHeight, searchOptions, buttonList, onSear
     </PureTableBar>
   </div>
 </template>
+
+<style lang="scss">
+// :deep(.el-image__error) {
+//   font-size: 12px;
+//   line-height: 12px;
+// }
+.avatar-logo {
+  .el-upload {
+    .el-upload-dragger {
+      padding: 6px !important;
+    }
+  }
+}
+
+.customer-modal-mkt {
+  .el-form-item--small {
+    margin-bottom: 8px !important;
+  }
+}
+</style>

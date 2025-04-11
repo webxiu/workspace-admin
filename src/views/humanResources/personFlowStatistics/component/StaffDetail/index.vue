@@ -20,7 +20,7 @@ const contentHeight = computed(() => window.innerHeight - 260);
   <div class="ui-h-100 flex flex-1 main main-content" :style="{ height: contentHeight + 'px' }">
     <PureTableBar :columns="columns" :show-icon="false" style="width: 42%; padding-top: 0" class="border-line-right mr-10 pr-15">
       <template #title>
-        <SearchList
+        <HxSearchHighlight
           v-model="dataList"
           :bright="true"
           style="width: 40%"

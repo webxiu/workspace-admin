@@ -18,9 +18,9 @@
   --table-row-bg: #e7e7e7;
 
   /* 滚动条 */
-  --scrollbar-bg-color: #ccc;
-  --scrollbar-thumb-bg-color: #c0c1c2;
-  --scrollbar-corner-color: #ccc;
+  --scrollbar-bg-color: var(--el-color-info-light-7);
+  --scrollbar-corner-color: var(--el-color-info-light-7);
+  --scrollbar-thumb-bg-color: #ddc9c988;
 }
 
 /** 计算器数字字体 */

@@ -2,10 +2,10 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:03:29
+ * @Last Modified time: 2025-02-20 16:09:25
  */
 
-import { DataAuthItemType, DataAuthMenuItemType, dataAuthList, dataAuthMenuList, dataAuthMenuUpdate } from "@/api/systemManage";
+import { DataAuthItemType, DataAuthMenuItemType, dataAuthList, dataAuthMenuList, dataAuthMenuUpdate, getDeptTreeList } from "@/api/systemManage";
 import { computed, h, onMounted, reactive, ref } from "vue";
 import { formConfigs, formRules } from "./config";
 import { getMenuColumns, setColumn } from "@/utils/table";
@@ -15,6 +15,7 @@ import EditForm from "@/components/EditForm/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
+import { handleTree } from "@pureadmin/utils";
 import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
@@ -50,9 +51,9 @@ export const useConfig = () => {
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
-      { label: "角色编号", prop: "roleCode", align: "right" },
-      { label: "角色名称", prop: "roleName", sortable: true },
-      { label: "部门", prop: "deptName" }
+      { label: "部门名称", prop: "deptName", minWidth: 200 },
+      { label: "角色名称", prop: "roleName" },
+      { label: "角色编号", prop: "roleCode", align: "right" }
     ];
 
     let columnData2: TableColumnList[] = [
@@ -65,8 +66,8 @@ export const useConfig = () => {
     const [data, data2] = columnArrs;
     if (data?.length) columnData = data;
     if (data2?.length) columnData2 = data2;
-    columns.value = setColumn({ columnData, dragSelector: ".data-auth", operationColumn: false });
-    columns2.value = setColumn({ columnData: columnData2, operationColumn: { minWidth: 80 }, dragSelector: ".data-auth-menu" });
+    columns.value = setColumn({ columnData, isCustomExpend: true, operationColumn: false });
+    columns2.value = setColumn({ columnData: columnData2, operationColumn: { minWidth: 80 } });
   };
 
   const onRefresh = () => {
@@ -80,10 +81,12 @@ export const useConfig = () => {
 
   const getTableList = () => {
     loading.value = true;
-    dataAuthList(formData)
+    // 使用角色权限的接口
+    getDeptTreeList()
       .then((res) => {
         loading.value = false;
-        dataList.value = res.data;
+        const result = handleTree(res.data, "itemId", "parentId", "children");
+        dataList.value = result;
       })
       .catch((err) => (loading.value = false));
   };
@@ -110,7 +113,7 @@ export const useConfig = () => {
 
   // 获取右侧分组列表
   const getRightList = (row: DataAuthItemType) => {
-    if (!row?.id) return;
+    if (!row?.id) return message.warning("所选角色不存在");
     loading2.value = true;
     dataAuthMenuList({ roleId: row.id })
       .then((res) => {

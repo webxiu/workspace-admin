@@ -9,12 +9,13 @@ import {
   submitBomData,
   updateBomTableData
 } from "@/api/plmManage";
+import { debounce, downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import dayjs from "dayjs";
-import { debounce, downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { getUserInfo } from "@/utils/storage";
+import { message } from "@/utils/message";
 import { useMaterialTable } from "./components/selectMaterialConfig";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { useUserStore } from "@/store/modules/user";
@@ -64,12 +65,28 @@ export const useConfig = () => {
 
   const copyBom = () => {
     if (route.query.type === "edit" || route.query.type === "view") {
-      router.push(`/plmManage/basicData/bomMgmt/add?id=${route.query.id}&type=add&isNewTag=yes&menuId=${route.query.menuId}`);
+      router.push({
+        path: `/plmManage/basicData/bomMgmt/add`,
+        query: {
+          id: route.query.id,
+          type: "add",
+          isNewTag: "yes",
+          menuId: route.query.menuId
+        }
+      });
       return;
     }
 
     handleSelectAction("single", (row) => {
-      router.push(`/plmManage/basicData/bomMgmt/add?id=${row.id}&type=add&isNewTag=yes&menuId=${route.query.menuId}`);
+      router.push({
+        path: `/plmManage/basicData/bomMgmt/add`,
+        query: {
+          id: row.id,
+          type: "add",
+          isNewTag: "yes",
+          menuId: route.query.menuId
+        }
+      });
     });
   };
 
@@ -88,7 +105,16 @@ export const useConfig = () => {
             if (res.data) {
               ElMessage({ message: "提交成功", type: "success" });
               queryOneData(route.query.id);
-              router.push(`/plmManage/basicData/bomMgmt/view?id=${route.query.id}&type=view&isNewTag=yes&menuId=${route.query.menuId}`);
+              router.push({
+                path: `/plmManage/basicData/bomMgmt/view`,
+                query: {
+                  id: route.query.id,
+                  type: "view",
+                  isNewTag: "yes",
+                  menuId: route.query.menuId,
+                  title: route.query.title
+                }
+              });
               useMultiTagsStoreHook().handleTags("splice", "/plmManage/basicData/bomMgmt/edit");
             }
           })
@@ -111,8 +137,17 @@ export const useConfig = () => {
         backBomData({ id: route.query.id })
           .then((res) => {
             if (res.data) {
-              ElMessage({ message: "回退成功", type: "success" });
-              router.push(`/plmManage/basicData/bomMgmt/edit?id=${route.query.id}&type=edit&isNewTag=yes&menuId=${route.query.menuId}`);
+              message.success("回退成功");
+              router.push({
+                path: `/plmManage/basicData/bomMgmt/edit`,
+                query: {
+                  id: route.query.id,
+                  type: "edit",
+                  isNewTag: "yes",
+                  menuId: route.query.menuId,
+                  title: route.query.title
+                }
+              });
             }
           })
           .finally(() => (loading.value = false));

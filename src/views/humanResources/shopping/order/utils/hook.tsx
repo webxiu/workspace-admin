@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-18 10:58:00
+ * @Last Modified time: 2025-03-17 14:54:34
  */
 
 import { OrderManageItemType, orderManageList, exportOrderManage, changeOrderState } from "@/api/oaManage/humanResources";
@@ -16,9 +16,10 @@ import { setColumn, getExportConfig, tableEditRender, getMenuColumns, updateButt
 import { useEleHeight } from "@/hooks";
 import { type PaginationProps } from "@pureadmin/table";
 import { message, showMessageBox } from "@/utils/message";
-
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { PAGE_CONFIG } from "@/config/constant";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 const colorMap = {
   "0": "#909399",
@@ -29,6 +30,8 @@ const colorMap = {
 };
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const tableRef = ref();
   const stateOptions = ref([]);
   const loading = ref<boolean>(false);
@@ -36,7 +39,7 @@ export const useConfig = () => {
   const dataList = ref<OrderManageItemType[]>([]);
   const rowsData = ref<OrderManageItemType[]>([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 51 + 51);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
 
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "订单编号", value: "billNo" },
@@ -84,7 +87,11 @@ export const useConfig = () => {
     const stateCellRenderer = (data) => {
       const { row, column } = data;
       const options = stateOptions.value.map((item) => ({ optionName: item.label, optionValue: Number(item.value) }));
-      return editCellRender({ type: "select", data, options: options, cellStyle: { background: colorMap[row[column["property"]]], color: "#fff" } });
+      return (
+        <div class="flex align-center">
+          {editCellRender({ type: "select", data, options: options, cellStyle: { background: colorMap[row[column["property"]]], color: "#fff" } })}
+        </div>
+      );
     };
 
     let columnData: TableColumnList[] = [
@@ -115,7 +122,14 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, formData, dragSelector: ".order-manage", selectionColumn: { hide: false }, operationColumn: false });
+    columns.value = setColumn({ columnData, formData, selectionColumn: { hide: false }, operationColumn: false });
+    columnDefs.value = getAgGridColumns({
+      columnData,
+      formData,
+      selectionColumn: { hide: false },
+      operationColumn: false,
+      columnsRender: { state: stateCellRenderer }
+    });
   };
 
   const getTableList = () => {
@@ -250,9 +264,14 @@ export const useConfig = () => {
     setSelectAllChange(rows);
   }
 
-  const onRowClick = (row: OrderManageItemType, column) => {
+  const onRowClick = (row: OrderManageItemType) => {
     // tableRef.value?.getTableRef()?.toggleRowSelection(row);
   };
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowsData.value = [];
+  }
 
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onChangeStateAll, type: "primary", text: "批量修改订单状态", isDropDown: true },
@@ -261,6 +280,8 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     tableRef,
     loading,
     columns,
@@ -275,6 +296,7 @@ export const useConfig = () => {
     onSelectAll,
     onRowClick,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

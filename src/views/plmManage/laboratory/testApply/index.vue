@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { useTestReportConfig } from "./utils/hook";
-import { ref } from "vue";
-import dayjs from "dayjs";
 import Modal from "@/views/supplyChainMange/orders/modal.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
-defineOptions({ name: "PlmManageLaboratoryTestReportIndex" });
+defineOptions({ name: "PlmManageLaboratoryTestApplyIndex" });
 
 const {
   columns,
@@ -14,9 +12,7 @@ const {
   maxHeight,
   pagination,
   searchOptions,
-  onSearch,
   onFresh,
-  onExport,
   handleTagSearch,
   onCurrentChange,
   handleSizeChange,
@@ -26,13 +22,8 @@ const {
   rowClick,
   modalRef,
   fresh,
-  onSubmitAction,
   handleCurrentChange
 } = useTestReportConfig();
-
-const firstDayOfMonth = dayjs().startOf("month").format("YYYY-MM-DD");
-const nowDay = dayjs().format("YYYY-MM-DD");
-const initDateRange = `${firstDayOfMonth} ~ ${nowDay}`;
 </script>
 
 <template>

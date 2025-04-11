@@ -30,7 +30,9 @@ export const formRules = reactive<FormRules>({
   maxAfternoonStart: [{ trigger: "blur", message: "请输入打卡时间", required: true }], // 下午上班最晚打卡时间
   afternoonEnd: [{ trigger: "blur", message: "请输入打卡时间", required: true }], // 下午下班时间
   minAfternoonEnd: [{ trigger: "blur", message: "请输入打卡时间", required: true }], // 下午下班最早打卡时间
-  maxAfternoonEnd: [{ trigger: "blur", message: "请输入打卡时间", required: true }] // 下午下班最晚打卡时间
+  maxAfternoonEnd: [{ trigger: "blur", message: "请输入打卡时间", required: true }], // 下午下班最晚打卡时间
+  minLeaveDuration: [{ trigger: "blur", message: "请输入最小请假时长", required: true }], // 最小请假时长(分钟)
+  leaveDurationMultiple: [{ trigger: "blur", message: "请输入请假时长倍数", required: true }] // 请假时长倍数(分钟)
 });
 
 // 重置密码表单
@@ -45,14 +47,8 @@ export const formConfigs = (): FormConfigItemType[] => {
     {
       label: "备注",
       prop: "remark",
-      colProp: layout,
+      colProp: { span: 16 },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
-    },
-    {
-      label: "",
-      prop: "",
-      colProp: layout,
-      render: ({ formModel, row }) => null
     },
     {
       label: "上午上班时间",
@@ -125,6 +121,19 @@ export const formConfigs = (): FormConfigItemType[] => {
       prop: "maxAfternoonEnd",
       colProp: layout,
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />
+    },
+
+    {
+      label: "最小请假时长(分钟)",
+      prop: "minLeaveDuration",
+      colProp: layout,
+      render: ({ formModel, row }) => <el-input-number controls={false} v-model={formModel[row.prop]} placeholder="请输入" clearable />
+    },
+    {
+      label: "请假时长倍数(分钟)",
+      prop: "leaveDurationMultiple",
+      colProp: layout,
+      render: ({ formModel, row }) => <el-input-number controls={false} v-model={formModel[row.prop]} placeholder="请输入" clearable />
     }
   ];
 };

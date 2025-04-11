@@ -20,7 +20,6 @@ const {
   onSearch,
   viewNodeDetail,
   onAdd,
-  onView,
   onEdit,
   handleTagSearch,
   onExport,

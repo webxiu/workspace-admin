@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { getFeedBackList } from "@/api/oaManage/financeDept";
+import { setColumn } from "@/utils/table";
 import { onMounted } from "vue";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 
 const dataList = ref([]);
+const columns = ref([]);
 const route = useRoute();
 
 const fetchFeedBackData = () => {
@@ -17,20 +19,37 @@ const fetchFeedBackData = () => {
   });
 };
 
+const getConfig = () => {
+  const columnData: TableColumnList[] = [
+    { label: "工资条ID", prop: "payslipId", width: 180 },
+    { label: "反馈信息", prop: "content", width: 180 },
+    { label: "反馈提交人", prop: "userName", width: 180 },
+    { label: "反馈提交时间", prop: "inDate", width: 180 }
+  ];
+  columns.value = setColumn({ columnData, operationColumn: false });
+};
+
 onMounted(() => {
+  getConfig();
   fetchFeedBackData();
 });
 </script>
 
 <template>
   <div>
-    <el-table :data="dataList" style="width: 100%; height: calc(100vh - 214px)">
-      <el-table-column type="index" label="序号" align="center" width="60" />
-      <el-table-column prop="payslipId" label="工资条ID" width="180" />
-      <el-table-column prop="content" label="反馈信息" />
-      <el-table-column prop="userName" label="反馈提交人" />
-      <el-table-column prop="inDate" label="反馈提交时间" />
-    </el-table>
+    <pure-table
+      border
+      :height="700"
+      :max-height="700"
+      row-key="id"
+      :adaptive="true"
+      align-whole="left"
+      size="small"
+      :data="dataList"
+      :columns="columns"
+      highlight-current-row
+      :show-overflow-tooltip="true"
+    />
   </div>
 </template>
 

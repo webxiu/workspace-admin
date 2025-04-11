@@ -23,7 +23,7 @@ export const formConfigs = ({ onUploadChange }): FormConfigItemType[] => {
       label: "文件",
       prop: "file",
       colProp: layout,
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => {
         const onChange = (res) => {
           const rawFile = res.raw;

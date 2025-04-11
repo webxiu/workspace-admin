@@ -14,6 +14,7 @@ import Print from "../print.vue";
 import { formRules, formConfigs, modelTypeList, dataProvideList } from "./config";
 import { commonBack, commonSubmit } from "@/api/systemManage";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
+import Detail from "../Detail.vue";
 
 export const useTestReportConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -41,7 +42,7 @@ export const useTestReportConfig = () => {
     const colors = "primary,success,warning,danger,info".split(",");
     const getValue = (prop: string, val: string) => {
       const options = { modelType: modelTypeList, dataProvides: dataProvideList }[prop] || [];
-      return options.find((item) => item.value === val)?.label;
+      return options.find((item) => item.optionValue === val)?.optionName;
     };
     const tagRenderer: RendererType = ({ row, column }) => {
       const prop = column["property"];
@@ -124,7 +125,6 @@ export const useTestReportConfig = () => {
   const openDialog = (type: "add" | "edit", row?: MoldApplyItemType) => {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const sloading = ref(false);
     const _formData = reactive({
       ...row,
       modelType: row.modelType?.split(",").filter(Boolean) || [],
@@ -134,22 +134,15 @@ export const useTestReportConfig = () => {
 
     addDialog({
       title: `${title}开模申请`,
-      props: {
-        loading: sloading,
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ type }),
-        formProps: { labelWidth: "120px" }
-      },
+      props: { type, formData: _formData },
       width: "960px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(Detail, { ref: formRef }),
       beforeReset: () => formRef.value.getRef()?.resetFields(),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             const { plmBillFiles, ...param } = _formData;
             const fd = new FormData();

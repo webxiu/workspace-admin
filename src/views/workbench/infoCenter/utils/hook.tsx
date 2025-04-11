@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:21:11
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-12 18:13:14
+ * @Last Modified time: 2025-03-18 14:28:23
  */
 
 import { useEleHeight } from "@/hooks";
@@ -11,7 +11,7 @@ import { getTableConfig, TreeDataTtype } from "./config";
 import { addDialog } from "@/components/ReDialog";
 import { type PaginationProps } from "@pureadmin/table";
 import { ElTree } from "element-plus";
-import { Ref, reactive, ref, onMounted, h, nextTick, resolveDirective, withDirectives } from "vue";
+import { Ref, reactive, ref, onMounted, h, nextTick, resolveDirective, withDirectives, computed } from "vue";
 import { queryStartTask, queryPendingTask, queryFinishTask, queryMyTasks, getFlowBillConfig, getIdByBillNO, cancelBillNO } from "@/api/workbench/infoCenter";
 import { QueryStartTaskResponseType, QueryPendingTaskResponseType, MyTaskResponseType } from "@/api/workbench/types";
 import { useLogicFlow } from "@/hooks/useLogicFlow";
@@ -20,8 +20,10 @@ import { setColumn, downloadDataToExcel, getMenuColumns, updateButtonList } from
 import { debounce } from "@/utils/common";
 import Detail from "../detail/index.vue";
 import EditForm from "@/components/EditForm/index.vue";
-
 import { PAGE_CONFIG } from "@/config/constant";
+import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export type RowHandleType = "add" | "edit";
 export type TaskType = "start" | "approve" | "approved" | "normal";
@@ -30,6 +32,8 @@ export type TableColumnItemType = Ref<TableColumnList[]>;
 type TableItemType = QueryStartTaskResponseType & QueryPendingTaskResponseType & MyTaskResponseType;
 
 export function useConfig() {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const treeRef = ref<InstanceType<typeof ElTree>>();
   const route = useRoute();
   const treeRowData = ref();
@@ -37,7 +41,7 @@ export function useConfig() {
   const flowLoading = ref<boolean>(true);
   const taskType = ref<TaskType>("approve");
   const loadingDirective = resolveDirective("loading");
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 36 + 50);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<TableItemType[]>([]);
 
@@ -53,6 +57,18 @@ export function useConfig() {
     billNo: "",
     sendName: "",
     sendTime: ""
+  });
+
+  const searchOptions = computed<SearchOptionType[]>(() => {
+    const arr: any[] = [{ label: "业务单号", value: "billNo" }];
+    if (["approve"].includes(taskType.value)) {
+      arr.push({ label: "发起人", value: "sendName" });
+    }
+    if (!["start"].includes(taskType.value)) {
+      const label = taskType.value === "approve" ? "发起时间" : "审批时间";
+      arr.push({ label, value: "sendTime", type: "date", format: "YYYY-MM-DD" });
+    }
+    return arr;
   });
 
   onMounted(() => {
@@ -82,12 +98,29 @@ export function useConfig() {
     const { columnArrs, buttonArrs } = await getMenuColumns();
     if (columnArrs.length && columnArrs[taskMap[taskType]]) columnData = columnArrs[taskMap[taskType]];
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, dragSelector: ".info-center", operationColumn: { width: 180 }, formData });
+    columns.value = setColumn({ formData, columnData, operationColumn: { width: 180 } });
+    columnDefs.value = getAgGridColumns<TableItemType>({
+      formData,
+      columnData,
+      operationColumn: { width: 180 },
+      renderButtons: () => [
+        { name: "查看单据", type: "default", onClick: (row) => onLookBill(row) },
+        { name: "流程图", type: "default", onClick: (row) => onLookFlow(row) }
+      ]
+    });
     lastTask.value = taskType;
   };
 
   /** 搜索 */
   const onSearch = () => {
+    getTableList();
+  };
+
+  const onTagSearch = (values) => {
+    formData.billNo = "";
+    formData.sendName = "";
+    formData.sendTime = "";
+    Object.assign(formData, values);
     getTableList();
   };
 
@@ -159,7 +192,7 @@ export function useConfig() {
 
   /** 查看单据 */
   const onLookBill = debounce(async (row: TableItemType) => {
-    console.log(row, "row=>>");
+    console.log("row=>>", row);
     const bLoading = ref<boolean>(true);
     const isCheck = treeRowData.value?.id === "1.1" ? "1" : "0";
     const { billNo, processDefId, processInstId, formUrl, projectId, taskId } = row;
@@ -274,24 +307,31 @@ export function useConfig() {
     getTableList();
   }
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+  }
+
   const buttonList = ref<ButtonItemType[]>([{ clickHandler: onExport, type: "primary", text: "导出", isDropDown: true }]);
 
   return {
+    columnDefs,
+    isAgTable,
     treeRef,
     loading,
-    taskType,
-    formData,
     maxHeight,
     dataList,
     columns,
     pagination,
     buttonList,
+    searchOptions,
+    onTagSearch,
     onSearch,
     onLookBill,
     onLookFlow,
     getTaskList,
     onRevoke,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    onSwitchTable
   };
 }

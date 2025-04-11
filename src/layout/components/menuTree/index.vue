@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { debounce, openInVScode } from "@/utils/common";
-import { Grid, Reading } from "@element-plus/icons-vue";
 import { useAppStoreHook } from "@/store/modules/app";
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import HxIcon from "@/components/HxIcon";
+import { ConfUrl } from "@/views/system/basic/menu/utils/hook";
 const vscodePath = import.meta.env.VITE_OPEN_IN_VSCODE;
 
 const height = ref(600);
+const route = useRoute();
 const menuRoutes = computed(() => useAppStoreHook().asyncRoutes);
 
 onMounted(() => {
@@ -17,7 +20,7 @@ onUnmounted(() => {
 });
 
 const onResize = debounce(() => {
-  height.value = window.innerHeight - 140;
+  height.value = window.innerHeight - 170;
 }, 300);
 
 function fmtRoute(data) {
@@ -32,16 +35,28 @@ function fmtRoute(data) {
     }
   };
 }
+// 打开表格配置
+function onDevTable(env) {
+  const { menuId, menuName } = route.query;
+  let link = `/#${ConfUrl.table}?isNewTag=yes&itemId=${menuId}&menuName=${menuName}`;
+  if (env === "prod") link = "https://app.deogra.com" + link;
+  window.open(link);
+}
 </script>
 
 <template>
   <div class="w-[40px] h-[48px] flex-c cursor-pointer navbar-bg-hover">
-    <el-popover title="菜单列表" trigger="hover" width="auto" placement="bottom-start">
+    <el-popover title="快捷菜单列表" trigger="hover" width="auto" placement="bottom-start">
       <template #reference>
-        <el-icon :size="20">
-          <Grid />
-        </el-icon>
+        <HxIcon icon="Grid" size="20" />
       </template>
+      <div v-if="vscodePath" class="flex mb-4 border-line-bottom">
+        <el-button link @click.stop="openInVScode(vscodePath, { path: route.path })" size="small" type="primary" title="在VSCode中打开当前菜单">
+          VSCode编辑
+        </el-button>
+        <el-button link @click.stop="onDevTable('dev')" size="small" type="success" title="配置当前表格">表格配置</el-button>
+        <el-button link @click.stop="onDevTable('prod')" size="small" type="warning" title="配置生产表格">生产配置</el-button>
+      </div>
       <el-tree
         v-if="menuRoutes.length"
         node-key="id"
@@ -54,9 +69,7 @@ function fmtRoute(data) {
       >
         <template #default="{ data }">
           <router-link v-if="data?.menuType === '菜单'" :to="fmtRoute(data)" style="width: 144px; overflow: hidden">
-            <el-icon v-if="vscodePath" color="#409eff" class="ui-va-m mr-4" @click.stop="openInVScode(vscodePath, data)" title="在VSCode中打开">
-              <Reading />
-            </el-icon>
+            <HxIcon v-if="vscodePath" icon="Reading" color="#409eff" class="ui-va-m mr-4" @click.stop="openInVScode(vscodePath, data)" title="在VSCode中打开" />
             <el-button type="primary" link>{{ data.title }}</el-button>
           </router-link>
           <el-button v-else type="default" link disabled>{{ data.title }}</el-button>

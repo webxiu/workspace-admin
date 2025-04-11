@@ -70,7 +70,7 @@ const btnClickSearch = () => onSearch({ ...searchParams, deptId: curNodeName.val
 
 const getTreeData = () => {
   getDeptTreeData().then((res: any) => {
-    leftTreeData.value = JSON.parse(res.data);
+    leftTreeData.value = res.data;
   });
 };
 

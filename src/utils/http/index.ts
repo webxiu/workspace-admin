@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-13 10:10:59
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-13 16:06:46
+ * @Last Modified time: 2025-04-10 17:33:42
  */
 
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken, CustomParamsSerializer } from "axios";
@@ -70,6 +70,7 @@ class PureHttp {
     PureHttp.axiosInstance.interceptors.request.use(
       async (config: PureHttpRequestConfig): Promise<any> => {
         this.removeBlank(config.data); // 移除请求参数前后空格
+        config.hideMessage = config.headers.hideMessage;
 
         // 是否隐藏Loading
         if (!config.headers.hideLoading) {
@@ -125,7 +126,9 @@ class PureHttp {
         } else if (data.status === 403) {
           message.error("请求未授权");
         } else {
-          message.error(data.message || "服务器错误, 错误代码:" + data.status);
+          if (!response.config.hideMessage) {
+            message.error(data.message || "服务器错误, 错误代码:" + data.status);
+          }
         }
         return Promise.reject(data);
         // ================ 状态码判断 end ================

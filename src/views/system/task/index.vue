@@ -12,6 +12,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "SystemTaskIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   loading,
   loading2,
   loading3,
@@ -43,14 +45,31 @@ const {
   onSelectionChange2,
   onSelectionChange3,
   onSizeChange,
-  onCurrentChange
+  onCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        rowKey="id"
+        :rowData="dataList"
+        :loading="loading"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 15"
+        :paginations="pagination"
+        @refresh="onRefresh"
+        @switch="onSwitchTable"
+        @cellClicked="onRowClick"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, searchOptions, searchField: 'taskName', placeholder: '请输入任务名称' }"
+      />
+      <PureTableBar v-else :columns="columns" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入任务名称" searchField="taskName" />
         </template>

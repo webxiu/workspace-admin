@@ -1,9 +1,42 @@
+<script setup lang="ts">
+import { useConfig } from "./utils/hook";
+import { Col, Row } from "@/layout/Layout";
+import Edit from "@iconify-icons/ep/edit";
+import Delete from "@iconify-icons/ep/delete";
+import CirclePlus from "@iconify-icons/ep/circle-plus";
+import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
+
+defineOptions({ name: "WorkbenchTeamManageMemberIndex" });
+
+const {
+  columnDefs,
+  isAgTable,
+  memberOption,
+  loading,
+  dataList,
+  columns,
+  pagination,
+  maxHeight,
+  searchOptions,
+  onAdd,
+  onEdit,
+  remove,
+  onSearch,
+  onTagSearch,
+  onNodeClick,
+  handleEdit,
+  handleSizeChange,
+  handleCurrentChange,
+  onSwitchTable
+} = useConfig();
+</script>
+
 <template>
-  <Row>
-    <Col :xs="24" :sm="24" :md="4" :lg="5" :xl="5" style="padding-top: 8px">
-      <div class="info-left-tree border-line">
+  <Row :gutter="8">
+    <Col :xs="24" :sm="24" :md="4" :lg="5" :xl="5">
+      <div class="ui-ovy-a border-line mobile-tree pt-10 mb-10" :style="{ height: `${maxHeight + 50}px` }">
         <el-divider style="margin: 10px auto">部门组管理</el-divider>
-        <el-tree :data="memberOption.deptGroupTree" style="width: 260px" :default-expand-all="true" :props="defaultProps" @node-click="onNodeClick">
+        <el-tree :data="memberOption.deptGroupTree" :default-expand-all="true" :props="{ children: 'children', label: 'title' }" @node-click="onNodeClick">
           <template #default="{ node, data }">
             <span class="custom-tree-node">
               <span>{{ data.title }}</span>
@@ -26,9 +59,24 @@
       </div>
     </Col>
     <Col :xs="24" :sm="24" :md="20" :lg="19" :xl="19">
-      <PureTableBar :columns="columns" @refresh="onSearch" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :loading="loading"
+        :rowData="dataList"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 12"
+        :paginations="pagination"
+        @switch="onSwitchTable"
+        @refresh="onSearch"
+        @sizeChange="handleSizeChange"
+        @currentChange="handleCurrentChange"
+        :blendedSearch="{ onTagSearch, searchOptions, placeholder: '请输入查询内容', searchField: 'staffId' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onSearch" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="请输入查询内容" searchField="staffId" />
+          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入查询内容" searchField="staffId" />
         </template>
         <template #buttons />
         <template v-slot="{ size, dynamicColumns }">
@@ -47,6 +95,7 @@
             :pagination="pagination"
             :paginationSmall="size === 'small'"
             highlight-current-row
+            :show-overflow-tooltip="true"
             @page-size-change="handleSizeChange"
             @page-current-change="handleCurrentChange"
             @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
@@ -60,57 +109,8 @@
     </Col>
   </Row>
 </template>
-<script setup lang="ts">
-import { useConfig } from "./utils/hook";
-import { Col, Row } from "@/layout/Layout";
-import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import Edit from "@iconify-icons/ep/edit";
-import Delete from "@iconify-icons/ep/delete";
-import CirclePlus from "@iconify-icons/ep/circle-plus";
-import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
-import { reactive } from "vue";
-
-defineOptions({ name: "WorkbenchTeamManageMemberIndex" });
-
-const {
-  formData,
-  memberOption,
-  loading,
-  dataList,
-  columns,
-  pagination,
-  maxHeight,
-  onAdd,
-  onEdit,
-  remove,
-  onSearch,
-  onNodeClick,
-  handleEdit,
-  handleSizeChange,
-  handleCurrentChange
-} = useConfig();
-
-const defaultProps = { children: "children", label: "title" };
-const searchOptions = reactive<SearchOptionType[]>([
-  { label: "工号", value: "staffId" },
-  { label: "姓名", value: "staffName" }
-]);
-
-const handleTagSearch = (values) => {
-  formData.staffId = values.staffId;
-  formData.staffName = values.staffName;
-  onSearch();
-};
-</script>
 
 <style lang="scss" scoped>
-.info-left-tree {
-  min-width: 260px;
-  height: 100%;
-  min-height: 200px;
-  padding: 10px 15px;
-}
-
 .custom-tree-node {
   display: flex;
   flex: 1;

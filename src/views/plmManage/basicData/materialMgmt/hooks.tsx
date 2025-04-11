@@ -12,6 +12,7 @@ import { onMounted, reactive, ref, watch } from "vue";
 import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
 import { getUserInfo } from "@/utils/storage";
+import { message } from "@/utils/message";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/store/modules/user";
@@ -70,6 +71,21 @@ export const useConfig = (props) => {
     return selectArr;
   };
 
+  function toViewPage(id) {
+    router.push({
+      path: `/plmManage/basicData/materialMgmt/view`,
+      query: {
+        id: id,
+        type: "view",
+        isNewTag: "yes",
+        number: route.query.number,
+        code: route.query.code,
+        menuId: route.query.menuId,
+        title: route.query.title
+      }
+    });
+  }
+
   const addMaterial = () => {
     ElMessageBox.confirm(`确认要保存吗?`, "系统提示", {
       type: "warning",
@@ -114,13 +130,24 @@ export const useConfig = (props) => {
                           .then(() => {
                             // done();
                             if (route.query.type !== "edit") {
-                              router.push(
-                                `/plmManage/basicData/materialMgmt/add?id=${res.data}&type=view&number=${route.query.number}&code=${route.query.code}&isNewTag=yes&menuId=${route.query.menuId}`
-                              );
+                              router.push({
+                                path: `/plmManage/basicData/materialMgmt/add`,
+                                query: {
+                                  id: res.data as any,
+                                  type: "view",
+                                  isNewTag: "yes",
+                                  number: route.query.number,
+                                  code: route.query.code,
+                                  menuId: route.query.menuId
+                                }
+                              });
                             }
                           })
                           .catch(() => {
-                            router.push("/plmManage/basicData/materialMgmt/index?menuId=" + route.query.menuId);
+                            router.push({
+                              path: "/plmManage/basicData/materialMgmt/index",
+                              query: { menuId: route.query.menuId }
+                            });
                           });
                       }
                     })
@@ -142,13 +169,24 @@ export const useConfig = (props) => {
                 })
                   .then(() => {
                     if (route.query.type !== "edit") {
-                      router.push(
-                        `/plmManage/basicData/materialMgmt/add?id=${resp.data}&type=view&number=${route.query.number}&code=${route.query.code}&isNewTag=yes&menuId=${route.query.menuId}`
-                      );
+                      router.push({
+                        path: `/plmManage/basicData/materialMgmt/add`,
+                        query: {
+                          id: resp.data as any,
+                          type: "view",
+                          isNewTag: "yes",
+                          number: route.query.number,
+                          code: route.query.code,
+                          menuId: route.query.menuId
+                        }
+                      });
                     }
                   })
                   .catch(() => {
-                    router.push("/plmManage/basicData/materialMgmt/index?menuId=" + route.query.menuId);
+                    router.push({
+                      path: "/plmManage/basicData/materialMgmt/index",
+                      query: { menuId: route.query.menuId }
+                    });
                   });
               }
             })
@@ -168,13 +206,8 @@ export const useConfig = (props) => {
                   addMaterialInfo({ ...copyData })
                     .then((res) => {
                       if (res.data) {
-                        ElMessage({
-                          message: "保存成功",
-                          type: "success"
-                        });
-                        router.push(
-                          `/plmManage/basicData/materialMgmt/view?id=${res.data}&type=view&number=${route.query.number}&code=${route.query.code}&isNewTag=yes&menuId=${route.query.menuId}`
-                        );
+                        message.success("保存成功");
+                        toViewPage(res.data);
                       }
                     })
                     .finally(() => (loading.value = false));
@@ -185,13 +218,8 @@ export const useConfig = (props) => {
             res = addMaterialInfo({ ...copyData })
               .then((res) => {
                 if (res.data) {
-                  ElMessage({
-                    message: "保存成功",
-                    type: "success"
-                  });
-                  router.push(
-                    `/plmManage/basicData/materialMgmt/view?id=${res.data}&type=view&number=${route.query.number}&code=${route.query.code}&isNewTag=yes&menuId=${route.query.menuId}`
-                  );
+                  message.success("保存成功");
+                  toViewPage(res.data);
                 }
               })
               .finally(() => (loading.value = false));

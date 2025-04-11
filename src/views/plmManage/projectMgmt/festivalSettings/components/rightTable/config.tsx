@@ -1,17 +1,17 @@
 import * as XLSX from "xlsx";
 
-import { ElMessage, ElMessageBox, FormRules, dayjs } from "element-plus";
+import { ElMessage, ElMessageBox, dayjs } from "element-plus";
 import { addRightFreeDayList, delRightFreeDayList, editRightFreeDayList, getRightFreeDayList } from "@/api/plmManage";
 import { downloadDataToExcel, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 
-import EditForm from "@/components/EditForm/index.vue";
 import ImportHolidaylModal from "./imporHoliday.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import axios from "axios";
 import { cloneDeep } from "@pureadmin/utils";
-import { message } from "@/utils/message";
+import { message, showMessageBox } from "@/utils/message";
 import { onDownload } from "@/utils/common";
 
 const columns2 = ref<TableColumnList[]>([]);
@@ -121,75 +121,41 @@ export function useBankTable() {
 
     const _formData = reactive({
       holidayName: row?.holidayName ?? "",
-      dateArr: [row?.beginDate, row?.endDate] ?? []
+      dateArr: row ? [row.beginDate, row.endDate] : []
     });
-    const formRules = reactive<FormRules>({
-      holidayName: [{ required: true, message: "假日名称为必填项", trigger: "change" }],
-      dateArr: [{ required: true, message: "假日日期为必填项", trigger: "change" }]
-    });
-
-    const formConfigs = () => [
-      {
-        label: "假日名称",
-        prop: "holidayName",
-        labelWidth: 80,
-        render: ({ formModel, row }) => {
-          return <el-input v-model={formModel[row.prop]} placeholder="请输入假日名称" clearable />;
-        }
-      },
-      {
-        label: "假日日期",
-        prop: "dateArr",
-        labelWidth: 80,
-        render: ({ formModel, row }) => {
-          return (
-            <el-date-picker
-              value-format="YYYY-MM-DD"
-              v-model={formModel[row.prop]}
-              type="daterange"
-              range-separator="-"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-            />
-          );
-        }
-      }
-    ];
 
     addDialog({
       title: `${title}`,
       props: {
-        formInline: _formData,
-        formRules,
-        formConfigs: formConfigs()
+        params: { groupCode: "2" },
+        formConfig: [
+          {
+            formData: _formData
+          }
+        ]
       },
       width: "450px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
+      beforeSure: (done) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
-            ElMessageBox.confirm(`确认要${title}吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitChange(
-                type,
-                title,
-                _formData,
-                () => {
-                  done();
-                  onSearch({});
-                },
-                row
-              );
-            });
+            showMessageBox(`确认要${title}吗?`)
+              .then(() => {
+                onSubmitChange(
+                  type,
+                  title,
+                  _formData,
+                  () => {
+                    done();
+                    onSearch({});
+                  },
+                  row
+                );
+              })
+              .catch(console.log);
           }
         });
       }
@@ -198,12 +164,10 @@ export function useBankTable() {
 
   const onSubmitChange = (type: string, title: string, data, callback, row?) => {
     const [beginDate, endDate] = data.dateArr;
-    // data.holidayId = currLeftRowData.value.id;
     data.beginDate = beginDate;
     data.endDate = endDate;
     if (type === "edit") {
       data.id = currentBankRow.value.id;
-      // data.holidayId = row.holidayId;
     }
     const API = { add: addRightFreeDayList, edit: editRightFreeDayList };
     API[type](type === "add" ? [data] : data)

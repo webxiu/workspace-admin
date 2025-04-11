@@ -8,7 +8,7 @@
   <PureTableBar :columns="columns" class="flex-1" @refresh="onRefresh">
     <template #title>
       <div class="no-wrap block-quote-tip ui-w-100 mr-40" @contextmenu.prevent="() => onCopyColumn('paste')" @dblclick.prevent="() => onCopyColumn('copy')">
-        表单配置<span class="fz-14 color-f00 ml-1">(注: 名称、字段列必填项)</span>
+        表单配置<span class="fz-14 color-f00 ml-1"> (注: 名称、字段、输入类型、属性配置为必填项) </span>
       </div>
     </template>
     <template #buttons>
@@ -21,7 +21,7 @@
         :height="height"
         :max-height="height"
         row-key="id"
-        class="form-config"
+        class="fc-form table-config"
         :adaptive="true"
         align-whole="center"
         :loading="loading"
@@ -31,6 +31,7 @@
         :paginationSmall="size === 'small'"
         highlight-current-row
         :show-overflow-tooltip="false"
+        :row-style="rowStyle"
         @row-click="onRowClick"
         @selection-change="handleSelectionChange"
       >
@@ -52,8 +53,21 @@ import { useConfig } from "./utils/hook";
 
 defineProps<{ height: number }>();
 const emits = defineEmits(["dataList"]);
-const { tableRef, loading, columns, dataList, buttonList3, loadingStatus, onSearch, onRefresh, onDelete, onRowClick, onCopyColumn, handleSelectionChange } =
-  useConfig(emits);
+const {
+  tableRef,
+  loading,
+  columns,
+  dataList,
+  buttonList3,
+  loadingStatus,
+  onSearch,
+  onRefresh,
+  onDelete,
+  rowStyle,
+  onRowClick,
+  onCopyColumn,
+  handleSelectionChange
+} = useConfig(emits);
 
 defineExpose({ onSearch });
 </script>

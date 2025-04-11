@@ -55,7 +55,7 @@ const revokeAction = () => {
     dangerouslyUseHTMLString: true
   })
     .then(() => {
-      revokeMoneyList({ gzStatus: billState.value, gzmbb, payslipId }).then((res) => {
+      revokeMoneyList({ status: billState.value, gzmbb, payslipId }).then((res) => {
         if (res.data) {
           ElMessage({ message: "撤销成功", type: "success" });
           getStatus();

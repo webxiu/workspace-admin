@@ -685,22 +685,13 @@ export function submitTestReport(params) {
 }
 
 /** 实验室管理 - 测试报告管理 - 保存 */
-export function saveTestReportList(params) {
-  return http.request(
-    "post",
-    "/plm/lab/testreport/saveOrUpdateTestReport",
-    { data: params },
-    {
-      headers: {
-        "Content-Type": "multipart/form-data"
-      }
-    }
-  );
+export function saveTestReportList(data) {
+  return http.request<boolean>("post", "/plm/lab/testreport/saveOrUpdateTestReport", { data }, { headers: { "Content-Type": "multipart/form-data" } });
 }
 
 /** 实验室管理 - 测试报告管理 - 删除附件 */
 export function delTestReportAttrList(params) {
-  return http.request("delete", "/plm/lab/testreport/deleteFile", { params });
+  return http.request<boolean>("delete", "/plm/lab/testreport/deleteFile", { params });
 }
 
 /** 项目管理 - 任务库 - 列表查询 */
@@ -904,6 +895,10 @@ export interface OptionItemType {
   kingdeeValue: string;
   title: string;
   optionCode: string;
+  // 表格查询下拉配置使用字段
+  label: string;
+  value: string | number;
+  [index: string]: any;
 }
 
 export interface OptionResType {

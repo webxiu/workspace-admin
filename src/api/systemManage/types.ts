@@ -1,3 +1,5 @@
+import { ButtonKeyType } from "@/utils/form";
+
 /** ========================= 菜单管理(基础信息) ========================= */
 /** 菜单管理列表 */
 export interface MenuListItemType {
@@ -72,34 +74,38 @@ export interface MenuButtonItemType {
 
 /** ========================= 表单配置(菜单管理) ========================= */
 
-/** 表单配置列表类型 */
+/** 表单配置 - 列表类型 */
 export interface FormColumnItemType extends TableColumnList {
   id: string;
+  menuId: number;
+  seq: number;
   label: string;
   prop: string;
-  menuId: number;
+  hide: boolean;
+  slot?: string;
+  formatType?: string | any;
+  className?: string;
+  tableName?: string;
+  width?: number | string;
+  minWidth?: number | string;
+  excelHide?: number;
+  excelFormat?: string;
+  sortable?: boolean;
   formGroupId: string;
   itemType?: string;
-  fieldComment: string;
-  tableName: string;
-  hide: boolean;
-  slots?: boolean;
-  valueFormat?: string;
-  seq: number;
-  minWidth: string;
-  excelHide: boolean;
-  width: number;
-  sortable: boolean;
-  slot: string;
-  formatType: string;
-  excelFormat: string;
-  className: string;
-  dataOption?: any[];
-  isNew?: boolean;
+  fieldComment?: string;
+  // 前端附加类型
+  dataOption?: any[]; // 下拉框数据
+  isNew?: boolean; // 是否新增字段
+  loading?: boolean; // 字段数据加载中
 }
 /** 表单分组列表类型 */
 export interface FormGroupConfigItemType {
   formGroupName: string;
+  formGroupId: string;
+  groupType: string;
+  buttonType: ButtonKeyType[] | ButtonKeyType;
+  layoutPattern: string;
   sysMenuFormItemVO: FormColumnItemType[];
 }
 
@@ -139,25 +145,28 @@ export interface FormTypeItemType {
 }
 
 /** ========================= 菜单配置(菜单管理) ========================= */
-/** 菜单配置列表类型 */
+/** 表格配置 - 列表类型 */
 export interface MenuColumnItemType extends TableColumnList {
   id: string;
   menuId: number;
+  seq: number;
   label: string;
   prop: string;
-  sortable?: boolean;
-  minWidth?: number | string;
-  width?: number | string;
-  seq: number;
+  hide?: boolean;
   slot?: string;
   formatType?: string;
-  excelFormat?: string;
   className?: string;
-  hide?: boolean;
-  tablename?: string;
+  tableName?: string;
+  width?: number;
+  minWidth?: number;
+  excelHide?: number;
+  excelFormat?: string;
+  sortable?: boolean;
+
   columnGroupId?: string;
-  isNew?: boolean;
+  isNew?: boolean; // 前端附加类型
 }
+
 /** 菜单分组列表类型 */
 export interface TableGroupItemType {
   id: string;
@@ -349,6 +358,7 @@ export interface UserInfoItemType {
   qunhuiPassword: string;
   k3UserAccount: string;
   roleName: string;
+  roleId: string;
   orgId: string;
   deptName: string;
   groupName: string;
@@ -1100,6 +1110,17 @@ export interface RoleInfoItemType {
   staffingPeopleCount: string;
   rolePeopleCount: string;
   deptPath: string;
+}
+
+/** 部门列表响应类型 */
+export interface DeptTreeItemType {
+  id: string;
+  parentId: string;
+  name: string;
+  title: string;
+  director: string;
+  displayOrder: number;
+  children: DeptTreeItemType[];
 }
 
 /** ========================= 管理中心 ========================= */

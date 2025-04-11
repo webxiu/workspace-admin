@@ -2,14 +2,13 @@
  * @Author: Hailen
  * @Date: 2023-06-23 10:03:22
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-20 11:29:43
+ * @Last Modified time: 2025-01-16 15:32:32
  */
 
 import { Base64 } from "js-base64";
 import Cookies from "js-cookie";
 import { UserInfoType } from "@/api/user/types";
 import { toParse } from "@/utils/common";
-import { useAppStoreHook } from "@/store/modules/app";
 
 export const App_INFO = "app_info"; // 应用配置存储
 export const COOKIE_KEY = "Token"; // 存储登录Token
@@ -71,35 +70,21 @@ export const getkkViewUrl = (filePath: string, query = "") => {
 };
 
 /** ==================================  存储菜单路由信息  ================================== */
-const Router_INFO = "router_info";
-/** 获取设置的路由信息 */
-export const getRouterInfo = (): RouteConfigsTable => {
-  const data = toParse(localStorage.getItem(Router_INFO));
-  return data;
+const Page_url = "page_url";
+/** 获取菜单路由(给获取弹窗表格及详情菜单id) */
+export const getRouterInfo = (): string => {
+  return localStorage.getItem(Page_url);
 };
 
-/** 设置路由信息(在弹窗中加载另一个页面菜单作为详情时, 根据path路径查找到菜单ID, 获取表格配置列) */
+/** 设置菜单路由(根据菜单路径获取菜单ID) */
 export const setRouterInfo = (path: string, callback: () => void) => {
-  const asyncRoutes = useAppStoreHook().getAsyncRoutes;
-  const findRoute = (routes: RouteConfigsTable[], path: string): RouteConfigsTable => {
-    for (let i = 0; i < routes.length; i++) {
-      const item = routes[i];
-      if (item.path === path) {
-        return item;
-      } else if (item.children) {
-        const result = findRoute(item.children, path);
-        if (result) return result;
-      }
-    }
-  };
-  const result = findRoute(asyncRoutes, path);
-  localStorage.setItem(Router_INFO, JSON.stringify(result));
+  localStorage.setItem(Page_url, path);
   callback?.();
 };
 
 /** 移除路由信息 */
 export const removeRouterInfo = () => {
-  localStorage.removeItem(Router_INFO);
+  localStorage.removeItem(Page_url);
 };
 
 /** ==================================  通用本地存储  ================================== */

@@ -3,60 +3,86 @@ import { type PaginationProps } from "@pureadmin/table";
 import { utils, write } from "xlsx";
 import { saveAs } from "file-saver";
 import { getDeptOptions } from "@/utils/requestApi";
+import { Plus, Delete, Upload } from "@element-plus/icons-vue";
 
-import { ElMessage } from "element-plus";
-import { SummaryMethodProps, downloadDataToExcel, setColumn, getMenuColumns, getSummaries, updateButtonList, usePageSelect } from "@/utils/table";
-import EditForm from "@/components/EditForm/index.vue";
+import { UploadProps } from "element-plus";
+import {
+  SummaryMethodProps,
+  setColumn,
+  getMenuColumns,
+  getSummaries,
+  updateButtonList,
+  usePageSelect,
+  RendererType,
+  tableEditRender,
+  getEnumDictList
+} from "@/utils/table";
 
 import { useEleHeight } from "@/hooks";
 import { addDialog } from "@/components/ReDialog";
-import { formConfigs, formConfigs1, formRules, formRules1 } from "./config";
 import { message, showMessageBox } from "@/utils/message";
 import dayjs from "dayjs";
+import NodeDetailList from "@/components/NodeDetailList/index.vue";
 
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
-import { getChildIDs, getTreeArrItem, getFileNameOnUrlPath, downloadFile } from "@/utils/common";
+import { getFileNameOnUrlPath, downloadFile, commonBackLogic } from "@/utils/common";
 import {
-  deletePerformanceInfo,
-  editPerformanceDataInfo,
+  deletePerformanceSheet,
   exportPerformanceSheet,
-  fetchPerformanceList,
-  importPerformanceSheet,
-  PerformanceManageItemType
+  fetchPerformanceSheet,
+  importResolvePerformanceSheet,
+  insertPerformanceSheet,
+  PerformanceManageItemType,
+  queryPerformanceSheet,
+  updatePerformanceSheet
 } from "@/api/oaManage/humanResources";
+import TableEditList from "@/components/TableEditList/index.vue";
+import { FormTableConfigType } from "@/utils/form";
+import { commonRevoke, commonSubmit, queryUserDeptList, userInfoList } from "@/api/systemManage";
+import { useUserStore } from "@/store/modules/user";
+import { HxUploadProgress } from "@/config/elements";
+import { AuditState } from "../../leaveApply/utils/hook";
+import axios from "axios";
+import * as CommonUtils from "@/utils/common";
+import { useRoute } from "vue-router";
 
 export const useConfig = () => {
   const tableRef = ref();
   const treeData = ref([]);
-  const currentRow: any = ref({});
+  const currentRow = ref();
   const loading = ref<boolean>(false);
   const columns = ref<TableColumnList[]>([]);
   const rowData = ref<PerformanceManageItemType>();
   const rowsData = ref<PerformanceManageItemType[]>([]);
   const dataList = ref<PerformanceManageItemType[]>([]);
-  const yearMonthStr = dayjs(new Date()).format("YYYY-MM");
+  const yearMonthStr = dayjs(new Date()).add(-1, "month").format("YYYY-MM");
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 52);
+  const deptOptions = ref<Record<string, any>[]>([]);
+
+  const route = useRoute();
 
   const formData = reactive({
-    deptId: "0",
-    deptIdList: [],
-    userName: "",
-    userCode: "",
+    deptId: "",
+    billState: "",
+    billNo: "",
+    staffName: "",
+    staffCode: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize,
-    yearAndMonth: yearMonthStr
+    yearMonth: yearMonthStr
   });
 
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "姓名", value: "userName" },
     { label: "工号", value: "userCode" },
     { label: "部门", value: "deptId", children: [] },
-    { label: "日期", value: "yearAndMonth", type: "month", format: "YYYY-MM" }
+    { label: "单据状态", value: "billState", children: [] },
+    { label: "日期", value: "yearMonth", type: "month", format: "YYYY-MM" }
   ]);
 
-  const queryParams = reactive<QueryParamsType>({ yearAndMonth: yearMonthStr });
+  const queryParams = reactive<QueryParamsType>({ yearMonth: yearMonthStr });
   const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData, uniId: "id" });
 
   onMounted(() => {
@@ -67,7 +93,7 @@ export const useConfig = () => {
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
-      { label: "年月", prop: "yearAndMonth", width: 110 },
+      { label: "年月", prop: "yearMonth", width: 110 },
       { label: "部门", prop: "deptName", minWidth: 180 },
       { label: "工号", prop: "userCode", minWidth: 180 },
       { label: "姓名", prop: "staffName", minWidth: 180 },
@@ -79,7 +105,7 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, selectionColumn: { hide: false }, radioColumn: { width: 50 } });
+    columns.value = setColumn({ columnData, selectionColumn: { hide: false }, radioColumn: { width: 50 }, operationColumn: false });
     return columnData;
   };
 
@@ -88,24 +114,27 @@ export const useConfig = () => {
       treeData.value = data;
       searchOptions[2].children = data;
     });
+    const userId = useUserStore().userInfo.id;
+
+    queryUserDeptList({ userId }).then((res: any) => {
+      if (res.data) {
+        deptOptions.value = res.data;
+      }
+    });
+    getEnumDictList(["BillStatus"]).then(({ BillStatus }) => {
+      searchOptions[3].children = BillStatus;
+    });
   };
 
   const handleTagSearch = (values: any) => {
-    formData.deptId = values.deptId;
-    formData.userName = values.userName;
-    formData.userCode = values.userCode;
-    formData.yearAndMonth = values.yearAndMonth;
-    formData.deptIdList = [];
-    if (values.deptId) {
-      const result = getTreeArrItem(treeData.value, "value", values.deptId);
-      formData.deptIdList = getChildIDs([result], "value");
-    }
+    Object.assign(formData, values);
+
     onSearch();
   };
 
   const onSearch = (idx?) => {
     loading.value = true;
-    fetchPerformanceList(formData)
+    fetchPerformanceSheet(formData)
       .then((res) => {
         const data = res.data;
         loading.value = false;
@@ -115,7 +144,7 @@ export const useConfig = () => {
         if (typeof idx === "number" && idx >= 0) {
           currentRow.value = dataList.value[idx];
         } else {
-          currentRow.value = {};
+          currentRow.value = null;
         }
         setSelectCheckbox();
       })
@@ -138,164 +167,22 @@ export const useConfig = () => {
     rowData.value = row;
   };
 
-  // 添加单据
-  const onAdd = () => {
-    openDialog("add");
-  };
-
-  const fetchRowData = (formLoading, _formData) => {
-    fetchPerformanceList({
-      page: formData.page,
-      limit: formData.limit,
-      userCode: currentRow.value.userCode,
-      yearAndMonth: formData.yearAndMonth
-    })
-      .then((res: any) => {
-        if (res.data && Array.isArray(res.data.records) && res.data.records.length === 1) {
-          const dataRow = res.data.records[0] || {};
-          const keys = Object.keys(_formData);
-          keys.forEach((item) => (_formData[item] = dataRow[item]));
-        }
-      })
-      .finally(() => {
-        formLoading.value = false;
-      });
-  };
-
-  const openDialog = async (type: string, row?) => {
-    const titleObj = { add: "导入", edit: "修改" };
-    const title = titleObj[type];
-    const formRef = ref();
-    const formLoading = ref(true);
-
-    const _formData = reactive({
-      money: row?.money ?? "",
-      id: row?.id ?? "",
-      userCode: row?.userCode ?? "",
-      staffName: row?.staffName ?? "",
-      deptName: row?.deptName ?? "",
-      yearAndMonth: row?.yearAndMonth ?? ""
-    });
-
-    const addFormData = reactive({
-      row: "2",
-      userCodeCol: "1",
-      moneyCol: "3",
-      yearAndMonth: yearMonthStr,
-      file: ""
-    });
-
-    fetchRowData(formLoading, _formData);
-
-    addDialog({
-      title: type === "add" ? "导入" : "请输入修改金额",
-      props: {
-        loading: formLoading,
-        formInline: type === "add" ? addFormData : _formData,
-        formRules: type === "add" ? formRules1 : formRules,
-        formConfigs: type === "add" ? formConfigs1(treeData) : formConfigs()
-      },
-      width: type === "add" ? "400px" : "650px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
-          if (valid) {
-            showMessageBox(`确认要${title}吗?`).then(() => {
-              onSubmitChange(type, title, type === "add" ? addFormData : _formData, () => {
-                done();
-                const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
-                onSearch(_rowIndex);
-              });
-            });
-          }
-        });
-      }
-    });
-  };
-
-  const onSubmitChange = (type: string, title: string, data, callback) => {
-    if (type === "add") {
-      const param = {
-        userCodeCol: data.userCodeCol,
-        row: data.row,
-        moneyCol: data.moneyCol,
-        deptId: data.deptId,
-        yearAndMonth: data.yearAndMonth,
-        isCover: false
-      };
-      const fData = new FormData();
-      fData.append("files", data.file);
-      fData.append("param", JSON.stringify(param));
-
-      importPerformanceSheet(fData).then((res) => {
-        if (res.data) {
-          callback();
-          ElMessage({ message: "导入成功", type: "success" });
-        } else {
-          showMessageBox(`导入数据重复, 请确认是否覆盖？`)
-            .then(() => {
-              // 重新发起: 覆盖导入
-              const fData2 = new FormData();
-              fData2.append("files", data.file);
-              fData2.append("param", JSON.stringify({ ...param, isCover: true }));
-              importPerformanceSheet(fData2)
-                .then(({ data }) => {
-                  if (data) {
-                    callback();
-                    message.success("导入成功");
-                  } else {
-                    message.error("导入失败");
-                  }
-                })
-                .catch(console.log);
-            })
-            .catch(console.log);
-        }
-      });
-      return;
-    }
-    const API = { edit: editPerformanceDataInfo };
-    API[type](data)
-      .then((res) => {
-        if (res.data) {
-          callback();
-          message.success(`${title}成功`);
-        }
-      })
-      .catch(console.log);
-  };
-
-  const onEdit = (row: PerformanceManageItemType) => {
-    openDialog("edit", row);
-  };
-
   const onDownload = async () => {
-    const colArr = await getColumnConfig();
-    downloadDataToExcel({
-      dataList: [],
-      columns: colArr.filter((item) => ["工号", "姓名", "金额"].includes(item.label)),
-      sheetName: "绩效管理模板"
-    });
-  };
-
-  const validYearAndMonth = () => {
-    onAdd();
-  };
-
-  const onImport = () => {
-    validYearAndMonth();
+    return axios({
+      method: "get",
+      responseType: "blob",
+      url: `${import.meta.env.VITE_PUBLIC_PATH}template/绩效管理模板.xlsx`
+    })
+      .then(({ data }) => CommonUtils.onDownload(data, "绩效管理模板.xlsx"))
+      .catch(() => {});
   };
 
   const onDelete = (rows: PerformanceManageItemType[]) => {
-    const deleteIdList = rows.map((item) => item.id);
-    deletePerformanceInfo({ deleteIdList: deleteIdList }).then((res) => {
+    deletePerformanceSheet({ performanceDTOList: rows.map((item) => ({ id: item.id, billState: item.billState })) }).then((res) => {
       if (res.data) {
-        ElMessage({ message: "删除成功!", type: "success" });
-        const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
+        message.success("删除成功!");
+        currentRow.value = null;
+        const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value?.id);
         onSearch(_rowIndex);
       }
     });
@@ -335,12 +222,12 @@ export const useConfig = () => {
 
   const rowClick = (row) => {
     currentRow.value = row;
-    // tableRef.value?.getTableRef()?.toggleRowSelection(row);
   };
 
   const onDbClick = (row) => {
+    row.deptId = +row.deptId;
     currentRow.value = row;
-    onEdit(row);
+    onEditAction();
   };
 
   function onSelect(rows: PerformanceManageItemType[], row: PerformanceManageItemType) {
@@ -356,11 +243,312 @@ export const useConfig = () => {
     return getSummaries({ params: params, moneyCommaProps: ["money"] });
   };
 
+  const openImportAddDialog = (type, row?) => {
+    const title = { add: "新增", edit: "修改", view: "查看" };
+    const formRef = ref();
+    const dataImportList = ref([]);
+    const selectUserOptsValue = ref([]);
+    const _formData = reactive({
+      staffCode: row?.staffCode ?? "",
+      billNo: row?.billNo ?? "",
+      billState: row?.billState ?? "",
+      billStateName: row?.billStateName ?? "",
+      createUserName: row?.createUserName,
+      createDate: row?.createDate,
+      modifyUserName: row?.modifyUserName,
+      modifyDate: row?.modifyDate,
+      id: row?.id ?? "",
+      deptId: row?.deptId ? +row?.deptId : "",
+      yearMonth: row?.yearMonth ?? ""
+    });
+
+    if (type === "add") _formData.yearMonth = formData.yearMonth;
+
+    const onDelete = (row, index) => {
+      if (typeof index === "number") {
+        dataImportList.value.splice(index, 1);
+        return;
+      }
+    };
+
+    if (row?.id) {
+      queryPerformanceSheet({ id: row?.id }).then((res: any) => {
+        if (res.data) {
+          dataImportList.value = res.data;
+        }
+      });
+    }
+
+    const deptId = deptOptions.value.find((item) => item.isMaster)?.deptId;
+
+    const initUserOpts = (deptId) => {
+      userInfoList({
+        page: 1,
+        limit: 100000,
+        userName: "",
+        userCode: "",
+        deptId,
+        userState: "A",
+        deptIdList: [deptId]
+      }).then((res) => {
+        if (res.data) {
+          const result = res.data.records || [];
+          selectUserOptsValue.value = result.map((item) => ({ optionName: item.userName, optionValue: item.userName, reflectVal: item.userCode }));
+        }
+      });
+    };
+
+    if (deptId) {
+      initUserOpts(row?.deptId || deptId);
+    }
+
+    // 编辑表格
+    const { editCellRender } = tableEditRender({
+      editFinish: ({ prop, index, row }) => {
+        const value = row[prop];
+        if (prop === "staffName") {
+          dataImportList.value[index]["staffCode"] = selectUserOptsValue.value.find((el) => el.optionValue === value)?.reflectVal;
+        } else if (prop === "staffCode") {
+          dataImportList.value[index]["staffName"] = selectUserOptsValue.value.find((el) => el.reflectVal === value)?.optionValue;
+        }
+
+        dataImportList.value[index][prop] = value;
+      }
+    });
+
+    const tableSlots = () => {
+      return {
+        operation: ({ row, index }) => (
+          <el-popconfirm width={280} title={`确认删除吗?`} onConfirm={() => onDelete(row, index)}>
+            {{
+              reference: () => (
+                <el-button size="small" type="danger" icon={Delete} onClick={(e) => e.preventDefault()} disabled={type === "view"}>
+                  删除
+                </el-button>
+              )
+            }}
+          </el-popconfirm>
+        )
+      };
+    };
+
+    const custmRender = (): Record<string, RendererType> => {
+      const isEdit = type !== "view";
+      return {
+        staffCode: (data) => editCellRender({ data, isEdit }),
+        staffName: (data) =>
+          editCellRender({
+            type: "select",
+            data,
+            isEdit,
+            options: selectUserOptsValue.value,
+            cellStyle: { color: "#606266", textAlign: "left" },
+            eleProps: { filterable: true }
+          }),
+        performanceAmount: (data) => editCellRender({ data, isEdit })
+      };
+    };
+    const onAdd = () => {
+      dataImportList.value.push({ staffCode: "", staffName: "", performanceAmount: "" });
+    };
+    const onUploadPerformance: UploadProps["onChange"] = (uploadFile) => {
+      const rawFile = uploadFile.raw;
+      const fd = new FormData();
+      fd.append("file", rawFile);
+      HxUploadProgress({ fd, uploadApi: importResolvePerformanceSheet }).then((res: any) => {
+        if (res.data) {
+          if (res.data.length) {
+            message.success(`导入成功`);
+            dataImportList.value = res.data.filter((el) => el.staffCode);
+          } else {
+            message.success("没有解析到数据");
+          }
+        }
+      });
+    };
+    const tableConfig: FormTableConfigType[] = [
+      {
+        dataList: dataImportList,
+        custmRender: custmRender(),
+        tableProps: { height: 300, maxHeight: 300 },
+        tableSlots: tableSlots(),
+        buttonConfig: {
+          autoLayout: false,
+          buttonList: [
+            { icon: Plus, size: "small", type: "primary", text: "添加", disabled: type === "view", clickHandler: onAdd },
+            {
+              icon: Upload,
+              type: "success",
+              size: "small",
+              text: "导入",
+              disabled: type === "view",
+              isDropDown: false,
+              uploadProp: { action: "#", accept: ".xlsx, .xls", autoUpload: false, onChange: onUploadPerformance }
+            }
+          ]
+        },
+        tableColumnOption: {
+          operationColumn: { width: 125 }
+        }
+      }
+    ];
+
+    if (type === "add") {
+      _formData.deptId = deptOptions.value.find((item) => item.isMaster)?.deptId;
+    }
+
+    const deptChange = (val) => {
+      if (dataImportList.value.length) {
+        showMessageBox(`切换部门会导致明细数据清空，确认操作?`)
+          .then(() => {
+            dataImportList.value = [];
+            initUserOpts(val);
+          })
+          .catch(console.log);
+      } else {
+        initUserOpts(val);
+      }
+    };
+
+    addDialog({
+      title: `${title[type]}绩效`,
+      props: {
+        params: { groupCode: "1" },
+        tableConfig,
+        formConfig: [
+          {
+            formData: _formData,
+            customProps: {
+              deptId: {
+                disabled: type === "view",
+                filterable: true,
+                onChange: deptChange,
+                apiParams: { menuId: route.query.menuId, userId: useUserStore().userInfo.id }
+              },
+              yearMonth: { disabled: type === "view" }
+            },
+            formProps: { labelWidth: "90px", size: "small" }
+          }
+        ]
+      },
+      width: "900px",
+      class: "performance-modal",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      hideFooter: type === "view",
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
+      beforeSure: (done) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          if (valid) {
+            const filteredList = dataImportList.value.filter((el) => el.staffCode && el.staffName).map((item, index) => ({ ...item, rowIndex: index + 1 }));
+            if (!filteredList.length) return message.error("明细数据不能为空");
+            showMessageBox(`确认要${title[type]}吗?`)
+              .then(() => {
+                console.log(_formData, "_formData==");
+                console.log(filteredList, "deatilLIST==");
+                const apiType = { add: insertPerformanceSheet, edit: updatePerformanceSheet };
+                const params = {
+                  ..._formData,
+                  list: filteredList
+                };
+                apiType[type](params).then((res) => {
+                  if (res.data) message.success(`${title[type]}成功`);
+                  done();
+                  onSearch();
+                });
+              })
+              .catch(console.log);
+          }
+        });
+      }
+    });
+  };
+
+  const onAddAction = () => {
+    openImportAddDialog("add");
+  };
+
+  const onEditAction = () => {
+    if (!currentRow.value) return message.warning("请选择单据");
+    const isAllowEdit = [AuditState.submit, AuditState.reAudit].includes(+currentRow.value.billState);
+    openImportAddDialog(isAllowEdit ? "edit" : "view", currentRow.value);
+  };
+
+  const onSubmitAction = () => {
+    if (!currentRow.value) {
+      return message.warning("请选择单据");
+    }
+    if (![AuditState.submit, AuditState.reAudit].includes(+currentRow.value.billState)) {
+      return message.error("只能提交【待提交/重新审核】的记录");
+    }
+
+    showMessageBox(`确认提交单据吗?`).then(() => {
+      commonSubmit({ billId: "10073", billNo: currentRow.value.billNo })
+        .then((res) => {
+          if (!res.data) return message.error("提交失败");
+          message.success("提交成功");
+          onSearch();
+        })
+        .catch(console.log);
+    });
+  };
+
+  const onRevokeAction = () => {
+    if (!currentRow.value) {
+      return message.warning("请选择单据");
+    }
+    if (![AuditState.auditing].includes(+currentRow.value.billState)) {
+      return message.error("只能撤销【审核中】的记录");
+    }
+
+    showMessageBox(`确认撤销单据吗?`).then(() => {
+      commonRevoke({ billNo: currentRow.value.billNo })
+        .then((res) => {
+          if (!res.data) return message.error("撤销失败");
+          message.success("撤销成功");
+          onSearch();
+        })
+        .catch(console.log);
+    });
+  };
+
+  const onBackAction = () => {
+    if (!currentRow.value) {
+      return message.warning("请选择单据");
+    }
+    if (![AuditState.auditing, AuditState.audited].includes(+currentRow.value.billState)) {
+      return message.error("当前状态不能进行回退");
+    }
+    commonBackLogic(currentRow.value.billNo, onSearch);
+  };
+
+  const onViewNodeDetail = () => {
+    if (!currentRow.value) {
+      return message.warning("请选择单据");
+    }
+    addDialog({
+      title: "查看审批详情",
+      width: "900px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: true,
+      hideFooter: true,
+      contentRenderer: ({ options }) =>
+        h(NodeDetailList, { options, billNo: currentRow.value.billNo, billType: "performance", billState: currentRow.value.billState })
+    });
+  };
+
   const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onAddAction, type: "primary", text: "新增" },
+    { clickHandler: onEditAction, type: "warning", text: "修改" },
     { clickHandler: onDeleteAll, type: "danger", text: "批量删除" },
-    { clickHandler: onImport, type: "primary", text: "导入", isDropDown: true },
     { clickHandler: onDownload, type: "info", text: "下载模板", isDropDown: true },
-    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
+    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true },
+    { clickHandler: onSubmitAction, type: "info", text: "提交", isDropDown: true },
+    { clickHandler: onRevokeAction, type: "info", text: "撤销", isDropDown: true },
+    { clickHandler: onBackAction, type: "info", text: "回退", isDropDown: true },
+    { clickHandler: onViewNodeDetail, type: "info", text: "审批详情", isDropDown: true }
   ]);
 
   return {
@@ -373,7 +561,6 @@ export const useConfig = () => {
     buttonList,
     searchOptions,
     queryParams,
-    onEdit,
     onDelete,
     onSearch,
     handleTagSearch,

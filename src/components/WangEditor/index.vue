@@ -43,12 +43,12 @@ onBeforeUnmount(() => {
 function onCreate() {
   editor.value = createEditor({
     selector: editRef.value,
-    html: html.value || "<p><br></p>",
+    html: html.value,
     config: {
       placeholder: props.placeholder || "请输入",
       onChange(editor: IDomEditor) {
         let html = editor.getHtml();
-        if (html === "<p><br></p>") html = "";
+        if (html === "<p><br></p>" || html.includes("<table")) html = "";
         emit("update:modelValue", html);
       }
     },

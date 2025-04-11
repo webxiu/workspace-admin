@@ -1,10 +1,11 @@
-import type { BlendedSearchProps } from "@/components/BlendedSearch/index.vue";
-import type { ButtonListProps } from "@/components/ButtonList/index.vue";
-import type { SearchListProps } from "@/components/SearchList/index.vue";
-import type { TitleCateProps } from "@/components/TitleCate.vue";
-import type { HxIconProps } from "@/components/HxIcon";
 import type { DefineComponent } from "vue";
 import type { UploadProps } from "element-plus";
+import type { HxIconProps } from "@/components/HxIcon";
+import type { TitleCateProps } from "@/components/TitleCate.vue";
+import type { ButtonListProps } from "@/components/ButtonList/index.vue";
+import type { BlendedSearchProps } from "@/components/BlendedSearch/index.vue";
+import type { SearchHighlightProps } from "@/components/HxSearchHighlight/index.vue";
+import type { FormColumnGroupType } from "@/utils/form";
 
 declare module "vue" {
   /**
@@ -17,11 +18,13 @@ declare module "vue" {
     Auth: typeof import("../src/components/ReAuth")["Auth"];
     PureTableBar: typeof import("../src/components/RePureTableBar")["PureTableBar"];
     HxModalInput: typeof import("../src/components/HxModalInput/index.vue")["HxModalInput"];
+    AgGridTable: typeof import("../src/components/AgGridTable/index.vue")["AgGridTable"];
     HxIcon: DefineComponent<HxIconProps>;
     HxUploadButton: DefineComponent<Partial<UploadProps>>;
-    ButtonList: DefineComponent<ButtonListProps>;
-    SearchList: DefineComponent<SearchListProps>;
     TitleCate: DefineComponent<TitleCateProps>;
+    ButtonList: DefineComponent<ButtonListProps>;
+    HxSearchHighlight: DefineComponent<SearchHighlightProps>;
+    TableEditList: DefineComponent<FormColumnGroupType>;
     BlendedSearch: DefineComponent<BlendedSearchProps> & {
       new (): {
         $props: BlendedSearchProps;

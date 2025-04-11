@@ -38,7 +38,7 @@ const {
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
       <PureTableBar :columns="columns" style="width: 50%; padding-top: 0" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
-          <SearchList v-model="dataList" :bright="false" style="width: 40%" placeholder="查询部门名称、角色名称" :propKeys="['deptName', 'roleName']" />
+          <HxSearchHighlight v-model="dataList" :bright="false" style="width: 40%" placeholder="查询部门名称、角色名称" :propKeys="['deptName', 'roleName']" />
         </template>
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
@@ -46,7 +46,6 @@ const {
             :height="maxHeight"
             :max-height="maxHeight"
             row-key="itemId"
-            class="role-authority"
             :adaptive="true"
             align-whole="center"
             :loading="loading"

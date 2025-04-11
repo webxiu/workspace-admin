@@ -1,9 +1,49 @@
+<script setup lang="ts">
+import { useMachine } from "./hook";
+import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
+
+defineOptions({ name: "HumanResourcesRepairOrderIndex" });
+
+const {
+  isAgTable,
+  columnDefs,
+  loading,
+  columns,
+  dataList,
+  maxHeight,
+  pagination,
+  buttonList,
+  searchOptions,
+  onRefresh,
+  onTagSearch,
+  onSizeChange,
+  onCurrentChange,
+  onSwitchTable
+} = useMachine();
+</script>
+
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onFresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :loading="loading"
+        :rowData="dataList"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 12"
+        :paginations="pagination"
+        @switch="onSwitchTable"
+        @refresh="onRefresh"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, searchOptions, searchField: 'deviceName', placeholder: '设备名称' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="设备名称" searchField="deviceName" />
+          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="设备名称" searchField="deviceName" />
         </template>
         <template #buttons>
           <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="业务操作" />
@@ -35,13 +75,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { useMachine } from "./hook";
-import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
-
-defineOptions({ name: "HumanResourcesRepairOrderIndex" });
-
-const { columns, onFresh, handleTagSearch, searchOptions, buttonList, maxHeight, loading, dataList, queryParams, pagination, onSizeChange, onCurrentChange } =
-  useMachine();
-</script>

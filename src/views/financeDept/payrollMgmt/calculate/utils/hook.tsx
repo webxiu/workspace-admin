@@ -1,29 +1,33 @@
 import {
   calcMoneyCheckList,
-  fetchStaffMoneyCheckList,
   importStaffMoneyCheckList,
   updateClerkMoneyCheckList,
   uploadMoneySettingsInfo,
-  exportStaffMoneyCheckList
+  exportStaffMoneyCheckList,
+  fetchMainStaffMoneyCheckList,
+  fetchDetailStaffMoneyCheckList,
+  makeCopyStaffMoneyCheckList,
+  queryDetailStaffMoneyCheckList
 } from "@/api/oaManage/financeDept";
-import { downloadDataToExcel, getMenuColumns, setColumn, getExportConfig, updateButtonList } from "@/utils/table";
+import { getMenuColumns, setColumn, getExportConfig, updateButtonList, getEnumDictList, getChildDeptIds } from "@/utils/table";
 import { formConfigs, formConfigs1, formRules, formRules1, updateItem } from "./config";
-import { h, onMounted, reactive, ref } from "vue";
-import { ElMessageBox } from "element-plus";
+import { h, nextTick, onMounted, reactive, ref } from "vue";
+import NodeDetailList from "@/components/NodeDetailList/index.vue";
 
 import EditForm from "@/components/EditForm/index.vue";
 import MoneyForm from "../moneyForm.vue";
 import { QueryParamsType, SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import dayjs from "dayjs";
-import { message } from "@/utils/message";
+import { message, showMessageBox } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 import { PAGE_CONFIG } from "@/config/constant";
-import { getDeptTreeData } from "@/api/systemManage";
 import { type PaginationProps } from "@pureadmin/table";
 import { deleteClassifyTableInfo } from "@/api/plmManage";
-import { treeArrayTraverse, getTreeArrItem, getChildIDs, downloadFile, getFileNameOnUrlPath } from "@/utils/common";
+import { downloadFile, getFileNameOnUrlPath, commonBackLogic } from "@/utils/common";
 import { getDeptOptions } from "@/utils/requestApi";
+import { AuditState } from "@/views/humanResources/leaveApply/utils/hook";
+import { commonRevoke, commonSubmit } from "@/api/systemManage";
 
 enum UserType {
   employee = "员工",
@@ -33,61 +37,98 @@ enum UserType {
 export const useConfig = () => {
   const treeData = ref([]);
   const dataList = ref([]);
+  const dataList3 = ref([]);
   const currentRow = ref();
+  const mainTableRef = ref();
+  const currentLeftRow = ref();
   const moneyRef = ref();
   const currentId = ref("");
-  const loading = ref<boolean>(false);
   const columns = ref<TableColumnList[]>([]);
+  const columns2 = ref<TableColumnList[]>([]);
+  const columns3 = ref<TableColumnList[]>([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
+  const pagination3 = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 96);
+  const maxHeight2 = useEleHeight(".app-main > .el-scrollbar", 151);
   const yearMonthStr = dayjs(new Date()).add(-1, "month").format("YYYY-MM");
   const tempUserType = ref("");
+  const activeName = ref(UserType.clerk);
 
   const formData = reactive({
     month: +yearMonthStr?.split("-")[1],
     year: +yearMonthStr?.split("-")[0],
-    userType: UserType.employee,
+    userType: activeName.value,
     staffName: "",
+    yearMonth: yearMonthStr,
     staffCode: "",
     deptId: "",
     deptIdList: [],
+    staffState: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
   });
 
+  const formData3 = reactive({
+    month: +yearMonthStr?.split("-")[1],
+    year: +yearMonthStr?.split("-")[0],
+    yearMonth: yearMonthStr,
+    billState: "",
+    billNo: "",
+    page: 1,
+    limit: PAGE_CONFIG.pageSize
+  });
+
+  const searchOptions3 = reactive<SearchOptionType[]>([
+    { label: "状态", value: "billState", children: [] },
+    { label: "年月", value: "yearMonth", type: "month", format: "YYYY-MM" }
+  ]);
+
   const searchOptions = reactive<SearchOptionType[]>([
-    { label: "姓名", value: "staffName" },
+    // { label: "姓名", value: "staffName" },
     { label: "工号", value: "staffCode" },
-    { label: "日期", value: "date", type: "month", format: "YYYY-MM" },
-    {
-      label: "核算标准",
-      value: "userType",
-      children: [
-        { label: "员工", value: UserType.employee },
-        { label: "职员", value: UserType.clerk }
-      ]
-    },
-    { label: "部门", value: "deptId", children: [] }
+    // { label: "日期", value: "yearMonth", type: "month", format: "YYYY-MM" },
+    // {
+    //   label: "核算标准",
+    //   value: "userType",
+    //   children: [
+    //     { label: "员工", value: UserType.employee },
+    //     { label: "职员", value: UserType.clerk }
+    //   ]
+    // },
+    { label: "部门", value: "deptId", children: [] },
+    { label: "状态", value: "staffState", children: [] }
   ]);
 
   const queryParams = reactive<QueryParamsType>({
-    date: yearMonthStr,
-    userType: { value: "员工", valueLabel: UserType.employee }
+    yearMonth: yearMonthStr
+  });
+
+  const queryParams3 = reactive<QueryParamsType>({
+    yearMonth: yearMonthStr
   });
 
   onMounted(() => {
     getOptions();
+    getColumnConfig();
+    onSearch3();
   });
 
   const getOptions = () => {
     getDeptOptions().then((data: any) => {
       treeData.value = data;
-      searchOptions[4].children = data;
+      searchOptions[1].children = data;
+    });
+
+    getEnumDictList(["BillStatus", "EmployeeStatus"]).then(({ BillStatus, EmployeeStatus }) => {
+      searchOptions3[0].children = BillStatus;
+      // 在职状态
+      searchOptions[2].children = EmployeeStatus.map((item) => {
+        return { ...item, label: item.optionName, value: item.optionValue };
+      });
     });
   };
 
   const getColumnConfig = async () => {
-    if (tempUserType.value === formData.userType) return;
     let columnData: TableColumnList[] = [
       { label: "姓名", prop: "staffName" },
       { label: "身份证号", prop: "idCard", minWidth: 220 },
@@ -127,47 +168,92 @@ export const useConfig = () => {
       { label: "失业保险", prop: "sybx" }
     ];
 
+    let columnData3: TableColumnList[] = [];
+    let columnData2: TableColumnList[] = [];
+
     const { columnArrs, buttonArrs } = await getMenuColumns();
-    const [data, data2] = columnArrs;
+    const [data, data2, data3] = columnArrs;
     updateButtonList(buttonList, buttonArrs[0]);
     // 判断员工表与职员表列配置
     if (data?.length) {
-      columnData = formData.userType === UserType.employee ? data : data2;
-      tempUserType.value = formData.userType;
+      columnData = data;
+    }
+    if (data2?.length) {
+      columnData2 = data2;
+    }
+    if (data3?.length) {
+      columnData3 = data3;
     }
     columns.value = setColumn({ columnData: columnData, operationColumn: false });
+    columns2.value = setColumn({ columnData: columnData2, operationColumn: false });
+    columns3.value = setColumn({ columnData: columnData3, operationColumn: false });
   };
 
   const handleTagSearch = (values) => {
     Object.assign(formData, values);
-    formData.deptIdList = [];
-    formData.year = +values.date?.split("-")[0];
-    formData.month = +values.date?.split("-")[1];
-    if (values.deptId) {
-      const result = getTreeArrItem(treeData.value, "value", values.deptId);
-      formData.deptIdList = getChildIDs([result], "value");
-    }
+    formData.year = +values.yearMonth?.split("-")[0];
+    formData.month = +values.yearMonth?.split("-")[1];
+    formData.deptIdList = getChildDeptIds(treeData.value, values.deptId);
     onSearch();
-    getColumnConfig();
+  };
+
+  const handleTagSearch3 = (values) => {
+    Object.assign(formData3, values);
+    formData3.year = +values.yearMonth?.split("-")[0];
+    formData3.month = +values.yearMonth?.split("-")[1];
+    onSearch3();
   };
 
   const onSearch = (_rowIndex?) => {
-    loading.value = true;
-    fetchStaffMoneyCheckList(formData)
+    fetchDetailStaffMoneyCheckList(formData)
       .then((res: any) => {
         const data = res.data;
-        loading.value = false;
-        dataList.value = data.records || [];
-        pagination.total = data.total;
+        if (data) {
+          dataList.value = data.records || [];
+          pagination.total = data.total;
+        }
+
         if (typeof _rowIndex === "number" && _rowIndex >= 0) {
           currentRow.value = dataList.value[_rowIndex];
         } else {
           currentRow.value = undefined;
         }
       })
-      .catch((err) => {
+      .catch(() => {
         dataList.value = [];
-        loading.value = false;
+        pagination.total = 0;
+      });
+  };
+
+  const onSearch3 = (_rowIndex?) => {
+    fetchMainStaffMoneyCheckList(formData3)
+      .then((res: any) => {
+        const data = res.data;
+        if (data) {
+          dataList3.value = data.records || [];
+          pagination3.total = data.total;
+
+          nextTick(() => {
+            const tableRef = mainTableRef.value?.getTableRef();
+            tableRef.setCurrentRow(dataList3.value[0]);
+            rowLeftClick(dataList3.value[0]);
+            currentLeftRow.value = dataList3.value[0];
+          });
+
+          // if (mainTableRef.value) {
+          //   if (typeof _rowIndex === "number" && _rowIndex >= 0) {
+          //     mainTableRef.value.getTableRef()?.setCurrentRow(dataList3.value[_rowIndex]);
+          //     currentLeftRow.value = dataList3.value[_rowIndex] || {};
+          //   } else {
+          //     mainTableRef.value.getTableRef()?.setCurrentRow(dataList3.value[0]);
+          //     currentLeftRow.value = dataList3.value[0];
+          //   }
+          // }
+        }
+      })
+      .catch(() => {
+        dataList3.value = [];
+        pagination3.total = 0;
       });
   };
 
@@ -230,18 +316,20 @@ export const useConfig = () => {
       actualAttendance: "",
       beAttendanceDay: "",
       actualAttendanceDay: "",
-      id: ""
+      id: "",
+      paidSalary: ""
     });
 
     if (row) {
-      fetchStaffMoneyCheckList({ ...formData, staffCode: row.staffCode, staffId: row.staffId })
+      queryDetailStaffMoneyCheckList({ id: row.id })
         .then((res: any) => {
-          const data = res.data;
-          const rowRes = data.records[0] || {};
+          if (res.data) {
+            const rowRes = res.data || {};
 
-          Object.keys(_formData).forEach((item) => {
-            _formData[item] = rowRes[item];
-          });
+            Object.keys(_formData).forEach((item) => {
+              _formData[item] = rowRes[item];
+            });
+          }
         })
         .finally(() => (formLoading.value = false));
     } else {
@@ -265,11 +353,12 @@ export const useConfig = () => {
         loading: formLoading,
         formInline: type === "add" ? addFormData : _formData,
         formRules: type === "add" ? formRules1 : formRules,
-        formProps: { labelWidth: 90 },
+        formProps: { size: "small" },
         formConfigs: type === "add" ? formConfigs1(addFormData) : formConfigs(formData.userType)
       },
-      width: type === "add" ? "600px" : "1200px",
+      width: type === "add" ? "600px" : "900px",
       draggable: true,
+      class: "money-calc-modal",
       fullscreenIcon: true,
       closeOnClickModal: false,
       contentRenderer: () => h(EditForm, { ref: formRef }),
@@ -279,19 +368,15 @@ export const useConfig = () => {
         const FormRef = formRef.value.getRef();
         FormRef.validate(async (valid) => {
           if (valid) {
-            ElMessageBox.confirm(`确认要${type === "add" ? "导入" : title}吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitChange(type, title, type === "add" ? addFormData : _formData, () => {
-                done();
-                const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value?.id);
-                onSearch(_rowIndex);
-              });
-            });
+            showMessageBox(`确认要${type === "add" ? "导入" : title}吗?`)
+              .then(() => {
+                onSubmitChange(type, title, type === "add" ? addFormData : _formData, () => {
+                  done();
+                  const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value?.id);
+                  onSearch(_rowIndex);
+                });
+              })
+              .catch(console.log);
           }
         });
       }
@@ -303,7 +388,9 @@ export const useConfig = () => {
       const reqFormData = {
         ...data,
         year: +data.yearAndMonth.split("-")[0],
-        month: +data.yearAndMonth.split("-")[1]
+        month: +data.yearAndMonth.split("-")[1],
+        yearAndMonth: undefined,
+        yearMonth: data.yearAndMonth
       };
 
       delete reqFormData.file;
@@ -336,10 +423,11 @@ export const useConfig = () => {
         userType: maps[formData.userType],
         staffId: currentRow.value.staffId,
         id: data.id,
-        startDate: data.startDate
+        startDate: data.startDate,
+        paidSalary: isNaN(+data.paidSalary) ? 0 : +data.paidSalary,
+        actualpayrollresultId: data.actualpayrollresultId
       };
     }
-
     updateClerkMoneyCheckList(finalData)
       .then((res) => {
         if (res.data) {
@@ -352,7 +440,7 @@ export const useConfig = () => {
 
   // 导出
   const onExport = async () => {
-    if (!dataList.value.length) return message.warning("没有可导出的数据");
+    if (!currentLeftRow.value) return message.warning("请选择要导出的单据");
     const cols = columns.value.filter((item) => !/(序号)/.test(item.label));
     const headConfig = getExportConfig("工资核算明细", cols, formData, true);
     exportStaffMoneyCheckList(headConfig)
@@ -380,7 +468,6 @@ export const useConfig = () => {
       message.warning("上传格式不正确，请上传xls或者xlsx格式");
       return false;
     } else {
-      loading.value = true;
       const formData = new FormData();
       formData.append("files", files[0]);
       uploadMoneySettingsInfo(formData)
@@ -390,7 +477,6 @@ export const useConfig = () => {
           }
         })
         .finally(() => {
-          loading.value = false;
           const dom = document.getElementById("imporMoneyCheckInput");
           (dom as any).value = null;
         });
@@ -398,15 +484,8 @@ export const useConfig = () => {
   };
 
   const onDelete = (row) => {
-    ElMessageBox.confirm(`确认要删除编码为【${row.categoryNo}】的分类吗?`, "系统提示", {
-      type: "warning",
-      draggable: true,
-      cancelButtonText: "取消",
-      confirmButtonText: "确定",
-      dangerouslyUseHTMLString: true
-    })
+    showMessageBox(`确认要删除编码为【${row.categoryNo}】的分类吗?`)
       .then(() => {
-        loading.value = true;
         deleteClassifyTableInfo({ id: row.id }).then((res) => {
           if (res.data) {
             message.success("删除成功");
@@ -414,8 +493,7 @@ export const useConfig = () => {
           }
         });
       })
-      .catch(() => {})
-      .finally(() => (loading.value = false));
+      .catch(console.log);
   };
 
   const onCheck = () => {
@@ -431,33 +509,24 @@ export const useConfig = () => {
       beforeSure: (done, { options }) => {
         const formRuleData = moneyRef.value?.ruleForm;
         const [year = "", month = ""] = formRuleData.yearAndMonth.split("-");
-        ElMessageBox.confirm(`确认要核算${year}年${+month}月的工资吗?`, "系统提示", {
-          type: "warning",
-          draggable: true,
-          cancelButtonText: "取消",
-          confirmButtonText: "确定",
-          dangerouslyUseHTMLString: true
-        })
+        showMessageBox(`确认要核算${year}年${+month}月的工资吗?`)
           .then(() => {
             const formBackRef = moneyRef.value?.ruleFormRef;
             formBackRef
               ?.validate()
               .then(() => {
-                loading.value = true;
-                calcMoneyCheckList(formRuleData)
-                  .then((res) => {
-                    if (res.data) {
-                      message.success("核算成功");
-                      done();
-                    }
-                  })
-                  .finally(() => (loading.value = false));
+                calcMoneyCheckList(formRuleData).then((res) => {
+                  if (res.data) {
+                    message.success("核算成功");
+                    done();
+                  }
+                });
               })
               .catch(() => {
                 console.log("catch");
               });
           })
-          .catch(() => {});
+          .catch(console.log);
       }
     });
   };
@@ -472,6 +541,13 @@ export const useConfig = () => {
 
   const rowClick = (row) => {
     currentRow.value = row;
+  };
+
+  const rowLeftClick = (row) => {
+    currentLeftRow.value = row;
+    formData["actualpayrollresultId"] = row?.actualpayrollresultId;
+    console.log("left", row);
+    onSearch();
   };
 
   const rowDbClick = (row) => {
@@ -490,35 +566,157 @@ export const useConfig = () => {
     onSearch();
   }
 
+  // 分页相关
+  function handleSizeChange3(val: number) {
+    formData3.limit = val;
+    onSearch();
+  }
+
+  function handleCurrentChange3(val: number) {
+    formData3.page = val;
+    onSearch();
+  }
+
+  const onSubmitAct = () => {
+    if (!currentLeftRow.value) {
+      return message.warning("请选择单据");
+    }
+    if (![AuditState.submit, AuditState.reAudit].includes(+currentLeftRow.value.stateValue)) {
+      return message.error("只能提交【待提交/重新审核】的记录");
+    }
+
+    showMessageBox(`确认提交单据吗?`).then(() => {
+      // TODO: 绩效流程id
+      commonSubmit({ billId: "10076", billNo: currentLeftRow.value.billNo })
+        .then((res) => {
+          if (!res.data) return message.error("提交失败");
+          message.success("提交成功");
+          const _rowIndex = dataList3.value.findIndex((item) => item.billNo === currentLeftRow.value?.billNo);
+          onSearch3(_rowIndex);
+        })
+        .catch(console.log);
+    });
+  };
+  const onRevokeAct = () => {
+    if (!currentLeftRow.value) {
+      return message.warning("请选择单据");
+    }
+    if (![AuditState.auditing].includes(+currentLeftRow.value.stateValue)) {
+      return message.error("只能撤销【审核中】的记录");
+    }
+
+    showMessageBox(`确认撤销单据吗?`).then(() => {
+      commonRevoke({ billNo: currentLeftRow.value.billNo })
+        .then((res) => {
+          if (!res.data) return message.error("撤销失败");
+          message.success("撤销成功");
+          const _rowIndex = dataList3.value.findIndex((item) => item.billNo === currentLeftRow.value?.billNo);
+          onSearch3(_rowIndex);
+        })
+        .catch(console.log);
+    });
+  };
+  const onBackAct = () => {
+    if (!currentLeftRow.value) {
+      return message.warning("请选择单据");
+    }
+    if (![AuditState.auditing, AuditState.audited].includes(+currentLeftRow.value.stateValue)) {
+      return message.error("当前状态不能进行回退");
+    }
+    commonBackLogic(currentLeftRow.value.billNo, () => {
+      const _rowIndex = dataList3.value.findIndex((item) => item.billNo === currentLeftRow.value?.billNo);
+      onSearch3(_rowIndex);
+    });
+  };
+  const onViewNodeDetail = () => {
+    if (!currentLeftRow.value) {
+      return message.warning("请选择单据");
+    }
+    addDialog({
+      title: "查看审批详情",
+      width: "900px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: true,
+      hideFooter: true,
+      contentRenderer: ({ options }) =>
+        h(NodeDetailList, { options, billNo: currentLeftRow.value.billNo, billType: "salaryCalc", billState: currentLeftRow.value.stateValue })
+    });
+  };
+
+  const onMakeCopy = () => {
+    if (!currentLeftRow.value) return message.warning("请选择一条单据");
+    showMessageBox(`确认要抄送单据【${currentLeftRow.value.billNo}】吗?`)
+      .then(() => {
+        makeCopyStaffMoneyCheckList({ billNo: currentLeftRow.value.billNo }).then((res) => {
+          if (res.data) {
+            message.success("抄送成功");
+            const _rowIndex = dataList3.value.findIndex((item) => item.billNo === currentLeftRow.value?.billNo);
+            onSearch3(_rowIndex);
+          }
+        });
+      })
+      .catch(console.log);
+  };
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onBeforeEdit, type: "warning", text: "修改", isDropDown: false },
     { clickHandler: onCheck, type: "primary", text: "核算工资", isDropDown: true },
     { clickHandler: onExport, type: "info", text: "导出", isDropDown: true },
-    { clickHandler: onImport, type: "info", text: "导入", isDropDown: true }
+    { clickHandler: onImport, type: "info", text: "导入", isDropDown: true },
+    { clickHandler: onMakeCopy, type: "info", text: "抄送", isDropDown: true },
+    { clickHandler: onSubmitAct, type: "info", text: "提交", isDropDown: true },
+    { clickHandler: onRevokeAct, type: "info", text: "撤销", isDropDown: true },
+    { clickHandler: onBackAct, type: "info", text: "回退", isDropDown: true },
+    { clickHandler: onViewNodeDetail, type: "info", text: "审批详情", isDropDown: true }
   ]);
+
+  const onRefresh3 = () => {
+    getColumnConfig();
+    onSearch();
+  };
 
   const onRefresh = () => {
     getColumnConfig();
     onSearch();
   };
 
+  const handleClickTag = ({ paneName }) => {
+    formData.userType = paneName;
+    onSearch();
+  };
+
   return {
-    loading,
+    rowLeftClick,
     columns,
     dataList,
+    dataList3,
+    columns3,
     maxHeight,
     searchOptions,
+    searchOptions3,
     queryParams,
+    queryParams3,
     pagination,
+    columns2,
+    mainTableRef,
+    pagination3,
     buttonList,
     onSearch,
     onEdit,
     onChangeFileInput,
     handleTagSearch,
+    handleTagSearch3,
     rowDbClick,
+    activeName,
+    maxHeight2,
+    handleClickTag,
     rowClick,
     onRefresh,
+    onRefresh3,
     handleSizeChange,
-    handleCurrentChange
+    handleSizeChange3,
+    handleCurrentChange,
+    handleCurrentChange3
   };
 };

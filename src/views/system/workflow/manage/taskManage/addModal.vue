@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, PropType, reactive } from "vue";
-import { getDeptRoleList, getDeptTreeData, DeptRoleItemType, DetartMenttemType, DeptUserItemType, getDeptUserList } from "@/api/systemManage";
+import { getDeptRoleList, getDeptTreeData, DeptRoleItemType, DetartMenttemType, DeptUserItemType, getDeptUserList, DeptTreeItemType } from "@/api/systemManage";
 
 const props = defineProps({
   personType: { type: String as PropType<"user" | "role">, default: "" },
@@ -18,7 +18,7 @@ const maxHeight = 450;
 const treeLoading = ref<boolean>(false);
 const tableLoading = ref<boolean>(false);
 const dataList = ref<DeptUserItemType[]>([]);
-const treeOptions = ref<DetartMenttemType[]>([]);
+const treeOptions = ref<DeptTreeItemType[]>([]);
 const userRowsData = ref<Array<DeptUserItemType | DeptRoleItemType>>([]);
 const formData = reactive({ userName: "", deptId: "", userCode: "" });
 const tableRef = ref();
@@ -60,7 +60,7 @@ const getDeptList = () => {
   getDeptTreeData()
     .then((res) => {
       treeLoading.value = false;
-      const data = JSON.parse(res.data);
+      const data = res.data;
       treeOptions.value = data;
     })
     .catch(() => (treeLoading.value = false));

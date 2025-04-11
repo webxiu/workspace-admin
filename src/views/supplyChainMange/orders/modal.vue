@@ -13,9 +13,9 @@
       </template>
     </el-table-column> -->
     <el-table-column prop="operate" label="操作">
-      <template #default="{ row }">
+      <template #default="{ row, index }">
         <el-space :size="16">
-          <el-button type="danger" size="small" :disabled="disabled" @click="onDel(row)">删除</el-button>
+          <el-button type="danger" size="small" :disabled="['已回签', '审核中'].includes(formData.billState)" @click="onDel(row, index)">删除</el-button>
           <el-button type="success" size="small" @click="onView(row)">查看</el-button>
           <el-button type="primary" size="small" @click="onDownload(row)">下载</el-button>
         </el-space>
@@ -25,18 +25,22 @@
 </template>
 
 <script lang="ts" setup>
-import { deleteFileTableRow } from "@/api/supplyChain";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { deleteFileTableRow, fetchSupOrderList } from "@/api/supplyChain";
+import { ElMessageBox } from "element-plus";
 import { ref } from "vue";
 import dayjs from "dayjs";
 import { downloadFile } from "@/utils/common";
+import { message } from "@/utils/message";
 
 interface Props {
   /** 是否禁用删除 */
   disabled?: boolean;
+  formData?: any;
+  currentLeftRow: any;
+  onFresh: () => {};
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const tableData = ref([]);
 const loading = ref(false);
@@ -49,8 +53,6 @@ const displayStateNameMap = {
   null: "待回签"
 };
 
-const emits = defineEmits(["fresh"]);
-
 const onView = (row) => {
   // VITE_VIRTUAL_PATH
   const vPath = import.meta.env.VITE_BASE_API + row.filePath + "/" + row.fileName;
@@ -62,7 +64,7 @@ const onDownload = (row) => {
   downloadFile(url, row.fileName);
 };
 
-const onDel = (row) => {
+const onDel = (row, index) => {
   ElMessageBox.confirm(`确认删除文件名为${row.fileName}的附件吗？`, "温馨提示", {
     type: "warning",
     draggable: true,
@@ -75,8 +77,17 @@ const onDel = (row) => {
       deleteFileTableRow({ id: row.id, fileName: row.fileName })
         .then((res) => {
           if (res.data) {
-            ElMessage({ message: "删除成功", type: "success" });
-            emits("fresh");
+            message.success("删除成功");
+            tableData.value.splice(index, 1);
+
+            if (!tableData.value.length) {
+              fetchSupOrderList({ page: 1, limit: 10, fbillno: props.currentLeftRow.fbillno }).then((res: any) => {
+                if (res.data) {
+                  const resStatus = res.data.records[0]?.billState;
+                  props.formData.billState = displayStateNameMap[resStatus];
+                }
+              });
+            }
           }
         })
         .finally(() => (loading.value = false));

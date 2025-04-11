@@ -13,6 +13,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "HumanResourcesInductionAuditIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   tableRef,
   loading,
   rowData,
@@ -29,13 +31,32 @@ const {
   onSelectAll,
   onRowClick,
   onSizeChange,
-  onCurrentChange
+  onCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
-    <PureTableBar :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
+    <AgGridTable
+      v-if="isAgTable"
+      ref="tableRef"
+      rowKey="id"
+      :rowData="dataList"
+      :loading="loading"
+      :columnDefs="columnDefs"
+      :height="maxHeight / 2"
+      :paginations="pagination"
+      @refresh="onRefresh"
+      @switch="onSwitchTable"
+      @cellClicked="onRowClick"
+      @rowSelected="onSelect"
+      @sizeChange="onSizeChange"
+      @currentChange="onCurrentChange"
+      :headButtons="{ buttonList, autoLayout: false }"
+      :blendedSearch="{ onTagSearch, queryParams, searchOptions, placeholder: '请输入姓名', searchField: 'staffName' }"
+    />
+    <PureTableBar v-else :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
       <template #title>
         <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" :queryParams="queryParams" placeholder="请输入姓名" searchField="staffName" />
       </template>
@@ -49,7 +70,6 @@ const {
           :height="maxHeight / 2"
           :max-height="maxHeight / 2"
           row-key="id"
-          class="induction-audit"
           :adaptive="true"
           align-whole="center"
           :loading="loading"

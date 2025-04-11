@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:23:53
+ * @Last Modified time: 2025-03-12 15:34:30
  */
 
 import { QueryParamsType, SearchOptionType } from "@/components/BlendedSearch/index.vue";
@@ -17,18 +17,23 @@ import {
 import { formatMoneyComma, getExportConfig, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { onMounted, reactive, ref } from "vue";
 
+import type { ColDef } from "ag-grid-community";
 import dayjs from "dayjs";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { message } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
+  const columnDefs2 = ref<ColDef[]>([]);
   const loading = ref<boolean>(false);
   const loading2 = ref<boolean>(false);
   const dataList = ref<Array<any>>([]);
   const dataList2 = ref<Array<any>>([]);
   const columns = ref<TableColumnList[]>([]);
   const columns2 = ref<TableColumnList[]>([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 76);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 64);
 
   const formData = reactive({ page: 1, limit: 10000, salePeopleId: "", saleStockYear: "" });
   const searchOptions = reactive<SearchOptionType[]>([{ label: "销售员", value: "salePeopleId", children: [] }]);
@@ -85,6 +90,8 @@ export const useConfig = () => {
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData: columnData, operationColumn: false });
     columns2.value = setColumn({ columnData: columnData2, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
+    columnDefs2.value = getAgGridColumns({ columnData: columnData2, operationColumn: false });
   };
 
   const onTagSearch = (values) => {
@@ -139,12 +146,19 @@ export const useConfig = () => {
       .catch(console.log);
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onExport, type: "default", text: "导出销售数量", isDropDown: true },
     { clickHandler: onExport2, type: "default", text: "导出销售业绩", isDropDown: true }
   ]);
 
   return {
+    columnDefs,
+    columnDefs2,
+    isAgTable,
     columns,
     columns2,
     dataList,
@@ -154,6 +168,8 @@ export const useConfig = () => {
     loading2,
     maxHeight,
     searchOptions,
-    onTagSearch
+    onSearch,
+    onTagSearch,
+    onSwitchTable
   };
 };

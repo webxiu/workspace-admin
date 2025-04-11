@@ -12,10 +12,10 @@ import Chart4 from "./charts/Chart4.vue";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
 import { getDeptOptions } from "@/utils/requestApi";
-import { findTreeNodes } from "@/utils/tree";
 import { downloadDataToExcel, getMenuColumns, updateButtonList } from "@/utils/table";
 import { getUserInfo } from "@/utils/storage";
 import { Download } from "@element-plus/icons-vue";
+import { queryUserDeptList } from "@/api/systemManage";
 
 defineOptions({ name: "FinanceDeptFinanceBIDeptFreeDetailIndex" });
 
@@ -33,7 +33,7 @@ const columnListArrs = ref<TableColumnList[][]>([]);
 const exportList = ref([]);
 
 const fYear = dayjs(new Date()).format("YYYY");
-const deptName = ref("财务部");
+const deptName = ref("");
 const formData = reactive({
   fyear: fYear,
   deptId: undefined,
@@ -70,10 +70,8 @@ const queryParams = reactive<QueryParamsType>({
 });
 
 const handleTagSearch = (values) => {
+  Object.assign(formData, values);
   formData.fyear = values.fyear || fYear;
-  formData.deptId = values.deptId;
-  formData.includeChildDept = values.includeChildDept || 1;
-  formData.includeNotPostingVoucher = values.includeNotPostingVoucher || 1;
   getAllData();
 };
 
@@ -104,11 +102,20 @@ const getAllData = () => {
 const getDeptTreeInfo = () => {
   getDeptOptions().then((data) => {
     const userInfo = getUserInfo();
-    const res = findTreeNodes(data, (t) => +t.value === userInfo.deptId)[0];
-    deptName.value = res.label;
-    formData.deptId = res?.value;
-    queryParams.deptId = { value: res?.value, valueLabel: res.label };
+
+    queryUserDeptList({
+      userId: userInfo.id
+    }).then((res: any) => {
+      if (res.data) {
+        const masterDeptInfo = res.data.find((el) => el.isMaster) || {};
+        deptName.value = masterDeptInfo.deptName;
+        formData.deptId = masterDeptInfo.deptId;
+        queryParams.deptId.value = masterDeptInfo.deptId + "";
+        queryParams.deptId.valueLabel = masterDeptInfo.deptName;
+      }
+    });
     searchOptions[1].children = data;
+
     getAllData();
   });
 };

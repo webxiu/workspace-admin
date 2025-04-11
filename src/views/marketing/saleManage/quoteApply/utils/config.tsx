@@ -6,7 +6,6 @@ import HxModalInput from "@/components/HxModalInput/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import QuoteItem from "../component/QuoteItem.vue";
 import SelectTable from "@/components/HxModalInput/SelectTable.vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 import { reactive } from "vue";
 
 // 编辑校验
@@ -30,10 +29,6 @@ export const formConfigs = ({ currencyList, isEdit }): FormConfigItemType[] => {
   const styleEl = { height: "40px", display: "inline-flex", alignItems: "center" };
   const styleItem = { alignItems: "center" };
 
-  const columns: TableColumnList[] = [
-    { label: "产品型号", prop: "productCode", headerAlign: "center" },
-    { label: "产品类别", prop: "productType", headerAlign: "center" }
-  ];
   const columns2: TableColumnList[] = [
     { label: "客户编号", prop: "customerNumber", minWidth: 140 },
     { label: "客户简称", prop: "customerShortName", minWidth: 140 },
@@ -102,13 +97,7 @@ export const formConfigs = ({ currencyList, isEdit }): FormConfigItemType[] => {
             disabled={!isEdit}
             style={styleEl}
             component={SelectTable}
-            componentProp={{
-              searchConfig: [{ label: "产品型号", value: "productCode" }],
-              multiple: false,
-              maxHeight: 520,
-              columns: columns,
-              api: fetchProductStoreList
-            }}
+            showModel="product"
           />
         );
       }
@@ -265,10 +254,10 @@ export const formConfigs = ({ currencyList, isEdit }): FormConfigItemType[] => {
     {
       label: "报价数量/币种/单价",
       prop: "quoteList",
-      class: "center-label dynamic-form-item",
+      class: "center-label merge-item",
       colProp: { span: 24 },
       style: { ...styleItem, height: "auto" },
-      slots: { label: ({ label }) => <span class="fz-16 color-111">{label}</span> },
+      slot: { label: ({ label }) => <span class="fz-16 color-111">{label}</span> },
       render: ({ formModel, row }) => (
         <QuoteItem v-model={formModel[row.prop]} currencyList={currencyList} disabled={!isEdit} disableCurrency={false || !isEdit} disableCount={!isEdit} />
       )

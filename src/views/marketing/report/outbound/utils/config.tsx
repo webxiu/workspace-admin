@@ -26,7 +26,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       label: "年份范围",
       prop: "years",
       style: { marginBottom: "8px" },
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => (
         <RangePickerYear picker="year" v-model:value={formModel[row.prop]} allowClear={false} style="min-width: 200px">
           {{
@@ -43,7 +43,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       label: "汇总周期",
       prop: "type",
       style: { marginBottom: "8px" },
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => <ButtonGroup v-model={formModel[row.prop]} buttonsConfig={buttonsConfig} style="width: 200px" />
     }
   ];

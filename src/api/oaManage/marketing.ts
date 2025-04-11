@@ -147,6 +147,10 @@ export function updateCustomer(data) {
 export function deleteCustomer(id) {
   return http.request<number>("get", `/oa/mk/customermanager/deleteCustomerById?id=${id}`);
 }
+/** 客户关系管理: 禁用和反禁用客户 */
+export function disabledOrEnableCustomer(data) {
+  return http.request("post", "/oa/mk/customermanager/forbiddenOrEnable", { params: data });
+}
 /** 客户关系管理: 导出 */
 export function exportCustomer(data) {
   return http.request<string>("post", "/oa/mk/customermanager/export", { data });

@@ -338,13 +338,4 @@ onMounted(() => {
 .info-left-tree {
   padding: 10px 15px;
 }
-
-.custom-tree-node {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: space-between;
-  padding-right: 8px;
-  font-size: 14px;
-}
 </style>

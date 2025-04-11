@@ -116,7 +116,7 @@ export const formConfigs2 = (): FormConfigItemType[] => [
   },
   {
     label: "文件",
-    slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+    slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
     labelWidth: 100,
     prop: "file",
     render: ({ formModel, row }) => {

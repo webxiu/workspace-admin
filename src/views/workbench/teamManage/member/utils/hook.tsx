@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-12 18:18:40
+ * @Last Modified time: 2025-03-14 18:29:54
  */
 
 import { h, onMounted, reactive, ref } from "vue";
@@ -35,6 +35,11 @@ import EditForm from "@/components/EditForm/index.vue";
 import { setColumn, getMenuColumns } from "@/utils/table";
 import { formConfigs, formRules, formRules2, formConfigs2 } from "./config";
 import { PAGE_CONFIG } from "@/config/constant";
+import TableEditList from "@/components/TableEditList/index.vue";
+import { CustomPropsType, FormItemConfigType } from "@/utils/form";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 export interface QueryType {
   page: number;
@@ -48,11 +53,13 @@ export interface QueryType {
 export type HandleType = "add" | "edit";
 
 export function useConfig() {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const formRef = ref();
   const loading = ref<boolean>(false);
   const dataList = ref<TeamMemberItemType[]>([]);
   const columns = ref<TableColumnList[]>([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 40 + 56);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const memberOption = ref<TeamMemberOptionType>({
     stateList: [],
@@ -67,6 +74,11 @@ export function useConfig() {
     deptId: 0,
     groupId: 0
   });
+
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "工号", value: "staffId" },
+    { label: "姓名", value: "staffName" }
+  ]);
 
   onMounted(() => {
     getColumnConfig();
@@ -105,7 +117,12 @@ export function useConfig() {
     const { columnArrs } = await getMenuColumns();
     const [data] = columnArrs;
     if (data?.length) columnData = data;
-    columns.value = setColumn({ columnData, dragSelector: ".team-member", operationColumn: { minWidth: 120 }, formData });
+    columns.value = setColumn({ columnData, formData });
+    columnDefs.value = getAgGridColumns<TeamMemberItemType>({
+      columnData,
+      formData,
+      renderButtons: () => [{ name: "修改", type: "default", onClick: (row) => handleEdit(row) }]
+    });
   };
 
   /**
@@ -133,9 +150,8 @@ export function useConfig() {
       });
   };
 
-  const resetForm = (formEl) => {
-    if (!formEl) return;
-    formEl.resetFields();
+  const onTagSearch = (values) => {
+    Object.assign(formData, values);
     onSearch();
   };
 
@@ -286,9 +302,6 @@ export function useConfig() {
 
   // 修改员工岗位
   async function handleEdit(row: TeamMemberItemType) {
-    const sLoading = ref<boolean>(true);
-    const depGroupList = ref<DepGroupItemType[]>([]);
-    const roleInfoList = ref<DepGroupItemType[]>([]);
     const formData = reactive({
       staffName: row.staffName,
       roleId: row.roleId,
@@ -296,43 +309,32 @@ export function useConfig() {
       groupId: row.groupId ?? "",
       id: row.id
     });
-
-    const p1 = teamDepGroupList();
-    const p2 = roleAndGroupList({ deptId: row.deptId });
-    Promise.all([p1, p2])
-      .then((res: any) => {
-        sLoading.value = false;
-        const res1 = res[0] as any;
-        const res2 = res[1] as any;
-        loading.value = false;
-        if (res1.status === 200) {
-          depGroupList.value = res1.data;
-        }
-        if (res2.status === 200) {
-          roleInfoList.value = res2.data.roleInfoList;
-        }
-      })
-      .finally(() => (sLoading.value = false));
-
-    const { deptInfoTree } = memberOption.value;
+    const customProps = {
+      roleId: { apiParams: { deptId: row.deptId }, formatAPI: (data) => data.roleInfoList },
+      deptId: { formatAPI: (data) => data.deptInfoTree }
+    };
 
     addDialog({
       title: "修改岗位",
+      props: {
+        params: { groupCode: "1" },
+        formConfig: [
+          {
+            formData: formData,
+            customProps: customProps,
+            formProps: { labelWidth: "120px" }
+          }
+        ]
+      },
       width: "520px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      props: {
-        loading: sLoading,
-        formInline: formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ roleInfoList, deptInfoTree, depGroupList }),
-        formProps: { labelWidth: "100px" }
-      },
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交修改吗?`).then(() => {
               updateDepGroup(formData)
@@ -348,21 +350,30 @@ export function useConfig() {
       }
     });
   }
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+  }
+
   return {
-    formData,
+    columnDefs,
+    isAgTable,
     memberOption,
     loading,
     dataList,
     columns,
     pagination,
     maxHeight,
+    searchOptions,
     onAdd,
     onEdit,
     remove,
     onSearch,
+    onTagSearch,
     onNodeClick,
     handleEdit,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    onSwitchTable
   };
 }

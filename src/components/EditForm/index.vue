@@ -3,7 +3,7 @@
  * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-27 11:09:49
+ * @Last Modified time: 2024-12-23 16:30:33
  */ 
 -->
 
@@ -21,6 +21,8 @@ export interface RenderParamsType {
   index: number;
 }
 
+export type FormConfigItemListType = FormConfigItemType[] | Ref<FormConfigItemType[]>;
+
 export interface FormConfigItemType extends Partial<FormItemProps> {
   /** Layout布局配置 参考: https://element-plus.org/zh-CN/component/layout.html#col-attributes */
   colProp?: Partial<ColProps>;
@@ -31,7 +33,9 @@ export interface FormConfigItemType extends Partial<FormItemProps> {
   /** 表单项渲染函数 */
   render: ((item: RenderParamsType) => JSXElement) | JSXElement;
   /** 表单Item插槽 */
-  slots?: { [key: string]: (slot: Record<string, any>) => JSXElement };
+  slot?: { [key: string]: (slot: Record<string, any>) => JSXElement };
+  /** 是否隐藏Item */
+  isHideItem?: boolean;
   style?: CSSProperties;
   class?: string;
 }
@@ -148,15 +152,20 @@ export default defineComponent({
       >
         <el-row gutter={props.formItemGutter}>
           {configList.value.map((item, index) => {
-            const { render, colProp, hide, slots, ...itemProps } = item;
+            const { render, colProp, hide, slot, isHideItem, ...itemProps } = item;
             const formItem = typeof render === "function" ? render({ formModel: newFormInline.value, row: item, index }) : render;
-            const innerEle = slots ? { ...toRaw(slots), default: () => formItem } : formItem;
+            const innerEle = slot ? { ...toRaw(slot), default: () => formItem } : formItem;
             return hide ? null : (
               <el-col span={24} {...colProp} key={item.prop}>
-                <el-form-item {...itemProps}>{innerEle}</el-form-item>
+                {isHideItem ? formItem : <el-form-item {...itemProps}>{innerEle}</el-form-item>}
               </el-col>
             );
           })}
+          {configList.value.length ? null : (
+            <el-col span={24}>
+              <el-empty description="暂无数据" />
+            </el-col>
+          )}
           <el-col span={24} {...props.buttonColProp}>
             {/* 操作按钮 */}
             {showButtons ? (

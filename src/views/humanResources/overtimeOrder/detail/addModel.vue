@@ -105,13 +105,19 @@
             </el-select>
           </el-form-item>
           <el-form-item label="~ " label-width="25px" prop="eveningEndHour" style="margin-right: 0">
-            <el-select style="width: 60px" filterable clearable v-model="formData.eveningEndHour" placeholder="时">
+            <el-select style="width: 60px" filterable clearable v-model="formData.eveningEndHour" placeholder="时" @change="changeEvenHour">
               <el-option v-for="item in eveningEndHoursList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
             </el-select>
           </el-form-item>
           <el-form-item label=":" label-width="18px" prop="eveningEndMinute">
             <el-select style="width: 60px" filterable clearable v-model="formData.eveningEndMinute" placeholder="分">
-              <el-option v-for="item in startTimeMinuteList" :label="item.optionName" :value="item.optionValue" :key="item.optionValue" />
+              <el-option
+                v-for="item in startTimeMinuteList"
+                :disabled="formData.eveningEndHour === '24' && item.optionName !== '00'"
+                :label="item.optionName"
+                :value="item.optionValue"
+                :key="item.optionValue"
+              />
             </el-select>
           </el-form-item>
         </div>
@@ -124,17 +130,18 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch, onMounted } from "vue";
 import { dayjs } from "element-plus";
 import type { FormRules } from "element-plus";
 import { getStaffDetail, selectUserDormitory, timeSettingList } from "@/api/oaManage/humanResources";
 
 interface Props {
-  optionsData: {
+  optionsData?: {
     userInfoList: any[];
     optionList: any[];
   };
   updateUserBack: (data) => void;
+  rowUserData?: any;
 }
 
 const formData = reactive({
@@ -179,6 +186,10 @@ function timeDifference(Stime, Ttime) {
     return 0;
   }
 }
+
+const changeEvenHour = (val) => {
+  formData.eveningEndMinute = "00";
+};
 
 const changeOvertimeType = (val) => {
   formData.overtimePeriod = val;
@@ -357,6 +368,8 @@ const eveningEndHoursList = [
   { optionName: "21", optionValue: "21" },
   { optionName: "22", optionValue: "22" },
   { optionName: "23", optionValue: "23" },
+  { optionName: "24", optionValue: "24" },
+  { optionName: "00", optionValue: "00" },
   { optionName: "01", optionValue: "01" },
   { optionName: "02", optionValue: "02" },
   { optionName: "03", optionValue: "03" },
@@ -386,8 +399,6 @@ const props = withDefaults(defineProps<Props>(), {
   }),
   updateUserBack: (data) => {}
 });
-
-console.log(props.optionsData.userInfoList, "userInfoList");
 
 const overTimeFormRef = ref();
 
@@ -540,6 +551,49 @@ function getRef() {
     });
   return { overTimeFormRef, overTimeApplyDTOList };
 }
+
+const initEditData = () => {
+  if (props.rowUserData) {
+    formData.overtimeType = props.rowUserData.overtimeType;
+    formData.overtimeDate = props.rowUserData.startDate;
+    formData.remark = props.rowUserData.remark;
+    formData.useList = [props.rowUserData.staffCode];
+
+    formData.morningOvertime = props.rowUserData.morningOvertime;
+    formData.afternoonOvertime = props.rowUserData.afternoonOvertime;
+    formData.eveningOvertime = props.rowUserData.eveningOvertime;
+
+    formData.overtimePeriod = props.rowUserData.overtimeType;
+
+    if (props.rowUserData.morningOvertime) {
+      formData.morningStartHour = props.rowUserData.morningStartTime.split(":")[0];
+      formData.morningStartMinute = props.rowUserData.morningStartTime.split(":")[1];
+
+      formData.morningEndHour = props.rowUserData.morningEndTime.split(":")[0];
+      formData.morningEndMinute = props.rowUserData.morningEndTime.split(":")[1];
+    }
+
+    if (props.rowUserData.afternoonOvertime) {
+      formData.arvoStartHour = props.rowUserData.afternoonStartTime.split(":")[0];
+      formData.arvoStartMinute = props.rowUserData.afternoonStartTime.split(":")[1];
+
+      formData.arvoEndHour = props.rowUserData.afternoonEndTime.split(":")[0];
+      formData.arvoEndMinute = props.rowUserData.afternoonEndTime.split(":")[1];
+    }
+
+    if (props.rowUserData.eveningOvertime) {
+      formData.eveningStartHour = props.rowUserData.eveningStartTime.split(":")[0];
+      formData.eveningStartMinute = props.rowUserData.eveningStartTime.split(":")[1];
+
+      formData.eveningEndHour = props.rowUserData.eveningEndTime.split(":")[0];
+      formData.eveningEndMinute = props.rowUserData.eveningEndTime.split(":")[1];
+    }
+  }
+};
+
+onMounted(() => {
+  initEditData();
+});
 
 defineExpose({ getRef });
 </script>

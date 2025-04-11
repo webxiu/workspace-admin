@@ -16,7 +16,7 @@ onUnmounted(() => typed.value?.destroy());
 function onType() {
   typed.value = new Typed("#typing-msg", {
     strings: [props.message],
-    typeSpeed: 20, // 打印速度
+    typeSpeed: 10, // 打印速度
     startDelay: 300, // 开始之前的延迟300毫秒
     loop: false, // 是否循环
     smartBackspace: true, // 开启智能退格 默认false

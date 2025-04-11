@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-09-12 18:10:49
+ * @Last Modified time: 2025-02-27 15:05:23
  */
 
 import {
@@ -21,7 +21,7 @@ import {
   updateTeamPost,
   updateTeamTemplate
 } from "@/api/workbench/teamManage";
-import { formConfigs, formConfigs3, formRules, formRules3 } from "./config";
+import { accept, baseApi, formConfigs, formConfigs3, formRules, formRules3 } from "./config";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
@@ -29,7 +29,10 @@ import { message, showMessageBox } from "@/utils/message";
 import { DeptInfoItemType } from "@/api/systemManage";
 import EditForm from "@/components/EditForm/index.vue";
 import { Plus } from "@element-plus/icons-vue";
+import SelectPosition from "../SelectPosition/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { TableGroupItemType } from "@/api/systemManage";
+import { UploadProps } from "element-plus";
 import { addDialog } from "@/components/ReDialog";
 import { useEleHeight } from "@/hooks";
 
@@ -178,22 +181,43 @@ export const useConfig = () => {
       formData.deptId = rowItem.deptId;
       formData.parentName = rowItem.deptName;
     };
+
+    const customProps = reactive({
+      parentName: { onChange: onSelectPosition }
+    });
+
+    const customElement = {
+      parentName: ({ formModel, row }) => {
+        return (
+          <el-input v-model={formModel[row.prop]} placeholder="请选择上级岗位" readonly>
+            {{ append: () => <SelectPosition onSelect={onSelectPosition} /> }}
+          </el-input>
+        );
+      }
+    };
+
     addDialog({
       title: `${title}岗位`,
       props: {
-        formInline: formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ onSelectPosition }),
-        formProps: { labelWidth: "120px" }
+        params: { groupCode: "1" },
+        formConfig: [
+          {
+            formData: formData,
+            customProps: customProps,
+            customElement: customElement,
+            formProps: { labelWidth: "120px" }
+          }
+        ]
       },
       width: "640px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`)
               .then(() => {
@@ -244,35 +268,26 @@ export const useConfig = () => {
     const formRef = ref();
     const formData = reactive({
       responsibilities: row?.responsibilities ?? "",
-      roleInfoId: rowData.value.id,
+      roleInfoId: rowData.value?.id,
       id: type === "add" ? "" : row.id
     });
+    if (!rowData.value) return message.error("请选择岗位");
 
     addDialog({
       title: `${title}岗位职责`,
       props: {
-        formInline: formData,
-        formProps: { labelWidth: "120px" },
-        formRules: { responsibilities: [{ required: true, message: "请输入岗位职责", trigger: "blur" }] },
-        formConfigs: [
-          {
-            label: "岗位职责",
-            prop: "responsibilities",
-            colProp: { span: 24 },
-            render: ({ formModel, row }) => {
-              return <el-input type="textarea" v-model={formModel[row.prop]} rows={2} placeholder="请输入岗位职责" clearable />;
-            }
-          }
-        ]
+        params: { groupCode: "2" },
+        formConfig: [{ formData: formData, formProps: { labelWidth: "120px" } }]
       },
       width: "520px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`)
               .then(() => {
@@ -340,22 +355,69 @@ export const useConfig = () => {
       console.log("选择路径", 111);
     };
 
+    const customElement = {
+      templateFile: ({ formModel, row }) => {
+        const handleAvatarSuccess = (response) => {
+          formModel["resourceName"] = response.data;
+        };
+        const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
+          formModel[row.prop] = rawFile.name;
+          const ext = rawFile.type.split("/")[1];
+          if (!accept.includes(`.${ext}`)) {
+            message.error("文件格式不正确!");
+            return false;
+          }
+          return true;
+        };
+        return (
+          <el-input v-model={formModel[row.prop]} placeholder="请选模板文件" readonly>
+            {{
+              append: () => (
+                <el-upload
+                  class="ml-4"
+                  accept={accept.join(",")}
+                  action={`${baseApi}/oa/mk/customercomplaint/uploadcomplaint`}
+                  show-file-list={false}
+                  on-success={handleAvatarSuccess}
+                  before-upload={beforeAvatarUpload}
+                >
+                  <el-button type="primary">选择</el-button>
+                </el-upload>
+              )
+            }}
+          </el-input>
+        );
+      },
+      outPath: ({ formModel, row }) => {
+        return (
+          <el-input v-model={formModel[row.prop]} placeholder="请选择输出路径" readonly>
+            {{ append: () => <SelectPosition onSelect={onSelectPath} /> }}
+          </el-input>
+        );
+      }
+    };
+
     addDialog({
       title: `${title}岗位职责`,
       props: {
-        formInline: formData,
-        formProps: { labelWidth: "120px" },
-        formRules: formRules3,
-        formConfigs: formConfigs3({ onSelectTemplate, onSelectPath })
+        params: { groupCode: "3" },
+        formConfig: [
+          {
+            formData: formData,
+            customElement: customElement,
+            formProps: { labelWidth: "120px" }
+          }
+        ]
       },
       width: "640px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`)
               .then(() => {

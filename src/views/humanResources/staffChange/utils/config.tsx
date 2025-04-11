@@ -3,6 +3,7 @@ import { Ref, reactive, ref } from "vue";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import { Loading } from "@element-plus/icons-vue";
+import { boolOptions } from "@/config/constant";
 
 // 校验配置
 export const formRules = reactive<FormRules>({
@@ -18,16 +19,10 @@ export const formRules = reactive<FormRules>({
 
 // 异动类型(修改标题长度表格需同步修改)
 export const adjustTypeList = [
-  { label: "升职", value: "升职" },
-  { label: "降职", value: "降职" },
-  { label: "调动", value: "调动" },
-  { label: "其他", value: "其他" }
-];
-
-// 薪资是否调整
-export const adjustSalaryType = [
-  { label: "是", value: true },
-  { label: "否", value: false }
+  { optionName: "升职", optionValue: "升职" },
+  { optionName: "降职", optionValue: "降职" },
+  { optionName: "调动", optionValue: "调动" },
+  { optionName: "其他", optionValue: "其他" }
 ];
 
 const LoadingIcon = () => (
@@ -93,8 +88,8 @@ export const formConfigs = ({ type, mLoading, userList, roleList, deptTreeList, 
         return (
           <el-radio-group v-model={formModel[row.prop]} onChange={onTransferChange}>
             {adjustTypeList.map((item) => (
-              <el-radio key={item.value} label={item.label}>
-                {item.label}
+              <el-radio key={item.optionValue} label={item.optionName}>
+                {item.optionName}
               </el-radio>
             ))}
           </el-radio-group>
@@ -175,9 +170,9 @@ export const formConfigs = ({ type, mLoading, userList, roleList, deptTreeList, 
       colProp: { span: 12 },
       render: ({ formModel, row }) => (
         <el-radio-group v-model={formModel[row.prop]}>
-          {adjustSalaryType.map((item) => (
-            <el-radio key={item.value} label={item.value}>
-              {item.label}
+          {boolOptions.map((item) => (
+            <el-radio key={item.optionValue} label={item.optionValue}>
+              {item.optionName}
             </el-radio>
           ))}
         </el-radio-group>

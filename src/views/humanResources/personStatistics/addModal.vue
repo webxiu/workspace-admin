@@ -55,7 +55,7 @@ const getTableList = () => {
 <template>
   <PureTableBar :columns="columns" :showIcon="false">
     <template #title>
-      <SearchList v-model="dataList" :bright="true" style="width: 40%" label="搜索" :propKeys="['staffCode', 'staffName', 'deptName', 'startDate']" />
+      <HxSearchHighlight v-model="dataList" :bright="true" style="width: 40%" label="搜索" :propKeys="['staffCode', 'staffName', 'deptName', 'startDate']" />
     </template>
     <template v-slot="{ size, dynamicColumns }">
       <pure-table

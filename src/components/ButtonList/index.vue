@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<ButtonListProps>(), {
   autoLayout: true,
   buttonList: () => [],
   loadingStatus: () => ({ loading: false, text: "" }),
-  moreActionText: ""
+  moreActionText: "业务操作"
 });
 
 const sliceNum = ref(1); // 默认显示的个数 除了更多按钮外
@@ -103,7 +103,7 @@ const calcBackList = computed<ButtonItemType[]>(() => {
         :on-change="
           (...res) => {
             item.uploadProp.onChange(...res);
-            uploadRefs[item.text].clearFiles();
+            uploadRefs[item.text]?.clearFiles();
           }
         "
       >
@@ -161,7 +161,7 @@ const calcBackList = computed<ButtonItemType[]>(() => {
               :on-change="
                 (...res) => {
                   el.uploadProp.onChange(...res);
-                  uploadRefs[el.text].clearFiles();
+                  uploadRefs[el.text]?.clearFiles();
                 }
               "
             >
@@ -191,5 +191,12 @@ const calcBackList = computed<ButtonItemType[]>(() => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  :deep(.el-upload--text) {
+    width: 100%;
+    justify-content: flex-start;
+    .el-dropdown-menu__item {
+      width: 100%;
+    }
+  }
 }
 </style>

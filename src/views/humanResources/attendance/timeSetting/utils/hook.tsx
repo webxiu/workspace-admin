@@ -2,32 +2,29 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-10 17:04:05
+ * @Last Modified time: 2025-03-12 15:28:52
  */
 
 import { TimeSettingItemType, addTimeSetting, deleteTimeSetting, timeSettingList, updateTimeSetting } from "@/api/oaManage/humanResources";
 import { downloadDataToExcel, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
-import { formConfigs, formRules } from "./config";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 
-import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
+import type { ColDef } from "ag-grid-community";
+import { CustomPropsType } from "@/utils/form";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { useEleHeight } from "@/hooks";
-import { getFormColumns } from "@/utils/form";
-import { FormRules } from "element-plus";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref<TimeSettingItemType[]>([]);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 50);
-  const selectOptions = ref({ salePeopleLists: [], customerGroupLists: [] });
-
-  const formData = reactive({
-    limit: 10000,
-    page: 1
-  });
+  const formData = reactive({ limit: 10000, page: 1 });
 
   onMounted(() => {
     getColumnConfig();
@@ -55,7 +52,17 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData: columnData, operationColumn: { minWidth: 180 } });
+    columns.value = setColumn({ columnData, operationColumn: { minWidth: 180 } });
+    columnDefs.value = getAgGridColumns<TimeSettingItemType>({
+      columnData,
+      operationColumn: { minWidth: 180 },
+      renderButtons: () => {
+        return [
+          { name: "修改", type: "default", onClick: (row) => onEdit(row) },
+          { name: "删除", type: "danger", onClick: (row) => onDelete(row), confirm: (row) => `确定删除\n【${row.remark}】的工作时间吗？` }
+        ];
+      }
+    });
   };
 
   const onRefresh = () => getTableList();
@@ -81,8 +88,7 @@ export const useConfig = () => {
   async function openDialog(type: "add" | "edit", row?: Partial<TimeSettingItemType>) {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const formConfigs2 = ref<FormConfigItemType[]>([]);
-    const formRules2 = ref<FormRules>({});
+    const titleName = row?.remark ? `${title}【${row.remark}】工作时间` : `${title}工作时间`;
     const formData = reactive({
       ruleNo: row?.ruleNo ?? "",
       remark: row?.remark ?? "",
@@ -98,31 +104,32 @@ export const useConfig = () => {
       afternoonEnd: row?.afternoonEnd ?? "",
       minAfternoonEnd: row?.minAfternoonEnd ?? "",
       maxAfternoonEnd: row?.maxAfternoonEnd ?? "",
+      minLeaveDuration: row?.minLeaveDuration ?? 0,
+      workingHours: row?.workingHours ?? 0,
+      leaveDurationMultiple: row?.leaveDurationMultiple ?? 0,
       id: row?.id ?? ""
     });
-
-    getFormColumns({ groupCode: "1" })
-      .then((data) => {
-        console.log(data, "data==");
-        const { formRules, formColumns } = data;
-        formRules2.value = formRules;
-        if (formColumns.length) formConfigs2.value = formColumns;
-      })
-      .catch(() => (loading.value = false));
-
-    const titleName = row?.remark ? `${title}【${row.remark}】工作时间` : `${title}工作时间`;
+    const customProps = reactive<{ [key: string]: CustomPropsType }>({
+      minLeaveDuration: { controls: false },
+      leaveDurationMultiple: { controls: false }
+    });
 
     addDialog({
       title: titleName,
-      props: { formInline: formData, formRules: formRules, formConfigs: formConfigs(), formProps: { labelWidth: "170px" } },
+      props: {
+        params: { groupCode: "1" },
+        formConfig: [{ formData: formData, customProps, formProps: { labelWidth: "170px" } }]
+      },
       width: "960px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          // const _formData = data.forms[0];
           if (valid) {
             showMessageBox(`确认${title}吗?`).then(() => {
               const API = { add: addTimeSetting, edit: updateTimeSetting };
@@ -144,6 +151,10 @@ export const useConfig = () => {
     });
   }
 
+  const rowDbClick = (row) => {
+    onEdit(row);
+  };
+
   const onDelete = (row: TimeSettingItemType) => {
     deleteTimeSetting({ id: row.id })
       .then((res) => {
@@ -164,13 +175,17 @@ export const useConfig = () => {
       sheetName: "工作时间设定"
     });
   };
-
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+  }
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
     { clickHandler: onExport, type: "default", text: "导出", isDropDown: true }
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     columns,
     dataList,
     loading,
@@ -178,6 +193,8 @@ export const useConfig = () => {
     buttonList,
     onRefresh,
     onEdit,
-    onDelete
+    onDelete,
+    rowDbClick,
+    onSwitchTable
   };
 };

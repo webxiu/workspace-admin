@@ -19,7 +19,10 @@ export const useConfig = () => {
   const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 46);
 
-  const searchOptions = reactive<SearchOptionType[]>([{ label: "姓名", value: "staffName" }]);
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "姓名", value: "staffName" },
+    { label: "工号", value: "staffCode" }
+  ]);
 
   onMounted(() => {
     getColumnConfig();
@@ -95,14 +98,9 @@ export const useConfig = () => {
   const openDialog = (type: "add" | "edit", row?: ResignApplyItemType) => {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const _formData = reactive({ ...row });
     addDialog({
       title: `${title}离职申请`,
-      props: {
-        formInline: _formData,
-        type: type,
-        id: row?.id
-      },
+      props: { type: type, id: row?.id },
       width: "960px",
       draggable: true,
       fullscreenIcon: true,
@@ -110,29 +108,26 @@ export const useConfig = () => {
       contentRenderer: () => h(Detail, { ref: formRef }),
       beforeReset: () => formRef.value.getRef()?.resetFields(),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        const { other, ...reset } = FormRef.formData;
-        if (type === "edit" && ![BillState.submit, BillState.reject].includes(row.billState)) {
-          return message.error("只能提交【待提交/重新审核】的记录");
-        }
-        if (reset.resignationType === "其他") {
-          reset.resignationType = reset.resignationType + (other ?? "");
-        }
-        FormRef.getRef.validate((valid) => {
-          if (valid) {
-            showMessageBox("确认提交吗").then(() => {
-              const reqApi = { add: addResignApply, edit: updateResignApply };
-              reqApi[type](reset).then((res) => {
-                if (res.data) {
-                  message.success(`${title}成功`);
-                  getTableList();
-                  done();
-                } else {
-                  message.error(`${title}失败`);
-                }
-              });
-            });
+        formRef.value.getRef().then(({ formData, data }) => {
+          const { other, ...reset } = formData;
+          if (type === "edit" && ![BillState.submit, BillState.reject].includes(row.billState)) {
+            return message.error("只能提交【待提交/重新审核】的记录");
           }
+          if (reset.resignationType === "其他") {
+            reset.resignationType = reset.resignationType + (other ?? "");
+          }
+          showMessageBox("确认提交吗").then(() => {
+            const reqApi = { add: addResignApply, edit: updateResignApply };
+            reqApi[type](reset).then((res) => {
+              if (res.data) {
+                message.success(`${title}成功`);
+                getTableList();
+                done();
+              } else {
+                message.error(`${title}失败`);
+              }
+            });
+          });
         });
       }
     });

@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-upload action="#" :auto-upload="false" :limit="1" @change="changeFile" :on-remove="onRemove" :accept="accept" v-model:file-list="fileList">
-      <el-button type="primary" plain :loading="loading" @click="loading = true">上传excel文件</el-button>
+      <el-button type="primary" plain>上传excel文件</el-button>
     </el-upload>
   </div>
 </template>
@@ -10,12 +10,10 @@
 import { ref } from "vue";
 defineProps(["accept", "onRemove"]);
 
-const loading = ref(false);
 const fileList = ref([]);
 const fileModel = defineModel();
 
 const changeFile = (file) => {
-  loading.value = false;
   fileList.value.push(file);
   fileModel.value = fileList.value[0].raw;
 };

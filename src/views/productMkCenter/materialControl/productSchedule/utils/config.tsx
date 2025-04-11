@@ -33,7 +33,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       label: "数据行",
       prop: "dataStartRow",
       colProp: layout,
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="请根据实际导入行列数值修改默认值(即: 核对上传Excel中的行序号和列序号, 下同)" />
       },
       render: ({ formModel, row }) => (
@@ -96,7 +96,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       label: "选择文件",
       prop: "file",
       colProp: layout,
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => <HxUploadButton v-model:fileList={formModel[row.prop]} limit={1} accept={[".xlsx, .xls"].join(",")} />
     }
   ];

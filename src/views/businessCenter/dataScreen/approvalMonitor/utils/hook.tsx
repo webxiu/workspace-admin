@@ -113,65 +113,67 @@ export const useConfig = () => {
   function getData(isFirst = false) {
     const systemSource = active.value;
     loading.value = true;
-    approvalData({ systemSource }).then((res) => {
-      const data = res.data;
-      loading.value = false;
-      if (!data) return message.error("数据获取失败");
-      // 重置->数字动画
-      totalObj1.value.number = 0;
-      totalObj2.value.number = 0;
-      totalObj3.value.number = 0;
-      totalObj4.value.number = 0;
-      totalObj5.value.number = 0;
-      totalObj6.value.number = 0;
+    approvalData({ systemSource })
+      .then((res) => {
+        const data = res.data;
+        loading.value = false;
+        if (!data) return message.error("数据获取失败");
+        // 重置->数字动画
+        totalObj1.value.number = 0;
+        totalObj2.value.number = 0;
+        totalObj3.value.number = 0;
+        totalObj4.value.number = 0;
+        totalObj5.value.number = 0;
+        totalObj6.value.number = 0;
 
-      const max = Math.max(...data.mainBusinessCountApproval.map((m) => +m.allEfficiency));
-      const data_11 = formatData(data.countApprovalCount, "receiverName", "approvalCount");
-      const data_12 = formatData(data.countApprovalEfficiencyMin, "receiverName", "averageEfficiency");
-      const data_13 = formatData(data.countApprovalEfficiencyMax, "receiverName", "averageEfficiency");
-      const data_14 = formatData(data.mainBusinessCountApproval, "deployName", "allEfficiency", max);
-      const data_15 = formatData(data.avgEfficiencyByYear, "yearMonth", "monthEfficiency");
-      const data_16 = formatData(data.avgEfficiencyByWeekend, "yearMonth", "monthEfficiency");
-      tabChartData.dataYear = data_15.data;
-      tabChartData.dataMonth = data_16.data;
+        const max = Math.max(...data.mainBusinessCountApproval.map((m) => +m.allEfficiency));
+        const data_11 = formatData(data.countApprovalCount, "receiverName", "approvalCount");
+        const data_12 = formatData(data.countApprovalEfficiencyMin, "receiverName", "averageEfficiency");
+        const data_13 = formatData(data.countApprovalEfficiencyMax, "receiverName", "averageEfficiency");
+        const data_14 = formatData(data.mainBusinessCountApproval, "deployName", "allEfficiency", max);
+        const data_15 = formatData(data.avgEfficiencyByYear, "yearMonth", "monthEfficiency");
+        const data_16 = formatData(data.avgEfficiencyByWeekend, "yearMonth", "monthEfficiency");
+        tabChartData.dataYear = data_15.data;
+        tabChartData.dataMonth = data_16.data;
 
-      // 1.审批量TOP10
-      const option1 = optionLine({ type: "bar", xAxis: data_11.xAxis, data: data_11.data });
-      // 2.审批低效TOP10
-      const option2 = optionLineBar({ type: "bar", xAxis: data_12.xAxis, data: data_12.data });
-      // 3.审批高效TOP10
-      const option3 = optionLineBar({ type: "bar", xAxis: data_13.xAxis, data: data_13.data });
-      // 4.主营业务单据审批效率
-      const option4 = optionRank({ type: "bar", data: data_14.data });
-      // 5.审批效率按年统计(包括按周)
-      const option5 = optionLineArea({ type: "bar", data: data_15.data, param: { tipName: tipName.month } });
-      // 6.滚动表格
-      dataList.value = data.realTimeConsumingCountApproval.map((m, i) => ({ seq: i + 1, ...m }));
-      // 8.其他统计
-      const otherD = data.otherCountApproval[0] as OtherApprovalType;
+        // 1.审批量TOP10
+        const option1 = optionLine({ type: "bar", xAxis: data_11.xAxis, data: data_11.data });
+        // 2.审批低效TOP10
+        const option2 = optionLineBar({ type: "bar", xAxis: data_12.xAxis, data: data_12.data });
+        // 3.审批高效TOP10
+        const option3 = optionLineBar({ type: "bar", xAxis: data_13.xAxis, data: data_13.data });
+        // 4.主营业务单据审批效率
+        const option4 = optionRank({ type: "bar", data: data_14.data });
+        // 5.审批效率按年统计(包括按周)
+        const option5 = optionLineArea({ type: "bar", data: data_15.data, param: { tipName: tipName.month } });
+        // 6.滚动表格
+        dataList.value = data.realTimeConsumingCountApproval.map((m, i) => ({ seq: i + 1, ...m }));
+        // 8.其他统计
+        const otherD = data.otherCountApproval[0] as OtherApprovalType;
 
-      chartName6.value = `实时耗时TOP${dataList.value.length}(小时)`;
+        chartName6.value = `实时耗时TOP${dataList.value.length}(小时)`;
 
-      if (otherD) {
-        totalObj1.value.number = parseFloat(otherD.alreadFinishedCount);
-        totalObj2.value.number = parseFloat(otherD.longestApprovalTimeHour);
-        totalObj3.value.number = parseFloat(otherD.unFinishedCount);
-        totalObj4.value.number = parseFloat(otherD.shortestApprovalTimeHour);
-        totalObj5.value.number = parseFloat(otherD.monthEfficiency);
-        totalObj6.value.number = parseFloat(otherD.allEfficiency);
-      }
-      chartIns1.value.clear();
-      chartIns2.value.clear();
-      chartIns3.value.clear();
-      chartIns4.value.clear();
-      chartIns5.value.clear();
-      chartIns1.value.setOption(option1);
-      chartIns2.value.setOption(option2);
-      chartIns3.value.setOption(option3);
-      chartIns4.value.setOption(option4);
-      chartIns5.value.setOption(option5);
-      if (isFirst) isFirstLoad.value = true;
-    });
+        if (otherD) {
+          totalObj1.value.number = parseFloat(otherD.alreadFinishedCount);
+          totalObj2.value.number = parseFloat(otherD.longestApprovalTimeHour);
+          totalObj3.value.number = parseFloat(otherD.unFinishedCount);
+          totalObj4.value.number = parseFloat(otherD.shortestApprovalTimeHour);
+          totalObj5.value.number = parseFloat(otherD.monthEfficiency);
+          totalObj6.value.number = parseFloat(otherD.allEfficiency);
+        }
+        chartIns1.value.clear();
+        chartIns2.value.clear();
+        chartIns3.value.clear();
+        chartIns4.value.clear();
+        chartIns5.value.clear();
+        chartIns1.value.setOption(option1);
+        chartIns2.value.setOption(option2);
+        chartIns3.value.setOption(option3);
+        chartIns4.value.setOption(option4);
+        chartIns5.value.setOption(option5);
+        if (isFirst) isFirstLoad.value = true;
+      })
+      .catch(() => (loading.value = false));
   }
 
   // 布局

@@ -5,6 +5,7 @@ import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import SelectModal from "./selectModel.vue";
 import { addDialog } from "@/components/ReDialog";
+import { message } from "@/utils/message";
 import { selectMaterialInfo } from "@/api/plmManage";
 import { setColumn } from "@/utils/table";
 
@@ -102,10 +103,7 @@ export function useMaterialTable() {
           done();
           return;
         }
-        ElMessage({
-          message: "请选择一条记录",
-          type: "warning"
-        });
+        message.warning("请选择一条记录");
       }
     });
   };

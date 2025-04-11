@@ -2,11 +2,12 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 11:03:33
+ * @Last Modified time: 2025-03-12 15:27:24
  */
 
+import TableEditList from "@/components/TableEditList/index.vue";
 import { LoadingType } from "@/components/ButtonList/index.vue";
-import { dayjs, UploadProps, ElMessage } from "element-plus";
+import { dayjs, UploadProps, ElMessage, formProps } from "element-plus";
 import {
   AttendanceSummaryItemType,
   attendanceSummaryList,
@@ -17,7 +18,8 @@ import {
   queryHasRecords,
   deleteAttendanceDetail,
   deleteAttendanceSummary,
-  generateAttSummary
+  generateAttSummary,
+  queryAttendanceSummaryList
 } from "@/api/oaManage/humanResources";
 import { h, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
@@ -35,6 +37,10 @@ import axios from "axios";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { PAGE_CONFIG } from "@/config/constant";
 import { getDeptOptions } from "@/utils/requestApi";
+import FeedbackAttList from "../feedbackAttList.vue";
+import { FormItemConfigType, FormTableConfigType } from "@/utils/form";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 // 状态
 const StatusKey = {
@@ -52,13 +58,15 @@ const userTypeNum = {
 };
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<AttendanceSummaryItemType[]>([]);
   const loading = ref<boolean>(false);
   const rowData = ref<AttendanceSummaryItemType>();
   const rowsData = ref<AttendanceSummaryItemType[]>([]);
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 68 + 51);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 54 + 40);
   const lastMonth = dayjs().add(-1, "month").startOf("month").format("YYYY-MM");
   const tableRef = ref();
 
@@ -88,6 +96,14 @@ export const useConfig = () => {
       children: [
         { label: "职员", value: "0" },
         { label: "员工", value: "1" }
+      ]
+    },
+    {
+      label: "是否免考勤",
+      value: "exmpetAttendance",
+      children: [
+        { label: "是", value: 1 },
+        { label: "否", value: 0 }
       ]
     }
   ]);
@@ -158,7 +174,18 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, operationColumn: { width: 140 }, selectionColumn: { hide: false }, formData });
+    columns.value = setColumn({ columnData, formData, operationColumn: { width: 140 }, selectionColumn: { hide: false } });
+    columnDefs.value = getAgGridColumns<AttendanceSummaryItemType>({
+      columnData,
+      formData,
+      selectionColumn: { hide: false },
+      renderButtons: () => {
+        return [
+          { name: "修改", type: "default", onClick: (row) => onEdit(row) },
+          { name: "删除", type: "danger", onClick: (row) => onDelete([row]), confirm: (row) => `确认删除\n【${row.staffName}】吗?` }
+        ];
+      }
+    });
   };
 
   const getTableList = () => {
@@ -217,43 +244,53 @@ export const useConfig = () => {
   /** 编辑 */
   const onEdit = (row: AttendanceSummaryItemType) => {
     const formRef = ref();
-    const formData = reactive({
-      ...row,
-      beOnDuty: row?.beOnDuty ?? "",
-      actualAttendance: row?.actualAttendance ?? "",
-      beAttendanceDay: row?.beAttendanceDay ?? "",
-      actualAttendanceDay: row?.actualAttendanceDay ?? "",
-      annualLeaveTerms: row?.annualLeaveTerms ?? "",
-      beLateTime: row?.beLateTime ?? "",
-      earlyTime: row?.earlyTime ?? "",
-      thingLeaveTime: row?.thingLeaveTime ?? "",
-      absentCount: row?.absentCount ?? "",
-      absenteeismTime: row?.absenteeismTime ?? "",
-      peacetimeOverTime: row?.peacetimeOverTime ?? "",
-      restOverTime: row?.restOverTime ?? "",
-      overTimeSum: row?.overTimeSum ?? "",
-      specialOverTime: row?.specialOverTime ?? "",
-      description: row?.description ?? ""
-    });
+    const sLoading = ref(true);
+    const dataList = ref<AttendanceSummaryItemType[]>([]);
+    const formData = reactive({ ...row });
+    queryAttendanceSummaryList({ id: row.id })
+      .then((res: any) => {
+        if (res.data) {
+          const result = res.data || {};
+          formData.beOnDuty = result.beOnDuty ?? "";
+          formData.actualAttendance = result.actualAttendance ?? "";
+          formData.beAttendanceDay = result.beAttendanceDay ?? "";
+          formData.actualAttendanceDay = result.actualAttendanceDay ?? "";
+          formData.annualLeaveTerms = result.annualLeaveTerms ?? "";
+          formData.beLateTime = result.beLateTime ?? "";
+          formData.earlyTime = result.earlyTime ?? "";
+          formData.thingLeaveTime = result.thingLeaveTime ?? "";
+          formData.absentCount = result.absentCount ?? "";
+          formData.absenteeismTime = result.absenteeismTime ?? "";
+          formData.peacetimeOverTime = result.peacetimeOverTime ?? "";
+          formData.restOverTime = result.restOverTime ?? "";
+          formData.overTimeSum = result.overTimeSum ?? "";
+          formData.specialOverTime = result.specialOverTime ?? "";
+          formData.description = result.description ?? "";
+          dataList.value = result.detailException ? [result.detailException].flat(Infinity) : [];
+        }
+      })
+      .finally(() => (sLoading.value = false));
+
+    const formConfig: FormItemConfigType[] = [{ formData: formData, formProps: { labelWidth: "140px" } }];
+    const tableConfig: FormTableConfigType[] = [{ dataList: dataList, tableProps: { height: 300, maxHeight: 300 } }];
 
     addDialog({
-      title: "修改考勤明细",
+      title: "修改考勤详情",
       props: {
-        formInline: formData,
-        formRules: formRules,
-        formProps: { labelWidth: "140px" },
-        formConfigs: formConfigs()
+        loading: sLoading,
+        params: { groupCode: "1" },
+        formConfig: formConfig,
+        tableConfig: tableConfig
       },
-      width: "800px",
+      width: "900px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef?.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox("确认要提交吗?").then(() => {
               editAttendanceSummary(formData)
@@ -534,6 +571,17 @@ export const useConfig = () => {
     });
   };
 
+  const rowDbClick = (row) => {
+    rowData.value = row;
+    // tableRef.value?.getTableRef()?.toggleRowSelection(row);
+    onEdit(row);
+  };
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+    rowsData.value = [];
+  }
   // 按钮列表
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onEdit2, type: "success", text: "修改", isDropDown: false },
@@ -547,13 +595,9 @@ export const useConfig = () => {
     { clickHandler: onDownloadStaffTemplate, type: "default", text: "下载员工模板", icon: Download, isDropDown: true }
   ]);
 
-  const rowDbClick = (row) => {
-    rowData.value = row;
-    // tableRef.value?.getTableRef()?.toggleRowSelection(row);
-    onEdit(row);
-  };
-
   return {
+    columnDefs,
+    isAgTable,
     tableRef,
     loading,
     columns,
@@ -573,6 +617,7 @@ export const useConfig = () => {
     onRowClick,
     rowDbClick,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

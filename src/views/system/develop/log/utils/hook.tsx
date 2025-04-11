@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-31 17:33:08
+ * @Last Modified time: 2025-03-12 15:39:01
  */
 
 import { UserLogItemType, userLogList, userLogExport } from "@/api/systemManage";
@@ -14,13 +14,18 @@ import { useEleHeight } from "@/hooks";
 import { type PaginationProps } from "@pureadmin/table";
 import dayjs from "dayjs";
 import { PAGE_CONFIG } from "@/config/constant";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<UserLogItemType[]>([]);
   const loading = ref<boolean>(false);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 51 + 51);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 51 + 42);
   const curDate = dayjs().format("YYYY-MM-DD");
+  const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize,
@@ -30,7 +35,6 @@ export const useConfig = () => {
     startDate: curDate,
     endDate: curDate
   });
-  const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "员工姓名", value: "userName" },
     { label: "员工工号", value: "userCode" },
@@ -75,7 +79,8 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, dragSelector: ".log-manage", operationColumn: false });
+    columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ formData, columnData, operationColumn: false });
   };
 
   const onRefresh = () => {
@@ -132,6 +137,10 @@ export const useConfig = () => {
     getTableList();
   }
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+  }
+
   const buttonList = ref<ButtonItemType[]>([{ clickHandler: onExport, type: "primary", text: "导出", isDropDown: true }]);
 
   return {
@@ -142,9 +151,12 @@ export const useConfig = () => {
     searchOptions,
     pagination,
     buttonList,
+    columnDefs,
+    isAgTable,
     onRefresh,
     onTagSearch,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

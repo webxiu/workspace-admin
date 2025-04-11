@@ -26,6 +26,12 @@ export const formGroupRules = reactive<FormRules>({
   deptCode: [{ required: true, message: "所属部门编号必填项", trigger: "blur" }],
   deptName: [{ required: true, message: "所属部门为必选项", trigger: "blur" }]
 });
+// 3.任务列表新增校验
+export const formTaskRules = reactive<FormRules>({
+  taskName: [{ required: true, message: "请输入任务名称", trigger: "blur" }],
+  responsibleUserCode: [{ required: true, message: "请选择责任人", trigger: "blur" }],
+  taskTypeCode: [{ required: true, message: "请选择任务类型", trigger: "blur" }]
+});
 
 interface FormConfigType {
   onUploadChange: Function;
@@ -159,7 +165,7 @@ export const formConfigs = (options: FormConfigType): FormConfigItemType[] => {
       label: "文件",
       prop: "file",
       colProp: layout,
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => {
         const onChange: UploadProps["onChange"] = (uploadFile, uploadFiles) => {
           const files = uploadFiles.map((item) => item.raw);

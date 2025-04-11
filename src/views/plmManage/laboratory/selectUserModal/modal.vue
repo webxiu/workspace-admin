@@ -17,13 +17,6 @@
     <div class="right-table">
       <PureTableBar :columns="columns" :showIcon="false" style="padding-top: 0">
         <template #title>
-          <!-- <div style="display: flex">
-            <div class="search-ipt">
-              <el-input size="small" v-model="searchParams.userCode" placeholder="工号" />
-              <el-input style="margin-left: 10px" size="small" v-model="searchParams.userName" placeholder="姓名" />
-              <el-button style="margin-left: 10px; font-size: 12px" type="primary" :icon="Search" @click="btnClickSearch">查询</el-button>
-            </div>
-          </div> -->
           <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="姓名" searchField="userName" />
         </template>
         <template v-slot="{ size, dynamicColumns }">
@@ -62,7 +55,6 @@
 import { onMounted, reactive } from "vue";
 import { ref } from "vue";
 import { useUserTable } from "./config";
-import { Search } from "@element-plus/icons-vue";
 import { getDeptTreeData } from "@/api/systemManage";
 
 const { columns, dataList, loading, onSearch, rowClick, selectMultipeChange, handleTagSearch, searchOptions, modalTableRef } = useUserTable();
@@ -75,13 +67,12 @@ const curNodeName = ref("0");
 
 const searchParams = reactive({ userCode: "", userName: "" });
 
-const btnClickSearch = () => onSearch({ ...searchParams, deptId: curNodeName.value });
 
 const getTreeData = () => {
   loading.value = true;
   getDeptTreeData()
     .then((res: any) => {
-      leftTreeData.value = JSON.parse(res.data);
+      leftTreeData.value = res.data;
     })
     .finally(() => (loading.value = false));
 };

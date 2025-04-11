@@ -7,14 +7,13 @@
 
 <script setup lang="ts">
 import { useConfig } from "./utils/hook";
-import EditFill from "@iconify-icons/ep/edit";
-import DeleteFill from "@iconify-icons/ep/delete";
-import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
-defineOptions({ name: "SystemBasicBill" });
+defineOptions({ name: "SystemBasicBillIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   columns,
   dataList,
   loading,
@@ -28,13 +27,31 @@ const {
   onTagSearch,
   onCurrentChange,
   handleSizeChange,
-  handleCurrentChange
+  handleCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
-    <PureTableBar :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
+    <AgGridTable
+      v-if="isAgTable"
+      rowKey="id"
+      :rowData="dataList"
+      :loading="loading"
+      :columnDefs="columnDefs"
+      :height="maxHeight + 15"
+      :paginations="pagination"
+      @refresh="onRefresh"
+      @switch="onSwitchTable"
+      @cellClicked="onCurrentChange"
+      @cellDoubleClicked="onEdit"
+      @sizeChange="handleSizeChange"
+      @currentChange="handleCurrentChange"
+      :headButtons="{ buttonList, autoLayout: false }"
+      :blendedSearch="{ onTagSearch, searchOptions, searchField: 'billId', placeholder: '请输入单据编号' }"
+    />
+    <PureTableBar v-else :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
       <template #title>
         <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入单据编号" searchField="billId" />
       </template>

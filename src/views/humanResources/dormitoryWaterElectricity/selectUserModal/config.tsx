@@ -10,7 +10,7 @@ export function useUserTable(props) {
   const modalTableRef = ref();
   const currentMultipRow: any = ref({});
 
-  const searchOptions = reactive<SearchOptionType[]>([{ label: "房间号", value: "userCode" }]);
+  const searchOptions = reactive<SearchOptionType[]>([{ label: "工号", value: "userCode" }]);
 
   const loading = ref(false);
   onMounted(() => {

@@ -27,10 +27,10 @@ const footerButtons = computed(() => {
   return (options: DialogOptions) => {
     const { resetButtonText, cancelButtonText, okButtonText, customButtonText, showResetButton, hideItem } = options;
     const buttons: Array<ButtonProps> = [
-      { label: resetButtonText || "重置", btnType: "reset", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("reset", dialog) },
       { label: cancelButtonText || "取消", btnType: "cancel", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("cancel", dialog) },
-      { label: okButtonText || "确定", btnType: "ok", text: false, bg: true, btnClick: ({ dialog }) => callbackFn("sure", dialog), type: "primary" },
-      { label: customButtonText || "自定义", btnType: "custom", text: false, bg: true, btnClick: ({ dialog }) => callbackFn("custom", dialog), type: "primary" }
+      { label: resetButtonText || "重置", btnType: "reset", text: true, bg: true, btnClick: ({ dialog }) => callbackFn("reset", dialog) },
+      { label: customButtonText || "按钮", btnType: "custom", text: false, bg: true, type: "success", btnClick: ({ dialog }) => callbackFn("custom", dialog) },
+      { label: okButtonText || "确定", btnType: "ok", text: false, bg: true, type: "primary", btnClick: ({ dialog }) => callbackFn("sure", dialog) }
     ];
     // 重置与自定义按钮是否显示(自定义按钮配置名称才显示)
     const newButtons = buttons.filter(({ btnType }) => {

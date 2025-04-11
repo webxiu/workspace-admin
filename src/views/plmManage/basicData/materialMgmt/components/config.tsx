@@ -1,13 +1,6 @@
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { ElMessage, ElMessageBox, FormRules } from "element-plus";
-import {
-  backMaterialInfo,
-  fetchMaterialGroupAttr,
-  fetchProductStoreList,
-  getBOMTableRowSelectOptions,
-  pushDownMaterialInfo,
-  submitMaterialInfo
-} from "@/api/plmManage";
+import { backMaterialInfo, fetchMaterialGroupAttr, getBOMTableRowSelectOptions, pushDownMaterialInfo, submitMaterialInfo } from "@/api/plmManage";
 import { h, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -69,7 +62,16 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
           backMaterialInfo({ id: route.query.id })
             .then((res) => {
               if (res.data) {
-                router.push(`/plmManage/basicData/materialMgmt/edit?id=${route.query.id}&type=edit&isNewTag=yes&menuId=${route.query.menuId}`);
+                router.push({
+                  path: "/plmManage/basicData/materialMgmt/edit",
+                  query: {
+                    type: "edit",
+                    isNewTag: "yes",
+                    id: route.query.id,
+                    menuId: route.query.menuId,
+                    title: route.query.title
+                  }
+                });
               }
             })
             .finally(() => setLoading(false));
@@ -89,7 +91,16 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
           submitMaterialInfo({ id: route.query.id })
             .then((res) => {
               if (res.data) {
-                router.push(`/plmManage/basicData/materialMgmt/view?id=${route.query.id}&type=view&isNewTag=yes&menuId=${route.query.menuId}`);
+                router.push({
+                  path: "/plmManage/basicData/materialMgmt/view",
+                  query: {
+                    id: route.query.id,
+                    type: "view",
+                    isNewTag: "yes",
+                    menuId: route.query.menuId,
+                    title: route.query.title
+                  }
+                });
               }
             })
             .finally(() => setLoading(false));
@@ -127,12 +138,18 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
     }
 
     if (v.text === "复制") {
-      console.log("复制");
-      router.push(
-        `/plmManage/basicData/materialMgmt/add?number=${route.query.number || 0}&code=${route.query.code || formData.number}&isClone=1&viewId=${
-          route.query.id
-        }&type=add&isNewTag=yes&menuId=${route.query.menuId}`
-      );
+      router.push({
+        path: "/plmManage/basicData/materialMgmt/add",
+        query: {
+          number: route.query.number || 0,
+          code: route.query.code || formData.number,
+          isClone: 1,
+          viewId: route.query.id,
+          type: "add",
+          isNewTag: "yes",
+          menuId: route.query.menuId
+        }
+      });
     }
   };
 
@@ -473,15 +490,7 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
             disabled={isView}
             showButton={true}
             onSelect={onSelect}
-            componentProp={{
-              searchConfig: [{ label: "产品型号", value: "productCode" }],
-              maxHeight: 520,
-              columns: [
-                { label: "产品型号", prop: "productCode", headerAlign: "center" },
-                { label: "产品类别", prop: "productType", headerAlign: "center" }
-              ],
-              api: fetchProductStoreList
-            }}
+            showModel="product"
           />
         );
       }
@@ -726,7 +735,7 @@ export const formConfigs = (selectOpts: any, view = false, fn?, formData?, setLo
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>图片</span> },
+      slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>图片</span> },
       prop: "file",
       labelWidth: 80,
       colProp: { span: 24 },

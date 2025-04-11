@@ -1,6 +1,7 @@
 import { addMenuFavorite, deleteMenuFavorite } from "@/api/user/user";
 import { computed, ref, watch } from "vue";
 
+import { cloneDeep } from "@pureadmin/utils";
 import { message } from "@/utils/message";
 import { useAppStoreHook } from "@/store/modules/app";
 import { useRoute } from "vue-router";
@@ -8,9 +9,9 @@ import { useRoute } from "vue-router";
 export const useConfig = () => {
   const route = useRoute();
   const routeLink = ref<RouteConfigsTable[]>([]);
+  const allRoute = cloneDeep(useAppStoreHook().asyncRoutes);
 
   const routes = computed<RouteConfigsTable[]>(() => {
-    const allRoute = useAppStoreHook().asyncRoutes;
     if (route.params) {
       const newRoutes = allRoute.filter((item) => {
         return item.menuCode === route.query.menuCode;

@@ -5,7 +5,6 @@ import { FormRules } from "element-plus";
 import HxModalInput from "@/components/HxModalInput/index.vue";
 import MaterialMgmt from "@/views/plmManage/basicData/materialMgmt/index.vue";
 import { PageUrl } from "@/config/constant";
-import { fetchProductStoreList } from "@/api/plmManage";
 import { getEnumDictList } from "@/utils/table";
 import { message } from "@/utils/message";
 
@@ -21,11 +20,12 @@ export const formRules = reactive<FormRules>({
 });
 
 // 编辑SQL单据表单
-export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
+export const formConfigs = ({ type, formData, peRoleList }): FormConfigItemType[] => {
   const countryList = ref([]);
   getEnumDictList(["CountryCode"])
     .then(({ CountryCode }) => (countryList.value = CountryCode))
     .catch(console.log);
+  const isView = type === "view";
   return [
     {
       label: "产品型号",
@@ -39,16 +39,9 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
             valueKey={row.prop}
             v-model={formModel[row.prop]}
             readonly={true}
+            disabled={isView}
             showButton={true}
-            componentProp={{
-              searchConfig: [{ label: "产品型号", value: "productCode" }],
-              maxHeight: 520,
-              columns: [
-                { label: "产品型号", prop: "productCode" },
-                { label: "产品类别", prop: "productType" }
-              ],
-              api: fetchProductStoreList
-            }}
+            showModel="product"
           />
         );
       }
@@ -60,11 +53,9 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
       render: ({ formModel, row }) => {
         const onSelect = (val) => (formData.materialId = val.id);
         const interceptFn = () => {
-          if (!formModel.productCode) {
-            message.error("请选择产品型号");
-            return true;
-          }
-          return false;
+          if (formModel.productCode) return false;
+          message.error("请选择产品型号");
+          return true;
         };
         return (
           <HxModalInput
@@ -75,10 +66,12 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
             v-model={formModel[row.prop]}
             pageKey={PageUrl.materialMgmt}
             readonly={true}
+            disabled={isView}
             showButton={true}
             component={MaterialMgmt}
             onSelect={onSelect}
             interceptFn={interceptFn}
+            componentProp={{ isModal: true }}
           />
         );
       }
@@ -88,7 +81,7 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
       prop: "manualName",
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入指导书名称" clearable />;
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入指导书名称" disabled={isView} clearable />;
       }
     },
     {
@@ -96,15 +89,7 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
       prop: "fileNumber",
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />;
-      }
-    },
-    {
-      label: "版本",
-      prop: "ver",
-      colProp: { span: 12 },
-      render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入" clearable />;
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入" disabled={isView} clearable />;
       }
     },
     {
@@ -113,7 +98,7 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
         return (
-          <el-select v-model={formModel[row.prop]} placeholder="请选择" class="ui-w-100">
+          <el-select v-model={formModel[row.prop]} placeholder="请选择" disabled={isView} class="ui-w-100">
             {countryList.value.map((item) => (
               <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
             ))}
@@ -127,12 +112,20 @@ export const formConfigs = ({ formData, peRoleList }): FormConfigItemType[] => {
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
         return (
-          <el-select v-model={formModel[row.prop]} placeholder="请选择" class="ui-w-100">
+          <el-select v-model={formModel[row.prop]} placeholder="请选择" disabled={isView} class="ui-w-100">
             {peRoleList.value.map((item) => (
-              <el-option key={item.id} label={item.userName} value={item.id} />
+              <el-option key={item.userId} label={item.userName} value={item.userId} />
             ))}
           </el-select>
         );
+      }
+    },
+    {
+      label: "版本",
+      prop: "ver",
+      colProp: { span: 12 },
+      render: ({ formModel, row }) => {
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入" disabled={isView} clearable />;
       }
     }
   ];

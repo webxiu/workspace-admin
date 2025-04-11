@@ -2,9 +2,9 @@ import { h, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 import { saveAs } from "file-saver";
 
-import { ElMessage, ElMessageBox } from "element-plus";
-import { message } from "@/utils/message";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { ElMessage, ElMessageBox, FormRules } from "element-plus";
+import { message, showMessageBox } from "@/utils/message";
+import { getEnumDictList, getMenuColumns, setColumn, tableEditRender, updateButtonList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { utils, write } from "xlsx";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
@@ -27,14 +27,21 @@ import { addDialog } from "@/components/ReDialog";
 import OrderDetail from "./orderDetail.vue";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { commonBackLogic } from "@/utils/common";
+import EditForm from "@/components/EditForm/index.vue";
+import { v4 as uuidv4 } from "uuid";
+import { commonBack, commonSubmit } from "@/api/systemManage";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
   const columns2 = ref<TableColumnList[]>([]);
+  const columns3 = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(true);
   const loading2 = ref<boolean>(false);
+  const loading3 = ref<boolean>(false);
   const dataList = ref([]);
   const dataList2 = ref([]);
+
+  const dataList3 = ref([]);
   const modalRef = ref();
   const rowData = ref();
   const dialogVisible = ref(false);
@@ -43,7 +50,8 @@ export const useConfig = () => {
   const currentActiveRow: any = ref({});
   const orderRef = ref(null);
   const signBackStatus = ref([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 105);
+  const currentLeftRow = ref();
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 55);
   // 回签状态
   const signBackConstantInfo = {
     0: "待提交",
@@ -96,11 +104,24 @@ export const useConfig = () => {
         { label: "已回签", value: "yes" }
       ]
     },
+    // {
+    //   label: "审核状态",
+    //   value: "billState",
+    //   children: []
+    // },
     { label: "采购日期", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startTime", endKey: "endTime" }
   ]);
 
+  const initBillState = () => {
+    getEnumDictList(["BillStatus"]).then(({ BillStatus }) => {
+      searchOptions[6].children = BillStatus;
+    });
+  };
+
   onMounted(async () => {
+    // initBillState();
     getColumnConfig();
+    onSearch();
   });
 
   const getColumnConfig = async () => {
@@ -144,13 +165,47 @@ export const useConfig = () => {
       }
     ];
 
-    const { columnArrs, buttonArrs } = await getMenuColumns();
-    const [data, data2] = columnArrs;
+    // 编辑表格
+    const { editCellRender } = tableEditRender();
+    const amountRenderer: any = (data) => editCellRender({ data, cellStyle: { textAlign: "right" } });
+    const reqDeliveryRenderer: any = (data) =>
+      editCellRender({
+        type: "date",
+        data,
+        eleProps: { format: "YYYY-MM-DD", valueFormat: "YYYY-MM-DD" },
+        cellStyle: { color: "#606266", textAlign: "left" }
+      });
+    const replyDeliveryRenderer: any = (data) =>
+      editCellRender({
+        type: "date",
+        data,
+        eleProps: { format: "YYYY-MM-DD", valueFormat: "YYYY-MM-DD" },
+        cellStyle: { color: "#606266", textAlign: "left" }
+      });
+    let columnData3: any[] = [
+      { label: "数量", prop: "amount", width: 80, align: "right" },
+      { label: "要求交期", prop: "reqDelivery", width: 120 },
+      { label: "回复交期", prop: "replyDelivery", width: 120 },
+      { label: "回复时间", prop: "replayDate", width: 150 }
+    ];
+
+    const { columnArrs, buttonArrs } = await getMenuColumns([
+      {},
+      {},
+      {
+        amount: amountRenderer,
+        replyDelivery: replyDeliveryRenderer
+        // reqDelivery: reqDeliveryRenderer
+      }
+    ]);
+    const [data, data2, data3] = columnArrs;
     if (data?.length) columnData = data;
     if (data2?.length) columnData2 = data2;
+    if (data3?.length) columnData3 = data3;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
     columns2.value = setColumn({ columnData: columnData2, operationColumn: false });
+    columns3.value = setColumn({ columnData: columnData3, operationColumn: { width: 90 } });
     return columnData;
   };
 
@@ -244,13 +299,14 @@ export const useConfig = () => {
     console.log(row, "view detail row");
     addDialog({
       title: "采购订单详情",
+      props: { onFresh: fresh },
       width: "1200px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       hideItem: ["ok"],
       cancelButtonText: "关闭",
-      contentRenderer: () => h(OrderDetail, { fbillno: row.fbillno, source: "home" })
+      contentRenderer: () => h(OrderDetail, { fbillno: row.fbillno, source: "home", currentLeftRow: currentActiveRow.value })
     });
   };
 
@@ -277,6 +333,7 @@ export const useConfig = () => {
   };
 
   const fresh = () => {
+    console.log("fresh..");
     if (JSON.stringify(currentViewRow.value) !== "{}") {
       onView(currentViewRow.value);
       onSearch();
@@ -310,8 +367,8 @@ export const useConfig = () => {
       return { cursor: "pointer" };
     }
     return {
-      background: row.billState !== null ? "#056608" : "#8b0000",
-      color: "#fff",
+      // background: row.billState !== null ? "#056608" : "#8b0000",
+      // color: "#fff",
       cursor: "pointer"
     };
   };
@@ -323,8 +380,8 @@ export const useConfig = () => {
         return { cursor: "pointer" };
       }
       return {
-        background: row.billState !== null ? "#056608" : "#8b0000",
-        color: "#fff",
+        // background: row.billState !== null ? "#056608" : "#8b0000",
+        // color: "#fff",
         cursor: "pointer"
       };
     }
@@ -537,14 +594,170 @@ export const useConfig = () => {
     { clickHandler: () => onViewNodeDetail(), type: "info", text: "审批详情", isDropDown: true }
   ]);
 
+  const handleCommand = (v, row, index) => {
+    console.log(v, row);
+    console.log(dataList2.value, "v2");
+
+    switch (v) {
+      case "amountSplit":
+        openAddDialog(row, index);
+        return;
+      case "delete":
+        if (row.id) {
+          message.warning("接口未开发");
+          return;
+        }
+        dataList3.value.splice(index, 1);
+        dataList3.value[row.fromIdx].amount += row.amount;
+        return;
+      case "save":
+        console.log(row, "row==");
+        return;
+      case "submit":
+        onRightSubmit(row);
+        return;
+      case "back":
+        onRightBack(row);
+        return;
+      case "nodeDetail":
+        onViewRightNodeDetail(row);
+        return;
+      default:
+        return;
+    }
+  };
+
+  const onViewRightNodeDetail = (row) => {
+    // TODO: 需要提供billNo, billType(billId), billState
+    addDialog({
+      title: "查看审批详情",
+      width: "900px",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: true,
+      hideFooter: true,
+      contentRenderer: ({ options }) => h(NodeDetailList, { options, billNo: row.billNo, billType: "xxx", billState: row.billState })
+    });
+  };
+
+  const onRightSubmit = (row) => {
+    console.log(row, "submit..");
+    showMessageBox(`确认提交?`).then(() => {
+      // TODO: 审批流的billId需要提供
+      commonSubmit({ id: row.id, billId: "xxxx" }).then(({ data }) => {
+        if (data) {
+          message.success("提交成功");
+          if (currentLeftRow.value) {
+            rowLeftClick(currentLeftRow.value);
+          }
+        }
+      });
+    });
+  };
+
+  const onRightBack = (row) => {
+    showMessageBox(`确认撤销?`).then(() => {
+      // TODO: billNo需要提供
+      commonBack({ comment: "", backToActivityId: "startEvent1", billNo: row.billNo }).then(({ data }) => {
+        if (data) {
+          message.success("撤销成功");
+          if (currentLeftRow.value) {
+            rowLeftClick(currentLeftRow.value);
+          }
+        }
+      });
+    });
+  };
+
+  const openAddDialog = (row, index) => {
+    const formRef = ref();
+    const _formData: any = reactive({
+      splitableNum: row?.amount
+    });
+    const formRules = reactive<FormRules>({
+      splitableNum: [{ required: true, message: "可拆分数量必填", trigger: "submit" }],
+      amount: [{ required: true, message: "数量必填", trigger: "submit" }],
+      replyDelivery: [{ required: true, message: "回复交期必填", trigger: "submit" }]
+    });
+    addDialog({
+      title: `数量拆分`,
+      props: {
+        formInline: _formData,
+        formRules: formRules,
+        formConfigs: [
+          {
+            label: "可拆分数量",
+            labelWidth: 100,
+            colProp: { span: 24 },
+            prop: "splitableNum",
+            render: ({ formModel, row }) => {
+              return <el-input-number disabled controls={false} class="ui-w-100" v-model={formModel[row.prop]} />;
+            }
+          },
+          {
+            label: "数量",
+            labelWidth: 100,
+            colProp: { span: 24 },
+            prop: "amount",
+            render: ({ formModel, row }) => {
+              return <el-input-number controls={false} precision={0} max={_formData.splitableNum} class="ui-w-100" v-model={formModel[row.prop]} />;
+            }
+          },
+          {
+            label: "回复交期",
+            labelWidth: 100,
+            colProp: { span: 24 },
+            prop: "replyDelivery",
+            render: ({ formModel, row }) => {
+              return <el-date-picker style={{ width: "100%" }} valueFormat="YYYY-MM-DD" v-model={formModel[row.prop]} type="date" placeholder="请选择" />;
+            }
+          }
+        ]
+      },
+      width: "350px",
+      draggable: true,
+      destroyOnClose: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(EditForm, { ref: formRef }),
+      beforeSure: (done) => {
+        const FormRef = formRef.value.getRef();
+        FormRef.validate(async (valid) => {
+          if (valid) {
+            showMessageBox(`确认要拆出数量【${_formData.amount}】吗?`)
+              .then(() => {
+                console.log(_formData, "_formData===");
+                dataList3.value.push({ ..._formData, fromIdx: index });
+                row.amount -= _formData.amount;
+                done();
+              })
+              .catch(console.log);
+          }
+        });
+      }
+    });
+  };
+
+  const rowLeftClick = (row) => {
+    currentLeftRow.value = row;
+    console.log(row, "row...");
+    // TODO: 调用获取右侧表格数据的接口
+    dataList3.value = [{ amount: +row.fqty, reqDelivery: "", replyDelivery: "", replayDate: "", uuid: uuidv4() }];
+  };
+
   return {
     columns,
     columns2,
+    columns3,
+    dataList3,
+    loading3,
+    rowLeftClick,
     dataList,
     dataList2,
     loading,
     loading2,
     maxHeight,
+    handleCommand,
     pagination,
     searchOptions,
     modalRef,

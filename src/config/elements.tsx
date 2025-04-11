@@ -26,6 +26,7 @@ import {
   DocumentChecked,
   DocumentCopy,
   DocumentDelete,
+  DocumentRemove,
   Download,
   Edit,
   EditPen,
@@ -38,6 +39,7 @@ import {
   Hide,
   Link,
   Loading,
+  Memo,
   Menu,
   Message,
   MessageBox,
@@ -49,6 +51,7 @@ import {
   Plus,
   Pointer,
   Position,
+  Postcard,
   PriceTag,
   Printer,
   QuestionFilled,
@@ -170,7 +173,10 @@ export const IconConf = {
   Switch: <Switch />,
   CircleClose: <CircleClose />,
   Pointer: <Pointer />,
-  Remove: <Remove />
+  Remove: <Remove />,
+  DocumentRemove: <DocumentRemove />,
+  Memo: <Memo />,
+  Postcard: <Postcard />
 };
 
 // 提示图标
@@ -186,7 +192,7 @@ export const Question = (props: {
   const { label, tipMsg = "提示", Icon = QuestionFilled, placement = "top", color = "orange", size = 14, iconStyle, ...reset } = props;
   return (
     <span>
-      {label ? <span>{label}</span> : null}
+      {label ? <span class="fw-700">{label}</span> : null}
       <el-tooltip placement={placement} content={tipMsg} {...reset}>
         {{
           default: () => (
@@ -201,6 +207,13 @@ export const Question = (props: {
   );
 };
 
+/** 加载旋转图标 */
+export const LoadingIcon = (props) => (
+  <el-icon class="is-loading" {...props}>
+    <Loading />
+  </el-icon>
+);
+
 // 定义 uploadApi 的类型
 type UploadApi<T> = (formData: FormData, onUploadProgress: (progressEvent: AxiosProgressEvent) => void) => Promise<T>;
 
@@ -209,22 +222,26 @@ export const HxUploadProgress = <T extends {}>(props: { fd: FormData; uploadApi:
   return new Promise((resolve, reject) => {
     const { uploadApi, fd } = props;
     const formRef = ref();
-    const isOK = ref(false);
     const progressInfo = ref<AxiosProgressEvent>({ loaded: 0, total: 0 } as AxiosProgressEvent);
 
     // 上传进度
     const UploadProgress = () => {
       const { loaded, total } = progressInfo.value;
-      const percent = Math.floor((loaded / total) * 100);
+      const percent = total > 0 ? Math.floor((loaded / total) * 100) : 0;
       return (
         <>
-          <div>测试接口定义地址:/oa/fin/payslipmanage/importpayslipdata2</div>
-          <el-progress percentage={percent} stroke-width={15} text-inside={true} status="success" />
+          <div>上传进度:</div>
+          <el-progress percentage={percent} stroke-width={20} text-inside={true} status="success" />
         </>
       );
     };
+
+    function onReset() {
+      progressInfo.value = { loaded: 0, total: 0 } as AxiosProgressEvent;
+    }
+
     const resultDialog = addDialog({
-      title: "上传进度",
+      title: "文件上传",
       width: "460px",
       draggable: true,
       showClose: false,
@@ -238,14 +255,13 @@ export const HxUploadProgress = <T extends {}>(props: { fd: FormData; uploadApi:
         const { loaded, total } = progressInfo.value;
         if (total > 0 && loaded < total) {
           showMessageBox(`确认要取消上传吗?`).then(() => {
-            progressInfo.value = { loaded: 0, total: 0 } as AxiosProgressEvent;
-            isOK.value = true;
+            onReset();
             uploadApi["cancel"]("上传已取消");
             done();
           });
-        } else if (!isOK.value) {
-          done();
+          return;
         }
+        done();
       }
     });
     function onUploadProgress(progressEvent: AxiosProgressEvent) {
@@ -253,18 +269,14 @@ export const HxUploadProgress = <T extends {}>(props: { fd: FormData; uploadApi:
       progressInfo.value = progressEvent;
       if (loaded > 0 && loaded === total) {
         const timer = setTimeout(() => {
-          resultDialog.options.value.visible = false;
-          isOK.value = true;
-          progressInfo.value = { loaded: 0, total: 0 } as AxiosProgressEvent;
+          onReset();
           clearTimeout(timer);
-        }, 2000);
+        }, 3000);
       }
     }
     uploadApi(fd, onUploadProgress)
       .then(resolve)
-      .catch((err) => {
-        isOK.value = false;
-        reject(err);
-      });
+      .catch(reject)
+      .finally(() => (resultDialog.options.value.visible = false));
   });
 };

@@ -81,6 +81,51 @@ export function getQAInstoreRateData(params) {
   return http.request("get", "/oa/mfg/qa/inspectionbilldata/inspectionBillData", { params });
 }
 
+/** 供应商-新增 */
+export function insertSupplierList(params) {
+  return http.request("post", "/sup/supplierNew/insertSupplier", { data: params });
+}
+
+/** 供应商-删除 */
+export function deleteSupplierList(params) {
+  return http.request("delete", "/sup/supplierNew/deleteSupplier", { params });
+}
+
+/** 供应商-修改 */
+export function updateSupplierList(params) {
+  return http.request("put", "/sup/supplierNew/updateSupplier", { data: params });
+}
+
+/** 供应商-分页查询 */
+export function fetchSupplierList(params) {
+  return http.request("post", "/sup/supplierNew/searchSupplier", { data: params });
+}
+
+/** 供应商-分组查询 */
+export function fetchSupplierGroupList(params) {
+  return http.request("post", "/sup/supplierGroup/searchSupplierGroup", { data: params });
+}
+
+/** 供应商-分组新增 */
+export function insertSupplierGroupList(params) {
+  return http.request("post", "/sup/supplierGroup/insertSupplierGroup", { data: params });
+}
+
+/** 供应商-分组修改 */
+export function updateSupplierGroupList(params) {
+  return http.request("put", "/sup/supplierGroup/updateSupplierGroup", { data: params });
+}
+
+/** 供应商-分组删除 */
+export function deleteSupplierGroupList(params) {
+  return http.request("delete", "/sup/supplierGroup/deleteSupplierGroup", { params });
+}
+
+/** 供应商-导出 */
+export function exportSupplierList(params) {
+  return http.request("post", "/sup/supplierNew/exportSupplier", { data: params });
+}
+
 /** ========================= 物控部 ========================= */
 
 /** 物控部 排产齐套明细列表查询 */
@@ -333,4 +378,29 @@ export function updateProductStandard(data) {
 /** 生产标准——导入 */
 export function importProductStandard(data) {
   return http.request("post", "/oa/mfg/eng/productionStandard/uploadProductionStandard", { data, headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** 产线——查询 */
+export function fetchProductLineList(data) {
+  return http.request("post", "/oa/mfg/prod/productionLine/select", { data });
+}
+
+/** 产线——新增 */
+export function insertProductLineList(data) {
+  return http.request("post", "/oa/mfg/prod/productionLine/insert", { data });
+}
+
+/** 产线——修改 */
+export function updateProductLineList(data) {
+  return http.request("put", "/oa/mfg/prod/productionLine/update", { data });
+}
+
+/** 产线——删除 */
+export function deleteProductLineList(data) {
+  return http.request("delete", "/oa/mfg/prod/productionLine/delete", { params: data });
+}
+
+/** 产线——导出 */
+export function exportProductLineList(data) {
+  return http.request("post", "/oa/mfg/prod/productionLine/export", { data });
 }

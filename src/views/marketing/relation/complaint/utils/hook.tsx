@@ -25,6 +25,7 @@ import {
 import { h, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 import AddModal from "../addModal.vue";
+import Detail from "../Detail.vue";
 import EditForm from "@/components/EditForm/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
@@ -173,7 +174,7 @@ export const useConfig = () => {
       closeOnClickModal: false,
       showResetButton: false,
       customButtonText: row?.marketState === 0 ? "提交单据" : "",
-      contentRenderer: () => h(AddModal, { ref: FormRef }),
+      contentRenderer: () => h(Detail, { ref: FormRef }),
       beforeCustom: (done, { options }) => {
         onSubmitChange("submit", FormRef, done);
       },
@@ -190,27 +191,25 @@ export const useConfig = () => {
       msgText = `确定要${title}客诉单吗？`;
     }
 
-    const { formRef, sendList, formData, detailData } = FormRef.value.getRef();
-    switch (detailData?.marketState) {
-      //审核状态为已提交，禁用客诉明细修改
-      case 1:
-        return message.error("审核状态为已提交，禁止修改");
-      //审核状态为已接收或已回复，禁用客诉明细修改
-      case 2:
-      case 3:
-        {
-          const state = detailData?.state;
-          if (state === 1 || state === 2) {
-            return message.error(`单据状态为${BillState_Color[state].name}，禁止修改`);
+    FormRef.value.getRef().then(({ valid, sendList, formData, detailData, data }) => {
+      switch (detailData?.marketState) {
+        //审核状态为已提交，禁用客诉明细修改
+        case 1:
+          return message.error("审核状态为已提交，禁止修改");
+        //审核状态为已接收或已回复，禁用客诉明细修改
+        case 2:
+        case 3:
+          {
+            const state = detailData?.state;
+            if (state === 1 || state === 2) {
+              return message.error(`单据状态为${BillState_Color[state].name}，禁止修改`);
+            }
           }
+          break;
+        case 4: {
+          return message.error("审核状态为已作废，禁止修改");
         }
-        break;
-      case 4: {
-        return message.error("审核状态为已作废，禁止修改");
       }
-    }
-
-    formRef?.validate((valid) => {
       if (valid) {
         if (!formData.complaintEntryList?.length) {
           return message.error("客诉明细表不能为空");

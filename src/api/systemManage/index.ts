@@ -14,6 +14,7 @@ import {
   DeptInfoItemType,
   DeptInfoTreeOptionType,
   DeptRoleItemType,
+  DeptTreeItemType,
   DeptUserInfoItemType,
   DeptUserItemType,
   DetartMenttemType,
@@ -141,7 +142,8 @@ export type {
   EsopVersionItemType,
   FormGroupItemType,
   FormTypeItemType,
-  FormGroupConfigItemType
+  FormGroupConfigItemType,
+  DeptTreeItemType
 };
 
 /** ========================= 菜单管理(基础信息) ========================= */
@@ -162,10 +164,6 @@ export function menuAdd(data) {
 /** 修改菜单 */
 export function menuUpdate(data) {
   return http.request<boolean>("post", "/sys/sys/menulist/update", { data });
-}
-
-export function menuFormColumnList({ menuId, columnGroupId }, params) {
-  return http.request<FormGroupConfigItemType[]>("get", `/sys/sys/SysMenuFormItem/select/${menuId}/${columnGroupId}`, { ...params });
 }
 
 /** 删除菜单 */
@@ -209,9 +207,9 @@ export function getButtonUrlList(data) {
 
 /** ========================= 表单配置(菜单管理) ========================= */
 
-/** 表单配置: 获取列表 */
-export function formColumnList(menuId, params = {}) {
-  return http.request<FormColumnItemType[]>("get", "/sys/sys/SysMenuFormItem/select/" + menuId, { ...params });
+/** 表单配置: 列表 */
+export function formColumnList(formId, params = {}) {
+  return http.request<FormColumnItemType[]>("get", "/sys/sys/SysMenuFormItem/select/" + formId, { ...params });
 }
 /** 表单配置: 更新 */
 export function updateformColumn(data: FormColumnItemType[]) {
@@ -220,6 +218,11 @@ export function updateformColumn(data: FormColumnItemType[]) {
 /** 表单配置: 删除 */
 export function deleteformColumn(data) {
   return http.request<boolean>("delete", "/sys/sys/SysMenuFormItem/deleteBatch", { data });
+}
+
+/** 表单配置: 配置详情列表 */
+export function menuFormColumnList(params, config = {}) {
+  return http.request<FormGroupConfigItemType[]>("get", "/sys/sys/SysMenuFormItem/select", { params, ...config });
 }
 
 /** ========================= 表单分组(菜单管理) ========================= */
@@ -301,6 +304,10 @@ export function detartMentList() {
 export function departTreeNotOverThreeLevel() {
   return http.request("get", "/sys/sys/deptinfo/getDeptTreeForLevel");
 }
+/** 获取绩效、提成的部门树 */
+export function fetchMenuDepartTree(params) {
+  return http.request("get", "/sys/sys/deptinfo/getDeptListByMenuIdAndUserId", { params });
+}
 /** 添加编辑部门下拉列表 */
 export function getDetartMenuOptionList() {
   return http.request<DetartMenuOptionType>("get", "/sys/sys/deptinfo/getpagemessage");
@@ -351,7 +358,7 @@ export function detartGroupDelete(params) {
 /** ========================= 用户管理(基础信息) ========================= */
 
 /** 用户列表 */
-export function userInfoList(data: UserInfoReqType) {
+export function userInfoList(data: Partial<UserInfoReqType>) {
   return http.request<TablePagingResType<UserInfoItemType>>("post", "/sys/sys/userinfo/select", { data });
 }
 /** 新增角色 */
@@ -969,7 +976,7 @@ export function taskUserList(data) {
 
 /** 获取部门菜单(弹窗) */
 export function getDeptTreeData() {
-  return http.request<string>("get", "/sys/com/getdepttreedata", { headers: { hideLoading: true } });
+  return http.request<DeptTreeItemType[]>("get", "/sys/com/getdepttreedata", { headers: { hideLoading: true } });
 }
 
 /** 获取角色列表(弹窗) */
@@ -1027,7 +1034,7 @@ export function exportTask(params) {
 }
 /** 任务管理: 预览任务md */
 export function viewTask(params) {
-  return http.request<{ markdown_content: string }>("get", "/oa/sys/systaskregister/preview-v2", { params });
+  return http.request<{ markdown_content: string }>("get", "/oa/sys/systaskregister/preview-v2", { params, headers: { hideLoading: true } });
 }
 /** 任务管理: 删除任务 */
 export function deleteTask(params) {
@@ -1060,6 +1067,11 @@ export function commonBack(params, headers?) {
   return http.request("post", "/app/common/approval/back", { data: params, headers });
 }
 
+/** 审批通用撤销 */
+export function commonRevoke(params, headers?) {
+  return http.request("post", "/app/common/approval/revoke", { data: params, headers });
+}
+
 /** ========================= APP版本日志 ========================= */
 /** APP版本日志 列表 */
 export function esopVersionList() {
@@ -1078,4 +1090,61 @@ export function getTaskBoardData(params) {
 /** 任务统计 - 任务绩效 */
 export function getTaskPerformanceData(params) {
   return http.request("get", "/oa/sys/systaskregisterstatistics/getTaskPerformance", { params });
+}
+/** 帮助文档 - 分页查询 */
+export function fetchHelpDocList(params) {
+  return http.request("post", "/sys/sys/help/getPage", { data: params });
+}
+/** 帮助文档 - 单条查询 */
+export function queryHelpDocInfo(params) {
+  return http.request("post", "/sys/sys/help/getDocument", { data: params });
+}
+/** 帮助文档 - 新增 */
+export function insertHelpDocList(params) {
+  return http.request("post", "/sys/sys/help/add", { data: params });
+}
+/** 帮助文档 - 修改 */
+export function updateHelpDocList(params) {
+  return http.request("post", "/sys/sys/help/updateById", { data: params });
+}
+/** 帮助文档 - 删除 */
+export function deleteHelpDocList(params) {
+  return http.request("post", "/sys/sys/help/deleteAll", { data: params });
+}
+/** 帮助文档 - 删除历史 */
+export function deleteHistoryHelpDocFile(params) {
+  return http.request("post", "/sys/sys/help/delete", { data: params });
+}
+/** 帮助文档 - 历史列表信息查询 */
+export function fetchHelpDocHistoryList(params) {
+  return http.request("post", "/sys/sys/help/getHistoricalPage", { data: params });
+}
+/** 帮助文档 - 回滚 */
+export function rollBackHelpDocHistoryList(params) {
+  return http.request("post", "/sys/sys/help/rollback", { data: params });
+}
+/** 帮助文档 - 根据菜单id进行预览 */
+export function previewDocFile(params) {
+  return http.request("post", "/sys/sys/help/getHelpDocumentByMenuId", { data: params });
+}
+
+/** 移动端审批表单配置 - 新增 */
+export function insertAppFormList(params) {
+  return http.request("post", "/sys/sys/appconfig/insert", { data: params });
+}
+/** 移动端审批表单配置 - 修改 */
+export function updateAppFormList(params) {
+  return http.request("post", "/sys/sys/appconfig/update", { data: params });
+}
+/** 移动端审批表单配置 - 删除 */
+export function deleteAppFormList(params) {
+  return http.request("post", "/sys/sys/appconfig/delete", { data: params });
+}
+/** 移动端审批表单配置 - 分页查询 */
+export function fetchAppFormRecordList(params) {
+  return http.request("post", "/sys/sys/appconfig/getPage", { data: params });
+}
+/** 移动端审批表单配置 - 列表查询 */
+export function fetchAppFormList(params) {
+  return http.request("post", "/sys/sys/appconfig/getList", { data: params });
 }

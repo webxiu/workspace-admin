@@ -1,25 +1,84 @@
 <template>
-  <div class="flex">
-    <div ref="viewerRef" v-loading="loading" id="markdownViewer" :class="$props.class" />
-    <div ref="outlineRef" id="outline-anchor" style="position: fixed; right: 0" />
+  <div class="flex ui-p-r">
+    <div ref="viewerRef" v-loading="loading" id="markdownViewer" class="flex-1" :class="$props.class" />
+    <div ref="outlineRef" id="outline-anchor" />
+    <el-image
+      fit="contain"
+      class="viewer-image"
+      :showProgress="true"
+      :hideOnClickModal="true"
+      :initialIndex="imageViewer.index"
+      :previewSrcList="imageViewer.images"
+      :src="imageViewer.images[imageViewer.index]"
+      style="width: 0px; height: 0px"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onDeactivated, Ref, ref, unref, watch, onMounted } from "vue";
+import { onBeforeUnmount, onDeactivated, Ref, ref, unref, watch, onMounted, nextTick, reactive } from "vue";
 import VditorPreview from "vditor/dist/method.min";
 import { getTheme } from "./getTheme";
-
 const props = defineProps({
   loading: { type: Boolean },
   value: { type: String },
-  class: { type: String }
+  class: { type: String },
+  hideOutline: { type: Boolean }
 });
+
 const viewerRef = ref(null);
 const outlineRef = ref(null);
 const vditorPreviewRef = ref(null) as Ref<VditorPreview | null>;
+const imageViewer = reactive({ index: 0, images: [] });
 
-function init() {
+onMounted(() => {
+  create();
+  viewImage();
+});
+
+onBeforeUnmount(destroy);
+onDeactivated(destroy);
+
+watch(
+  () => props.value,
+  (v, oldValue) => {
+    v !== oldValue && create();
+  }
+);
+
+function destroy() {
+  const vditorInstance = unref(vditorPreviewRef);
+  if (!vditorInstance) return;
+  vditorInstance.destroy?.();
+  vditorPreviewRef.value = null;
+}
+
+/** 通过弹出层预览图片 */
+function viewImage() {
+  const viewDom = document.querySelector("#markdownViewer");
+  viewDom.addEventListener("load", loadImage, true);
+  viewDom.addEventListener("click", clickImage);
+
+  function loadImage({ target }) {
+    const suffix = target.src.split(".").pop();
+    const excludeSuffix = ["svg"].includes(suffix);
+    if (target.tagName === "IMG" && !excludeSuffix) {
+      imageViewer.images.push(target.src);
+    }
+  }
+
+  function clickImage({ target }) {
+    if (target.tagName === "IMG") {
+      imageViewer.index = imageViewer.images.indexOf(target.src);
+      nextTick(() => {
+        const imgDom = document.querySelector(".viewer-image img");
+        (imgDom as HTMLImageElement)?.click();
+      });
+    }
+  }
+}
+
+function create() {
   const viewerEl = unref(viewerRef);
   const outlineEl = unref(outlineRef);
   vditorPreviewRef.value = VditorPreview.preview(viewerEl, props.value, {
@@ -47,7 +106,8 @@ function init() {
       // }
       VditorPreview.outlineRender(viewerEl, outlineEl);
       if (outlineEl.innerText.trim() !== "") {
-        outlineEl.style.display = "block";
+        const isHide = props.hideOutline;
+        outlineEl.style.display = !isHide ? "block" : "none";
         outlineEl
           .querySelector("ul")
           .querySelectorAll("li")
@@ -84,29 +144,6 @@ function init() {
     }
   });
 }
-
-watch(
-  () => props.value,
-  (v, oldValue) => {
-    v !== oldValue && init();
-  }
-);
-
-function destroy() {
-  const vditorInstance = unref(vditorPreviewRef);
-  if (!vditorInstance) return;
-  try {
-    vditorInstance?.destroy?.();
-  } catch (error) {
-    //
-  }
-  vditorPreviewRef.value = null;
-}
-
-onMounted(init);
-
-onBeforeUnmount(destroy);
-onDeactivated(destroy);
 </script>
 
 <style lang="scss">
@@ -116,15 +153,11 @@ onDeactivated(destroy);
   --textarea-text-color: #616161;
   --hover-background-color: #f6f8fa;
 
-  position: absolute !important;
-  top: 64px;
-  right: 20px;
-  bottom: 20px;
-  display: none;
-  width: 186px;
+  min-width: 186px;
   overflow: auto;
   font-size: 12px;
   border-right: 0;
   border-left: 1px solid var(--border-color);
+  background: var(--el-bg-color);
 }
 </style>

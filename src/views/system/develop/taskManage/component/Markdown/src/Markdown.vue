@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapRef" style="height: 200px" />
+  <div ref="wrapRef" :style="{ height: height + 'px' }" />
 </template>
 <script lang="ts">
 import type { Ref } from "vue";
@@ -12,7 +12,7 @@ import { getFileNameOnUrlPath } from "@/utils/common";
 
 type Lang = "zh_CN" | "en_US" | "ja_JP" | "ko_KR" | undefined;
 
-const { VITE_VIRTUAL_PATH, VITE_BASE_API } = import.meta.env;
+const { VITE_BASE_API } = import.meta.env;
 const url = VITE_BASE_API + "/oa/sys/systaskregister/uploadTempFile";
 
 export default defineComponent({
@@ -29,49 +29,11 @@ export default defineComponent({
     const fileNameList = ref<string[]>([]);
     // const modalFn = useModalContext();
     const getLocale = ref("'zh_CN'");
-    const getDarkMode = ref("light");
     const valueRef = ref(props.value || "");
 
-    // watch(
-    //   [() => getDarkMode.value, () => initedRef.value],
-    //   ([val, inited]) => {
-    //     if (!inited) {
-    //       return;
-    //     }
-    //     instance.getVditor()?.setTheme(getTheme(val) as any, getTheme(val, "content"), getTheme(val, "code"));
-    //   },
-    //   {
-    //     immediate: true,
-    //     flush: "post"
-    //   }
-    // );
-
-    // watch(
-    //   () => props.value,
-    //   (v) => {
-    //     if (v !== valueRef.value) {
-    //       instance.getVditor()?.setValue(v);
-    //     }
-    //     valueRef.value = v;
-    //   }
-    // );
-
-    const getCurrentLang = computed((): "zh_CN" | "en_US" | "ja_JP" | "ko_KR" => {
-      let lang: Lang;
-      switch (unref(getLocale)) {
-        case "en":
-          lang = "en_US";
-          break;
-        case "ja":
-          lang = "ja_JP";
-          break;
-        case "ko":
-          lang = "ko_KR";
-          break;
-        default:
-          lang = "zh_CN";
-      }
-      return lang;
+    const getCurrentLang = computed<Lang>(() => {
+      const langs = { en: "en_US", ja: "ja_JP", ko: "ko_KR" };
+      return langs[unref(getLocale)] || "zh_CN";
     });
     function init() {
       const wrapEl = unref(wrapRef);
@@ -82,20 +44,9 @@ export default defineComponent({
         theme: "classic",
         // cdn: "https://vditor.sec-in.com",
         cdn: "/source/vditor@3.9.6",
-        lang: unref(getCurrentLang),
+        lang: unref(getCurrentLang.value),
         mode: "sv",
-        preview: {
-          // theme: {
-          //   // 设置内容主题
-          //   current: "classic",
-          //   path: "/source/vditor@3.4.0/dist/css/content-theme"
-          // },
-          hljs: {
-            // 设置代码块主题
-            style: "light"
-          },
-          actions: []
-        },
+        preview: { hljs: { style: "light" }, actions: [] },
         input: (v) => {
           valueRef.value = v;
           emit("update:value", v);
@@ -104,7 +55,10 @@ export default defineComponent({
         after: () => {
           nextTick(() => {
             // modalFn?.redoModalHeight?.();
-            insEditor.setValue(valueRef.value);
+            if (valueRef.value) {
+              // 存在值才设置, 否则会影响placeholder显示
+              insEditor.setValue(valueRef.value);
+            }
             vditorRef.value = insEditor;
             initedRef.value = true;
             emit("get", instance);

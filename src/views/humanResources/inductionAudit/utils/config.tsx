@@ -9,7 +9,8 @@ import { reactive, ref } from "vue";
 
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
-import { Loading } from "@element-plus/icons-vue";
+import { LoadingIcon } from "@/config/elements";
+import { numberOptions } from "@/config/constant";
 
 // 审核验证
 export const formRules = reactive<FormRules>({
@@ -27,12 +28,6 @@ export const formRules = reactive<FormRules>({
   inductionDate: [{ required: true, message: "请输入入职日期", trigger: "blur" }],
   wageAccountingType: [{ required: true, message: "请输入工资核算标准", trigger: "blur" }]
 });
-
-const LoadingIcon = () => (
-  <el-icon class="is-loading">
-    <Loading />
-  </el-icon>
-);
 
 const layout = { span: 8, xs: 24, sm: 24, md: 8, lg: 8, xl: 8 };
 
@@ -164,13 +159,9 @@ export const formConfigs = ({ formData, auditOptionData, row }): FormConfigItemT
       prop: "isPoorPeople",
       colProp: layout,
       render: ({ formModel, row }) => {
-        const isPoorPeopleOpts = [
-          { optionName: "是", optionValue: 1 },
-          { optionName: "否", optionValue: 0 }
-        ];
         return (
           <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
-            {isPoorPeopleOpts.map((item) => (
+            {numberOptions.map((item) => (
               <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
             ))}
           </el-select>
@@ -310,13 +301,9 @@ export const basicFormConfigs = (): FormConfigItemType[] => {
       prop: "isPoorPeople",
       colProp: layout,
       render: ({ formModel, row }) => {
-        const isPoorPeopleOpts = [
-          { optionName: "是", optionValue: 1 },
-          { optionName: "否", optionValue: 0 }
-        ];
         return (
           <el-select disabled v-model={formModel[row.prop]} class="ui-w-100" placeholder=" " suffix-icon={<div />}>
-            {isPoorPeopleOpts.map((item) => (
+            {numberOptions.map((item) => (
               <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
             ))}
           </el-select>

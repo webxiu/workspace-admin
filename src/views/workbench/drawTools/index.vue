@@ -6,21 +6,19 @@
 -->
 
 <script setup lang="ts">
-import { PureTableBar } from "@/components/RePureTableBar";
 import { useConfig } from "./utils/hook";
-import ButtonList from "@/components/ButtonList/index.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "WorkbenchDrawToolsIndex" });
 
-const { tableRef, columns, dataList, loading, maxHeight, buttonList, onEdit, onRefresh, onDelete, onRowClick, handleSelectionChange } = useConfig();
+const { tableRef, columns, dataList, loading, maxHeight, buttonList, pagination, searchOptions, onRefresh, onRowClick, rowDbclick, onTagSearch } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <PureTableBar :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
       <template #title>
-        <div class="no-wrap block-quote-tip ui-w-100 mr-20">创建列表</div>
+        <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入流程名称" searchField="processName" />
       </template>
       <template #buttons>
         <ButtonList moreActionText="更多选项" :buttonList="buttonList" :auto-layout="false" />
@@ -32,7 +30,6 @@ const { tableRef, columns, dataList, loading, maxHeight, buttonList, onEdit, onR
           :height="maxHeight"
           :max-height="maxHeight"
           row-key="id"
-          class="table-config"
           :adaptive="true"
           align-whole="center"
           :loading="loading"
@@ -40,21 +37,13 @@ const { tableRef, columns, dataList, loading, maxHeight, buttonList, onEdit, onR
           :data="dataList"
           :columns="dynamicColumns"
           :paginationSmall="size === 'small'"
+          :pagination="pagination"
           highlight-current-row
           :show-overflow-tooltip="true"
           @row-click="onRowClick"
-          @selection-change="handleSelectionChange"
+          @row-dblclick="rowDbclick"
           @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-        >
-          <template #operation="{ row }">
-            <el-button size="small" @click.stop="onEdit(row)">修改</el-button>
-            <el-popconfirm :width="280" :title="`确认删除\n【${row.name}】?`" @confirm="onDelete([row])">
-              <template #reference>
-                <el-button size="small" @click.stop>删除</el-button>
-              </template>
-            </el-popconfirm>
-          </template>
-        </pure-table>
+        />
       </template>
     </PureTableBar>
   </div>

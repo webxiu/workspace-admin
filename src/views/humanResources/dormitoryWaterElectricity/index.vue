@@ -78,7 +78,6 @@ const {
       <template #title>
         <TitleCate :name="groupArrsList[1]?.groupName" :border="false" />
       </template>
-      <template #buttons />
       <template v-slot="{ size, dynamicColumns }">
         <pure-table
           border

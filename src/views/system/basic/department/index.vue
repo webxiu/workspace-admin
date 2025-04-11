@@ -40,7 +40,7 @@ const {
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
       <PureTableBar :columns="columns" style="width: 60%" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
-          <SearchList
+          <HxSearchHighlight
             v-model="dataList"
             :bright="false"
             style="width: 30%"

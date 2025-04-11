@@ -17,6 +17,7 @@ const {
   onDblclick,
   onCurrentChange,
   handleSizeChange,
+  rowClick,
   handleCurrentChange
 } = useTestReportConfig();
 </script>
@@ -47,6 +48,7 @@ const {
           :show-overflow-tooltip="true"
           :pagination="pagination"
           @row-dblclick="onDblclick"
+          @row-click="rowClick"
           @current-change="onCurrentChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"

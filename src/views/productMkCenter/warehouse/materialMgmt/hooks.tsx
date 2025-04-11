@@ -1,7 +1,7 @@
 import { fetchMaterialList, getMaterialGroupTreeData, pushDownMaterialV2List, selectMaterialV2List, updateMaterialV2List } from "@/api/plmManage";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { getMenuColumns, RendererType, setColumn, updateButtonList } from "@/utils/table";
 import { h, nextTick, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 import { useEleHeight } from "@/hooks";
@@ -10,17 +10,22 @@ import { addDialog } from "@/components/ReDialog";
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessageBox } from "element-plus";
 import { formConfigs, formRules } from "./config";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export const useTable = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
+  const tableRef = ref();
   const dataList = ref([]);
   const categoryTreeData = ref([]);
   const columns = ref([]);
+  const loading = ref(false);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 40 + 46);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const curNodeName = ref("0");
   const curNodeLabel = ref("0");
   const currentRow: any = ref({});
-  const materialMainTable = ref();
   const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize,
@@ -56,7 +61,17 @@ export const useTable = () => {
     }
   ]);
 
+  onMounted(() => {
+    getConfig();
+    getLeftTreeData();
+  });
+
   const getConfig = async () => {
+    const pushState: RendererType = ({ row }) => (row.pushState == 1 ? "已下推" : "待下推");
+    const cbcertification: RendererType = ({ row }) => (row.cbcertification == 1 ? "是" : "否");
+    const isfrozen: RendererType = ({ row }) => (row.isfrozen == 1 ? "是" : "否");
+    const miniQuantity: RendererType = ({ row }) => row.materialOtherVO?.fMinIssueQty ?? "";
+
     let columnData: TableColumnList[] = [
       { label: "物料编号", prop: "number" },
       { label: "物料名称", prop: "name" },
@@ -92,30 +107,41 @@ export const useTable = () => {
     if (menuCols?.length) {
       columnData = menuCols;
     }
-    columns.value = setColumn({
-      columnData,
-      operationColumn: false
-    });
     updateButtonList(buttonList, buttonArrs[0]);
+    columns.value = setColumn({ columnData, formData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({
+      columnData,
+      formData,
+      operationColumn: false,
+      columnsRender: { pushState, cbcertification, isfrozen, miniQuantity }
+    });
   };
 
   const onSearch = (rowIndex?) => {
     currentRow.value = {};
-    selectMaterialV2List(formData).then((res: any) => {
-      const { total, records } = res.data;
-      pagination.total = total;
-      dataList.value = records;
-
-      if (typeof rowIndex === "number" && rowIndex >= 0) {
-        currentRow.value = dataList.value[rowIndex];
-        nextTick(() => {
-          materialMainTable.value?.getTableRef()?.toggleRowSelection(dataList.value[rowIndex], true);
+    loading.value = true;
+    selectMaterialV2List(formData)
+      .then((res: any) => {
+        const { total, records } = res.data;
+        pagination.total = total;
+        dataList.value = records;
+        if (typeof rowIndex === "number" && rowIndex >= 0) {
           currentRow.value = dataList.value[rowIndex];
-        });
-      } else {
-        currentRow.value = {};
-      }
-    });
+          nextTick(() => {
+            setRowSelected(dataList.value[rowIndex], true);
+            currentRow.value = dataList.value[rowIndex];
+          });
+        } else {
+          currentRow.value = {};
+        }
+      })
+      .finally(() => (loading.value = false));
+  };
+
+  const onTagSearch = (values) => {
+    Object.assign(formData, values);
+    formData.page = 1;
+    onSearch();
   };
 
   // 添加、编辑弹窗
@@ -153,7 +179,6 @@ export const useTable = () => {
       modifyDate: row?.modifyDate,
       miniQuantity: row?.materialOtherVO?.fMinIssueQty
     };
-    console.log(_formData, "_formData..");
 
     addDialog({
       title: `修改物料`,
@@ -228,11 +253,6 @@ export const useTable = () => {
     return message.warning("功能暂未开发");
   };
 
-  onMounted(() => {
-    getConfig();
-    getLeftTreeData();
-  });
-
   const getLeftTreeData = () => {
     getMaterialGroupTreeData({}).then((res: any) => {
       if (res.data) {
@@ -262,26 +282,35 @@ export const useTable = () => {
       .catch(console.log);
   };
 
-  const buttonList = ref<ButtonItemType[]>([
-    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
-    { clickHandler: onPushDown, type: "warsning", text: "下推", isDropDown: false },
-    { clickHandler: onExport, type: "default", text: "导出", isDropDown: true }
-  ]);
-
-  const onFresh = () => {
+  const onRefresh = () => {
     getConfig();
     onSearch();
   };
 
+  const handleNodeClick = (treeItem) => {
+    curNodeName.value = treeItem.id;
+    curNodeLabel.value = treeItem.groupCode;
+    const finalArr = [];
+    const loopFindId = (item) => {
+      finalArr.push(item.id);
+      if (item.children && Array.isArray(item.children) && item.children.length) {
+        item.children.forEach((el) => {
+          loopFindId(el);
+        });
+      }
+    };
+    loopFindId(treeItem);
+    formData.materialGroups = String(finalArr);
+    onSearch();
+  };
+
   const dbClick = (row) => {
-    currentRow.value = row;
-    materialMainTable.value?.getTableRef()?.toggleRowSelection(row);
     onEdit();
   };
 
   const rowClick = (row) => {
     currentRow.value = row;
-    materialMainTable.value?.getTableRef()?.toggleRowSelection(row);
+    setRowSelected(row);
   };
 
   // 分页相关
@@ -295,47 +324,45 @@ export const useTable = () => {
     onSearch();
   }
 
-  const handleNodeClick = (treeItem) => {
-    curNodeName.value = treeItem.id;
-    curNodeLabel.value = treeItem.groupCode;
-    const finalArr = [];
+  function setRowSelected(row, isSelect?) {
+    if (tableRef.value?.getTableRef) {
+      tableRef.value?.getTableRef()?.toggleRowSelection(row, isSelect);
+    } else {
+      tableRef.value?.setRowSelected(row["id"]);
+    }
+  }
 
-    const loopFindId = (item) => {
-      finalArr.push(item.id);
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+  }
 
-      if (item.children && Array.isArray(item.children) && item.children.length) {
-        item.children.forEach((el) => {
-          loopFindId(el);
-        });
-      }
-    };
-    loopFindId(treeItem);
-    formData.materialGroups = String(finalArr);
-    onSearch();
-  };
-
-  const handleTagSearch = (values) => {
-    Object.assign(formData, values);
-    formData.page = 1;
-    onSearch();
-  };
+  const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
+    { clickHandler: onPushDown, type: "warsning", text: "下推", isDropDown: false },
+    { clickHandler: onExport, type: "default", text: "导出", isDropDown: true }
+  ]);
 
   return {
-    dataList,
-    searchOptions,
-    categoryTreeData,
+    columnDefs,
+    isAgTable,
     columns,
+    dataList,
+    loading,
     pagination,
     maxHeight,
     buttonList,
     curNodeName,
-    onFresh,
-    materialMainTable,
+    searchOptions,
+    categoryTreeData,
+    tableRef,
+    onRefresh,
     dbClick,
     rowClick,
+    onTagSearch,
+    handleNodeClick,
     handleSizeChange,
     handleCurrentChange,
-    handleNodeClick,
-    handleTagSearch
+    onSwitchTable
   };
 };

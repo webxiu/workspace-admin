@@ -12,6 +12,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "SystemDevelopEnum" });
 
 const {
+  columnDefs,
+  isAgTable,
   tableRef2,
   loading,
   loading2,
@@ -20,6 +22,7 @@ const {
   dataList,
   dataList2,
   maxHeight,
+  pagination,
   searchOptions,
   buttonList,
   buttonList2,
@@ -33,18 +36,34 @@ const {
   onRowClick2,
   rowClick,
   onTagSearch,
-  pagination,
   handleSizeChange,
   handleCurrentChange,
-  onCurrentChange,
-  handleSelectionChange2
+  handleSelectionChange2,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        rowKey="id"
+        :rowData="dataList"
+        :loading="loading"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 15"
+        :paginations="pagination"
+        @refresh="onRefresh"
+        @switch="onSwitchTable"
+        @cellClicked="rowClick"
+        @cellDoubleClicked="onEdit"
+        @sizeChange="handleSizeChange"
+        @currentChange="handleCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, searchOptions, searchField: 'optionName', placeholder: '请输入信息名称' }"
+      />
+      <PureTableBar v-else :columns="columns" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入信息名称" searchField="optionName" />
         </template>
@@ -67,12 +86,11 @@ const {
             :paginationSmall="size === 'small'"
             highlight-current-row
             :show-overflow-tooltip="true"
-            @current-change="onCurrentChange"
             @row-click="rowClick"
-            @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
             :pagination="pagination"
             @page-size-change="handleSizeChange"
             @page-current-change="handleCurrentChange"
+            @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
           >
             <template #operation="{ row }">
               <el-button size="small" @click.stop="onEdit(row)">修改</el-button>

@@ -16,7 +16,7 @@
           :height="height"
           :max-height="height"
           row-key="id"
-          class="table-config"
+          class="fc-table table-config"
           :adaptive="true"
           align-whole="center"
           :loading="loading"
@@ -26,6 +26,7 @@
           :paginationSmall="size === 'small'"
           highlight-current-row
           :show-overflow-tooltip="false"
+          :row-style="rowStyle"
           @row-click="onRowClick"
           @selection-change="handleSelectionChange"
         >
@@ -48,8 +49,21 @@ import { useConfig } from "./utils/hook";
 defineProps<{ height: number }>();
 const emits = defineEmits(["dataList"]);
 
-const { tableRef, columns, dataList, loading, buttonList2, loadingStatus, onSearch, onRefresh, onDelete, onRowClick, onCopyColumn, handleSelectionChange } =
-  useConfig(emits);
+const {
+  tableRef,
+  columns,
+  dataList,
+  loading,
+  buttonList2,
+  loadingStatus,
+  onSearch,
+  onRefresh,
+  onDelete,
+  rowStyle,
+  onRowClick,
+  onCopyColumn,
+  handleSelectionChange
+} = useConfig(emits);
 
 defineExpose({ onSearch });
 </script>

@@ -61,7 +61,7 @@ export const importFormConfigs = (formData): FormConfigItemType[] => {
     {
       label: "文件",
       prop: "file",
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => {
         const onRemove = () => {
           formData.file = null;

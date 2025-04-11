@@ -1,7 +1,10 @@
 import { AttendanceMachineItemType, fetchMachine, getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
 import { Ref, reactive, ref } from "vue";
+import { boolOptions, genderOptions, numberOptions } from "@/config/constant";
 
-export const formRules = (flag: Ref<boolean>) => {
+import { FormRules } from "element-plus";
+
+export const formRules = (flag): FormRules => {
   return {
     staffName: [{ required: true, message: "姓名为必填项", trigger: "submit" }],
     sex: [{ required: true, message: "性别为必填项", trigger: "submit" }],
@@ -15,10 +18,6 @@ export const formRules = (flag: Ref<boolean>) => {
 
 export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
   const postSelectValues = ref([]);
-  const exmpetAttendanceOptions = ref([
-    { optionName: "是", optionValue: true },
-    { optionName: "否", optionValue: false }
-  ]);
   const machineList = ref<AttendanceMachineItemType[]>([]);
 
   // 获取考勤机数据
@@ -62,8 +61,9 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
       render: ({ formModel, row }) => {
         return (
           <el-select v-model={formModel[row.prop]} placeholder="请选择" style="width: 100%">
-            <el-option label="男" value="男" />
-            <el-option label="女" value="女" />
+            {genderOptions.map((item) => (
+              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+            ))}
           </el-select>
         );
       }
@@ -101,8 +101,9 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
       render: ({ formModel, row }) => {
         return (
           <el-select v-model={formModel[row.prop]} placeholder="请选择" style="width: 100%" onChange={changeQYWX}>
-            <el-option label="是" value={true} />
-            <el-option label="否" value={false} />
+            {boolOptions.map((item) => (
+              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+            ))}
           </el-select>
         );
       }
@@ -163,7 +164,7 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
       colProp: { span: 8 },
       render: ({ formModel, row }) => (
         <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
-          {exmpetAttendanceOptions.value.map((item) => (
+          {boolOptions.map((item) => (
             <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
           ))}
         </el-select>
@@ -187,19 +188,13 @@ export const formConfigs = ({ changeQYWX, treeSelectData, _formData }) => {
       label: "贫困人员",
       prop: "isPoorPeople",
       colProp: { span: 8 },
-      render: ({ formModel, row }) => {
-        const isPoorPeopleOpts = [
-          { optionName: "是", optionValue: 1 },
-          { optionName: "否", optionValue: 0 }
-        ];
-        return (
-          <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
-            {isPoorPeopleOpts.map((item) => (
-              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
-            ))}
-          </el-select>
-        );
-      }
+      render: ({ formModel, row }) => (
+        <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择">
+          {numberOptions.map((item) => (
+            <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+          ))}
+        </el-select>
+      )
     },
     {
       label: "备注",

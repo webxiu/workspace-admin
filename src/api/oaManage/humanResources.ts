@@ -27,6 +27,7 @@ import {
   PersonFlowStatisticsDetailItemType,
   ResignApplyApproveNodeItemType,
   ResignApplyItemType,
+  RoleLevelInfoType,
   StaffAnalysisType,
   StaffChangeItemType,
   StaffDeptGroupItemType,
@@ -95,7 +96,8 @@ export type {
   StaffChangeItemType,
   ResignApplyItemType,
   UserBasicInfoItemType,
-  ResignApplyApproveNodeItemType
+  ResignApplyApproveNodeItemType,
+  RoleLevelInfoType
 };
 
 /** OA管理:人事行政部 */
@@ -124,6 +126,10 @@ export function deleteTimeSetting(params) {
 /** 考勤汇总: 列表 */
 export function attendanceSummaryList(data) {
   return http.request<TablePagingResType<AttendanceSummaryItemType>>("post", "/oa/hr/attendanceSummary/getattendancedetailsbyparam", { data });
+}
+/** 考勤汇总: 查询单条 */
+export function queryAttendanceSummaryList(data) {
+  return http.request("get", "/oa/hr/attendanceSummary/getAttendanceById", { params: data });
 }
 /** 考勤汇总: 生成 */
 export function generateAttSummary(data) {
@@ -197,6 +203,21 @@ export function uploadUserData(params, onUploadProgress: (progressEvent: AxiosPr
 /** 考勤记录: 查询 */
 export function fetchAttendanceRecord(data) {
   return http.request("post", "/oa/hr/attendancerecord/select", { data });
+}
+
+/** 排班管理: 查询 */
+export function fetchArrangeMgmtRecord(data) {
+  return http.request("post", "/oa/hr/schedulingManagement/selectSchedulingData", { data });
+}
+
+/** 排班管理: 查询单条记录 */
+export function queryArrangeMgmtRecord(data) {
+  return http.request("get", "/oa/hr/schedulingManagement/selectById", { params: data });
+}
+
+/** 排班管理: 修改 */
+export function updateArrangeMgmtRecord(data) {
+  return http.request("put", "/oa/hr/schedulingManagement/updateSchedulingData", { data });
 }
 
 /** 考勤记录: 恢复 */
@@ -452,6 +473,10 @@ export function getInductionAuditRoleInfo(data) {
 export function getInductionAuditRoleInfoByDeptId(data) {
   return http.request<StaffDeptRoleInfoItemType[]>("get", "/sys/sys/roleinfo/getRoleInfoByDeptId", { params: data, headers: { hideLoading: true } });
 }
+/** 入职审核: 根据岗位ID获取职级 */
+export function getLevelByRoleId(params) {
+  return http.request<RoleLevelInfoType>("get", "/sys/sys/roleinfo/getRoleInfoById", { params, headers: { hideLoading: true } });
+}
 /** 入职审核: 提交审核 */
 export function submitInductionAudit(data) {
   return http.request<boolean>("post", "/oa/hr/inductioncheckin/update", { data });
@@ -511,6 +536,21 @@ export function saveUserLeaveApply(data) {
 /** 请假单: 获取部门用户列表 */
 export function deptUserInfo(data: UserInfoReqType) {
   return http.request<TablePagingResType<UserInfoItemType>>("post", "/oa/hr/staffinfo/selectgroupstaffinfolist", { data });
+}
+
+/** 请假单: 上传附件 */
+export function uploadAttrLeaveApply(data) {
+  return http.request("post", "/oa/hr/askforleave/addFile", { data }, { headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** 请假单: 删除附件 */
+export function deleteAttrLeaveApply(data) {
+  return http.request("post", "/oa/hr/askforleave/delFile", { data });
+}
+
+/** 请假单: 查询附件 */
+export function fetchAttrLeaveApply(data) {
+  return http.request("get", "/oa/hr/askforleave/getFile", { params: data });
 }
 
 /** ========================= 休息日设定 ========================= */
@@ -578,6 +618,11 @@ export function deletePerformanceInfo(data) {
   return http.request("post", "/oa/hr/performancemanagement/delete", { data: data });
 }
 
+/** 绩效管理: 删除(新接口) */
+export function deletePerformanceSheet(data) {
+  return http.request("post", "/oa/hr/performance/deleteList", { data: data });
+}
+
 /** 绩效管理: 修改金额 */
 export function editPerformanceDataInfo(data) {
   return http.request("post", "/oa/hr/performancemanagement/update", { data });
@@ -591,6 +636,31 @@ export function validYearAndMonthPerformance(data) {
 /** 绩效管理: 导入 */
 export function importPerformanceSheet(data) {
   return http.request("post", "/oa/hr/performancemanagement/uploadfile", { data }, { headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** 绩效管理: 插入 */
+export function insertPerformanceSheet(data) {
+  return http.request("post", "/oa/hr/performance/addPerformance", { data });
+}
+
+/** 绩效管理: 修改 */
+export function updatePerformanceSheet(data) {
+  return http.request("post", "/oa/hr/performance/update", { data });
+}
+
+/** 绩效管理: 查询详情 */
+export function queryPerformanceSheet(data) {
+  return http.request("get", "/oa/hr/performance/selectDetail", { params: data });
+}
+
+/** 绩效管理: 查询 */
+export function fetchPerformanceSheet(data) {
+  return http.request<TablePagingResType<PerformanceManageItemType>>("post", "/oa/hr/performance/select", { data });
+}
+
+/** 绩效管理: 导入解析 */
+export function importResolvePerformanceSheet(data) {
+  return http.request("post", "/oa/hr/performance/parseFile", { data }, { headers: { "Content-Type": "multipart/form-data" } });
 }
 
 /** 绩效管理: 导出 */
@@ -701,12 +771,12 @@ export function deleteChangeWaterElectricity(data) {
 
 /** 水电表更换: 列表新增 */
 export function insertChangeWaterElectricity(data) {
-  return http.request("post", "/oa/hr/waterElectricityAlter/insert", { data });
+  return http.request<boolean>("post", "/oa/hr/waterElectricityAlter/insert", { data });
 }
 
 /** 水电表更换: 列表修改 */
 export function updateChangeWaterElectricity(data) {
-  return http.request("post", "/oa/hr/waterElectricityAlter/update", { data });
+  return http.request<boolean>("post", "/oa/hr/waterElectricityAlter/update", { data });
 }
 
 /** 宿舍管理: 楼栋查询 */
@@ -891,6 +961,26 @@ export function fetchSafeCertificate(data) {
   return http.request("post", "/oa/hr/securitycertificatemanagement/select", { data });
 }
 
+/** 安全证书管理: 明细查询 */
+export function querySafeCertificate(data) {
+  return http.request("get", "/oa/hr/securitycertificatemanagement/getList", { params: data });
+}
+
+/** 安全证书管理: 明细修改 */
+export function updateDeitalSafeCertificate(data) {
+  return http.request("post", "/oa/hr/securitycertificatemanagement/updateDetails", { data });
+}
+
+/** 安全证书管理: 明细新增 */
+export function insertDeitalSafeCertificate(data) {
+  return http.request("post", "/oa/hr/securitycertificatemanagement/insertDetails", { data });
+}
+
+/** 安全证书管理: 明细删除 */
+export function deleteDeitalSafeCertificate(data) {
+  return http.request("get", "/oa/hr/securitycertificatemanagement/deleteDetails", { params: data });
+}
+
 /** 安全证书管理: 新增 */
 export function addSafeCertificate(data) {
   return http.request("post", "/oa/hr/securitycertificatemanagement/insert", { data });
@@ -898,7 +988,7 @@ export function addSafeCertificate(data) {
 
 /** 安全证书管理: 删除 */
 export function delSafeCertificate(data) {
-  return http.request("post", "/oa/hr/securitycertificatemanagement/delect", { data });
+  return http.request("post", "/oa/hr/securitycertificatemanagement/delect", { params: data });
 }
 
 /** 安全证书管理: 修改 */
@@ -1093,4 +1183,148 @@ export function supplementaryCard(data) {
 /** 补签卡数据获取(考勤明细) */
 export function supplementaryCardOnAtt(data) {
   return http.request("post", "/sys/sys/qywxReissue/getDataByStaffIdAndDate", { data });
+}
+
+/** ========================= 补签卡管理 ========================= */
+
+/** 补签卡 - 分页查询 */
+export function fetchSupplementaryCardMgmt(data) {
+  return http.request("post", "/oa/hr/attendanceReissue/selectAttendanceReissue", { data });
+}
+
+/** 补签卡 - 单条查询 */
+export function fetchOneSupplementaryCardMgmt(data) {
+  return http.request("get", "/oa/hr/attendanceReissue/selectByEdit", { params: data });
+}
+
+/** 补签卡 - 新增 */
+export function addSupplementaryCardMgmt(data) {
+  return http.request("post", "/oa/hr/attendanceReissue/insertAttendanceReissue", { data });
+}
+
+/** 补签卡 - 修改 */
+export function updateSupplementaryCardMgmt(data) {
+  return http.request("put", "/oa/hr/attendanceReissue/updateAttendanceReissue", { data });
+}
+
+/** 补签卡 - 删除 */
+export function deleteSupplementaryCardMgmt(data) {
+  return http.request("delete", "/oa/hr/attendanceReissue/deleteAttendanceReissue", { params: data });
+}
+
+/** 补签卡 - 导出 */
+export function exportSupplementaryCardMgmt(data) {
+  return http.request("post", "/oa/hr/attendanceReissue/export", { data });
+}
+
+/** 工龄薪资 - 分页查询 */
+export function fetchWorkAgeMoneyList(data) {
+  return http.request("post", "/oa/hr/senioritymonth/select", { data });
+}
+
+/** 工龄薪资 - 保存 */
+export function saveWorkAgeMoneyList(data) {
+  return http.request("post", "/oa/hr/senioritymonth/saveorupdate", { data });
+}
+
+/** 工龄薪资 - 删除 */
+export function delWorkAgeMoneyList(data) {
+  return http.request("post", "/oa/hr/senioritymonth/delete", { params: data });
+}
+
+/** 工龄薪资 - 手动计算 */
+export function recalcWorkAgeMoneyList(data) {
+  return http.request("post", "/oa/hr/senioritymonth/calcsenioritybymonth", { data });
+}
+
+/** 提成管理: 插入 */
+export function insertCommissionSheet(data) {
+  return http.request("post", "/oa/hr/commission/addCommission", { data });
+}
+
+/** 提成管理: 更新 */
+export function updateCommissionSheet(data) {
+  return http.request("post", "/oa/hr/commission/update", { data });
+}
+
+/** 提成管理: 删除 */
+export function deleteCommissionSheet(data) {
+  return http.request("post", "/oa/hr/commission/deleteList", { data });
+}
+
+/** 提成管理: 分页查询 */
+export function fetchCommissionSheetList(data) {
+  return http.request("post", "/oa/hr/commission/select", { data });
+}
+
+/** 提成管理: 明细查询 */
+export function fetchCommissionSheetDetail(data) {
+  return http.request("get", "/oa/hr/commission/selectDetail", { params: data });
+}
+
+/** 提成管理: 导出 */
+export function exportCommissionSheetDetail(data) {
+  return http.request("post", "/oa/hr/commission/export", { data });
+}
+
+/** 提成管理: 解析 */
+export function parseFileCommission(data) {
+  return http.request("post", "/oa/hr/commission/parseFile", { data }, { headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** =================其他调整========== */
+
+/** 其他调整: 插入 */
+export function insertOtherAdjustmentSheet(data) {
+  return http.request("post", "/oa/hr/otherAdjustment/addOtherAdjustment", { data });
+}
+
+/** 其他调整: 更新 */
+export function updateOtherAdjustmentSheet(data) {
+  return http.request("post", "/oa/hr/otherAdjustment/update", { data });
+}
+
+/** 其他调整: 删除 */
+export function deleteOtherAdjustmentSheet(data) {
+  return http.request("post", "/oa/hr/otherAdjustment/deleteList", { data });
+}
+
+/** 其他调整: 分页查询 */
+export function fetchOtherAdjustmentSheetList(data) {
+  return http.request("post", "/oa/hr/otherAdjustment/select", { data });
+}
+
+/** 其他调整: 明细查询 */
+export function fetchOtherAdjustmentSheetDetail(data) {
+  return http.request("get", "/oa/hr/otherAdjustment/selectDetail", { params: data });
+}
+
+/** 其他调整: 导出 */
+export function exportOtherAdjustmentSheetDetail(data) {
+  return http.request("post", "/oa/hr/otherAdjustment/export", { data });
+}
+
+/** 其他调整: 解析 */
+export function parseFileOtherAdjustment(data) {
+  return http.request("post", "/oa/hr/otherAdjustment/parseFile", { data }, { headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** 社保公积金——导入 */
+export function importHrMoney(data) {
+  return http.request("post", "/oa/hr/socialSecurity/uploadfile", { data }, { headers: { "Content-Type": "multipart/form-data" } });
+}
+
+/** 社保公积金——修改 */
+export function updateHrMoney(data) {
+  return http.request("post", "/oa/hr/socialSecurity/update", { data });
+}
+
+/** 社保公积金——删除 */
+export function deleteHrMoney(data) {
+  return http.request("post", "/oa/hr/socialSecurity/delete", { data });
+}
+
+/** 社保公积金——分页查询 */
+export function fetchHrMoneyPageList(data) {
+  return http.request("post", "/oa/hr/socialSecurity/getPage", { data });
 }

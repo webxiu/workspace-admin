@@ -1,10 +1,12 @@
-import { ChatRound, Download, Plus, Printer, RefreshRight, Refresh, Right, Setting } from "@element-plus/icons-vue";
+import { ChatRound, Download, Plus, Printer, Refresh, RefreshRight, Right, Setting } from "@element-plus/icons-vue";
 
 import { ref } from "vue";
 import { useConfig } from "../../staffInfo/utils/hook";
 
 export const useConfig2 = () => {
   const {
+    columnDefs,
+    isAgTable,
     tableRef,
     loading,
     columns,
@@ -33,7 +35,8 @@ export const useConfig2 = () => {
     onSizeChange,
     onCurrentChange,
     onSelect,
-    onSelectAll
+    onSelectAll,
+    onSwitchTable
   } = useConfig(1);
 
   const buttonList = ref<ButtonItemType[]>([
@@ -48,6 +51,8 @@ export const useConfig2 = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     tableRef,
     loading,
     columns,
@@ -62,13 +67,14 @@ export const useConfig2 = () => {
     onEdit,
     onDelete,
     onSearch,
-    onDbClick,
     onRowClick,
-    onSelectAll,
+    onDbClick,
     onTagSearch,
+    onSelect,
+    onSelectAll,
     onNodeClick,
     onSizeChange,
     onCurrentChange,
-    onSelect
+    onSwitchTable
   };
 };

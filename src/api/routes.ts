@@ -40,9 +40,18 @@ export function getAsyncRoutes(params) {
 export function getMenuList(params) {
   return http.request<UserMenuItem[]>("get", "/home/usermenu", { params });
 }
+/** 根据菜单路由获取菜单ID */
+export function getMenuIdByURL(params) {
+  return http.request<number>("get", "/work/wb/infocenter/getmenulistbyrouter", { params });
+}
 
 /** 配置表单: 下拉数据获取 */
 export function getApiData<T = any>(method: RequestMethods, url: string, data = {}) {
   const mKey = method === "get" ? "params" : "data";
-  return http.request<T>(method, url, { [mKey]: data, headers: { hideLoading: true } });
+  return http.request<T>(method, url, { [mKey]: data, headers: { hideLoading: true, hideMessage: true } });
+}
+
+/** 根据接口URL上传文件 */
+export function uploadFileByUrl(url, data) {
+  return http.request<string>("post", url, { data: data }, { headers: { "Content-Type": "multipart/form-data" } });
 }

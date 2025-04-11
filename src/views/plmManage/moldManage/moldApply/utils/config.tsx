@@ -3,7 +3,6 @@ import { FormRules, UploadProps } from "element-plus";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import HxModalInput from "@/components/HxModalInput/index.vue";
 import { Plus } from "@element-plus/icons-vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 import { reactive } from "vue";
 
 // 编辑员工信息校验
@@ -20,17 +19,17 @@ export const formRules = reactive<FormRules>({
 
 // 模具类型
 export const modelTypeList = [
-  { label: "塑胶", value: "1" },
-  { label: "五金", value: "2" },
-  { label: "辅料", value: "3" },
-  { label: "其他", value: "4" }
+  { optionName: "塑胶", optionValue: "1" },
+  { optionName: "五金", optionValue: "2" },
+  { optionName: "辅料", optionValue: "3" },
+  { optionName: "其他", optionValue: "4" }
 ];
 
 // 资料提供
 export const dataProvideList = [
-  { label: "CAD 2D", value: "1" },
-  { label: "Pro/E(3D)", value: "2" },
-  { label: "其他", value: "3" }
+  { optionName: "CAD 2D", optionValue: "1" },
+  { optionName: "Pro/E(3D)", optionValue: "2" },
+  { optionName: "其他", optionValue: "3" }
 ];
 
 export const formConfigs = ({ type }): FormConfigItemType[] => {
@@ -50,15 +49,7 @@ export const formConfigs = ({ type }): FormConfigItemType[] => {
             readonly={true}
             showButton={true}
             onSelect={onSelect}
-            componentProp={{
-              searchConfig: [{ label: "产品型号", value: "productCode" }],
-              maxHeight: 520,
-              columns: [
-                { label: "产品型号", prop: "productCode", headerAlign: "center" },
-                { label: "产品类别", prop: "productType", headerAlign: "center" }
-              ],
-              api: fetchProductStoreList
-            }}
+            showModel="product"
           />
         );
       }
@@ -108,8 +99,8 @@ export const formConfigs = ({ type }): FormConfigItemType[] => {
       render: ({ formModel, row }) => (
         <el-checkbox-group v-model={formModel[row.prop]} class="pl-10">
           {modelTypeList.map((item) => (
-            <el-checkbox label={item.value} key={item.value}>
-              {item.label}
+            <el-checkbox label={item.optionValue} key={item.optionValue}>
+              {item.optionName}
             </el-checkbox>
           ))}
         </el-checkbox-group>
@@ -130,8 +121,8 @@ export const formConfigs = ({ type }): FormConfigItemType[] => {
       render: ({ formModel, row }) => (
         <el-checkbox-group v-model={formModel[row.prop]} class="pl-10">
           {dataProvideList.map((item) => (
-            <el-checkbox label={item.value} key={item.value}>
-              {item.label}
+            <el-checkbox label={item.optionValue} key={item.optionValue}>
+              {item.optionName}
             </el-checkbox>
           ))}
         </el-checkbox-group>
@@ -150,7 +141,7 @@ export const formConfigs = ({ type }): FormConfigItemType[] => {
       label: "附图",
       prop: "plmBillFiles",
       colProp: { span: 24 },
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => {
         return (
           <el-upload
@@ -280,7 +271,7 @@ export const printFormConfigs = ({ onPreviewImg }): FormConfigItemType[] => {
       render: ({ formModel, row }) => (
         <el-checkbox-group v-model={formModel[row.prop]} class="pl-10" style={styleEl}>
           {modelTypeList.map((item) => (
-            <el-checkbox label={item.value}>{item.label}</el-checkbox>
+            <el-checkbox label={item.optionValue}>{item.optionName}</el-checkbox>
           ))}
         </el-checkbox-group>
       )
@@ -302,7 +293,7 @@ export const printFormConfigs = ({ onPreviewImg }): FormConfigItemType[] => {
       render: ({ formModel, row }) => (
         <el-checkbox-group v-model={formModel[row.prop]} class="pl-10" style={styleEl}>
           {dataProvideList.map((item) => (
-            <el-checkbox label={item.value}>{item.label}</el-checkbox>
+            <el-checkbox label={item.optionValue}>{item.optionName}</el-checkbox>
           ))}
         </el-checkbox-group>
       )
@@ -322,7 +313,7 @@ export const printFormConfigs = ({ onPreviewImg }): FormConfigItemType[] => {
       colProp: { span: 24 },
       class: "hide-content-left",
       labelWidth: "auto",
-      slots: { label: ({ label }) => <span class="pl-4 pr-40">{label}</span> },
+      slot: { label: ({ label }) => <span class="pl-4 pr-40">{label}</span> },
       render: ({ formModel, row }) => {
         const onPreview: UploadProps["onPreview"] = (uploadFile) => {
           onPreviewImg({ url: uploadFile.url });
@@ -382,7 +373,7 @@ export const printFormConfigs = ({ onPreviewImg }): FormConfigItemType[] => {
       colProp: { span: 24 },
       class: "hide-content-left",
       labelWidth: "auto",
-      slots: { label: ({ label }) => <span class="pl-4">{label}</span> },
+      slot: { label: ({ label }) => <span class="pl-4">{label}</span> },
       render: () => null
     },
     {

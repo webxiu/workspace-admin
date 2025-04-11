@@ -1,4 +1,4 @@
-import { onMounted, reactive, ref } from "vue";
+import { markRaw, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 
 import dayjs from "dayjs";
@@ -8,13 +8,23 @@ import { QueryParamsType, SearchOptionType } from "@/components/BlendedSearch/in
 import { downloadRateTableList, exportRateTableList, getRateTableList } from "@/api/oaManage/financeDept";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { PAGE_CONFIG } from "@/config/constant";
+import type { ECharts } from "echarts";
+import * as echarts from "echarts";
+import { debounce } from "@/utils/common";
+import { getOption } from "./config";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref([]);
   const rowData = ref();
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 52);
+  const chartRef = ref<HTMLElement>();
+  const chartInstance = ref<ECharts>();
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 475);
 
   const formData = reactive({
     startDate: "",
@@ -26,13 +36,15 @@ export const useConfig = () => {
   const nowDay = dayjs().format("YYYY-MM-DD");
 
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
+  const queryParams = reactive<QueryParamsType>({ date: `${nowDay} ~ ${nowDay}` });
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
-  const queryParams = reactive<QueryParamsType>({ date: `${nowDay} ~ ${nowDay}` });
 
   onMounted(() => {
     getColumnConfig();
+    if (chartRef.value) chartInstance.value = markRaw(echarts.init(chartRef.value));
+    window.onresize = debounce(() => chartInstance.value?.resize(), 300);
   });
 
   const getColumnConfig = async () => {
@@ -53,6 +65,7 @@ export const useConfig = () => {
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
     return columnData;
   };
 
@@ -65,15 +78,18 @@ export const useConfig = () => {
     loading.value = true;
     getRateTableList(formData)
       .then((res: any) => {
-        const data = res.data;
-        loading.value = false;
-        dataList.value = data.records || [];
-        pagination.total = data.total;
+        if (res.data) {
+          const data = res.data;
+          loading.value = false;
+          dataList.value = data.records || [];
+          pagination.total = data.total;
+          initChart();
+        }
       })
       .catch((err) => (loading.value = false));
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     onSearch();
   };
@@ -158,19 +174,40 @@ export const useConfig = () => {
     { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
   ]);
 
+  const initChart = () => {
+    const moneyArr = ["currency1", "currency2", "currency3", "currency4", "currency5", "currency6", "currency7"];
+    const curList = dataList.value.slice(0, 30);
+    const dataYList = [];
+    moneyArr.forEach((_, index) => {
+      dataYList.push(curList.map((el) => el[moneyArr[index]]));
+    });
+    const xAxis = curList.map((item) => item.quotationDate.split(" ")[0]);
+    const option = getOption({ data: dataYList, xAxis });
+    chartInstance.value?.setOption(option, true);
+  };
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
+
   return {
+    columnDefs,
+    isAgTable,
     loading,
     columns,
     dataList,
     maxHeight,
+    chartRef,
     pagination,
     searchOptions,
     queryParams,
     buttonList,
     onRefresh,
-    handleTagSearch,
+    onTagSearch,
     onCurrentChange,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    onSwitchTable
   };
 };

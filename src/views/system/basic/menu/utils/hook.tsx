@@ -2,23 +2,21 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-26 11:04:36
+ * @Last Modified time: 2025-02-22 15:17:27
  */
 
-import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { MenuListItemType, MenuOpeionsItemType, formColumnList, menuAdd, menuDelete, menuList, menuOpeionsList, menuUpdate } from "@/api/systemManage";
+import { Edit, Plus } from "@element-plus/icons-vue";
+import { MenuListItemType, menuAdd, menuDelete, menuList, menuUpdate } from "@/api/systemManage";
 import { computed, h, onMounted, reactive, ref } from "vue";
-import { formConfigs, formRules, iconList } from "./config";
-import { getEnumDictList, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
-import { message, showMessageBox } from "@/utils/message";
+import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { useRoute, useRouter } from "vue-router";
 
-import { FormRules } from "element-plus";
-import { Plus } from "@element-plus/icons-vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { findTreeNodes } from "@/utils/tree";
-import { getFormColumns } from "@/utils/form";
 import { handleTree } from "@/utils/tree";
+import { iconList } from "./config";
 import { useEleHeight } from "@/hooks";
 
 export enum ConfUrl {
@@ -141,6 +139,9 @@ export const useConfig = () => {
     }
     openDialog("add", selectRow);
   };
+
+  const onHeadEdit = wrapFn(rowData, () => onEdit(rowData.value));
+
   const onEdit = (row: MenuListItemType) => {
     // if (!row.parentId) return message.error("不能修改顶级")
     openDialog("edit", row);
@@ -150,10 +151,7 @@ export const useConfig = () => {
     const titleObj = { add: "新增", edit: "修改" };
     const title = titleObj[type];
     const formRef = ref();
-    const loading = ref<boolean>(true);
     const parentSelect = ref<MenuListItemType>();
-    const formConfigs = ref<FormConfigItemType[]>([]);
-    const formRules2 = ref<FormRules>({});
     const _formData = reactive({
       parentCode: row?.parentCode || "",
       menuType: row?.menuType ?? "",
@@ -227,55 +225,30 @@ export const useConfig = () => {
       }
     };
 
-    getFormColumns({ customProps, customElement, loading, groupCode: "1" })
-      .then((data) => {
-        const { formRules, formColumns } = data;
-        loading.value = false;
-        formRules2.value = formRules;
-        if (formColumns.length) formConfigs.value = formColumns;
-      })
-      .catch(() => (loading.value = false));
-
-    // const parentData = ref<MenuOpeionsItemType[]>([]);
-    // const menuOption = ref([]);
-    // getEnumDictList(["MenuType"]).then((res) => {
-    //   if (res.MenuType?.length) {
-    //     menuOption.value = res.MenuType;
-    //   }
-    // });
-
-    // menuOpeionsList()
-    //   .then((res) => {
-    //     parentData.value = res.data;
-    //     loading.value = false;
-    //   })
-    //   .catch(() => (loading.value = false));
-
     addDialog({
       title: `${title}项目`,
       props: {
-        loading: loading,
-        formInline: _formData,
-        // formRules: formRules(_formData),
-        // formConfigs: formConfigs({ type, parentData: parentData, menuOption, _formData, onParentTreeChange });,
-        formRules: formRules2,
-        formConfigs: formConfigs,
-        formProps: { labelWidth: "120px" }
+        params: { groupCode: "1" },
+        formConfig: [
+          {
+            formData: _formData,
+            customProps: customProps,
+            customElement: customElement,
+            formProps: { labelWidth: "120px" }
+          }
+        ]
       },
       width: "860px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
         const curData = { ..._formData, ...options.props.formInline };
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          // const _formData = data.forms[0];
           // 禁止关闭菜单管理
           if (row?.webRouter === route.path && !curData?.isEnable) {
             return message.error(`禁止关闭${row.menuName}`);
@@ -340,6 +313,7 @@ export const useConfig = () => {
 
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", icon: Plus, text: "新增", isDropDown: false },
+    { clickHandler: onHeadEdit, type: "warning", icon: Edit, text: "修改", isDropDown: false },
     { clickHandler: () => onOpenConfig("form"), type: "warning", text: "表单配置", isDropDown: true },
     { clickHandler: () => onOpenConfig("table"), type: "warning", text: "表格配置", isDropDown: true }
   ]);

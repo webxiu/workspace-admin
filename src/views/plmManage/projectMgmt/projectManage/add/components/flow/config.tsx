@@ -518,7 +518,7 @@ export const formDeliverConfigs = (readOnly = false, deleteFileIds) => {
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
+      slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
       colProp: { span: 24 },
       labelWidth: 80,
       prop: "files",

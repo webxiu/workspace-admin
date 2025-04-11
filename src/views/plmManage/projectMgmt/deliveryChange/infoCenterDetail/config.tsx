@@ -1,8 +1,9 @@
 import { fetchProjectTaskDelivers, getBOMTableRowSelectOptions } from "@/api/plmManage";
-import { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { getkkViewUrl } from "@/utils/storage";
-import { FormRules } from "element-plus";
 import { reactive, ref } from "vue";
+
+import { FormConfigItemType } from "@/components/EditForm/index.vue";
+import { FormRules } from "element-plus";
+import { getkkViewUrl } from "@/utils/storage";
 
 export const formRules = reactive<FormRules>({
   projectName: [{ required: true, message: "请选择变更项目", trigger: "submit" }],
@@ -126,7 +127,7 @@ export const formConfigs = ({ formData }): FormConfigItemType[] => {
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>变更附件</span> },
+      slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>变更附件</span> },
       colProp: { span: 24 },
       labelWidth: 95,
       prop: "files",

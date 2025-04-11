@@ -4,7 +4,7 @@ import { type PaginationProps } from "@pureadmin/table";
 import { ElMessage, dayjs } from "element-plus";
 import { downloadDataToExcel, setColumn, getMenuColumns, updateButtonList } from "@/utils/table";
 import EditForm from "@/components/EditForm/index.vue";
-
+import TableEditList from "@/components/TableEditList/index.vue";
 import { useEleHeight } from "@/hooks";
 import { addDialog } from "@/components/ReDialog";
 import { formConfigs, formConfigs1, formConfigsTop, formRules, formRules1, formRulesTop } from "./config";
@@ -14,19 +14,23 @@ import {
   devideDormitoryWaterElectricity,
   exportDormitoryWaterElectricity,
   fetchAllBuliding,
+  fetchDormitoryAllBuliding,
   fetchDormitoryWaterElectricity,
   fetchPublicDormitoryWaterElectricity,
   importDormitoryWaterElectricity,
   updateDormitoryWaterElectricity,
   updatePublicDormitoryWaterElectricity
 } from "@/api/oaManage/humanResources";
-import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
+import { downloadFile, formatDate, getFileNameOnUrlPath } from "@/utils/common";
 import SelectUserModal from "../selectUserModal/modal.vue";
+import HxUploadButton from "@/components/HxUploadButton/index.vue";
 
 import { PAGE_CONFIG } from "@/config/constant";
 import { cloneDeep } from "@pureadmin/utils";
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
 import { TableGroupItemType } from "@/api/systemManage";
+import { FormItemConfigType } from "@/utils/form";
+import HxModalInput from "@/components/HxModalInput/index.vue";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -167,17 +171,16 @@ export const useConfig = () => {
   };
 
   const openDialog = async (type: string, row?) => {
-    const titleObj = { add: "导入", edit: "修改" };
-    const title = titleObj[type];
+    const title = { add: "导入", edit: "修改" }[type];
     const formRef = ref();
-
     const _formData: any = reactive({
       buildingId: row?.buildingId,
       electric: row?.electric,
       id: row?.id,
       month: row?.month ?? "",
       water: row?.water,
-      year: row?.year ?? ""
+      year: row?.year ?? "",
+      files: []
     });
 
     if (row && row.year && row.month) {
@@ -185,30 +188,54 @@ export const useConfig = () => {
     } else {
       _formData.yearAndMonth = dayjs(new Date(formData.year + "-" + formData.month)).format("YYYY-MM");
     }
+    if (type === "add") {
+      _formData.yearAndMonth = dayjs().format("YYYY-MM");
+    }
 
-    const addFormData = reactive({
-      files: "",
-      yearAndMonth: dayjs().format("YYYY-MM")
-    });
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        formProps: { labelWidth: "70px" },
+        customElement: {
+          files: ({ formModel, row }) => {
+            return <HxUploadButton v-model:fileList={formModel[row.prop]} limit={1} accept={[".xlsx, .xls"].join(",")} />;
+          }
+        },
+        customColumn: {
+          electric: { hide: type === "add" },
+          water: { hide: type === "add" },
+          files: { hide: type === "edit" }
+        }
+      }
+    ];
 
     addDialog({
       title,
       props: {
-        formInline: type === "add" ? addFormData : _formData,
-        formRules: type === "add" ? formRules1 : formRules,
-        formConfigs: type === "add" ? formConfigs1() : formConfigs()
+        // formInline: type === "add" ? addFormData : _formData,
+        // formRules: type === "add" ? formRules1 : formRules,
+        // formConfigs: type === "add" ? formConfigs1() : formConfigs()
+        params: { groupCode: "2" },
+        formConfig: formConfig
       },
-      width: type === "add" ? "400px" : "200px",
+      width: "400px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          if (type === "add") {
+            delete _formData.electric;
+            delete _formData.water;
+          } else {
+            delete _formData.files;
+          }
           if (valid) {
             showMessageBox(`确认要${title}吗?`).then(() => {
-              onSubmitChange(type, title, type === "add" ? addFormData : _formData, () => {
+              onSubmitChange(type, title, _formData, () => {
                 done();
                 onSearch();
               });
@@ -217,42 +244,6 @@ export const useConfig = () => {
         });
       }
     });
-  };
-
-  const handleAddOtherUserNames = (configData) => {
-    if (!curBuildingsId.value) {
-      ElMessage({ message: "请先选择宿舍楼栋", type: "warning" });
-      return;
-    }
-    const setA = (v) => {
-      curMultipeOtherUserList.value = v;
-    };
-    addDialog({
-      title: "选择宿舍房间",
-      width: "900px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(SelectUserModal, { setA, curRows: currentRow, curBuildingsId }),
-      beforeSure: (done, { options }) => {
-        if (!curMultipeOtherUserList.value.length) {
-          ElMessage({ message: "未选定房间", type: "warning" });
-          return;
-        }
-        console.log(curMultipeOtherUserList.value, "curMultipeOtherUserList.value");
-        const lastClick = curMultipeOtherUserList.value[curMultipeOtherUserList.value.length - 1];
-        const names = lastClick.dormitoryCode;
-        configData.dormitoryCode = String(names);
-        configData.dormitoryId = lastClick.id;
-        configData.buildingId = lastClick.buildingId;
-        done();
-      }
-    });
-  };
-
-  const changeBuilding = (val) => {
-    console.log(val, "val");
-    curBuildingsId.value = val;
   };
 
   const openDialogTop = async (type: string, rowData?: any) => {
@@ -316,23 +307,75 @@ export const useConfig = () => {
       })
       .finally(() => (formLoading.value = false));
 
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        formProps: { labelWidth: "120px" },
+        customProps: {
+          yearAndMonth: { disabled: type === "edit" },
+          name: { disabled: type === "edit" },
+          dormitoryCode: { disabled: type === "edit" },
+          lastElectric: { disabled: type === "edit" },
+          lastWater: { disabled: type === "edit" }
+        },
+        customElement: {
+          dormitoryCode: ({ formModel, row }) => {
+            const interceptFn = () => {
+              if (formModel.name) return false;
+              message.warning("请先选择宿舍楼栋");
+              return true;
+            };
+            return (
+              <HxModalInput
+                title="选择宿舍房间"
+                placeholder="请选择"
+                valueKey={row.prop}
+                v-model={formModel[row.prop]}
+                readonly={true}
+                disabled={type === "edit"}
+                showButton={true}
+                interceptFn={interceptFn}
+                onSelect={(rows) => {
+                  const names = rows.dormitoryCode;
+                  formModel.dormitoryCode = String(names);
+                  formModel.dormitoryId = rows.id;
+                  formModel.buildingId = rows.buildingId;
+                }}
+                showModel="dormitory"
+                componentProp={{ paramConfig: { buildingCode: formModel.name } }}
+              />
+            );
+          }
+        },
+        customColumn: {
+          lastElectric: { hide: type === "add" },
+          lastWater: { hide: type === "add" }
+        }
+      }
+    ];
+
     addDialog({
       title,
       props: {
-        loading: type === "edit" ? formLoading : false,
-        formInline: _formData,
-        formRules: formRulesTop,
-        formConfigs: formConfigsTop({ type, buildings, changeBuilding, handleAddOtherUserNames: () => handleAddOtherUserNames(_formData) })
+        // loading: type === "edit" ? formLoading : false,
+        // formInline: _formData,
+        // formRules: formRulesTop,
+        // formConfigs: formConfigsTop({ type, buildings, changeBuilding, handleAddOtherUserNames: () => handleAddOtherUserNames(_formData) })
+        loading: formLoading,
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "700px",
       draggable: true,
       fullscreenIcon: true,
       okButtonText: "保存",
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      // contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`).then(() => {
               onSubmitChangeTop(type, title, _formData, () => {
@@ -353,7 +396,7 @@ export const useConfig = () => {
         month: +data.yearAndMonth.split("-")[1]
       };
       const fData = new FormData();
-      fData.append("files", data.files);
+      fData.append("files", data.files[0].raw);
       fData.append("data", JSON.stringify(param));
 
       importDormitoryWaterElectricity(fData).then((res) => {

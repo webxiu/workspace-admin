@@ -11,24 +11,31 @@ import {
 import { ElMessage, UploadProps } from "element-plus";
 import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { formConfigs, formRules } from "./config";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { getMenuColumns, setColumn, updateButtonList, usePageSelect } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { utils, write } from "xlsx";
 
 import { AxiosProgressEvent } from "axios";
-import EditForm from "@/components/EditForm/index.vue";
+import type { ColDef } from "ag-grid-community";
+import { FormItemConfigType } from "@/utils/form";
 import { LoadingType } from "@/components/ButtonList/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import { numberOptions } from "@/config/constant";
 import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
 
 export const useMachine = () => {
-  const dataList = ref<AttendanceMachineItemType[]>([]);
-  const columns = ref<TableColumnList[]>([]);
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
+  const tableRef = ref();
   const loading = ref(false);
   const currentRow = ref();
+  const dataList = ref<AttendanceMachineItemType[]>([]);
+  const columns = ref<TableColumnList[]>([]);
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49);
   const formData: any = reactive({});
@@ -43,6 +50,7 @@ export const useMachine = () => {
     getColumnConfig();
     getTableList();
   });
+  const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData, uniId: "id" });
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
@@ -78,7 +86,8 @@ export const useMachine = () => {
     const [menuCols] = columnArrs;
     if (menuCols?.length) columnData = menuCols;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, operationColumn: false, selectionColumn: { hide: false } });
+    columns.value = setColumn({ columnData, selectionColumn: { hide: false }, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, selectionColumn: { hide: false }, operationColumn: false });
     return columnData;
   };
 
@@ -86,16 +95,17 @@ export const useMachine = () => {
     fetchMachine(formData).then((res) => {
       if (res.data) {
         dataList.value = res.data;
+        setSelectCheckbox();
       }
     });
   };
 
-  const onFresh = () => {
+  const onReFresh = () => {
     getColumnConfig();
     getTableList();
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     getTableList();
   };
@@ -143,19 +153,36 @@ export const useMachine = () => {
       realTime: row?.realTime ?? 1
     });
 
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        formProps: { labelWidth: "140px" },
+        dataOption: {
+          encrypt: numberOptions,
+          pushOptionsFlag: numberOptions,
+          supportPing: numberOptions,
+          realTime: numberOptions
+        }
+      }
+    ];
+
     addDialog({
       title: `${title}`,
-      props: { loading: formLoading, formInline: _formData, formRules: formRules, formConfigs: formConfigs() },
+      props: {
+        params: { groupCode: "1" },
+        formConfig: formConfig
+      },
       width: "900px",
       draggable: true,
       fullscreenIcon: true,
-      okButtonText: "保存",
       closeOnClickModal: false,
+      okButtonText: "保存",
       hideFooter: type === "view",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done) => {
-        const formIns = formRef.value.getRef();
-        formIns?.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`)
               .then(() => {
@@ -265,8 +292,18 @@ export const useMachine = () => {
       .catch(console.log);
   };
 
+  function onSelect(rows, row) {
+    setSelectChange({ rows, row });
+  }
+
   function handleSelectionChange(rows: AttendanceMachineItemType[]) {
     rowsData.value = rows;
+  }
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+    rowsData.value = [];
   }
 
   const buttonList = ref<ButtonItemType[]>([
@@ -285,6 +322,9 @@ export const useMachine = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
+    tableRef,
     loading,
     dataList,
     columns,
@@ -292,10 +332,12 @@ export const useMachine = () => {
     buttonList,
     searchOptions,
     loadingStatus,
-    onFresh,
+    onReFresh,
     rowClick,
+    onSelect,
     rowDbclick,
-    handleTagSearch,
-    handleSelectionChange
+    onTagSearch,
+    handleSelectionChange,
+    onSwitchTable
   };
 };

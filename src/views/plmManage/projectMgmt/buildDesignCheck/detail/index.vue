@@ -15,15 +15,7 @@
             readonly
             showButton
             @select="onSelect"
-            :componentProp="{
-              searchConfig: [{ label: '产品型号', value: 'productCode' }],
-              maxHeight: 520,
-              columns: [
-                { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-              ],
-              api: fetchProductStoreList
-            }"
+            showModel="product"
           />
         </td>
         <td class="head-col req-txt">产品名称</td>
@@ -67,7 +59,6 @@
 <script setup lang="tsx">
 import dayjs from "dayjs";
 import { reactive } from "vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 
 const _formData = reactive({
   productModel: "",

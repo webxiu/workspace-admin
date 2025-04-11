@@ -10,6 +10,7 @@ import { bg, avatar, illustration } from "./utils/static";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import { downloadFile } from "@/utils/common";
 
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
@@ -127,7 +128,7 @@ dataThemeChange();
             <!-- 底部链接 -->
             <div class="flex just-between align-center mt-8">
               <div class="download-link">
-                <a v-for="item in clientList" :key="item.name" :href="item.href">
+                <a v-for="item in clientList" :key="item.name" :href="item.href" @click.prevent="downloadFile(item.href)">
                   <el-button link type="primary" class="app-download">{{ item.name }}</el-button>
                 </a>
               </div>

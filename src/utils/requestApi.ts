@@ -43,8 +43,7 @@ export function getDeptOptions(isDeptName = false) {
       if (arr2.length) return resolve(arr2);
       getDeptTreeData()
         .then((res) => {
-          const result = JSON.parse(res.data);
-          const treeArr = treeArrayTraverse(result, { title: "label", id: "value" });
+          const treeArr = treeArrayTraverse(res.data, { title: "label", id: "value" });
           gMap.set(MyKey.deptKey2, treeArr);
           resolve(treeArr);
         })

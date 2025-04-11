@@ -31,14 +31,7 @@ const {
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <PureTableBar :columns="columns" class="flex-1" @refresh="onSearch" @change-column="setUserMenuColumns">
       <template #title>
-        <BlendedSearch
-          @tagSearch="onTagSearch"
-          :searchOptions="searchOptions"
-          :queryParams="queryParams"
-          :immediate="true"
-          placeholder="请输入姓名"
-          searchField="userName"
-        />
+        <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" :queryParams="queryParams" placeholder="请输入姓名" searchField="userName" />
       </template>
       <template #buttons>
         <ButtonList :buttonList="buttonList" :auto-layout="false" more-action-text="业务操作" />

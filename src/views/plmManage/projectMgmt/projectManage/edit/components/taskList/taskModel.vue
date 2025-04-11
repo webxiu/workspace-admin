@@ -40,7 +40,7 @@ function onSelectAll(rows) {
 }
 
 const onSearch = () => {
-  formData.projectModelId = route.query.modelId;
+  // formData.projectModelId = route.query.modelId;
   fetchTaskStoreList(formData).then((res: any) => {
     const data = res.data;
     dataList.value = data.records;
@@ -56,7 +56,6 @@ const getColumnConfig = () => {
     .map((item) => item.name);
 
   const columnData: TableColumnList[] = [
-    { label: "序号", type: "index", width: 60, align: "center", headerAlign: "center" },
     { label: "任务名称", prop: "taskName", minWidth: 100 },
     { label: "工期(天)", prop: "duration", width: 80, align: "right", headerAlign: "center" },
     { label: "负责岗位", prop: "relatedPost", slot: "relatedPost", minWidth: 80 },
@@ -67,7 +66,6 @@ const getColumnConfig = () => {
   columns.value = setColumn({
     columnData,
     operationColumn: false,
-    indexColumn: false,
     selectionColumn: {
       hide: false,
       selectable: (row) => !flatTaskArr.includes(row.taskName)

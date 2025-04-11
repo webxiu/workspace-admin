@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-06-29 11:27:55 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-06-29 11:27:55 
+ * @Author: Hailen
+ * @Date: 2023-06-29 11:27:55
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-06-29 11:27:55
  */ -->
 
 <template>
@@ -131,7 +131,7 @@ export interface SearchOptionType extends CascaderOption {
 export type QueryParamsType = Record<string, any>;
 
 export interface BlendedSearchProps {
-  /** 是否立即执行(默认立即执行) */
+  /** 是否立即执行(默认true, 立即执行) */
   immediate?: boolean;
   /** 输入提示文本 */
   placeholder?: string;
@@ -141,6 +141,8 @@ export interface BlendedSearchProps {
   searchOptions?: SearchOptionType[];
   /** 默认查询配置 */
   queryParams?: QueryParamsType;
+  /** 默认查询配置 */
+  onTagSearch?: (values) => void;
 }
 
 const props = withDefaults(defineProps<BlendedSearchProps>(), {
@@ -200,23 +202,6 @@ const filterTags = ref(props.queryParams || {});
 
 const emits = defineEmits(["tagSearch", "selectNode"]);
 
-onMounted(() => {
-  // 初始化时是否执行
-  if (!props.immediate || !Object.keys(props.queryParams).length) return;
-  const timer = setTimeout(() => {
-    if (Object.keys(resultMaps).length > 0) {
-      onFinish(resultMaps.value);
-    }
-    clearTimeout(timer);
-  }, 500);
-});
-
-// 返回搜索参数
-const onFinish = (values) => {
-  _placeholder.value = "";
-  emits("tagSearch", values);
-};
-
 const keyLabel = computed<string>(() => {
   if (!filterKey.value) return "";
   for (const field of props.searchOptions) {
@@ -258,35 +243,48 @@ const placeholderText = computed(() => {
   return props.placeholder;
 });
 
+watch(props, initData, { immediate: true, deep: true });
 watch(
-  props,
+  resultMaps,
   (val) => {
-    const defaultParam: QueryParamsType = {};
-    const param = val.queryParams as QueryParamsType;
-    const options: SearchOptionType[] = val.searchOptions;
-    // 处理默认值显示
-    Object.keys(param).forEach((key) => {
-      const oItem = options.find((item) => item.value === key);
-      let value = param[key];
-      let valueLabel = param[key];
-      if (Object.prototype.toString.call(param[key]) === "[object Object]") {
-        value = (param[key] as SearchOptionType).value;
-        valueLabel = (param[key] as SearchOptionType).valueLabel;
-      }
-      defaultParam[key] = {
-        key: key,
-        label: oItem?.label,
-        value: value,
-        valueLabel: valueLabel,
-        type: oItem?.type,
-        format: oItem?.format
-      };
-    });
-    filterTags.value = defaultParam;
+    if (props.immediate) onFinish(val); // 结果返回
   },
-  { immediate: true }
+  { immediate: props.immediate }
 );
 
+// 初始化查询内容
+function initData(val) {
+  const defaultParam: QueryParamsType = {};
+  const param = val.queryParams as QueryParamsType;
+  const options: SearchOptionType[] = val.searchOptions;
+  // 处理默认值显示
+  Object.keys(param).forEach((key) => {
+    const oItem = options.find((item) => item.value === key);
+    let value = param[key];
+    let valueLabel = param[key];
+    if (Object.prototype.toString.call(param[key]) === "[object Object]") {
+      value = (param[key] as SearchOptionType).value;
+      valueLabel = (param[key] as SearchOptionType).valueLabel;
+    }
+    defaultParam[key] = {
+      key: key,
+      label: oItem?.label,
+      value: value,
+      valueLabel: valueLabel,
+      type: oItem?.type,
+      format: oItem?.format
+    };
+  });
+  filterTags.value = defaultParam;
+}
+
+// 分发结果参数
+function onFinish(values) {
+  _placeholder.value = "";
+  emits("tagSearch", values);
+}
+
+// 选择节点
 const onSelectNode = (node, data) => {
   const keys = node.pathValues;
   const fieldName = keys[0]; // 选择的字段名称

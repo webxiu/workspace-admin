@@ -60,7 +60,7 @@ const getBasicUserInfo = () => {
 const getDeptList = () => {
   getDeptTreeData().then((res) => {
     if (res.data) {
-      const data = JSON.parse(res.data);
+      const data = res.data;
       staffInfoOptions.value.deptInfoTree = data[0]?.children || [];
     }
   });

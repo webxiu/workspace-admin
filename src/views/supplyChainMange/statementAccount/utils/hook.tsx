@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 17:47:52
+ * @Last Modified time: 2025-02-06 11:35:13
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -16,7 +16,7 @@ import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { onDownload, downloadFile, getFileNameOnUrlPath, formatDate, commonBackLogic } from "@/utils/common";
 import { setColumn, getMenuColumns, updateButtonList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
-import { Download, Folder, Upload, View, Tickets, Position, Document } from "@element-plus/icons-vue";
+import { Download, Upload, View, Tickets, Back, Document } from "@element-plus/icons-vue";
 import { getkkViewUrl } from "@/utils/storage";
 import { addDialog } from "@/components/ReDialog";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
@@ -435,18 +435,18 @@ export const useConfig = () => {
     {
       type: "success",
       text: "上传发票",
-      icon: Tickets,
+      icon: Upload,
       disabled: false,
       uploadProp: { action: "#", accept: ".pdf", autoUpload: false, multiple: true, onChange: onUploadInvoice }
     },
-    { clickHandler: onDownloadStatement, type: "default", text: "下载对账单", icon: Download, isDropDown: true },
+    { clickHandler: statementDetail, type: "warning", text: "对账单审批详情", icon: Document, isDropDown: true },
+    { clickHandler: invoiceDetail, type: "warning", text: "发票审批详情", icon: Tickets, isDropDown: true },
+    { clickHandler: onBackStatement, type: "primary", text: "回退对账单", icon: Back, isDropDown: true },
+    { clickHandler: onBackInvoice, type: "primary", text: "回退发票", icon: Back, isDropDown: true },
     { clickHandler: onPreviewStatement, type: "danger", text: "预览对账单", icon: View, isDropDown: true },
-    { clickHandler: onView, type: "warning", text: "预览详情", icon: Folder, isDropDown: true },
-    { clickHandler: invoiceDetail, type: "warning", text: "发票审批详情", icon: Folder, isDropDown: true },
-    { clickHandler: statementDetail, type: "warning", text: "对账单审批详情", icon: Folder, isDropDown: true },
-    { clickHandler: onBackStatement, type: "primary", text: "回退对账单", icon: Tickets, isDropDown: true },
-    { clickHandler: onBackInvoice, type: "primary", text: "回退发票", icon: Document, isDropDown: true },
-    { clickHandler: onExport, type: "info", text: "导出", icon: Position, isDropDown: true }
+    { clickHandler: onView, type: "warning", text: "预览详情", icon: View, isDropDown: true },
+    { clickHandler: onDownloadStatement, type: "default", text: "下载对账单", icon: Download, isDropDown: true },
+    { clickHandler: onExport, type: "info", text: "导出", icon: Download, isDropDown: true }
   ]);
 
   const buttonListTemp = computed<ButtonItemType[]>(() => {

@@ -9,8 +9,8 @@ import regExp from "@/utils/regExp";
 // const GridSpan = 24;
 // const layout = { span: GridSpan, xs: 24, sm: 12, md: 12, lg: 12, xl: 12 };
 const layout = { span: 24 };
-const accept = [".gif", ".jfif", ".pjpeg", ".jpeg", ".pjp", ".jpg", ".png", ".xls", ".xlsx", ".dot", ".doc", ".docx", ".pdf"];
-const baseApi = import.meta.env.VITE_BASE_API;
+export const accept = [".gif", ".jfif", ".pjpeg", ".jpeg", ".pjp", ".jpg", ".png", ".xls", ".xlsx", ".dot", ".doc", ".docx", ".pdf"];
+export const baseApi = import.meta.env.VITE_BASE_API;
 
 // 岗位编辑验证
 export const formRules = reactive<FormRules>({

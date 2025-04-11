@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-09-05 08:52:07 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-09-05 08:52:07 
+ * @Author: Hailen
+ * @Date: 2023-09-05 08:52:07
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-09-05 08:52:07
  */ -->
 
 <script setup lang="ts">
@@ -23,8 +23,6 @@ const {
   onTagSearch,
   onRefresh,
   onRowClick,
-  onReceiveBill,
-  onReplyBill,
   onSizeChange,
   onCurrentChange
 } = useConfig();

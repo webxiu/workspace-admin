@@ -2,21 +2,21 @@
  * @Author: Hailen
  * @Date: 2024-06-04 15:31:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-08 14:55:49
+ * @Last Modified time: 2025-03-26 17:09:00
  */
 
 import { BillState, BillState_Color, PAGE_CONFIG } from "@/config/constant";
 import { Delete, Edit, Plus, Position, Printer, RefreshLeft, Select, Switch, Tickets } from "@element-plus/icons-vue";
 import { EsopList, OperateBookItemType, addEsop, changeESOP, deleteEsop, updateEsop } from "@/api/oaManage/productMkCenter";
-import { RendererType, getEnumDictList, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { TableGroupItemType, commonSubmit, roleUserList } from "@/api/systemManage";
-import { formConfigs, formRules } from "./config";
+import { getEnumDictList, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { useRoute, useRouter } from "vue-router";
 
+import type { ColDef } from "ag-grid-community";
+import Detail from "../Detail.vue";
 import DistributeModal from "../DistributeModal.vue";
-import EditForm from "@/components/EditForm/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { OptionItemType } from "@/api/plmManage";
 import { PaginationProps } from "@pureadmin/table";
@@ -24,12 +24,14 @@ import Print from "../sopInfo/print.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { commonBackLogic } from "@/utils/common";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const router = useRouter();
   const route = useRoute();
-  const peRoleList = ref([]);
   const loading = ref<boolean>(false);
   const rowData = ref<OperateBookItemType>();
   const columns = ref<TableColumnList[]>([]);
@@ -65,20 +67,13 @@ export const useConfig = () => {
   function getOptionList() {
     getEnumDictList(["BillStatus"])
       .then(({ BillStatus }) => {
-        searchOptions[1].children = BillStatus.map((item) => {
-          return { ...item, label: item.optionName, value: item.optionValue };
-        });
+        searchOptions[1].children = BillStatus;
         billOptions.value = BillStatus;
       })
       .catch(console.log);
-    roleUserList({ roleId: "244" }).then(({ data }) => (peRoleList.value = data || []));
   }
 
   const getColumnConfig = async () => {
-    const PeRoleRender: RendererType = ({ row, column }) => {
-      const item = peRoleList.value.find((f) => f.id === row[column["property"]]);
-      return <span>{item?.userName}</span>;
-    };
     let columnData: TableColumnList[] = [
       { label: "单据编号", prop: "billNo" },
       { label: "作业指导书", prop: "manualName", width: 180 },
@@ -97,16 +92,26 @@ export const useConfig = () => {
           return <span style={styleBox}>{billItem.optionName}</span>;
         }
       },
-      { label: "PE工程师", prop: "peuserId", cellRenderer: PeRoleRender },
+      { label: "PE工程师", prop: "peuserName" },
       { label: "创建人", prop: "createUserName" },
       { label: "创建时间", prop: "createDate", width: 160 }
     ];
-    const { columnArrs, groupArrs, buttonArrs } = await getMenuColumns([{ peuserId: PeRoleRender }]);
+    const { columnArrs, groupArrs, buttonArrs } = await getMenuColumns();
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     if (groupArrs?.length) groupArrsList.value = groupArrs;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: { width: 140 } });
+    columnDefs.value = getAgGridColumns<OperateBookItemType>({
+      columnData,
+      operationColumn: { width: 140 },
+      renderButtons: () => {
+        return [
+          { name: "分发", type: "primary", onClick: (row) => onDistribute(row) },
+          { name: "排位表", type: "success", onClick: (row) => onRowClick(row) }
+        ];
+      }
+    });
   };
 
   const getTableList = () => {
@@ -134,8 +139,10 @@ export const useConfig = () => {
   };
 
   const onRowClick = (row: OperateBookItemType) => {
+    const { id, billState } = row;
+    const { menuId } = route.query;
     const path = "/productMkCenter/engineerDept/operateBook/sopInfo";
-    router.push({ path: path, query: { menuId: route.query.menuId, materialId: row.id, isNewTag: "yes" } });
+    router.push({ path: path, query: { menuId, materialId: id, billState, isNewTag: "yes" } });
   };
 
   function onAdd() {
@@ -148,45 +155,24 @@ export const useConfig = () => {
   function onOpenEdit(type: "add" | "edit", row: Partial<OperateBookItemType>) {
     const title = { add: "添加", edit: "修改" }[type];
     const formRef = ref();
-    const formData = reactive({
-      id: row.id,
-      materialId: row.materialId,
-      productCode: row.productCode,
-      materialNumber: row.materialNumber,
-      manualName: row.manualName,
-      fileNumber: row.fileNumber,
-      country: row.country,
-      ver: row.ver ?? "A01",
-      peuserId: row.peuserId,
-      peuserName: row.peuserName
-    });
-
     addDialog({
       title: title + "指导书",
-      props: {
-        formRules: formRules,
-        formInline: formData,
-        formConfigs: formConfigs({ formData, peRoleList }),
-        formProps: { labelWidth: "120px" }
-      },
+      props: { id: row.id, type },
       width: "800px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(Detail, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
-          if (valid) {
-            showMessageBox(`确认要提交吗?`).then(async () => {
-              const reqApi = { add: addEsop, edit: updateEsop };
-              const { data } = await reqApi[type](formData);
-              if (!data) return message.error(`${title}失败`);
-              done();
-              getTableList();
-              message.success(`${title}成功`);
-            });
-          }
+        formRef.value.getRef().then(({ formData }) => {
+          showMessageBox(`确认要提交吗?`).then(async () => {
+            const reqApi = { add: addEsop, edit: updateEsop };
+            const { data } = await reqApi[type](formData);
+            if (!data) return message.error(`${title}失败`);
+            done();
+            getTableList();
+            message.success(`${title}成功`);
+          });
         });
       }
     });
@@ -247,7 +233,7 @@ export const useConfig = () => {
   });
 
   const onDistribute = (item) => {
-    const row = item || rowData.value;
+    const row = item.id ? item : rowData.value;
     const formRef = ref();
     if (!row) return message.error("请选择一条记录");
     if (row.billState !== BillState.audited) {
@@ -264,9 +250,7 @@ export const useConfig = () => {
       okButtonText: "分发并关闭",
       resetButtonText: "分发",
       showResetButton: true,
-      beforeReset: () => {
-        formRef.value.getRef(() => getTableList());
-      },
+      beforeReset: () => formRef.value.getRef(() => getTableList()),
       contentRenderer: () => h(DistributeModal, { ref: formRef }),
       beforeSure: (done) => {
         formRef.value.getRef(() => {
@@ -288,6 +272,10 @@ export const useConfig = () => {
       contentRenderer: ({ options }) => h(NodeDetailList, { options, billNo, billState, billType: "operateBook" })
     });
   });
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
 
   // { clickHandler: onBack, type: "primary", text: "回退", icon: RefreshLeft, isDropDown: true },
   const buttonList = ref<ButtonItemType[]>([
@@ -302,6 +290,8 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     loading,
     columns,
     dataList,
@@ -313,6 +303,7 @@ export const useConfig = () => {
     onRefresh,
     onDistribute,
     onRowClick,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

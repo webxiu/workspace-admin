@@ -24,6 +24,7 @@ const {
   columns4,
   dataList,
   toolIndex,
+  isEdit,
   maxHeight,
   buttonList2,
   onAdd,
@@ -44,7 +45,7 @@ const evgHeight = computed(() => maxHeight.value / 3 - 26);
         <template #title>
           <TitleCate name="排位表" :border="false" />
         </template>
-        <template #buttons>
+        <template #buttons v-if="isEdit">
           <el-button :icon="Refresh" size="small" title="刷新" @click="onRefresh" />
           <el-button :icon="Plus" size="small" title="新增" @click="onAdd.call(null, 'sort')" />
           <el-button :icon="Delete" size="small" title="删除" @click="onDelete.call(null, 'sort')" />
@@ -75,7 +76,7 @@ const evgHeight = computed(() => maxHeight.value / 3 - 26);
         <template #title>
           <TitleCate name="物料表" :border="false" />
         </template>
-        <template #buttons>
+        <template #buttons v-if="isEdit && rowData">
           <el-button :icon="Plus" size="small" title="新增" @click="onAdd.call(null, 'material')" />
           <el-button :icon="Delete" size="small" title="删除" @click="onDelete.call(null, 'material')" />
         </template>
@@ -101,7 +102,7 @@ const evgHeight = computed(() => maxHeight.value / 3 - 26);
         <template #title>
           <TitleCate name="检测记录表" :border="false" />
         </template>
-        <template #buttons>
+        <template #buttons v-if="isEdit && rowData">
           <el-button :icon="Plus" size="small" title="新增" @click="onAdd.call(null, 'check')" />
           <el-button :icon="Delete" size="small" title="删除" @click="onDelete.call(null, 'check')" />
         </template>
@@ -127,7 +128,7 @@ const evgHeight = computed(() => maxHeight.value / 3 - 26);
         <template #title>
           <TitleCate name="工具参数表" :border="false" />
         </template>
-        <template #buttons>
+        <template #buttons v-if="isEdit && rowData">
           <el-button :icon="Plus" size="small" title="新增" @click="onAdd.call(null, 'tool')" />
           <el-button :icon="Delete" size="small" title="删除" @click="onDelete.call(null, 'tool')" />
         </template>
@@ -155,7 +156,7 @@ const evgHeight = computed(() => maxHeight.value / 3 - 26);
         <TitleCate name="作业内容" :border="false" />
         <ButtonList :buttonList="buttonList2" :autoLayout="false" />
       </div>
-      <AddForm @change="onWorkChange" :row="rowData" @handleImg="onHandleImg" />
+      <AddForm @change="onWorkChange" :row="rowData" :isEdit="isEdit" @handleImg="onHandleImg" />
     </Col>
   </Row>
 </template>

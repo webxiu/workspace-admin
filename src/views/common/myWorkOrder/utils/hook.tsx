@@ -21,10 +21,8 @@ export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref([]);
-  const fileList: any = ref([]);
   const currentRow: any = ref({});
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
-  const formLoading = ref(false);
   const optionInfoList = ref([]);
   const taskType = ref([]);
   const sysTypeOpts = ref([]);
@@ -79,7 +77,6 @@ export const useConfig = () => {
     console.log(dayjs().subtract(90, "day").format("YYYY-MM-DD"), "90天前");
     fetchOpts();
     getColumnConfig();
-    // onSearch();
   });
 
   const getColumnConfig = async () => {

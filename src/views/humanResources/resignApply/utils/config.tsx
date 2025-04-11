@@ -18,11 +18,11 @@ export const formRules = reactive<FormRules>({
 
 // 离职类别
 export const resignType = [
-  { label: "正常离职", value: "正常离职" },
-  { label: "急辞", value: "急辞" },
-  { label: "试用期不合格", value: "试用期不合格" },
-  { label: "解除劳动合同关系", value: "解除劳动合同关系" },
-  { label: "其他", value: "其他" }
+  { optionName: "正常离职", optionValue: "正常离职" },
+  { optionName: "急辞", optionValue: "急辞" },
+  { optionName: "试用期不合格", optionValue: "试用期不合格" },
+  { optionName: "解除劳动合同关系", optionValue: "解除劳动合同关系" },
+  { optionName: "其他", optionValue: "其他" }
 ];
 
 export const formConfigs = ({ type, userList, onUserChange }): Ref<FormConfigItemType[]> => {
@@ -110,8 +110,8 @@ export const formConfigs = ({ type, userList, onUserChange }): Ref<FormConfigIte
         return (
           <el-radio-group v-model={formModel[row.prop]} onChange={onChangeType} class={type === "view" ? "readonly" : ""}>
             {resignType.map((item) => (
-              <el-radio key={item.value} label={item.value} disabled={type === "view"}>
-                {item.label}
+              <el-radio key={item.optionValue} label={item.optionValue} disabled={type === "view"}>
+                {item.optionName}
               </el-radio>
             ))}
           </el-radio-group>
@@ -220,16 +220,16 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       render: ({ formModel, row }) => (
         <el-checkbox-group v-model={formModel[row.prop]} class="pl-10" style={{ ...styleEl, flexWrap: "wrap", height: "80px" }}>
           {resignType.map((item) => (
-            <el-checkbox label={item.value} key={item.value} style={{ width: "160px" }} disabled>
-              {item.value === "其他" ? (
+            <el-checkbox label={item.optionValue} key={item.optionValue} style={{ width: "160px" }} disabled>
+              {item.optionValue === "其他" ? (
                 <span>
-                  {item.label}：
+                  {item.optionName}：
                   <span class="bottom-line ellipsis" style="width: 120px; max-width:280px">
                     {formModel.other}
                   </span>
                 </span>
               ) : (
-                item.label
+                item.optionName
               )}
             </el-checkbox>
           ))}
@@ -241,7 +241,7 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       prop: "resignationReason",
       class: "center-label",
       colProp: { span: 14 },
-      slots: {
+      slot: {
         label: ({ label }) => (
           <>
             <p>{label}</p>
@@ -261,7 +261,7 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       colProp: { span: 10 },
       labelWidth: "160px",
       style: { height: "100%", alignItems: "flex-end" },
-      slots: { label: ({ label }) => <span style={{ marginRight: "-18px" }}>{label}</span> },
+      slot: { label: ({ label }) => <span style={{ marginRight: "-18px" }}>{label}</span> },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} readonly />
     },
     {
@@ -269,7 +269,7 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       prop: "group",
       class: "center-label",
       colProp: { span: 14 },
-      slots: {
+      slot: {
         label: ({ label }) => (
           <>
             <p>{label}</p>
@@ -289,7 +289,7 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       colProp: { span: 10 },
       labelWidth: "160px",
       style: { height: "100%", alignItems: "flex-end" },
-      slots: { label: ({ label }) => <span style={{ marginRight: "-18px" }}>{label}</span> },
+      slot: { label: ({ label }) => <span style={{ marginRight: "-18px" }}>{label}</span> },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} readonly />
     },
     {
@@ -297,7 +297,7 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       prop: "department",
       class: "center-label",
       colProp: { span: 24 },
-      slots: {
+      slot: {
         label: ({ label }) => (
           <>
             <p>{label}</p>
@@ -346,7 +346,7 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       prop: "humanResources",
       class: "center-label",
       colProp: { span: 24 },
-      slots: {
+      slot: {
         label: ({ label }) => (
           <>
             <p>{label}</p>
@@ -364,7 +364,7 @@ export const printFormConfigs = (): FormConfigItemType[] => {
       prop: "mananger",
       class: "center-label",
       colProp: { span: 24 },
-      slots: {
+      slot: {
         label: ({ label }) => (
           <>
             <p>{label}</p>

@@ -11,6 +11,7 @@ import { message } from "@/utils/message";
 import { setRouterInfo } from "@/utils/storage";
 import { ButtonProps } from "element-plus";
 import SelectTable, { SelectTableProp } from "./SelectTable.vue";
+import { QueryModalKey, QueryConfig } from "./config";
 
 const props = {
   /** 弹窗标题 */
@@ -19,22 +20,26 @@ const props = {
   valueKey: { type: String },
   /** 弹窗宽度 */
   width: { type: [String, Number], default: "720px" },
-  /** 弹窗宽度 */
+  /** 显示输入框按钮 */
   showButton: { type: Boolean, default: false },
   /** 页面标识 PageUrl 配置的值(引入其他菜单入口页面) */
   pageKey: { type: String },
   /** 弹窗渲染组件属性 */
-  componentProp: { type: Object as PropType<SelectTableProp>, default: () => ({}) },
+  componentProp: { type: Object as PropType<Partial<SelectTableProp>>, default: () => ({} as Partial<SelectTableProp>) },
   /** 弹窗渲染组件(非必传) */
   component: { type: Object as PropType<DefineComponent<{}, {}, any>>, default: SelectTable },
   /** 按钮属性 */
   buttonProp: { type: Object as PropType<Partial<ButtonProps>>, default: () => ({}) },
   /** 弹窗前拦截方法(拦截返回true, 不拦截返回false) */
   interceptFn: { type: Function as PropType<() => boolean> },
+  /** 内置列表显示模式(若配置`componentProp`存在以`componentProp`为准) */
+  showModel: { type: String as PropType<QueryModalKey> },
   placeholder: { type: String },
   size: { type: String },
   disabled: { type: Boolean },
   readonly: { type: Boolean },
+  isButton: { type: Boolean },
+  buttonText: { type: String, default: "选择" },
   modelValue: { type: [String, Number] }
 };
 
@@ -43,12 +48,17 @@ export const HxModalInput = defineComponent({
   emits: ["update:modelValue", "select", "blur", "change", "mulSelect"],
   setup(props, { emit, expose, attrs, slots }) {
     const { title, width, componentProp, pageKey, disabled, interceptFn = () => false } = props;
-    const multiple = componentProp.multiple;
+    const _componentProp = ref({ ...componentProp });
     const value = ref();
     const rowData = ref();
     const rowsData = ref([]);
     let resultDialog;
-    watch(props, (val) => (value.value = val.modelValue), { immediate: true });
+    watch(props, watchUpdate, { immediate: true });
+
+    function watchUpdate(val) {
+      value.value = val.modelValue;
+      _componentProp.value = { ...QueryConfig[props.showModel], ...val.componentProp };
+    }
 
     function showModal() {
       if (disabled || interceptFn()) return;
@@ -58,7 +68,7 @@ export const HxModalInput = defineComponent({
 
     function onFinish(callback) {
       // 多选
-      if (multiple) {
+      if (_componentProp.value.multiple) {
         const rows = rowsData.value;
         if (!rows.length) return message.error("请勾选记录");
         emit("mulSelect", rows);
@@ -76,7 +86,7 @@ export const HxModalInput = defineComponent({
       rowData.value = val;
     }
     function onDbClick(val) {
-      if (multiple) return;
+      if (_componentProp.value.multiple) return;
       rowData.value = val;
       onFinish(() => (resultDialog.options.value.visible = false));
     }
@@ -86,7 +96,7 @@ export const HxModalInput = defineComponent({
 
     function openModal() {
       resultDialog = addDialog({
-        props: componentProp,
+        props: _componentProp.value,
         title: title,
         width: width,
         draggable: true,
@@ -106,7 +116,11 @@ export const HxModalInput = defineComponent({
     }
     return () => (
       <>
-        {props.showButton ? (
+        {props.isButton ? (
+          <el-button type="primary" onClick={showModal} size={props.size} {...props.buttonProp}>
+            {props.buttonText}
+          </el-button>
+        ) : props.showButton ? (
           <el-input
             v-model={value.value}
             size={props.size}

@@ -12,40 +12,53 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "HumanResourcesLeaveApplyIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   loading,
   columns,
   dataList,
   maxHeight,
   pagination,
-  searchOptions,
   buttonList,
-  onSearch,
-  onAdd,
   queryParams,
+  searchOptions,
+  onSearch,
   onSubmit,
   onEdit,
   onDelete,
   rowClick,
-  handleTagSearch,
-  onExport,
+  onTagSearch,
   onSizeChange,
   rowDbClick,
-  onCurrentChange
+  onCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onSearch" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :rowData="dataList"
+        :loading="loading"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 15"
+        :paginations="pagination"
+        @refresh="onSearch"
+        @switch="onSwitchTable"
+        @cellClicked="rowClick"
+        @cellDoubleClicked="rowDbClick"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, queryParams, searchOptions, searchField: 'userName', placeholder: '请输入姓名' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onSearch" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch
-            @tagSearch="handleTagSearch"
-            :queryParams="queryParams"
-            :searchOptions="searchOptions"
-            placeholder="请输入姓名"
-            searchField="userName"
-          />
+          <BlendedSearch @tagSearch="onTagSearch" :queryParams="queryParams" :searchOptions="searchOptions" placeholder="请输入姓名" searchField="userName" />
         </template>
         <template #buttons>
           <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="业务操作" />
@@ -75,9 +88,9 @@ const {
           >
             <template #operation="{ row }">
               <div style="text-align: left">
-                <el-button size="small" @click.stop="onEdit(row)">{{
-                  [AuditState.submit, AuditState.reAudit].includes(row.billState) ? "修改" : "查看"
-                }}</el-button>
+                <el-button size="small" @click.stop="onEdit(row)">
+                  {{ [AuditState.submit, AuditState.reAudit].includes(row.billState) ? "修改" : "查看" }}
+                </el-button>
                 <el-button size="small" @click.stop="onSubmit(row)" :disabled="![AuditState.submit, AuditState.reAudit].includes(row.billState)">
                   提交
                 </el-button>

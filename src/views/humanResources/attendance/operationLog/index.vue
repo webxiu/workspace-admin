@@ -1,10 +1,25 @@
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onFresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        rowKey="id"
+        :rowData="dataList"
+        :loading="loading"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 12"
+        :paginations="pagination"
+        @switch="onSwitchTable"
+        @refresh="onRefresh"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, queryParams, searchOptions, searchField: 'createUserName', placeholder: '创建人姓名' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch
-            @tagSearch="handleTagSearch"
+            @tagSearch="onTagSearch"
             :queryParams="queryParams"
             :searchOptions="searchOptions"
             placeholder="创建人姓名"
@@ -48,6 +63,21 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "HumanResourcesAttendanceOperationLogIndex" });
 
-const { columns, onFresh, handleTagSearch, searchOptions, buttonList, maxHeight, loading, dataList, queryParams, pagination, onSizeChange, onCurrentChange } =
-  useMachine();
+const {
+  columnDefs,
+  isAgTable,
+  loading,
+  dataList,
+  columns,
+  maxHeight,
+  buttonList,
+  searchOptions,
+  queryParams,
+  pagination,
+  onRefresh,
+  onTagSearch,
+  onSizeChange,
+  onCurrentChange,
+  onSwitchTable
+} = useMachine();
 </script>

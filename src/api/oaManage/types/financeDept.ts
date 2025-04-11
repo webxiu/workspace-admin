@@ -5,6 +5,7 @@ export interface PayslipDataItemType {
   ZWGWJT: string;
   JBGZ: string;
   HS: string;
+  yearMonth?: string;
   ZFGJJ: string;
   Name: string;
   FangWuBuTie: string;
@@ -16,13 +17,14 @@ export interface PayslipDataItemType {
   Status: string;
   RZRQ: string;
   SJCQ: string;
+  staffId?: number | string;
   QT: string;
   signTime: string;
   Color: string;
   ZBGZ: string;
   BuShangYue: string;
   GongLingJinTie0: string;
-  Id: 4689;
+  id: 4689;
   HSBT: string;
   statusValue: string;
   OrderNo: string;

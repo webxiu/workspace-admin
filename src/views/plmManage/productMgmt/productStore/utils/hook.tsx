@@ -183,7 +183,7 @@ export const useConfig = (emits, isModal) => {
       labelWidth: 100,
       prop: "productImgs",
       colProp: { span: 24 },
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => {
         return (
           <el-upload

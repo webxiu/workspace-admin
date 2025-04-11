@@ -3,7 +3,7 @@
  * @Author: Hailen 
  * @Date: 2023-08-02 16:54:26 
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-27 11:14:03
+ * @Last Modified time: 2024-12-20 16:01:06
  */ 
 -->
 
@@ -34,7 +34,7 @@ export interface FormConfigItemType extends Partial<FormItemProps> {
   /** 表单项渲染函数 */
   render: ((item: RenderParamsType) => JSXElement) | JSXElement;
   /** 表单Item插槽 */
-  slots?: { [key: string]: () => JSXElement };
+  slot?: { [key: string]: () => JSXElement };
   style?: CSSProperties;
   class?: string;
 }
@@ -86,9 +86,9 @@ export default defineComponent({
       <el-form ref={ruleFormRef} model={newFormInline.value} rules={props.formRules} class="dialog-form" v-loading={props.loading} {...props.formProps}>
         <el-row gutter={props.formItemGutter}>
           {configList.value.map((item, index) => {
-            const { render, colProp, hide, slots, ...itemProps } = item;
+            const { render, colProp, hide, slot, ...itemProps } = item;
             const formItem = typeof render === "function" ? render({ formModel: newFormInline.value, row: item, index }) : render;
-            const innerEle = slots ? { ...toRaw(slots), default: () => formItem } : formItem;
+            const innerEle = slot ? { ...toRaw(slot), default: () => formItem } : formItem;
             return hide ? null : (
               <>
                 {item.prop !== "specs" ? (

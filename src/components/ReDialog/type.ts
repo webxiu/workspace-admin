@@ -64,6 +64,8 @@ type DialogProps = {
   customButtonText?: string;
   /** 隐藏按钮 默认显示`确定`和`关闭` */
   hideItem?: ButtonsItemType[];
+  /** 样式层级 */
+  zIndex?: number;
 };
 
 type BtnClickDialog = {

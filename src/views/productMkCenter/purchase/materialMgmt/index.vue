@@ -39,7 +39,7 @@
               :data="dataList"
               :columns="dynamicColumns"
               :pagination="pagination"
-              :paginationSmall="size === 'small' ? true : false"
+              :paginationSmall="size === 'small'"
               show-overflow-tooltip
               highlight-current-row
               @row-click="rowClick"

@@ -5,32 +5,51 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "BusinessCenterControlledFileIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   columns,
   dataList,
   loading,
   maxHeight,
   pagination,
-  searchOptions,
-  disableInfoConst,
   buttonList,
-  dialogVisible,
+  searchOptions,
   modalRef,
-  onRefresh,
-  handleTagSearch,
-  onCurrentChange,
-  handleSizeChange,
+  dialogVisible,
+  disableInfoConst,
   onEdit,
   rowClick,
   fresh,
-  handleCurrentChange
+  onRefresh,
+  onTagSearch,
+  handleSizeChange,
+  handleCurrentChange,
+  onSwitchTable
 } = useTestReportConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
-    <PureTableBar :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
+    <AgGridTable
+      v-if="isAgTable"
+      rowKey="id"
+      :loading="loading"
+      :rowData="dataList"
+      :columnDefs="columnDefs"
+      :height="maxHeight + 12"
+      :paginations="pagination"
+      @switch="onSwitchTable"
+      @refresh="onRefresh"
+      @cellClicked="rowClick"
+      @cellDoubleClicked="onEdit"
+      @sizeChange="handleSizeChange"
+      @currentChange="handleCurrentChange"
+      :headButtons="{ buttonList, autoLayout: false }"
+      :blendedSearch="{ onTagSearch, searchOptions, searchField: 'fileName', placeholder: '请输入文件名称' }"
+    />
+    <PureTableBar v-else :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
       <template #title>
-        <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="文件名称" searchField="fileName" />
+        <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入文件名称" searchField="fileName" />
       </template>
       <template #buttons>
         <ButtonList :buttonList="buttonList" :auto-layout="false" moreActionText="业务操作" />
@@ -54,7 +73,6 @@ const {
           :pagination="pagination"
           @row-click="rowClick"
           @row-dblclick="onEdit"
-          @current-change="onCurrentChange"
           @page-size-change="handleSizeChange"
           @page-current-change="handleCurrentChange"
           @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"

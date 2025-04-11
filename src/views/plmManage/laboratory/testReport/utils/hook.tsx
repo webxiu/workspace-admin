@@ -20,7 +20,7 @@ import dayjs from "dayjs";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessage, ElMessageBox, FormRules } from "element-plus";
-import { message } from "@/utils/message";
+import { message, showMessageBox } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
 import { viewSignBackAttrList } from "@/api/supplyChain";
 import SelectUserModal from "../../selectUserModal/modal.vue";
@@ -217,112 +217,41 @@ export const useTestReportConfig = () => {
     }
   };
 
-  const unique = (arr) => {
-    const res = new Map();
-    return arr.filter((arr) => !res.has(arr.userCode) && res.set(arr.userCode, 1));
-  };
-
-  const handleAdd = () => {
-    const setA = (v) => {
-      curMultipeUserList.value = v;
-    };
-    addDialog({
-      title: "选择用户",
-      width: "900px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(SelectUserModal, { setA, curRows: currentRow }),
-      beforeSure: (done, { options }) => {
-        if (JSON.stringify(backRows.value) === "{}") {
-          ElMessage({ message: "未选定人员", type: "warning" });
-        } else {
-          const mergeArr = backRows.value.concat(curMultipeUserList.value);
-
-          backRows.value = unique(mergeArr);
-          formData.approval = backRows.value;
-          done();
-        }
-      }
-    });
-  };
-
-  const handleUp = (index) => {
-    if (index) {
-      backRows.value.splice(index - 1, 1, ...backRows.value.splice(index, 1, backRows.value[index - 1]));
-    }
-  };
-
-  const handleDown = (index) => {
-    if (backRows.value[index + 1]) {
-      backRows.value.splice(index, 1, ...backRows.value.splice(index + 1, 1, backRows.value[index]));
-    }
-  };
-
   const openDialog = async (type: string, row?) => {
-    const titleObj = { add: "新增", edit: "修改", view: "查看" };
-    const title = titleObj[type];
+    const title = { add: "新增", edit: "修改", view: "查看" }[type];
     const formRef = ref();
-
-    const _formData = reactive({
-      id: "",
-      reportName: "",
-      remark: "",
-      billNo: "",
-      createUserName: "",
-      createDate: ""
-    });
-
-    const onChange = (data) => {
-      backRows.value = data.backRows;
-      fileList.value = data.fileList;
-    };
 
     addDialog({
       title: `${title}`,
-      props: {
-        id: row?.id,
-        type: type,
-        formInline: _formData,
-        backRows,
-        fileList,
-        handleDown,
-        handleAdd,
-        handleUp
-      },
+      props: { id: row?.id, type: type },
       width: "600px",
       draggable: true,
       fullscreenIcon: true,
       hideFooter: type === "view",
       closeOnClickModal: false,
       okButtonText: "保存",
-      contentRenderer: () => h(Detail, { ref: formRef, onChange }),
+      contentRenderer: () => h(Detail, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        if (!fileList.value.length) {
-          ElMessage({ message: "附件未上传", type: "warning" });
-          return;
-        }
-
-        if (!backRows.value.length) {
-          ElMessage({ message: "请选择审批人", type: "warning" });
-          return;
-        }
-        FormRef.validate(async (valid) => {
-          if (valid) {
-            ElMessageBox.confirm(`确认要${title}吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitChange(type, title, _formData, () => {
-                done();
-                onSearch();
-              });
+        formRef.value.getRef().then(({ formData, data }) => {
+          showMessageBox(`确认要${title}吗?`).then(() => {
+            const { approval, fileList, ...reset } = formData;
+            const onlineFiles = fileList.filter((item) => item.id);
+            const localFiles = fileList.filter((item) => !item.id);
+            const param = {
+              ptr: reset,
+              nodePerson: { taskId: "customerOrderTask", userCodeList: String(approval.map((item) => item.userCode)) },
+              fileList: onlineFiles.map((item) => ({ ...item, filePath: data.billNo }))
+            };
+            const fd = new FormData();
+            fd.append("param", JSON.stringify(param));
+            localFiles.forEach((item: any) => item.raw && fd.append("files", item.raw));
+            saveTestReportList(fd).then(({ data }) => {
+              if (!data) return message.error("保存失败");
+              message.success("保存成功");
+              done();
+              onSearch();
             });
-          }
+          });
         });
       }
     });

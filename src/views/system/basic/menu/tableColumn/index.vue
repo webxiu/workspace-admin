@@ -21,7 +21,7 @@ const { tableRef, gLoading, maxHeight, currentKey, treeOptions, queryParams, onB
 
 <template>
   <div class="ui-h-100 flex flex-1 main main-content">
-    <div class="flex-col info-left-tree border-line">
+    <div class="flex-col border-line">
       <div class="flex-col just-between border-line-bottom p-10">
         <div class="flex just-between align-center">
           <div class="label-colon fz-14">配置菜单</div>

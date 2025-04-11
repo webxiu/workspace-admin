@@ -2,40 +2,49 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-18 10:35:53
+ * @Last Modified time: 2024-12-20 13:57:59
  */
 
-import { Delete, Plus } from "@element-plus/icons-vue";
-import { RendererType, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
-import { h, onMounted, ref } from "vue";
-import { message, showMessageBox } from "@/utils/message";
+import { Delete, Plus, Edit } from "@element-plus/icons-vue";
+import { DrawToolItemType, addDrawTool, deleteDrawTool, drawToolList, updateDrawTool } from "@/api/workbench/teamManage";
+import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { h, onMounted, reactive, ref } from "vue";
+import { message, showMessageBox, wrapFn } from "@/utils/message";
+import EditForm from "@/components/EditForm/index.vue";
+
+import { type PaginationProps } from "@pureadmin/table";
 
 import Mxgraph from "../mxgraph/index.vue";
+import { PAGE_CONFIG } from "@/config/constant";
 import { addDialog } from "@/components/ReDialog";
-import { dayjs } from "element-plus";
-import { orgchartData } from "@/api/workbench/teamManage";
 import { useEleHeight } from "@/hooks";
-import { useRoute } from "vue-router";
-import { v4 as uuidv4 } from "uuid";
-import xmlStr from "../mxgraph/utils/xmlConf";
-
-export type DrawListItem = {
-  uuid: string;
-  name: string;
-  xml: string;
-  svg: string;
-  createTime: string;
-};
+import { formConfigs, formRules } from "./config";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
 export const useConfig = () => {
-  const route = useRoute();
+  const tableRef = ref();
   const loading = ref<boolean>(false);
   const columns = ref<TableColumnList[]>([]);
-  const dataList = ref<DrawListItem[]>([]);
-  const rowDatas = ref<DrawListItem[]>([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 56);
-  const tableRef = ref();
-  const Draw_List_Key = "draw_list";
+  const dataList = ref<DrawToolItemType[]>([]);
+  const rowData = ref<DrawToolItemType>();
+  const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 50 + 45);
+
+  const formData = reactive({
+    processCode: "",
+    processName: "",
+    fileName: "",
+    version: "",
+    page: 1,
+    limit: PAGE_CONFIG.pageSize
+  });
+
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "流程名称", value: "processName" },
+    { label: "流程编号", value: "processCode" },
+    { label: "文件名称", value: "fileName" },
+    { label: "流程版本", value: "version" }
+  ]);
 
   onMounted(() => {
     getColumnConfig();
@@ -43,71 +52,86 @@ export const useConfig = () => {
   });
 
   async function getColumnConfig() {
-    const imgRender: RendererType = ({ row }) => {
-      return (
-        <el-image
-          fit="contain"
-          src={row.img}
-          z-index={999}
-          zoom-rate={1.2}
-          preview-src-list={[row.img]}
-          preview-teleported={true}
-          hide-on-click-modal={true}
-          class="border-line br-8 ui-va-m"
-          style="width: 80px; height: 80px;"
-        >
-          {{ error: () => "-" }}
-        </el-image>
-      );
-    };
-
     let columnData: TableColumnList[] = [
-      { label: "图表名称", prop: "name" },
-      { label: "xml", prop: "xml" },
-      { label: "svg", prop: "svg" },
-      { label: "img", prop: "img", align: "center", cellRenderer: imgRender },
-      { label: "创建时间", prop: "createTime", minWidth: 160 }
+      { label: "流程编号", prop: "processCode" },
+      { label: "流程名称", prop: "processName" },
+      { label: "单据编号", prop: "billNo" },
+      { label: "单据状态", prop: "billState" },
+      { label: "业务流程版本", prop: "version" },
+      { label: "文件路径", prop: "filePath" },
+      { label: "文件名", prop: "fileName" },
+      { label: "原文件名", prop: "resourceName" },
+      { label: "创建时间", prop: "createDate" },
+      { label: "创建人", prop: "createUserName" },
+      { label: "最后修改时间", prop: "modifyDate" },
+      { label: "最后修改人", prop: "modifyUserName" }
     ];
 
-    const { columnArrs, buttonArrs } = await getMenuColumns([{ img: imgRender }]);
+    const { columnArrs, buttonArrs } = await getMenuColumns();
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, dataList, selectionColumn: { hide: false } });
+    columns.value = setColumn({ columnData, dataList, operationColumn: { hide: true } });
   }
 
   function getTableList() {
     loading.value = true;
-    // 模拟接口
-    orgchartData({})
-      .then((res) => {
+    drawToolList(formData)
+      .then(({ data }) => {
         loading.value = false;
-        // 本地数据存储
-        const localList = JSON.parse(localStorage.getItem(Draw_List_Key) || "[]");
-        const defaultItem = { uuid: uuidv4(), xml: xmlStr, svg: "", name: "图纸1.xml", createTime: "2024-01-10 15:58:21" };
-        const graphList = localList.length ? localList : [defaultItem];
-        dataList.value = graphList;
+        dataList.value = data.records || [];
+        pagination.total = data.total;
       })
       .catch(() => (loading.value = false));
   }
 
-  // 刷新
+  const onTagSearch = (values) => {
+    Object.assign(formData, values);
+    getTableList();
+  };
+
   const onRefresh = () => getTableList();
-  // 新增
-  const onAdd = () => openDialog("add");
-  // 修改
-  const onEdit = (row) => openDialog("edit", row);
+
+  const onAdd = () => {
+    const formRef = ref();
+    const _formData = reactive({});
+    addDialog({
+      title: "新增",
+      props: {
+        formInline: _formData,
+        formRules: formRules,
+        formConfigs: formConfigs(),
+        formProps: { labelWidth: "100px" }
+      },
+      width: "460px",
+      draggable: true,
+      fullscreenIcon: false,
+      closeOnClickModal: false,
+      contentRenderer: () => h(EditForm, { ref: formRef }),
+      beforeSure: (done, { options }) => {
+        const FormRef = formRef.value.getRef();
+        FormRef.validate((valid) => {
+          if (valid) {
+            showMessageBox(`确定要提交吗?`).then(() => {
+              openDialog("add", _formData);
+              done();
+            });
+          }
+        });
+      }
+    });
+  };
+
+  const onEdit = wrapFn(rowData, () => {
+    openDialog("edit", rowData.value);
+  });
 
   // 新增|修改(弹窗)
-  function openDialog(type, row?: DrawListItem) {
+  async function openDialog(type: "add" | "edit", row: Partial<DrawToolItemType>) {
     const title = { add: "新增", edit: "修改" }[type];
-    const name = row?.name ?? "图表";
     const graphData = ref();
-    // 保存图表事件
-    const saveGraph = (data) => (graphData.value = data);
-
     addDialog({
-      title: `${title + name}`,
+      title: title + (row.fileName || "图表"),
       props: { type, row },
       width: "640px",
       draggable: true,
@@ -117,68 +141,66 @@ export const useConfig = () => {
       closeOnPressEscape: false,
       class: "full-dialog",
       okButtonText: "保存",
-      contentRenderer: () => h(Mxgraph, { onSaveGraph: saveGraph }),
+      contentRenderer: () => h(Mxgraph, { onSaveGraph: (data) => (graphData.value = data) }),
       beforeSure: (done, { options }) => {
+        const { fileName, img, svg, xml } = graphData.value;
+        if (!graphData.value) return message.warning("请保存图表(文件→保存)");
+        const param = { ...row, fileName };
+        console.log("param", { ...param, img, svg, xml });
         showMessageBox(`确定要提交吗?`).then(() => {
-          if (!graphData.value) return message.warning("请保存图形");
-          const { fileName, ...reset } = graphData.value;
-          const createTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
-          const itemData = { ...reset, name: fileName, createTime };
-          if (type === "edit") {
-            const index = dataList.value.findIndex((item) => item.uuid === item.uuid);
-            dataList.value.splice(index, 1, itemData); // 编辑
-          } else {
-            dataList.value = [...dataList.value, itemData]; // 添加
-          }
-          localStorage.setItem(Draw_List_Key, JSON.stringify(dataList.value));
-          getTableList();
-          done();
+          const fd = new FormData();
+          const xmlBlob = new Blob([xml], { type: "application/xml" });
+          fd.append("file", xmlBlob, fileName);
+          Object.keys(param).forEach((key) => fd.append(key, param[key]));
+          const reqApi = { add: addDrawTool, edit: updateDrawTool };
+          reqApi[type](fd)
+            .then(() => {
+              getTableList();
+              done();
+            })
+            .catch(console.log);
         });
       }
     });
   }
 
-  // 批量删除
-  function onBatchDelete() {
-    if (rowDatas.value.length === 0) return message.error("请选择删除内容");
-    showMessageBox("确认要删除吗?")
-      .then(() => onDelete(rowDatas.value))
+  const onDelete = wrapFn(rowData, () => {
+    showMessageBox(`确定要删除吗?`)
+      .then(() => {
+        deleteDrawTool(rowData.value).then(() => {
+          message.success("删除成功");
+          getTableList();
+        });
+      })
       .catch(console.log);
+  });
+
+  function onRowClick(row: DrawToolItemType) {
+    rowData.value = row;
   }
 
-  // 单个删除
-  function onDelete(rows: DrawListItem[]) {
-    const uuids = rows.map((item) => item.uuid);
-    dataList.value = dataList.value.filter((item) => !uuids.includes(item.uuid));
-    localStorage.setItem(Draw_List_Key, JSON.stringify(dataList.value));
-  }
-
-  // 单选
-  function onRowClick(row: DrawListItem) {
-    // tableRef.value?.getTableRef()?.toggleRowSelection(row);
-  }
-  // 多选
-  function handleSelectionChange(rows: DrawListItem[]) {
-    rowDatas.value = rows;
+  function rowDbclick(row: DrawToolItemType) {
+    openDialog("edit", row);
   }
 
   const buttonList = ref<ButtonItemType[]>([
     { text: "新增", type: "primary", clickHandler: onAdd, icon: Plus, isDropDown: false },
-    { text: "批量删除", type: "danger", clickHandler: onBatchDelete, icon: Delete, isDropDown: false }
+    { text: "修改", type: "success", clickHandler: onEdit, icon: Edit, isDropDown: false },
+    { text: "删除", type: "danger", clickHandler: onDelete, icon: Delete, isDropDown: false }
   ]);
 
   return {
     tableRef,
-    loading,
     columns,
     dataList,
+    loading,
     maxHeight,
     buttonList,
-    route,
-    onEdit,
+    pagination,
+    searchOptions,
     onRefresh,
-    onDelete,
     onRowClick,
-    handleSelectionChange
+    rowDbclick,
+    onTagSearch
   };
 };

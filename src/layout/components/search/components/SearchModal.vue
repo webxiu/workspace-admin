@@ -37,9 +37,10 @@ const activePath = ref<RouteConfigsTable>();
 const inputRef = ref<HTMLInputElement | null>(null);
 const resultOptions = shallowRef([]);
 const handleSearch = useDebounceFn(search, 300);
+const asyncRoutes = cloneDeep(useAppStoreHook().asyncRoutes);
 
 /** 菜单树形结构 */
-const menusData = computed(() => cloneDeep(useAppStoreHook().asyncRoutes));
+const menusData = ref(asyncRoutes);
 
 onMounted(() => {
   resultOptions.value = menusData.value;

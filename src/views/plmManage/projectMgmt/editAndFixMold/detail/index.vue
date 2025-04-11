@@ -56,15 +56,7 @@
             readonly
             showButton
             @select="onSelect"
-            :componentProp="{
-              searchConfig: [{ label: '产品型号', value: 'productCode' }],
-              maxHeight: 520,
-              columns: [
-                { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-              ],
-              api: fetchProductStoreList
-            }"
+            showModel="product"
           />
         </td>
         <td class="head-col">产品名称</td>
@@ -203,7 +195,6 @@ import dayjs from "dayjs";
 import { Plus } from "@element-plus/icons-vue";
 import { roleUserList } from "@/api/systemManage";
 import { getEnumDictList } from "@/utils/table";
-import { fetchProductStoreList } from "@/api/plmManage";
 
 defineProps(["projectStageOpts"]);
 
@@ -242,8 +233,8 @@ const fetchOpts = () => {
     }
   });
   getEnumDictList(["TrialProductionColor", "TrialProductionStage"]).then((res) => {
-    sampModelColorOpts.value = res["TrialProductionColor"];
-    tryStageOpts.value = res["TrialProductionStage"];
+    sampModelColorOpts.value = res.TrialProductionColor;
+    tryStageOpts.value = res.TrialProductionStage;
   });
 };
 

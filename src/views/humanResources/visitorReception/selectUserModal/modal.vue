@@ -73,7 +73,7 @@ const getTreeData = () => {
   loading.value = true;
   getDeptTreeData()
     .then((res: any) => {
-      leftTreeData.value = JSON.parse(res.data);
+      leftTreeData.value = res.data;
     })
     .finally(() => (loading.value = false));
 };

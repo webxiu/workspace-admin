@@ -42,6 +42,13 @@ import { PAGE_CONFIG } from "@/config/constant";
 import { type PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { setColumn, usePageSelect } from "@/utils/table";
+import { getDeptTreeData } from "@/api/systemManage";
+import { getDeptOptions } from "@/utils/requestApi";
+
+interface SearchConfigType extends SearchOptionType {
+  /** 自动添加查询字段(已经添加部门) */
+  queryFields?: Array<"department">;
+}
 
 export interface SelectTableProp {
   /** 唯一ID */
@@ -57,9 +64,13 @@ export interface SelectTableProp {
   /** 查询参数(默认) */
   paramConfig?: Record<string, any>;
   /** 搜索配置 */
-  searchConfig?: SearchOptionType[];
+  searchConfig?: SearchConfigType[];
   /** 查询接口 */
   api?: (arg: any) => Promise<any>;
+  /** 格式化接口返回数据 */
+  formatAPI?: (data: any) => any;
+  /** 是否为弹窗 */
+  isModal?: boolean;
 }
 
 const props = withDefaults(defineProps<SelectTableProp>(), {
@@ -77,9 +88,9 @@ const rowsData = ref([]);
 const tableRef = ref();
 const loading = ref(false);
 const _dataList = ref<Recordable[]>([]);
-const searchOptions = reactive<SearchOptionType[]>(props.searchConfig);
+const searchOptions = reactive<SearchConfigType[]>(props.searchConfig);
 const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize, ...props.paramConfig });
+const formData = reactive<Recordable<any>>({ page: 1, limit: PAGE_CONFIG.pageSize, ...props.paramConfig });
 const emits = defineEmits(["select", "dbClick", "mulSelect"]);
 const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList: _dataList, rowsData: rowsData, uniId: props.rowKey });
 
@@ -87,14 +98,32 @@ const columns = computed<TableColumnList[]>(() => {
   return setColumn({
     columnData: props.columns,
     operationColumn: false,
-    indexColumn: { hide: true },
+    // indexColumn: { hide: true },
     radioColumn: { hide: props.multiple }, // 多选时隐藏单选按钮
     selectionColumn: { hide: !props.multiple } // 单选时隐藏多选按钮
   });
 });
 
-onMounted(() => getTableList());
+onMounted(async () => {
+  await getOption();
+  getTableList();
+});
 watch(rowsData, () => emits("mulSelect", rowsData.value), { deep: true });
+
+function getOption() {
+  const p1 = getDeptOptions(); // 1.配置department,自动添加部门查询
+  //  p2 = 添加其他接口...
+  return Promise.all([p1]).then((res) => {
+    const data1 = res[0];
+    searchOptions.forEach((item) => {
+      if (item.queryFields?.includes("department") && data1?.length) {
+        formData[item.value] = data1[0].value;
+        item.children = data1;
+      }
+      // 其他接口...
+    });
+  });
+}
 
 function getTableList() {
   if (props.dataList) {
@@ -109,15 +138,16 @@ function getTableList() {
   props
     .api(formData)
     .then(({ data }) => {
+      const _data = props.formatAPI ? props.formatAPI(data) : data;
       loading.value = false;
-      if (data.total !== undefined && data.records) {
-        _dataList.value = data.records || [];
-        pagination.total = data.total;
+      if (_data.total !== undefined && _data.records) {
+        _dataList.value = _data.records || [];
+        pagination.total = _data.total;
         setSelectCheckbox();
       } else {
-        _dataList.value = data || [];
-        pagination.total = data.length;
-        pagination.pageSize = data.length;
+        _dataList.value = _data || [];
+        pagination.total = _data.length;
+        pagination.pageSize = _data.length;
       }
     })
     .catch(() => (loading.value = false));

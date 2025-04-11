@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-13 14:04:17
+ * @Last Modified time: 2025-03-14 18:08:22
  */
 
 import {
@@ -33,25 +33,31 @@ import {
 import { onMounted, h, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import AddModal from "../addModal.vue";
+import Detail from "../Detail.vue";
 import { addDialog } from "@/components/ReDialog";
-import { getDeptTreeData, DetartMenttemType } from "@/api/systemManage";
+import { getDeptTreeData, DetartMenttemType, DeptTreeItemType } from "@/api/systemManage";
 import EditForm from "@/components/EditForm/index.vue";
 import { getChildIDs, downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { useEleHeight } from "@/hooks";
-import { message, showMessageBox } from "@/utils/message";
+import { message, showMessageBox, wrapFn } from "@/utils/message";
 import { PAGE_CONFIG } from "@/config/constant";
 import { type PaginationProps } from "@pureadmin/table";
 import MachineUserModal from "./machineUserModal/index.vue";
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
-import { dismissFormConfigs, dismissFformRules, standardFformRules, standardFormConfigs } from "./config";
+import { dismissFormConfigs, dismissFformRules, standardFformRules, standardFormConfigs, SumitStaffInfoItemType } from "./config";
 import { setColumn, getMenuColumns, getEnumDictList, updateButtonList, usePageSelect } from "@/utils/table";
 import { ElMessage } from "element-plus";
-import { Plus, Printer, Right, Download } from "@element-plus/icons-vue";
+import { Plus, Edit, Printer, Right, Download } from "@element-plus/icons-vue";
+import { formatDate } from "@/utils/common";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 /**
  * @param temporaryFlag 是否临时工 0: 正式工  1: 零时工
  */
 export const useConfig = (temporaryFlag: 0 | 1) => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const tableRef = ref();
   const router = useRouter();
   const loading = ref<boolean>(true);
@@ -60,9 +66,9 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
   const dataList = ref<StaffInfoItemType[]>([]);
   const rowsData = ref<StaffInfoItemType[]>([]);
   const rowData = ref();
-  const treeOptions = ref<DetartMenttemType[]>([]);
+  const treeOptions = ref<DeptTreeItemType[]>([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 51 + 51);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
 
   const formData = reactive({
     page: 1,
@@ -134,7 +140,7 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
     getDeptTreeData()
       .then((res) => {
         treeLoading.value = false;
-        const data = JSON.parse(res.data);
+        const data = res.data;
         treeOptions.value = data;
         staffInfoOptions.value.deptInfoTree = data[0]?.children || [];
       })
@@ -257,11 +263,21 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, formData, dragSelector: temporaryFlag ? ".temp-staffInfo" : ".staffInfo", selectionColumn: { hide: false } });
+    columns.value = setColumn({ columnData, formData, selectionColumn: { hide: false } });
+    columnDefs.value = getAgGridColumns<StaffInfoItemType>({
+      formData,
+      columnData,
+      selectionColumn: { hide: false },
+      renderButtons: () => [
+        { name: "修改", type: "default", onClick: (row) => onEdit(row) },
+        { name: "删除", type: "danger", onClick: (row) => onDelete(row), confirm: (row) => `确认删除\n【${row.staffName}】吗?` }
+      ]
+    });
   };
 
   const getTableList = () => {
     const listApi = { 0: staffInfoList, 1: tempStaffInfoList };
+    loading.value = true;
     listApi[temporaryFlag](formData)
       .then(({ data }) => {
         loading.value = false;
@@ -294,9 +310,9 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
   };
 
   // 添加
-  const onAdd = () => {
-    openDialog("add");
-  };
+  const onAdd = () => openDialog("add", {} as StaffInfoItemType);
+  // 修改
+  const onHeadEdit = wrapFn(rowData, () => onEdit(rowData.value));
 
   // 修改
   const onEdit = (row: StaffInfoItemType) => {
@@ -330,31 +346,78 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
 
   // 添加修改操作
   function openDialog(type: "add" | "edit", row?: StaffInfoItemType) {
-    const titleObj = { add: "新增", edit: "修改" };
-    const title = titleObj[type];
+    const title = { add: "新增", edit: "修改" }[type];
+    const name = temporaryFlag ? "零时工档案" : "人事档案";
     const formRef = ref();
+
+    const formData = reactive<SumitStaffInfoItemType>({
+      temporaryFlag: temporaryFlag,
+      ...row,
+      exmpetAttendance: row.exmpetAttendance ? row.exmpetAttendance : false,
+      startDate: formatDate(row?.startDate, "YYYY-MM-DD"),
+      birthDate: formatDate(row.birthDate, "YYYY-MM-DD"),
+      leaveofficeDate: formatDate(row.leaveofficeDate, "YYYY-MM-DD"),
+      moneyStartDate: formatDate(row.moneyStartDate, "YYYY-MM-DD"),
+      contractExpiresDate: formatDate(row.contractExpiresDate, "YYYY-MM-DD"),
+      contractRenewalDate: formatDate(row.contractRenewalDate, "YYYY-MM-DD"),
+      transferDate: formatDate(row.transferDate, "YYYY-MM-DD"),
+      deptId: row.deptId ? `${row.deptId}` : "",
+      isPoorPeople: row.isPoorPeople ?? 0,
+      // 教育经历删除的id列表
+      deleteStaffInfoEducationIdList: [],
+      // 家庭关系删除的id列表
+      deleteStaffInfoFamilyIdList: [],
+      // 工作经历删除的id列表
+      deleteStaffInfoWorkIdList: []
+    });
+
+    if (typeof row.isSalary === "boolean") {
+      formData.isSalary = row.isSalary + "";
+    } else {
+      formData.isSalary = "true";
+    }
+
+    if (typeof row.isSeniorityCalc === "boolean") {
+      formData.isSeniorityCalc = row.isSeniorityCalc + "";
+    } else {
+      formData.isSeniorityCalc = "true";
+    }
+
+    const mapSalary = { true: true, false: false };
+
     addDialog({
-      title: `${title}人事档案`,
-      props: { type: type, row: row, temporaryFlag, optionData: staffInfoOptions.value },
+      title: title + name,
+      props: { type, temporaryFlag, formInline: formData },
       width: "90%",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(AddModal, { ref: formRef }),
+      contentRenderer: () => h(Detail, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const formEditRef = formRef.value.getRef();
-        formEditRef.formRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
+            // 编辑状态下进行职级变更后提示并阻止保存
+            if (type === "edit") {
+              const fdLevel = data.forms[0]?.formData?.level;
+              const rowLevel = row?.level;
+
+              if (fdLevel && rowLevel && fdLevel !== rowLevel) {
+                return message.warning("检测到职级发生变化，需前往【人事异动】进行变更");
+              }
+            }
             const addApi = { 0: addStaff, 1: addTempStaff };
             const updateApi = { 0: updateStaff, 1: updateTempStaff };
             const API = { add: addApi[temporaryFlag], edit: updateApi[temporaryFlag] };
             const params = {
-              ...formEditRef.formData.value,
+              ...formData,
               // 修改需要提交的字段
-              staffInfoEducationDTOList: formEditRef.formData.value.staffInfoEducationVOS,
-              staffInfoFamilyDTOList: formEditRef.formData.value.staffInfoFamilyVOS,
-              staffInfoWorkDTOList: formEditRef.formData.value.staffInfoWorkVOS
+              staffInfoEducationDTOList: formData.staffInfoEducationVOS,
+              staffInfoFamilyDTOList: formData.staffInfoFamilyVOS,
+              staffInfoWorkDTOList: formData.staffInfoWorkVOS
             };
+            params["isSalary"] = mapSalary[params["isSalary"] as string];
+            params["isSeniorityCalc"] = mapSalary[params["isSeniorityCalc"] as string];
+
             onSubmitData({ api: API[type], params: params, title: title }, done);
           }
         });
@@ -567,11 +630,13 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
   // 分页相关
   function onSizeChange(val: number) {
     formData.limit = val;
+    pagination.pageSize = val;
     getTableList();
   }
 
   function onCurrentChange(val: number) {
     formData.page = val;
+    pagination.currentPage = val;
     getTableList();
   }
 
@@ -651,26 +716,33 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
     });
   };
 
+  const onDbClick = (row) => {
+    onEdit(row);
+  };
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+    rowsData.value = [];
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus, isDropDown: false },
+    { clickHandler: onHeadEdit, type: "warning", text: "修改", icon: Edit, isDropDown: false },
     { clickHandler: onPrint, type: "default", text: "打印", icon: Printer, isDropDown: true },
     { clickHandler: onSyncMachine, type: "default", text: "同步考勤机", isDropDown: true },
     { clickHandler: onDismiss, type: "default", text: "离职", icon: Right, isDropDown: true },
     { clickHandler: onExport, type: "default", text: "导出", icon: Download, isDropDown: true }
   ]);
-
-  const onDbClick = (row) => {
-    onEdit(row);
-  };
-
   return {
+    columnDefs,
+    isAgTable,
     tableRef,
     loading,
     columns,
     dataList,
     maxHeight,
     pagination,
-    onSyncMachine,
     treeOptions,
     treeLoading,
     buttonList,
@@ -680,19 +752,21 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
     onDelete,
     onSearch,
     onRowClick,
+    onDbClick,
     onTagSearch,
     onSelect,
     onSelectAll,
     onNodeClick,
     onSizeChange,
     onCurrentChange,
+    onSyncMachine,
     onAdd,
     onPrint,
     onDismiss,
     onExport,
     onUpdateStandard,
-    onSetKingdeeAccount,
     onSetQYWXAccount,
-    onDbClick
+    onSetKingdeeAccount,
+    onSwitchTable
   };
 };

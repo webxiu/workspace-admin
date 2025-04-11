@@ -1,7 +1,20 @@
 <template>
   <div class="main flex ui-h-100">
     <div class="flex-1 ui-ov-h">
-      <PureTableBar :columns="columns" style="padding-top: 0" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        rowKey="id"
+        :rowData="dataList"
+        :loading="loading"
+        :columnDefs="columnDefs"
+        :height="maxHeight - 10"
+        @refresh="onRefresh"
+        @switch="onSwitchTable"
+        @cellClicked="rowClick"
+        @cellDoubleClicked="rowDbClick"
+        :headButtons="{ buttonList, autoLayout: false }"
+      />
+      <PureTableBar v-else :columns="columns" style="padding-top: 0" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #buttons>
           <div style="flex: 1">
             <ButtonList :buttonList="buttonList" :auto-layout="false" more-action-text="业务操作" />
@@ -39,7 +52,7 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "FileManageQhUserIndex" });
 
-const { loading, columns, dataList, qhUserRef, maxHeight, buttonList, rowClick, rowDbClick, onRefresh } = useTable();
+const { columnDefs, isAgTable, loading, columns, dataList, qhUserRef, maxHeight, buttonList, rowClick, rowDbClick, onRefresh, onSwitchTable } = useTable();
 </script>
 
 <style lang="scss" scoped>
@@ -82,14 +95,5 @@ const { loading, columns, dataList, qhUserRef, maxHeight, buttonList, rowClick, 
 
 .info-left-tree {
   padding: 10px 15px;
-}
-
-.custom-tree-node {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: space-between;
-  padding-right: 8px;
-  font-size: 14px;
 }
 </style>

@@ -29,21 +29,21 @@
           resize="none"
           :rows="3"
           placeholder="请输入图片描述"
-          :disabled="disabled"
+          :readonly="disabled"
           @change="(value) => handleChange('input', item, value)"
           clearable
           style="min-width: 120px"
         />
       </el-form-item>
       <el-form-item>
-        <div class="no-wrap">
-          <el-button type="default" class="move-handle" size="small" :disabled="disabled" :icon="Rank">排序</el-button>
-          <el-button @click.prevent="removeAction(item)" type="danger" :disabled="disabled" size="small">删除</el-button>
+        <div class="no-wrap" v-if="!disabled">
+          <el-button type="default" class="move-handle" size="small" :icon="Rank">排序</el-button>
+          <el-button @click.prevent="removeAction(item)" type="danger" size="small">删除</el-button>
         </div>
       </el-form-item>
     </div>
     <el-form-item>
-      <el-button @click="addAction" :icon="Plus" type="primary" :disabled="disabled" class="ml-20">新增图片</el-button>
+      <el-button v-if="!disabled" @click="addAction" :icon="Plus" type="primary" class="ml-20">新增图片</el-button>
     </el-form-item>
     <el-dialog v-model="visible" title="图片预览">
       <div class="ui-w-100 ui-ta-c">
@@ -87,6 +87,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const previewUrl = ref("");
 const visible = ref(false);
+const disabled = ref(props.disabled);
 const emits = defineEmits(["update:modelValue", "handleImg"]);
 const dataList = ref<DomainItem[]>(props.modelValue || []);
 
@@ -103,6 +104,7 @@ onMounted(() => {
 });
 
 watch(props, (val) => {
+  disabled.value = val.disabled;
   dataList.value = val.modelValue || [];
 });
 

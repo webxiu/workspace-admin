@@ -409,7 +409,12 @@ Editor.prototype.editAsNew = function (xml, title) {
 Editor.prototype.createGraph = function (themes, model) {
   var graph = new Graph(null, model, null, null, themes);
   graph.transparentBackground = false;
-
+  // 回显居中设置
+  var timer = setTimeout(function () {
+    graph.fit()
+    graph.zoomTo(1);
+    clearTimeout(timer);
+  })
   // Opens all links in a new window while editing
   if (!this.chromeless) {
     graph.isBlankLink = function (href) {

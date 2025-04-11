@@ -6,14 +6,12 @@ import {
   fetchAttendanceDetailLog,
   fetchAttendanceRecord,
   fetchGoOutRecordsOnAtt,
-  getStaffDetail,
   getTimeStandardAttendancel,
   leaveApplyListOnAtt,
   overtimeOrderListOnAtt,
   reCalcAttDetail,
   sendMissCardNotice,
   supplementaryCardOnAtt,
-  timeSettingList,
   updateAttendancePageDetail
 } from "@/api/oaManage/humanResources";
 import { getEnumDictList, getMenuColumns, setColumn, updateButtonList, usePageSelect } from "@/utils/table";
@@ -68,7 +66,7 @@ export const useMachine = () => {
       searchOptions[1].children = data;
     });
     getEnumDictList(["AnomalousAttendance"]).then((res) => {
-      searchOptions[3].children = res.AnomalousAttendance.map((item) => ({ label: item.optionName, value: item.optionValue }));
+      searchOptions[3].children = res.AnomalousAttendance;
     });
   };
 
@@ -103,6 +101,8 @@ export const useMachine = () => {
       { label: "备注", prop: "remark" }
     ];
 
+    const calcTypeHandler = (row, flagKey) => ([2, 5].includes(row[`${flagKey}Flag`]) ? "primary" : "success");
+
     const morningWorkTimeRender = (data) => {
       return data.row.morningWorkTimeFlag !== 0 ? (
         <div class="flex">
@@ -116,7 +116,7 @@ export const useMachine = () => {
                   saveRow(data.row);
                 }}
                 size="small"
-                type="danger"
+                type={calcTypeHandler(data.row, "morningWorkTime")}
                 icon={<Delete />}
                 style={{ width: "10px", height: "20px" }}
               />
@@ -153,7 +153,7 @@ export const useMachine = () => {
                   saveRow(data.row);
                 }}
                 size="small"
-                type="danger"
+                type={calcTypeHandler(data.row, "morningDownWorkTime")}
                 icon={<Delete />}
                 style={{ width: "10px", height: "20px" }}
               />
@@ -190,7 +190,7 @@ export const useMachine = () => {
                   saveRow(data.row);
                 }}
                 size="small"
-                type="danger"
+                type={calcTypeHandler(data.row, "afternoonWorkTime")}
                 icon={<Delete />}
                 style={{ width: "10px", height: "20px" }}
               />
@@ -227,7 +227,7 @@ export const useMachine = () => {
                   saveRow(data.row);
                 }}
                 size="small"
-                type="danger"
+                type={calcTypeHandler(data.row, "afternoonDownWorkTime")}
                 icon={<Delete />}
                 style={{ width: "10px", height: "20px" }}
               />
@@ -264,7 +264,7 @@ export const useMachine = () => {
                   saveRow(data.row);
                 }}
                 size="small"
-                type="danger"
+                type={calcTypeHandler(data.row, "eveningWorkTime")}
                 icon={<Delete />}
                 style={{ width: "10px", height: "20px" }}
               />
@@ -301,7 +301,7 @@ export const useMachine = () => {
                   saveRow(data.row);
                 }}
                 size="small"
-                type="danger"
+                type={calcTypeHandler(data.row, "eveningDownWorkTime")}
                 icon={<Delete />}
                 style={{ width: "10px", height: "20px" }}
               />
@@ -376,9 +376,18 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const saveRow = (row, remarkText?) => {
+  const saveRow = (row, remarkText?, extraFlag?) => {
+    const operationTypeDict = {
+      3: 2,
+      4: 4,
+      5: 3
+    };
+    let operationType = 1;
+    if (extraFlag) {
+      operationType = operationTypeDict[extraFlag];
+    }
     console.log("update===");
-    updateAttendancePageDetail({ attList: [row], remark: remarkText ?? "" }).then((res) => {
+    updateAttendancePageDetail({ attList: [row], remark: remarkText ?? "", operationType }).then((res) => {
       if (res.data) {
         message.success("保存成功");
         onSearch();
@@ -515,32 +524,32 @@ export const useMachine = () => {
           case "morningWorkTime":
             row.morningWorkTime = res.data;
             row.morningWorkTimeFlag = extraFlag || 2;
-            saveRow(row, remark);
+            saveRow(row, remark, extraFlag);
             break;
           case "morningDownWorkTime":
             row.morningDownWorkTime = res.data;
             row.morningDownWorkTimeFlag = extraFlag || 2;
-            saveRow(row, remark);
+            saveRow(row, remark, extraFlag);
             break;
           case "afternoonWorkTime":
             row.afternoonWorkTime = res.data;
             row.afternoonWorkTimeFlag = extraFlag || 2;
-            saveRow(row, remark);
+            saveRow(row, remark, extraFlag);
             break;
           case "afternoonDownWorkTime":
             row.afternoonDownWorkTime = res.data;
             row.afternoonDownWorkTimeFlag = extraFlag || 2;
-            saveRow(row, remark);
+            saveRow(row, remark, extraFlag);
             break;
           case "eveningWorkTime":
             row.eveningWorkTime = res.data;
             row.eveningWorkTimeFlag = extraFlag || 2;
-            saveRow(row, remark);
+            saveRow(row, remark, extraFlag);
             break;
           case "eveningDownWorkTime":
             row.eveningDownWorkTime = res.data;
-            row.afternoonDownWorkTimeFlag = extraFlag || 2;
-            saveRow(row, remark);
+            row.eveningDownWorkTimeFlag = extraFlag || 2;
+            saveRow(row, remark, extraFlag);
             break;
           default:
             break;
@@ -586,7 +595,7 @@ export const useMachine = () => {
     showMessageBox(`确定要重算【${startDate}】的考勤吗?`)
       .then(() => {
         reCalcAttDetail({ attDate: startDate }).then((res) => {
-          if (res.data) {
+          if (res.status === 200 || res.data) {
             message.success("重算成功");
             onSearch();
           }

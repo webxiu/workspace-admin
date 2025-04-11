@@ -24,8 +24,8 @@ export const useConfig = () => {
 
   const fetchOpts = () => {
     getEnumDictList(["LoseModeListSeverity", "LoseModeListCategorize"]).then((res) => {
-      searchOptions[0].children = res["LoseModeListSeverity"].map((item) => ({ label: item.optionName, value: item.optionValue }));
-      searchOptions[1].children = res["LoseModeListCategorize"].map((item) => ({ label: item.optionName, value: item.optionValue }));
+      searchOptions[0].children = res.LoseModeListSeverity;
+      searchOptions[1].children = res.LoseModeListCategorize;
     });
   };
 

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-06 14:57:33
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-30 14:49:25
+ * @Last Modified time: 2025-03-18 10:50:45
  */
 
 import { h, nextTick, onMounted, reactive, ref } from "vue";
@@ -19,16 +19,21 @@ import {
   enableMaterialInfo,
   exportMaterialList,
   fetchMaterialList,
+  getMaterialGroupTreeData,
   pushDownMaterialInfo,
   submitMaterialInfo
 } from "@/api/plmManage";
 import { useRoute, useRouter } from "vue-router";
-import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
+import { getMenuColumns, setColumn, updateButtonList, usePageSelect, RendererType } from "@/utils/table";
 import { PAGE_CONFIG } from "@/config/constant";
 import { commonSubmit } from "@/api/systemManage";
 import { addDialog } from "@/components/ReDialog";
 import EditForm from "@/components/EditForm/index.vue";
 import { QueryParamsType } from "@/components/BlendedSearch/index.vue";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { LoadingType } from "@/components/ButtonList/index.vue";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 /** 组别类型 */
 export interface DepGroupItemTree {
@@ -51,135 +56,127 @@ export interface DepGroupItemTree {
 }
 
 export type HandleType = "add" | "edit";
-const columnsDragDom = ref([]);
-const selectRows: any = ref([]);
-const materialMainTable = ref();
-const formData = reactive({
-  page: 1,
-  limit: PAGE_CONFIG.pageSize,
-  startDate: "",
-  endDate: "",
-  materialGroups: "",
-  isfrozen: "0"
-});
-
-export const getConfig = async (buttonList) => {
-  const columnsDrag: TableColumnList[] = [
-    { label: "选择" },
-    { label: "序号", prop: "index" },
-    { label: "物料编号", prop: "number" },
-    { label: "物料名称", prop: "name" },
-    { label: "规格型号", prop: "specification" },
-    { label: "模号", prop: "model" },
-    { label: "基本单位", prop: "baseUnitName" },
-    { label: "物料属性", prop: "erpClsidName" },
-    { label: "物料种类", prop: "materialTypeName" },
-    { label: "物料分组", prop: "materialGroupName" },
-    { label: "客供物料", prop: "customerProvidedName" },
-    { label: "成品类型", prop: "goodsTypeName" }, //
-    { label: "仓库", prop: "warehouseName" },
-    { label: "采购单位", prop: "purchaseUnitName" },
-    { label: "库存单位", prop: "stockUnitName" },
-    { label: "销售单位", prop: "saleUnitName" },
-    { label: "生产车间", prop: "manufacturingShopName" }, //
-    { label: "物料状态", prop: "stateName" },
-    { label: "下推状态", prop: "pushState" },
-    { label: "是否认证", prop: "cbcertification" },
-    { label: "是否禁用", prop: "isfrozen" },
-    { label: "创建人", prop: "createUserName" },
-    { label: "创建时间", prop: "createDate" },
-    { label: "提交人", prop: "submitUserName" },
-    { label: "提交时间", prop: "submitDate" },
-    { label: "最后修改人", prop: "modifyUserName" },
-    { label: "最后修改时间", prop: "modifyDate" },
-    { label: "旧物料编码", prop: "oldCode" }
-  ];
-
-  let columns: TableColumnList[] = [
-    { label: "", align: "center", width: 62, fixed: true, cellRenderer: () => <el-radio label="&nbsp;" size="small" /> },
-    { label: "序号", type: "index", width: 65, fixed: true, cellRenderer: ({ $index }) => <span>{(formData.page - 1) * formData.limit + $index + 1}</span> },
-    { label: "物料编号", fixed: true, prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 200 },
-    { label: "物料名称", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 240, fixed: true },
-    { label: "规格型号", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 260 },
-    { label: "模号", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "基本单位", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "物料属性", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "物料种类", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "物料分组", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "客供物料", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "成品类型", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "仓库", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "采购单位", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "库存单位", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "销售单位", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "生产车间", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "物料状态", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "下推状态", slot: "pushState", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "是否认证", slot: "cbcertification", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "是否禁用", slot: "isfrozen", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "创建人", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "创建时间", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 220 },
-    { label: "提交人", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "提交时间", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 220 },
-    { label: "最后修改人", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 },
-    { label: "最后修改时间", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 220 },
-    { label: "旧物料编码", prop: (index) => columnsDragDom.value[index].prop as string, minWidth: 120 }
-  ];
-
-  columnsDragDom.value = columnsDrag;
-
-  const { columnArrs, buttonArrs } = await getMenuColumns();
-  const [menuCols] = columnArrs;
-  if (menuCols?.length) {
-    columns = setColumn({
-      columnData: menuCols,
-      operationColumn: false,
-      selectionColumn: { hide: false },
-      radioColumn: false,
-      indexColumn: { fixed: true }
-    });
-  }
-
-  updateButtonList(buttonList, buttonArrs[0]);
-  return columns;
-};
 
 export function useTable(emits, { isModal, productCode }) {
-  const formRef = ref();
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
+  const rowsData = ref([]);
+  const tableRef = ref();
   const currentRow: any = ref({});
   const curNodeName = ref("0");
   const curNodeLabel = ref("0");
-  const depGroupTree = ref<DepGroupItemTree[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref<TeamMemberItemType[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 40 + 54);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const router = useRouter();
   const route = useRoute();
-
-  const queryParams = reactive<QueryParamsType>({
-    isfrozen: "否"
+  const categoryTreeData = ref([]);
+  const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
+  const formData = reactive({
+    page: 1,
+    limit: PAGE_CONFIG.pageSize,
+    startDate: "",
+    endDate: "",
+    materialGroups: "",
+    isfrozen: "0"
   });
+
+  const queryParams = reactive<QueryParamsType>({ isfrozen: { value: "0", valueLabel: "否" } });
+  const searchOptions = reactive<SearchOptionType[]>([
+    { label: "物料名称", value: "name" },
+    { label: "规格型号", value: "specification" },
+    { label: "模号", value: "model" },
+    { label: "日期范围", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
+    {
+      label: "物料状态",
+      value: "state",
+      children: [
+        { label: "待提交", value: "0" },
+        { label: "审核中", value: "1" },
+        { label: "已审核", value: "2" },
+        { label: "重新审核", value: "3" }
+      ]
+    },
+    {
+      label: "是否禁用",
+      value: "isfrozen",
+      children: [
+        { label: "是", value: "1" },
+        { label: "否", value: "0" }
+      ]
+    }
+  ]);
 
   onMounted(async () => {
-    const _columns = await getConfig(buttonList);
-    // 如果是在弹框中加载不浮动列
-    _columns.forEach((item) => isModal && (item.fixed = undefined));
-    columns.value = _columns;
-    // onSearch();
+    getColumnConfig();
+    getOptions();
   });
+  const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData, uniId: "id" });
+
+  const getColumnConfig = async () => {
+    const pushState: RendererType = ({ row }) => (row.pushState == 1 ? "已下推" : "待下推");
+    const cbcertification: RendererType = ({ row }) => (row.cbcertification == 1 ? "是" : "否");
+    const isfrozen: RendererType = ({ row }) => (row.isfrozen == 1 ? "是" : "否");
+
+    let columnData: TableColumnList[] = [
+      { label: "物料编号", fixed: true, prop: "number", minWidth: 200 },
+      { label: "物料名称", prop: "name", minWidth: 240, fixed: true },
+      { label: "规格型号", prop: "specification", minWidth: 260 },
+      { label: "模号", prop: "model", minWidth: 120 },
+      { label: "基本单位", prop: "baseUnitName", minWidth: 120 },
+      { label: "物料属性", prop: "erpClsidName", minWidth: 120 },
+      { label: "物料种类", prop: "materialTypeName", minWidth: 120 },
+      { label: "物料分组", prop: "materialGroupName", minWidth: 120 },
+      { label: "客供物料", prop: "customerProvidedName", minWidth: 120 },
+      { label: "成品类型", prop: "goodsTypeName", minWidth: 120 },
+      { label: "仓库", prop: "warehouseName", minWidth: 120 },
+      { label: "采购单位", prop: "purchaseUnitName", minWidth: 120 },
+      { label: "库存单位", prop: "stockUnitName", minWidth: 120 },
+      { label: "销售单位", prop: "saleUnitName", minWidth: 120 },
+      { label: "生产车间", prop: "manufacturingShopName", minWidth: 120 },
+      { label: "物料状态", prop: "stateName", minWidth: 120 },
+      { label: "下推状态", slot: "pushState", prop: "pushState", minWidth: 120 },
+      { label: "是否认证", slot: "cbcertification", prop: "cbcertification", minWidth: 120 },
+      { label: "是否禁用", slot: "isfrozen", prop: "isfrozen", minWidth: 120 },
+      { label: "创建人", prop: "createUserName", minWidth: 120 },
+      { label: "创建时间", prop: "createDate", minWidth: 220 },
+      { label: "提交人", prop: "submitUserName", minWidth: 120 },
+      { label: "提交时间", prop: "submitDate", minWidth: 220 },
+      { label: "最后修改人", prop: "modifyUserName", minWidth: 120 },
+      { label: "最后修改时间", prop: "modifyDate", minWidth: 220 },
+      { label: "旧物料编码", prop: "oldCode", minWidth: 120 }
+    ];
+    const { columnArrs, buttonArrs } = await getMenuColumns();
+    const [data] = columnArrs;
+    if (data?.length) columnData = data;
+    updateButtonList(buttonList, buttonArrs[0]);
+    columns.value = setColumn({ columnData, operationColumn: false, selectionColumn: { hide: false }, radioColumn: false, clearFixed: isModal });
+    columnDefs.value = getAgGridColumns({
+      columnData,
+      operationColumn: false,
+      selectionColumn: { hide: false },
+      radioColumn: false,
+      clearFixed: isModal,
+      columnsRender: { pushState, cbcertification, isfrozen }
+    });
+  };
+
+  const getOptions = () => {
+    getMaterialGroupTreeData({}).then((res: any) => {
+      if (res.data) {
+        categoryTreeData.value = res.data;
+      }
+    });
+  };
 
   const handleNodeClick = (treeItem) => {
     curNodeName.value = treeItem.id;
     curNodeLabel.value = treeItem.groupCode;
-    console.log(treeItem, "当前的tree");
-
     const finalArr = [];
-
     const loopFindId = (item) => {
       finalArr.push(item.id);
-
       if (item.children && Array.isArray(item.children) && item.children.length) {
         item.children.forEach((el) => {
           loopFindId(el);
@@ -200,7 +197,6 @@ export function useTable(emits, { isModal, productCode }) {
    */
   const onSearch = (rowIndex?) => {
     currentRow.value = {};
-    if (formData.isfrozen === "否") formData.isfrozen = "0";
     loading.value = true;
     fetchMaterialList({ ...formData, goodModel: productCode ?? undefined })
       .then((res: any) => {
@@ -208,11 +204,11 @@ export function useTable(emits, { isModal, productCode }) {
         loading.value = false;
         pagination.total = total;
         dataList.value = records;
-
+        setSelectCheckbox();
         if (typeof rowIndex === "number" && rowIndex >= 0) {
           currentRow.value = dataList.value[rowIndex];
           nextTick(() => {
-            materialMainTable.value?.getTableRef()?.toggleRowSelection(dataList.value[rowIndex], true);
+            setRowSelected(dataList.value[rowIndex], false);
             currentRow.value = dataList.value[rowIndex];
           });
         } else {
@@ -225,32 +221,28 @@ export function useTable(emits, { isModal, productCode }) {
   };
 
   const onFresh = () => {
-    getConfig(buttonList);
+    getColumnConfig();
     const rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
     onSearch(rowIndex);
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     formData.page = 1;
     onSearch();
   };
 
-  function GetDeptName(data: DepGroupItemTree[], id: number) {
-    if (data.length) {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i].id == id) return data[i].title;
-        return GetDeptName(data[i].children, id);
-      }
-    }
-    return null;
-  }
-
   // 新增分组
   const onAdd = () => {
     router.push({
       path: "/plmManage/basicData/materialMgmt/add",
-      query: { number: curNodeName.value, code: curNodeLabel.value, type: "add", isNewTag: "yes", menuId: route.query.menuId }
+      query: {
+        number: curNodeName.value,
+        code: curNodeLabel.value,
+        type: "add",
+        isNewTag: "yes",
+        menuId: route.query.menuId
+      }
     });
   };
 
@@ -260,14 +252,26 @@ export function useTable(emits, { isModal, productCode }) {
     if (row.state === 2) {
       router.push({
         path: `/plmManage/basicData/materialMgmt/view`,
-        query: { id: row.id, type: "view", isNewTag: "yes", menuId: route.query.menuId }
+        query: {
+          id: row.id,
+          type: "view",
+          isNewTag: "yes",
+          menuId: route.query.menuId,
+          title: currentRow.value.number
+        }
       });
     }
 
     if (row.state === 3) {
       router.push({
         path: `/plmManage/basicData/materialMgmt/edit`,
-        query: { id: row.id, type: "edit", isNewTag: "yes", menuId: route.query.menuId }
+        query: {
+          id: row.id,
+          type: "edit",
+          isNewTag: "yes",
+          menuId: route.query.menuId,
+          title: currentRow.value.number
+        }
       });
     }
   };
@@ -276,15 +280,18 @@ export function useTable(emits, { isModal, productCode }) {
   const onEdit = () => {
     if (JSON.stringify(currentRow.value) !== "{}") {
       if (currentRow.value.state === 2) {
-        ElMessage({
-          message: "已审核的物料不能修改",
-          type: "warning"
-        });
+        message.warning("已审核的物料不能修改");
         return;
       }
       router.push({
         path: `/plmManage/basicData/materialMgmt/edit`,
-        query: { id: currentRow.value.id, type: "edit", isNewTag: "yes", menuId: route.query.menuId }
+        query: {
+          type: "edit",
+          isNewTag: "yes",
+          id: currentRow.value.id,
+          menuId: route.query.menuId,
+          title: currentRow.value.number
+        }
       });
       return;
     }
@@ -296,15 +303,12 @@ export function useTable(emits, { isModal, productCode }) {
 
   // 删除分组
   const remove = () => {
-    if (selectRows.value.length) {
+    if (rowsData.value.length) {
       if (currentRow.value.state === 2) {
-        ElMessage({
-          message: "已审核的物料不能删除",
-          type: "warning"
-        });
+        message.warning("已审核的物料不能删除");
         return;
       }
-      ElMessageBox.confirm(`确认要删除名称为【${String(selectRows.value.map((item) => item.name))}】的物料吗?`, "系统提示", {
+      ElMessageBox.confirm(`确认要删除名称为【${String(rowsData.value.map((item) => item.name))}】的物料吗?`, "系统提示", {
         type: "warning",
         draggable: true,
         cancelButtonText: "取消",
@@ -313,7 +317,7 @@ export function useTable(emits, { isModal, productCode }) {
       })
         .then(() => {
           // delMaterialInfo({ id: currentRow.value.id }).then((res) => {
-          delMaterialInfo(selectRows.value.map((item) => item.id)).then((res) => {
+          delMaterialInfo(rowsData.value.map((item) => item.id)).then((res) => {
             if (res.data) {
               message.success(`删除成功`);
               onSearch();
@@ -330,7 +334,7 @@ export function useTable(emits, { isModal, productCode }) {
     });
   };
 
-  const openDisableDialog = (selectRows) => {
+  const openDisableDialog = (rowsData) => {
     const mFormData = reactive({ forbiddenReason: "" });
     const mFormRef = ref();
     const mFormRules = reactive<FormRules>({
@@ -360,8 +364,8 @@ export function useTable(emits, { isModal, productCode }) {
       contentRenderer: () => h(EditForm, { ref: mFormRef }),
       beforeSure: (done) => {
         const FormRef = mFormRef.value.getRef();
-        const ids = selectRows.value.map((item) => item.id);
-        const names = selectRows.value.map((item) => item.name);
+        const ids = rowsData.value.map((item) => item.id);
+        const names = rowsData.value.map((item) => item.name);
         FormRef.validate(async (valid) => {
           if (valid) {
             ElMessageBox.confirm(`确认要禁用名称为【${names}】的物料吗?`, "系统提示", {
@@ -387,18 +391,18 @@ export function useTable(emits, { isModal, productCode }) {
 
   // 提交物料
   const businessAction = ({ text }) => {
-    if (!selectRows.value.length) {
+    if (!rowsData.value.length) {
       return ElMessage({ message: "请选择记录", type: "warning" });
     }
-    currentRow.value = selectRows.value[0];
+    currentRow.value = rowsData.value[0];
     if (text === "禁用") {
-      openDisableDialog(selectRows);
+      openDisableDialog(rowsData);
       return;
     }
     if (["反禁用"].includes(text)) {
       const typeApi = { 反禁用: enableMaterialInfo };
-      const id = selectRows.value.map((item) => item.id);
-      const names = selectRows.value.map((item) => item.name);
+      const id = rowsData.value.map((item) => item.id);
+      const names = rowsData.value.map((item) => item.name);
       ElMessageBox.confirm(`确认要${text}名称为【${names}】的物料吗?`, "系统提示", {
         type: "warning",
         draggable: true,
@@ -468,29 +472,10 @@ export function useTable(emits, { isModal, productCode }) {
     }
   };
 
-  // 分页相关
-  function handleSizeChange(val: number) {
-    formData.limit = val;
-    onSearch();
-  }
-
-  function handleCurrentChange(val: number) {
-    formData.page = val;
-    onSearch();
-  }
-
-  // 点击表格行
-  const rowClick = (row) => {
-    materialMainTable.value?.getTableRef()?.clearSelection();
-    materialMainTable.value?.getTableRef()?.toggleRowSelection(row);
-    currentRow.value = row;
-    emits("select", row);
-  };
-
   // 导出
   const onExport = () => {
     loading.value = true;
-    const excelHeader = columnsDragDom.value
+    const excelHeader = columns.value
       .map((item, index) => {
         return { field: item.prop, title: item.label, width: 160, key: `0-${index}`, hide: false, colspan: 1, rowspan: 1, type: "normal", colGroup: false };
       })
@@ -516,6 +501,57 @@ export function useTable(emits, { isModal, productCode }) {
       .finally(() => (loading.value = false));
   };
 
+  // 分页相关
+  function handleSizeChange(val: number) {
+    formData.limit = val;
+    onSearch();
+  }
+
+  function handleCurrentChange(val: number) {
+    formData.page = val;
+    onSearch();
+  }
+
+  // 点击表格行
+  const rowClick = (row) => {
+    setRowSelected(row, true);
+    currentRow.value = row;
+    emits("select", row);
+  };
+
+  function onSelect(rows: any[], row: any) {
+    setSelectChange({ rows, row });
+  }
+
+  function onSelectAll(rows: any[]) {
+    setSelectAllChange(rows);
+  }
+
+  const onSelectionChange = (rows) => {
+    if (!rowsData.value.length) {
+      currentRow.value = {};
+    }
+  };
+
+  const rowStyle = ({ row, data }) => {
+    if ((row?.isfrozen || data?.isfrozen) === "1") {
+      return { color: "red" };
+    }
+  };
+
+  function setRowSelected(row, isClear = false) {
+    if (tableRef.value?.getTableRef) {
+      if (isClear) tableRef.value?.getTableRef()?.clearSelection();
+      tableRef.value?.getTableRef()?.toggleRowSelection(row, true);
+    }
+  }
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+    rowsData.value = [];
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
     { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
@@ -531,39 +567,32 @@ export function useTable(emits, { isModal, productCode }) {
     { clickHandler: businessAction, type: "primary", text: "履历", isDropDown: true }
   ]);
 
-  const onSelectionChange = (rows) => {
-    selectRows.value = rows;
-    if (!selectRows.value.length) {
-      currentRow.value = {};
-    }
-  };
-
-  const rowStyle = ({ row }) => {
-    if (row.isfrozen === "1") {
-      return {
-        color: "red"
-      };
-    }
-  };
-
   return {
+    isAgTable,
+    columnDefs,
+    tableRef,
     loading,
-    dataList,
     columns,
-    queryParams,
-    pagination,
+    dataList,
     maxHeight,
+    pagination,
+    queryParams,
+    searchOptions,
     buttonList,
     curNodeName,
-    materialMainTable,
+    loadingStatus,
+    categoryTreeData,
     rowStyle,
     onFresh,
     dbClick,
     rowClick,
-    handleSizeChange,
-    handleCurrentChange,
-    onSelectionChange,
+    onSelect,
+    onSelectAll,
+    onTagSearch,
+    onSwitchTable,
     handleNodeClick,
-    handleTagSearch
+    handleSizeChange,
+    onSelectionChange,
+    handleCurrentChange
   };
 }

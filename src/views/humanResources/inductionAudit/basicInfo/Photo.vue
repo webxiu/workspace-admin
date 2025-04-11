@@ -50,15 +50,15 @@ const renderImage = ({ formModel, row }) => {
 };
 
 const imageOptions: FormConfigItemType[] = [
-  { label: "个人照片", prop: "1", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "个人签名", prop: "4", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "身份证图片1", prop: "2", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "身份证图片2", prop: "3", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "银行卡图片1", prop: "5", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "银行卡图片2", prop: "6", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "健康证图片1", prop: "7", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "健康证图片2", prop: "8", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "离职证明", prop: "9", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
-  { label: "毕业证", prop: "10", colProp: layout, slots: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) }
+  { label: "个人照片", prop: "1", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "个人签名", prop: "4", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "身份证图片1", prop: "2", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "身份证图片2", prop: "3", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "银行卡图片1", prop: "5", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "银行卡图片2", prop: "6", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "健康证图片1", prop: "7", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "健康证图片2", prop: "8", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "离职证明", prop: "9", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) },
+  { label: "毕业证", prop: "10", colProp: layout, slot: { label: () => <span /> }, render: ({ formModel, row }) => renderImage({ formModel, row }) }
 ];
 </script>

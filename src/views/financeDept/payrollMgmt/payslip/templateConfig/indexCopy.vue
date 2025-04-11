@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { fetchMoneyTemplateList, saveMoneyTemplateConfig } from "@/api/oaManage/financeDept";
-import { setColumn, tableEditRender } from "@/utils/table";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -8,98 +7,22 @@ import { useRoute } from "vue-router";
 const tableData = ref([]);
 const loading = ref(false);
 const currentRow: any = ref({});
-const columns = ref<TableColumnList[]>([]);
-
-// 编辑表格
-const { editCellRender } = tableEditRender();
-
-const getConfig = () => {
-  const fieldTypeOption = [
-    { optionName: "varchar", optionValue: "varchar" },
-    { optionName: "decimal", optionValue: "decimal" },
-    { optionName: "bit", optionValue: "bit" },
-    { optionName: "datetime", optionValue: "datetime" }
-  ];
-  const fieldOtherOption = [
-    { optionName: "是", optionValue: "是" },
-    { optionName: "否", optionValue: "否" }
-  ];
-
-  const columnData: TableColumnList[] = [
-    { label: "字段", prop: "fieldName", cellRenderer: (data) => editCellRender({ data }) },
-    { label: "名称", prop: "fieldTitle", cellRenderer: (data) => editCellRender({ data }) },
-    {
-      label: "类型",
-      prop: "fieldType",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldTypeOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    { label: "宽度", prop: "width", minWidth: 80, align: "right", cellRenderer: (data) => editCellRender({ data }) },
-    {
-      label: "PC显示",
-      prop: "disable",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "APP显示",
-      prop: "appShow",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "APP序号",
-      prop: "appNo",
-      minWidth: 100,
-      align: "right",
-      cellRenderer: (data) => editCellRender({ data })
-    },
-    {
-      label: "扣项",
-      prop: "deduction",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "导出Excel",
-      prop: "excel",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "冻结",
-      prop: "frozen",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "合计",
-      prop: "total",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "强制校验",
-      prop: "importCheck",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "加密存储",
-      prop: "encryptedStorage",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "属于Excel",
-      prop: "inExcel",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    },
-    {
-      label: "允许修改",
-      prop: "allowEdit",
-      cellRenderer: (data) => editCellRender({ type: "select", data, options: fieldOtherOption, cellStyle: { color: "#606266", textAlign: "left" } })
-    }
-  ];
-
-  columns.value = setColumn({ columnData, operationColumn: false });
-  return columns.value;
-};
+const curColumnProp = ref("");
+const curRowIdx = ref();
 
 defineOptions({ name: "TemplateCopyConfig" });
 
 const route = useRoute();
+const fieldTypeOption = [
+  { label: "varchar", value: "varchar" },
+  { label: "decimal", value: "decimal" },
+  { label: "bit", value: "bit" },
+  { label: "datetime", value: "datetime" }
+];
+const fieldOtherOption = [
+  { label: "是", value: "是" },
+  { label: "否", value: "否" }
+];
 
 const fetchTableData = () => {
   loading.value = true;
@@ -210,18 +133,34 @@ const rowStyle = ({ row }) => {
       background: "#FFC107"
     };
   }
+
+  // if (row.appShow || row.pcShow) {
+  //   return {
+  //     background: "#008000",
+  //     color: "#fff"
+  //   };
+  // }
 };
 
-const rowClick = (row, column) => {
+const cellStyle = ({ row, column, rowIndex, columnIndex }) => {
+  return {};
+};
+
+const rowClick = (row) => {
   currentRow.value = row;
 };
 
+const cellDbClick = (row, column) => {
+  currentRow.value = row;
+
+  if (column.property !== "numberNo") row.isEditMode = true;
+  curColumnProp.value = column.property;
+  curRowIdx.value = row.numberNo - 1;
+};
+
 onMounted(() => {
-  getConfig();
   fetchTableData();
 });
-
-const maxHeight = ref(600);
 </script>
 
 <template>
@@ -234,7 +173,7 @@ const maxHeight = ref(600);
         <el-button type="primary" plain @click="onSave">保存</el-button>
       </el-space>
     </div>
-    <div class="top-tip">
+    <!-- <div class="top-tip">
       <blockquote class="q-quote">
         <div class="test1">
           <span style="font-weight: bold; color: red"
@@ -245,23 +184,220 @@ const maxHeight = ref(600);
           <span style="color: white; background-color: green; border-radius: 0.25rem">属于Excel</span> 列值为【是】的行颜色为黄色。
         </div>
       </blockquote>
-    </div>
+    </div> -->
     <div class="tp-table">
-      <pure-table
-        border
-        :height="maxHeight"
-        :max-height="maxHeight"
-        row-key="id"
-        :adaptive="true"
-        align-whole="left"
-        @row-click="rowClick"
+      <el-table
         size="small"
+        border
         :data="tableData"
-        :columns="columns"
-        highlight-current-row
-        :show-overflow-tooltip="true"
+        style="width: 100%; height: calc(100vh - 170px)"
+        v-loading="loading"
+        @row-click="rowClick"
         :row-style="rowStyle"
-      />
+        :cell-style="cellStyle"
+        @cell-dblclick="cellDbClick"
+      >
+        <el-table-column prop="numberNo" align="center" label="序号" width="80" sortable />
+        <el-table-column prop="fieldName" label="字段" width="150" sortable>
+          <template #default="{ row, column }">
+            <el-input
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              v-model="row.fieldName"
+              size="small"
+              @blur="row.isEditMode = false"
+            />
+            <span v-else>{{ row.fieldName }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="fieldTitle" label="名称" width="150" sortable>
+          <template #default="{ row, column }">
+            <el-input
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              v-model="row.fieldTitle"
+              size="small"
+              @blur="row.isEditMode = false"
+            />
+            <span v-else>{{ row.fieldTitle }}</span>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column prop="fieldType" label="类型" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.fieldType"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldTypeOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.fieldType }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="width" label="宽度" width="100" sortable>
+          <template #default="{ row, column }">
+            <el-input
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              v-model="row.width"
+              size="small"
+              @blur="row.isEditMode = false"
+            />
+            <span v-else>{{ row.width }}</span>
+          </template>
+        </el-table-column> -->
+        <el-table-column prop="appShow" label="PC显示" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.pcShow"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <div v-else>
+              <el-tag type="success" effect="dark" v-if="row.pcShow === '是'">{{ row.pcShow }}</el-tag>
+              <div v-else>{{ row.pcShow }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="appShow" label="APP显示" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.appShow"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <div v-else>
+              <el-tag type="success" effect="dark" v-if="row.appShow === '是'">{{ row.appShow }}</el-tag>
+              <div v-else>{{ row.appShow }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="appNo" label="APP序号" sortable>
+          <template #default="{ row, column }">
+            <!-- <el-select v-model="row.appNo" size="small" v-if="row.isEditMode" @blur="row.isEditMode = false">
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select> -->
+            <el-input
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              v-model="row.appNo"
+              size="small"
+              @blur="row.isEditMode = false"
+            />
+            <span v-else>{{ row.appNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="deduction" label="扣项" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.deduction"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <div v-else>
+              <el-tag type="danger" effect="dark" v-if="row.deduction === '是'">{{ row.deduction }}</el-tag>
+              <div v-else>{{ row.deduction }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column prop="excel" label="导出Excel" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.excel"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.excel }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="frozen" label="冻结" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.frozen"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.frozen }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="total" label="合计" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.total"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.total }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="importCheck" label="强制校验" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.importCheck"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.importCheck }}</span>
+          </template>
+        </el-table-column> -->
+        <el-table-column prop="encryptedStorage" label="加密存储" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.encryptedStorage"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.encryptedStorage }}</span>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column prop="inExcel" label="属于Excel" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.inExcel"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.inExcel }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="allowEdit" label="允许修改" sortable>
+          <template #default="{ row, column }">
+            <el-select
+              v-model="row.allowEdit"
+              size="small"
+              v-if="row.isEditMode && column.property === curColumnProp && curRowIdx === row.numberNo - 1"
+              @blur="row.isEditMode = false"
+            >
+              <el-option v-for="item in fieldOtherOption" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <span v-else>{{ row.allowEdit }}</span>
+          </template>
+        </el-table-column> -->
+      </el-table>
     </div>
   </div>
 </template>

@@ -154,7 +154,7 @@ export const formConfigs = ({ _formData, buttonsList, groupsList, onChangeBtn, o
       label: "是否收起",
       prop: "isDropDown",
       colProp: { span: 12 },
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="是否收起至下拉选项中, 默认展开" />
       },
       render: ({ formModel, row }) => (
@@ -169,7 +169,7 @@ export const formConfigs = ({ _formData, buttonsList, groupsList, onChangeBtn, o
       label: "按钮预览",
       prop: "",
       colProp: { span: 12 },
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: () => (
         <el-button type={_formData.btnType} size={_formData.btnSize} icon={IconConf[_formData.btnIcon]}>
           {_formData.btnName}

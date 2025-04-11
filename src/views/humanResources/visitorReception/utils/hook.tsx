@@ -143,52 +143,6 @@ export const useConfig = () => {
     openDialog("view", row);
   };
 
-  const handleAddUserNames = (configData) => {
-    const setA = (v) => {
-      curMultipeUserList.value = v;
-    };
-    addDialog({
-      title: "选择主要接待人员",
-      width: "900px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(SelectUserModal, { setA, curRows: currentRow }),
-      beforeSure: (done, { options }) => {
-        if (!curMultipeUserList.value.length) {
-          ElMessage({ message: "未选定人员", type: "warning" });
-          return;
-        }
-        const names = curMultipeUserList.value.map((item) => item.userName);
-        configData.value.receptionist = String(names);
-        done();
-      }
-    });
-  };
-
-  const handleAddOtherUserNames = (configData) => {
-    const setA = (v) => {
-      curMultipeOtherUserList.value = v;
-    };
-    addDialog({
-      title: "选择协助人员",
-      width: "900px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(SelectUserModal, { setA, curRows: currentRow }),
-      beforeSure: (done, { options }) => {
-        if (!curMultipeOtherUserList.value.length) {
-          ElMessage({ message: "未选定人员", type: "warning" });
-          return;
-        }
-        const names = curMultipeOtherUserList.value.map((item) => item.userName);
-        configData.value.receptionAssist = String(names);
-        done();
-      }
-    });
-  };
-
   const openDialog = async (type: string, row?) => {
     const titleObj = { add: "新增", edit: "修改", view: "查看" };
     const title = titleObj[type];
@@ -216,9 +170,7 @@ export const useConfig = () => {
       props: {
         formInline: _formData,
         type: type,
-        id: row?.id,
-        handleAddUserNames: handleAddUserNames,
-        handleAddOtherUserNames: handleAddOtherUserNames
+        id: row?.id
       },
       width: "1050px",
       draggable: true,
@@ -228,8 +180,7 @@ export const useConfig = () => {
       hideFooter: type === "view",
       contentRenderer: () => h(Detail, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`).then(() => {
               onSubmitChange(type, title, _formData, () => {

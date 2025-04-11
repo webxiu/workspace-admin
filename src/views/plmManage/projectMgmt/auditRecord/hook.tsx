@@ -29,10 +29,9 @@ export const useConfig = () => {
   });
 
   const fetchOpts = () => {
-    getEnumDictList(["ProjectStage"]).then((res) => {
-      const resultList = res.ProjectStage.map((item) => ({ label: item.optionName, value: item.optionValue }));
-      searchOptions[1].children = resultList;
-      projectStageOpts.value = resultList;
+    getEnumDictList(["ProjectStage"]).then(({ ProjectStage }) => {
+      searchOptions[1].children = ProjectStage;
+      projectStageOpts.value = ProjectStage;
     });
   };
 

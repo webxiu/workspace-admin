@@ -8,27 +8,30 @@ import { useLocalStorage } from "@/utils/storage";
 const { getItem, updateItem } = useLocalStorage("payroll-calculate");
 
 const formRules1 = reactive<FormRules>({
-  row: [{ required: true, message: "数据起始行必填", trigger: "change" }],
-  cardCol: [{ required: true, message: "身份证列必填", trigger: "change" }],
-  userCodeCol: [{ required: true, message: "工号列必填", trigger: "change" }],
+  row: [
+    { required: true, message: "数据起始行必填", trigger: "change" },
+    { pattern: /^[1-9][0-9]*$/, message: "行号为数字类型" }
+  ],
+  cardCol: [
+    { required: true, message: "身份证列必填", trigger: "change" },
+    { pattern: /^[A-Z]+$/, message: "列为26个英文大写字母的组合" }
+  ],
+  userCodeCol: [
+    { required: true, message: "工号列必填", trigger: "change" },
+    { pattern: /^[A-Z]+$/, message: "列为26个英文大写字母的组合" }
+  ],
+  moneyCol: [{ pattern: /^[A-Z]+$/, message: "列为26个英文大写字母的组合" }],
   yearAndMonth: [{ required: true, message: "年月必填", trigger: "change" }],
   sybxCol: [{ required: true, message: "失业保险必填", trigger: "change" }],
   choose: [{ required: true, message: "导入类型必填", trigger: "change" }],
   file: [{ required: true, message: "未选择任何文件", trigger: "change" }]
 });
 
-const formRules = reactive<FormRules>({
-  workAgeSubsidy: [{ required: true, message: "工龄津贴为必填项", trigger: "submit" }],
-  other: [{ required: true, message: "其他为必填项", trigger: "submit" }],
-  pushMoney: [{ required: true, message: "提成为必填项", trigger: "submit" }]
-});
+const formRules = reactive<FormRules>({});
 
 export const importType = {
-  公积金: { row: "5", cardCol: "2", moneyCol: "9", oldInsuranceCol: "0", hospitalInsuranceCol: "0", sybxCol: "0" },
-  社保: { row: "4", cardCol: "3", moneyCol: "0", oldInsuranceCol: "13", hospitalInsuranceCol: "15", sybxCol: "37" },
-  个税: { row: "2", cardCol: "4", moneyCol: "39", oldInsuranceCol: "0", hospitalInsuranceCol: "0", sybxCol: "0" },
-  其他: { row: "2", cardCol: "0", moneyCol: "3", oldInsuranceCol: "0", hospitalInsuranceCol: "0", sybxCol: "0", userCodeCol: "1" },
-  提成: { row: "2", cardCol: "0", moneyCol: "3", oldInsuranceCol: "0", hospitalInsuranceCol: "0", sybxCol: "0", userCodeCol: "1" }
+  个税: { row: "2", cardCol: "D", moneyCol: "AQ", oldInsuranceCol: "0", hospitalInsuranceCol: "0", sybxCol: "0" },
+  已发工资: { row: "2", moneyCol: "C", userCodeCol: "A", cardCol: "0", oldInsuranceCol: "0", hospitalInsuranceCol: "0", sybxCol: "0" }
 };
 
 const formConfigs1 = (addFormData) => {
@@ -55,11 +58,8 @@ const formConfigs1 = (addFormData) => {
         render: ({ formModel, row }) => {
           return (
             <el-select onChange={changeSelectValue} style={{ width: "100%" }} v-model={formModel[row.prop]} placeholder="请选择导入类型">
-              <el-option label="公积金" value="公积金" />
-              <el-option label="社保" value="社保" />
               <el-option label="个税" value="个税" />
-              <el-option label="其他" value="其他" />
-              <el-option label="提成" value="提成" />
+              <el-option label="已发工资" value="已发工资" />
             </el-select>
           );
         }
@@ -74,7 +74,7 @@ const formConfigs1 = (addFormData) => {
       },
       {
         label: "身份证列",
-        hide: ["其他", "提成"].includes(chooseType),
+        hide: ["已发工资"].includes(chooseType),
         labelWidth: 100,
         prop: "cardCol",
         render: ({ formModel, row }) => {
@@ -83,7 +83,7 @@ const formConfigs1 = (addFormData) => {
       },
       {
         label: "工号列",
-        hide: !["其他", "提成"].includes(chooseType),
+        hide: !["已发工资"].includes(chooseType),
         labelWidth: 100,
         prop: "userCodeCol",
         render: ({ formModel, row }) => {
@@ -94,7 +94,7 @@ const formConfigs1 = (addFormData) => {
         label: "金额列",
         labelWidth: 100,
         prop: "moneyCol",
-        hide: chooseType && !["公积金", "个税", "其他", "提成"].includes(chooseType),
+        hide: chooseType && !["个税", "已发工资"].includes(chooseType),
         render: ({ formModel, row }) => {
           return <el-input readonly={moneyReadonly} v-model={formModel[row.prop]} placeholder="请输入金额列" />;
         }
@@ -103,7 +103,7 @@ const formConfigs1 = (addFormData) => {
         label: "养老保险列",
         labelWidth: 100,
         prop: "oldInsuranceCol",
-        hide: chooseType && !["社保"].includes(chooseType),
+        hide: chooseType,
         render: ({ formModel, row }) => {
           return <el-input readonly={oldReadonly} v-model={formModel[row.prop]} placeholder="请输入养老保险列" />;
         }
@@ -130,7 +130,7 @@ const formConfigs1 = (addFormData) => {
         label: "文件",
         labelWidth: 100,
         prop: "file",
-        slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+        slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
         render: ({ formModel, row }) => {
           return <ImportUpload v-model={formModel[row.prop]} style={{ width: "100%" }} />;
         }
@@ -147,25 +147,18 @@ const formConfigs1 = (addFormData) => {
       });
     }
 
-    if (val === "社保") {
-      moneyReadonly = true;
-      oldReadonly = false;
-      hospReadonly = false;
-      withNotWorkReadonly = false;
-    }
-
-    if (val === "公积金") {
-      moneyReadonly = false;
-      oldReadonly = true;
-      hospReadonly = true;
-      withNotWorkReadonly = true;
-    }
-
     if (val === "个税") {
       moneyReadonly = false;
       oldReadonly = true;
       hospReadonly = true;
       withNotWorkReadonly = true;
+    }
+
+    if (val === "已发工资") {
+      addFormData.cardCol = "0";
+      addFormData.oldInsuranceCol = "0";
+      addFormData.hospitalInsuranceCol = "0";
+      addFormData.sybxCol = "0";
     }
 
     confArr.value = formConfs(val);
@@ -180,7 +173,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "姓名",
       prop: "staffName",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -189,7 +182,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "身份证号",
       prop: "idCard",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -198,7 +191,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "工号",
       prop: "staffCode",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -207,7 +200,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "部门",
       prop: "deptName",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -216,7 +209,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "入职日期",
       prop: "startDate",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -225,7 +218,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "正班工资",
       prop: "regularSalary",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -234,16 +227,16 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "正班工时",
       prop: "regularWorking",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
     },
     {
-      label: "加班工资/小时",
+      label: "加班工资/H",
       prop: "overTimeSalarytohour",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -252,7 +245,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "加班工时",
       prop: "overTimeWorking",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -261,16 +254,16 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "加班工资",
       prop: "overTimeSalary",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
     },
     {
-      label: "公休加班工资/小时",
+      label: "公休加班工资/H",
       prop: "restOverTimeSalarytohour",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -279,7 +272,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "公休加班工时",
       prop: "restOverTimeWorking",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -288,7 +281,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "公休加班工资",
       prop: "restOverTimeSalary",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -297,7 +290,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "伙食补贴",
       prop: "foodSubsidy",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -306,7 +299,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "岗位津贴",
       prop: "positionSubsidy",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -315,7 +308,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "女工补贴",
       prop: "womanSubsidy",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -324,7 +317,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "综合绩效",
       prop: "synthesizePerformance",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -333,7 +326,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "全勤奖",
       prop: "allTheWorkSubsidy",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -342,7 +335,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "绩效",
       prop: "performance",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -351,7 +344,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "级别工资",
       prop: "levelSalary",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -360,7 +353,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "保密费",
       prop: "confidentialitySubsidy",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -369,7 +362,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "失业保险",
       prop: "sybx",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -378,7 +371,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "应发工资",
       prop: "salary",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -387,7 +380,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "水电费",
       prop: "waterAndElectricity",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -396,7 +389,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "养老保险",
       prop: "oldInsurance",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -405,7 +398,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "合作医疗",
       prop: "hospitalInsurance",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -414,7 +407,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "伙食费",
       prop: "food",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -423,7 +416,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "代缴个人所得税",
       prop: "tax",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -432,7 +425,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "实发工资",
       prop: "endSalary",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} disabled />;
       }
@@ -441,16 +434,25 @@ const formConfigs = (userType): FormConfigItemType[] =>
       label: "工龄津贴",
       prop: "workAgeSubsidy",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
       render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} />;
+        return <el-input v-model={formModel[row.prop]} disabled />;
       }
     },
     {
       label: "其他",
       prop: "other",
       colProp: { span: 8 },
-      labelWidth: 130,
+      labelWidth: 110,
+      render: ({ formModel, row }) => {
+        return <el-input v-model={formModel[row.prop]} disabled />;
+      }
+    },
+    {
+      label: "已发工资",
+      prop: "paidSalary",
+      colProp: { span: 8 },
+      labelWidth: 110,
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} />;
       }
@@ -462,7 +464,7 @@ const formConfigs = (userType): FormConfigItemType[] =>
             label: "提成",
             prop: "pushMoney",
             colProp: { span: 8 },
-            labelWidth: 130,
+            labelWidth: 110,
             render: ({ formModel, row }) => {
               return <el-input v-model={formModel[row.prop]} />;
             }

@@ -2,13 +2,14 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-12 11:02:19
+ * @Last Modified time: 2025-02-20 18:08:41
  */
 
-import { Delete, MessageBox, Plus } from "@element-plus/icons-vue";
+import { ArrowDown, Coin, Delete, MessageBox, Plus } from "@element-plus/icons-vue";
 import { FormColumnItemType, deleteformColumn, enumDictionaryList, formColumnList, updateformColumn } from "@/api/systemManage";
 import { FormatDataType, ItemKey } from "@/utils/form";
-import { SplitChar, formConfigs, formRules, formatConfigs, formatRules, hideList, pasteConfigs, slotsList, typeOptions } from "./config";
+import { SplitChar, formConfigs, formRules, formatConfigs, formatRules, layouts, pasteConfigs, slotsList, typeOptions } from "./config";
+import { boolOptions, defaultMime } from "@/config/constant";
 import { copyText, debounce, readClipboard } from "@/utils/common";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
@@ -22,11 +23,12 @@ import { Question } from "@/config/elements";
 import { TableColumnRenderer } from "@pureadmin/table";
 import VueJsonPretty from "vue-json-pretty";
 import { addDialog } from "@/components/ReDialog";
-import { defaultMime } from "@/config/constant";
+import { getSlot } from "../../TableConfigList/utils/config";
 import regExp from "@/utils/regExp";
+import { rowStyle } from "../../TableConfigList/utils/hook";
 import { v4 as uuidv4 } from "uuid";
 
-export type SearchType = { menuId: number; columnGroupId: string; id: string; isForm: boolean };
+export type SearchType = { menuId: number; columnGroupId: string; id: string; tableName: ""; isForm: boolean };
 
 export const useConfig = (emits) => {
   const tableRef = ref();
@@ -36,7 +38,7 @@ export const useConfig = (emits) => {
   const dataListTemp = ref<FormColumnItemType[]>([]);
   const rowDatas = ref<FormColumnItemType[]>([]);
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
-  const queryParams2 = ref<Partial<SearchType>>({ menuId: 0, columnGroupId: "", id: "", isForm: false });
+  const queryParams2 = ref<Partial<SearchType>>({ menuId: 0, id: "", columnGroupId: "", isForm: false });
 
   onMounted(() => {
     getColumnConfig();
@@ -44,14 +46,44 @@ export const useConfig = (emits) => {
 
   // 编辑表格
   const { editCellRender } = tableEditRender({
-    editFinish: ({ prop, row }) => {
+    editFinish: ({ prop, row, index }) => {
       if (prop === "seq") {
         moveTableRow<FormColumnItemType>(dataList, row, "seq", "", ({ newArr }) => (dataList.value = newArr));
+      }
+      // 输入类型变化重置属性配置
+      if (prop === "itemType") {
+        onClickFormat("change", { row, index } as TableColumnRenderer);
       }
     }
   });
 
   function getColumnConfig() {
+    const customHeadRender = (prop: string, label: string, options: any[], element?: JSX.Element) => {
+      return (
+        <el-dropdown trigger="click" style="color: inherit; line-height: inherit">
+          {{
+            default: () => (
+              <span class="inline-flex align-center">
+                {element || label}
+                <el-icon class="el-icon--right" color="var(--el-color-primary)">
+                  <ArrowDown />
+                </el-icon>
+              </span>
+            ),
+            dropdown: () => (
+              <el-dropdown-menu>
+                <el-dropdown-item>
+                  <el-button type="primary" link plain size="small" onClick={() => onHeaderDialog({ prop, label, options })}>
+                    设置所有{label}
+                  </el-button>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            )
+          }}
+        </el-dropdown>
+      );
+    };
+
     const columnData: TableColumnList[] = [
       { label: "顺序", prop: "seq", width: 60, align: "center", headerAlign: "center", fixed: true, cellRenderer: (data) => editCellRender({ data }) },
       {
@@ -59,7 +91,7 @@ export const useConfig = (emits) => {
         prop: "label",
         fixed: true,
         headerAlign: "center",
-        minWidth: 140,
+        width: 140,
         headerRenderer: ({ column }) => (
           <el-tooltip placement="top" content="必填字段">
             <span>
@@ -75,7 +107,7 @@ export const useConfig = (emits) => {
         prop: "prop",
         fixed: true,
         headerAlign: "center",
-        minWidth: 140,
+        width: 140,
         headerRenderer: ({ column }) => (
           <el-tooltip placement="top" content="必填字段">
             <span>
@@ -90,16 +122,23 @@ export const useConfig = (emits) => {
         label: "输入类型",
         prop: "itemType",
         headerAlign: "center",
+        width: 120,
         cellRenderer: (data) => editCellRender({ type: "select", data, options: typeOptions })
       },
-
-      { label: "是否隐藏", prop: "hide", headerAlign: "center", cellRenderer: (data) => editCellRender({ type: "select", data, options: hideList }) },
+      {
+        label: "是否隐藏",
+        prop: "hide",
+        headerAlign: "center",
+        width: 120,
+        headerRenderer: ({ column }) => customHeadRender(column["property"], column.label, boolOptions),
+        cellRenderer: (data) => editCellRender({ type: "select", data, options: boolOptions })
+      },
       {
         label: "属性配置",
-        prop: "valueFormat",
+        prop: "formatType",
         minWidth: 200,
         headerAlign: "center",
-        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="配置详情" />,
+        headerRenderer: ({ column }) => customHeadRender("layout", "布局", layouts, <Question label={column.label} tipMsg="配置布局、输入选项、校验规则等" />),
         cellRenderer: (data) => {
           const prop = data.column["property"];
           const value = JSON.parse(data.row[prop] || "{}");
@@ -107,7 +146,7 @@ export const useConfig = (emits) => {
             <el-dropdown trigger="contextmenu" style="display: inline; line-height: inherit">
               {{
                 default: () => (
-                  <span class="ui-d-ib ui-w-100 pointer ellipsis ui-va-m" style="min-height: 22px;" onClick={onClickFormat.bind(null, data)}>
+                  <span class="ui-d-ib ui-w-100 pointer ellipsis ui-va-m" style="min-height: 22px;" onClick={onClickFormat.bind(null, "click", data)}>
                     {data.row[prop]}
                   </span>
                 ),
@@ -123,7 +162,7 @@ export const useConfig = (emits) => {
           );
           if (!value.layout) return <DefaultDom />;
           const ContentDom = () => (
-            <div style={{ width: "400px", overflowY: "auto" }}>
+            <div style={{ width: "400px", maxHeight: window.innerHeight * 0.8 + "px", overflowY: "auto" }}>
               <VueJsonPretty data={value} showLine={true} showLineNumber={true} showLength={true} showIcon={true} />
             </div>
           );
@@ -134,15 +173,16 @@ export const useConfig = (emits) => {
           );
         }
       },
-      { label: "字段说明", prop: "fieldComment", headerAlign: "center", cellRenderer: (data) => editCellRender({ data }) },
       {
         label: "插槽",
-        prop: "slots",
+        prop: "slot",
         headerAlign: "center",
-        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="自定义表单渲染内容" />,
-        cellRenderer: (data) => editCellRender({ type: "select", data, options: slotsList })
+        width: 100,
+        headerRenderer: ({ column }) => <Question label={column.label} tipMsg="自定义渲染内容" />,
+        cellRenderer: (data) => editCellRender({ type: "select", data, options: getSlot(data) })
       },
-      { label: "表名", prop: "tableName", headerAlign: "center", cellRenderer: (data) => editCellRender({ data }) }
+      { label: "字段说明", prop: "fieldComment", headerAlign: "center", width: 120, cellRenderer: (data) => editCellRender({ data }) },
+      { label: "表名", prop: "tableName", headerAlign: "center", width: 140, cellRenderer: (data) => editCellRender({ data }) }
     ];
     columns.value = setColumn(
       {
@@ -153,10 +193,44 @@ export const useConfig = (emits) => {
         isDragRow: true,
         selectionColumn: { fixed: true, hide: false },
         operationColumn: { minWidth: 80 },
-        dragSelector: ".form-config"
+        dragSelector: ".fc-form"
       },
       onUpdateIndex
     );
+  }
+
+  // 头部设置弹窗
+  function onHeaderDialog({ prop, label, options }) {
+    const formRef = ref();
+    const _formData = reactive({ [prop]: "" });
+    const render = ({ formModel, row }) => {
+      return (
+        <el-select v-model={formModel[row.prop]} value-key="value" placeholder="请选择" class="ui-w-100">
+          {options.map(({ optionName, optionValue }) => (
+            <el-option key={optionValue} label={optionName} value={optionValue} />
+          ))}
+        </el-select>
+      );
+    };
+    addDialog({
+      title: "更新所有字段",
+      props: { formInline: _formData, formProps: { labelWidth: "80px" }, formConfigs: [{ label, prop, render }] },
+      width: "360px",
+      draggable: true,
+      contentRenderer: () => h(EditForm, { ref: formRef }),
+      beforeSure: (done) => {
+        dataList.value.forEach((item) => {
+          const has1 = Object.hasOwnProperty.call(item, prop);
+          if (has1) return (item[prop] = _formData[prop]);
+          const formatItem = JSON.parse(item.formatType);
+          if (Object.hasOwnProperty.call(formatItem, prop)) {
+            formatItem[prop] = _formData[prop];
+            item.formatType = JSON.stringify(formatItem);
+          }
+        });
+        done();
+      }
+    });
   }
 
   // 更新预览
@@ -166,14 +240,14 @@ export const useConfig = (emits) => {
 
   // 外部查询
   function onSearch(row) {
-    const { id, menuId, formGroupList } = row;
+    const { id, menuId, formGroupList, groupType, tableName } = row;
     if (formGroupList) {
       dataList.value = [];
       dataListTemp.value = [];
       queryParams2.value = {};
       return;
     }
-    const param = { id, menuId, columnGroupId: id, isForm: !formGroupList };
+    const param = { id, menuId, columnGroupId: id, tableName, isForm: !formGroupList, groupType };
     queryParams2.value = param;
     getTableList();
   }
@@ -195,9 +269,10 @@ export const useConfig = (emits) => {
   }
 
   const getTableList = debounce(() => {
-    if (!queryParams2.value.id) return message.error("表单ID不能为空");
+    const { id, menuId } = queryParams2.value;
+    if (!id) return message.error("表单ID不能为空");
     loading.value = true;
-    formColumnList(queryParams2.value.id)
+    formColumnList(id)
       .then(({ data }) => {
         const _data = data || [];
         loading.value = false;
@@ -223,34 +298,61 @@ export const useConfig = (emits) => {
     }
   };
 
-  function onClickFormat({ row, column, index }: TableColumnRenderer) {
+  function onClickFormat(action: "change" | "click", { row, index }: TableColumnRenderer) {
     const formRef = ref();
     const sLoading = ref(true);
     const enumList = ref([]);
-    const formatRow: FormatDataType = JSON.parse(row?.valueFormat || "{}");
-    const isInput = [ItemKey.input, ItemKey.inputNumber].includes(row.itemType);
-    // 回显及默认值设置
+    const formatRow: FormatDataType = JSON.parse(row?.formatType || "{}");
+    const inputs = [ItemKey.input, ItemKey.textArea, ItemKey.inputNumber];
+
+    // 属性配置:回显及默认值设置
     const _formData = reactive<FormatDataType>({
       ...formatRow,
       itemType: row.itemType ?? ItemKey.input,
-      editInput: formatRow.editInput ?? "clearable",
-      placeholder: formatRow.placeholder ?? (isInput ? "请输入" : "请选择"),
+      layout: formatRow.layout ?? 12,
+      editInput: formatRow.editInput,
+      clearable: formatRow.clearable ?? true,
+      placeholder: formatRow.placeholder ?? inputs.includes(formatRow.itemType as ItemKey) ? "请输入" : "请选择",
+      size: formatRow.size ?? "default",
+      filterPlaceholder: formatRow.filterPlaceholder ?? "请输入",
+      // dateTime
+      dateTime: formatRow.dateTime ?? "HH:mm:ss",
+      isRange: formatRow.isRange ?? false,
+      // select
+      method: formatRow.method ?? ("custom" as any),
       optionName: formatRow.optionName ?? "optionName",
       optionValue: formatRow.optionValue ?? "optionValue",
-      layout: formatRow.layout ?? 12,
       multiple: formatRow.multiple ?? false,
-      limit: formatRow.limit ?? 1,
+      filterable: formatRow.filterable ?? false, // 是否筛选
+      collapseTags: formatRow.collapseTags ?? false, // 是否标签显示
+      maxCollapseTags: formatRow.maxCollapseTags ?? 1, // 标签最大显示个数
+      collapseTagsTooltip: formatRow.collapseTagsTooltip ?? false, // 是否悬停提示
+      // upload
+      autoUpload: formatRow.autoUpload ?? false,
       accept: formatRow.accept ?? defaultMime,
+      limit: formatRow.limit ?? 1,
+      fileSize: formatRow.fileSize,
+      iconSize: formatRow.iconSize ?? 100,
       drag: formatRow.drag ?? false,
       showFileList: formatRow.showFileList ?? true,
-      listType: formatRow.listType ?? "picture"
+      listType: formatRow.listType ?? "picture",
+      // textarea
+      rows: formatRow.rows ?? 2,
+      minRows: formatRow.minRows,
+      maxRows: formatRow.maxRows
+      // transfor
     });
     // 获取枚举字典下拉列表
     enumDictionaryList({ page: 1, limit: 10000 }, { headers: { hideLoading: true } })
       .then(({ data }) => (enumList.value = data.records || []))
       .finally(() => (sLoading.value = false));
 
-    const formConfigs = formatConfigs({ formData: _formData, rowData: row, enumList });
+    // 设置placeholder
+    function onPlaceholderChange(value) {
+      _formData.placeholder = inputs.includes(value as ItemKey) ? "请输入" : "请选择";
+    }
+
+    const formConfigs = formatConfigs({ formData: _formData, rowData: row, enumList, onPlaceholderChange });
     // 更新|提交
     const onChange = () => {
       const { itemType, ...formatData } = _formData;
@@ -260,12 +362,16 @@ export const useConfig = (emits) => {
       let result = JSON.stringify(checkedData);
       if (Object.keys(checkedData).length === 0) result = null;
       dataList.value[index]["itemType"] = itemType;
-      dataList.value[index][column["property"]] = result;
+      dataList.value[index]["formatType"] = result;
       onUpdatePreview();
     };
 
+    // 通过修改输入类型, 配置默认属性
+    if (action === "change") return onChange();
+
+    // 通过手动配置属性
     addDialog({
-      title: `属性配置【${row.label}】`,
+      title: `属性配置【${row.label}:${row.prop}】`,
       props: {
         loading: sLoading,
         formInline: _formData,
@@ -323,7 +429,7 @@ export const useConfig = (emits) => {
     const formRef = ref();
     const tableField = dataList.value.map(({ tableName, label, prop }) => {
       const name = type === "table" ? tableName : label;
-      return [name, prop].filter(Boolean).join(SplitChar);
+      return [name, prop].join(SplitChar);
     });
     const _formData = reactive({ columns: tableField.join("\n") });
     const props = {
@@ -342,54 +448,45 @@ export const useConfig = (emits) => {
       contentRenderer: () => h(EditForm, { ref: formRef }),
       beforeReset: (done, { options }) => formRef.value.getRef()?.resetFields(),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().validate((valid) => {
           if (valid) {
-            ElMessageBox.confirm(`确定要提交吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              const propList: string[] = [];
-              let repeatField = "";
-              const result = _formData.columns.split("\n").map((config, i) => {
-                const splitArr: string[] = config.split(SplitChar);
-                const [table, prop] = splitArr.length === 2 ? splitArr : [undefined, splitArr[0]];
-                const existRow = dataList.value.find((item) => item.prop === prop);
-                // 检测是否重复输入
-                if (propList.includes(prop)) {
-                  repeatField = prop;
-                } else {
-                  propList.push(prop);
-                }
-                const seq = i + 1;
-                if (existRow) return { ...existRow, seq: seq };
-                const label = type === "table" ? undefined : table;
-                const tableName = type === "name" ? undefined : table;
-                return {
-                  id: uuidv4(),
-                  seq: seq,
-                  label: label,
-                  prop: prop,
-                  hide: false,
-                  menuId: queryParams2.value.menuId,
-                  formGroupId: queryParams2.value.id,
-                  itemType: ItemKey.input,
-                  slots: false,
-                  valueFormat: undefined,
-                  tableName: tableName,
-                  isNew: true
-                } as FormColumnItemType;
-              });
-              if (repeatField) {
-                return message.error(`${repeatField}字段重复, 请重新输入`);
+            const propList: string[] = [];
+            let repeatField = "";
+            const result = _formData.columns.split("\n").map((config, i) => {
+              const splitArr: string[] = config.split(SplitChar);
+              const [table, prop] = splitArr.length === 2 ? splitArr : [undefined, splitArr[0]];
+              const existRow = dataList.value.find((item) => item.prop === prop);
+              // 检测是否重复输入
+              if (propList.includes(prop)) {
+                repeatField = prop;
+              } else {
+                propList.push(prop);
               }
-              dataList.value = result;
-              done();
-              cb?.();
+              const seq = i + 1;
+              if (existRow) return { ...existRow, seq: seq };
+              const label = type === "table" ? undefined : table;
+              const tableName = type === "name" ? undefined : table;
+              return {
+                id: uuidv4(),
+                seq: seq,
+                label: label,
+                prop: prop,
+                hide: false,
+                menuId: queryParams2.value.menuId,
+                formGroupId: queryParams2.value.id,
+                itemType: ItemKey.input,
+                slot: undefined,
+                formatType: undefined,
+                tableName: queryParams2.value.tableName || tableName,
+                isNew: true
+              } as FormColumnItemType;
             });
+            if (repeatField) {
+              return message.error(`${repeatField}字段重复, 请重新输入`);
+            }
+            dataList.value = result;
+            done();
+            cb?.();
           }
         });
       }
@@ -416,11 +513,22 @@ export const useConfig = (emits) => {
   const onSave = debounce(
     checkFn(() => {
       const verify = verifyField();
-      const emptyLabel = dataList.value.filter((f) => !f.label);
-      const emptyProp = dataList.value.filter((f) => !f.prop);
+      const { emptyList } = dataList.value
+        .filter((item) => !item.hide)
+        .reduce(
+          (acc, cur) => {
+            if (!cur.label) acc.emptyList.push("名称不能为空");
+            if (!cur.prop) acc.emptyList.push("字段不能为空");
+            if (!cur.itemType) acc.emptyList.push("类型不能为空");
+            if (!cur.formatType) acc.emptyList.push("属性配置不能为空");
+            return acc;
+          },
+          { emptyList: [] }
+        );
+      const emptyMsg = emptyList.find((item) => item);
+      if (emptyMsg) return message.error(emptyMsg);
+      if (!queryParams2.value.id) return message.error("请选择类型");
       if (!dataList.value.length) return message.error("配置表不能为空");
-      if (emptyLabel.length > 0) return message.error("名称不能为空");
-      if (emptyProp.length > 0) return message.error("字段不能为空");
       if (!verify.pass) return message.error(`${verify.column}填写不正确`);
 
       // 如果是新添加的列, 不提交ID
@@ -464,7 +572,7 @@ export const useConfig = (emits) => {
     deleteformColumn(ids)
       .then(({ data }) => {
         if (data) {
-          getTableList();
+          dataList.value = dataList.value.filter((f) => !ids.includes(f.id));
           rowDatas.value = [];
           return message.success("删除成功");
         }
@@ -502,12 +610,12 @@ export const useConfig = (emits) => {
       beforeSure: (done) => {
         const list: FormColumnItemType[] = JSON.parse(formData.content);
         const some = list.every((item) => item.label && item.prop);
-        const { menuId, id } = queryParams2.value;
+        const { menuId, id: formGroupId } = queryParams2.value;
         if (some && menuId) {
-          dataList.value = list.map((item) => ({ ...item, id: undefined, menuId: menuId, formGroupId: id }));
+          dataList.value = list.map((item) => ({ ...item, menuId, formGroupId, id: undefined }));
           done();
         } else {
-          message.error("保存失败");
+          message.error("保存失败, 请检查名称、字段、类型、属性配置");
         }
       }
     });
@@ -583,6 +691,7 @@ export const useConfig = (emits) => {
     onSearch,
     onRefresh,
     onDelete,
+    rowStyle,
     onRowClick,
     onCopyColumn,
     handleSelectionChange

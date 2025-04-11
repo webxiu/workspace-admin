@@ -2,24 +2,25 @@ import { ElMessage, dayjs } from "element-plus";
 import {
   deleteChangeWaterElectricity,
   exportChangeWaterElectricity,
-  fetchAllBuliding,
   fetchChangeWaterElectricity,
   insertChangeWaterElectricity,
   updateChangeWaterElectricity
 } from "@/api/oaManage/humanResources";
-import { formConfigs, formRules } from "./config";
+import { formConfigs, formRules, meterTypeOpts } from "./config";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
+import { message, showMessageBox } from "@/utils/message";
 
 import EditForm from "@/components/EditForm/index.vue";
+import { FormItemConfigType } from "@/utils/form";
+import HxModalInput from "@/components/HxModalInput/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import SelectUserModal from "../selectUserModal/modal.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { cloneDeep } from "@pureadmin/utils";
-import { showMessageBox } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
@@ -27,11 +28,6 @@ export const useConfig = () => {
   const loading = ref<boolean>(false);
   const dataList = ref([]);
   const currentRow: any = ref({});
-  const formLoading = ref(false);
-  const optionInfoList = ref([]);
-  const curBuildingsId = ref("");
-  const buildings: any = ref([]);
-  const curMultipeOtherUserList: any = ref([]);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const formData: any = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
@@ -101,173 +97,102 @@ export const useConfig = () => {
       ElMessage({ message: "请选择记录", type: "warning" });
       return;
     }
-
     onDelete(currentRow.value);
   };
 
-  const onEdit = (row) => {
-    openDialog("edit", row);
-  };
-
-  const onView = (row) => {
-    currentRow.value = row;
-    openDialog("view", row);
-  };
-
-  const handleAddOtherUserNames = (configData) => {
-    if (!curBuildingsId.value) {
-      ElMessage({ message: "请先选择宿舍楼栋", type: "warning" });
-      return;
-    }
-    const setA = (v) => {
-      curMultipeOtherUserList.value = v;
-    };
-    addDialog({
-      title: "选择宿舍房间",
-      width: "900px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(SelectUserModal, { setA, curRows: currentRow, curBuildingsId }),
-      beforeSure: (done, { options }) => {
-        if (!curMultipeOtherUserList.value.length) {
-          ElMessage({ message: "未选定房间", type: "warning" });
-          return;
-        }
-        console.log(curMultipeOtherUserList.value, "curMultipeOtherUserList.value");
-        const lastClickInfo = curMultipeOtherUserList.value[curMultipeOtherUserList.value.length - 1];
-        const names = lastClickInfo.dormitoryCode;
-        configData.zoom = String(names);
-        configData.zoomId = lastClickInfo.id;
-        done();
-      }
-    });
-  };
-
-  const changeBuilding = (val) => {
-    console.log(val, "val");
-    curBuildingsId.value = val;
-  };
+  const onEdit = (row) => openDialog("edit", row);
 
   const openDialog = async (type: string, row?) => {
-    const titleObj = { add: "新增", edit: "修改", view: "查看" };
-    const title = titleObj[type];
+    const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const projectList = ref([]);
-    const prepareList = ref([]);
-
-    const _formData: any = reactive({
-      id: row?.id,
-      billNo: row?.billNo,
-      visitorName: row?.visitorName ?? "",
-      visitorsCount: row?.visitorsCount ?? 0,
-      arriveDate: row?.arriveDate ?? "",
-      arriveTime: row?.arriveTime ?? "",
-      receptionAddress: row?.receptionAddress ?? "",
-      welcomeWord: row?.welcomeWord ?? "",
-      receptionist: row?.receptionist ?? "",
-      receptionAssist: row?.receptionAssist ?? "",
-      receptionRequire: row?.receptionRequire ?? "",
-      remark: row?.remark ?? "",
-      journey: row?.journey ?? "",
-      hrVisitReceptionMattersDTOList: row?.visitItem?.split(",") ?? [],
-      hrVisitReceptionPrepareDTOList: row?.prepareItem?.split(",") ?? []
+    const _formData = reactive({
+      ...row,
+      replaceDate: row?.replaceDate ?? dayjs(new Date()).format("YYYY-MM-DD")
     });
 
-    if (type === "add") {
-      _formData.yearAndMonth = dayjs(new Date()).format("YYYY-MM-DD");
-      _formData.newMeterNumber = 0;
-    }
-    console.log(_formData, "ff");
-
-    formLoading.value = true;
-
-    fetchAllBuliding({})
-      .then((res) => {
-        if (res.data) {
-          buildings.value = res.data;
+    const isDisabled = type === "view";
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        formProps: { labelWidth: "100px" },
+        customProps: {
+          buildingName: {
+            onChange: (val) => {
+              _formData.dormitoryCode = "";
+              _formData.buildingId = val;
+            }
+          }
+        },
+        customElement: {
+          dormitoryCode: ({ formModel, row }) => {
+            const interceptFn = () => {
+              if (formModel.buildingId) return false;
+              message.warning("请先选择宿舍楼栋");
+              return true;
+            };
+            return (
+              <HxModalInput
+                title="选择宿舍房间"
+                placeholder="点击选择"
+                valueKey={row.prop}
+                v-model={formModel[row.prop]}
+                readonly={true}
+                disabled={isDisabled}
+                showButton={false}
+                interceptFn={interceptFn}
+                onSelect={(row) => {
+                  formModel.dormitoryId = row.id;
+                }}
+                showModel="dormitory"
+                componentProp={{ paramConfig: { buildingCode: formModel.buildingId } }}
+              />
+            );
+          }
+        },
+        dataOption: { meterType: meterTypeOpts },
+        customColumn: {
+          createUserName: { hide: type === "add" },
+          createDate: { hide: type === "add" },
+          modifyUserName: { hide: type === "add" },
+          modifyDate: { hide: type === "add" }
         }
-      })
-      .finally(() => (formLoading.value = false));
-
-    if (type === "edit") {
-      _formData.yearAndMonth = row.replaceDate;
-      curBuildingsId.value = row.buildingId;
-      _formData.id = row.id;
-      _formData.building = row.buildingId;
-      _formData.zoom = row.dormitoryCode;
-      _formData.meterType = row.meterType;
-      _formData.oldMeterNumber = row.oldMeterNumber;
-      _formData.newMeterNumber = row.newMeterNumber;
-      _formData.createUserName = row.createUserName;
-      _formData.createDate = row.createDate;
-      _formData.modifyUserName = row.modifyUserName;
-      _formData.modifyDate = row.modifyDate;
-    }
-    console.log(_formData, "_formData");
+      }
+    ];
 
     addDialog({
       title: `${title}`,
-      props: {
-        loading: formLoading,
-        formInline: _formData,
-        formRules: formRules,
-        formProps: { labelWidth: 30 },
-        formConfigs: formConfigs({
-          handleAddOtherUserNames: () => handleAddOtherUserNames(_formData),
-          type,
-          optionListInfo: {
-            prepareList,
-            projectList
-          },
-          changeBuilding,
-          buildings
-        })
-      },
+      props: { params: { groupCode: "1" }, formConfig: formConfig },
       width: "640px",
       draggable: true,
       fullscreenIcon: true,
       okButtonText: "保存",
       closeOnClickModal: false,
       hideFooter: type === "view",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
+            const params = {
+              id: _formData.id,
+              buildingName: _formData.buildingName,
+              dormitoryCode: _formData.dormitoryCode,
+              dormitoryId: _formData.dormitoryId,
+              meterType: _formData.meterType,
+              newMeterNumber: _formData.newMeterNumber,
+              oldMeterNumber: _formData.oldMeterNumber,
+              replaceDate: _formData.replaceDate
+            };
             showMessageBox(`确认要${title}吗?`).then(() => {
-              onSubmitChange(type, title, _formData, () => {
+              const typeApi = { add: insertChangeWaterElectricity, edit: updateChangeWaterElectricity };
+              typeApi[type](params).then(({ data }) => {
+                if (!data) return message.error(title + "失败");
+                message.success(title + "成功");
                 done();
                 onSearch();
               });
             });
           }
         });
-      }
-    });
-  };
-
-  const onSubmitChange = (type: string, title: string, data, callback) => {
-    // 组装请求参数
-    const buildingName = buildings.value.find((item) => item.id === data.building)?.name;
-    const reqParams: any = {
-      replaceDate: data.yearAndMonth,
-      buildingName,
-      dormitoryCode: data.zoom,
-      meterType: data.meterType,
-      newMeterNumber: data.newMeterNumber,
-      dormitoryId: data.zoomId,
-      oldMeterNumber: data.oldMeterNumber
-    };
-    console.log(type, reqParams);
-
-    const typeApi = { add: insertChangeWaterElectricity, edit: updateChangeWaterElectricity };
-
-    if (data.id) reqParams.id = data.id;
-    typeApi[type](reqParams).then((res) => {
-      if (res.data) {
-        ElMessage({ message: title + "成功", type: "success" });
-        callback();
       }
     });
   };

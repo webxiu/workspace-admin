@@ -1,4 +1,4 @@
-import { ElMessage, ElMessageBox, FormRules } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import {
   ProductClassifyManageItemType,
   deleteClassifyTableInfo,
@@ -9,11 +9,11 @@ import {
 } from "@/api/plmManage";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 
-import EditForm from "@/components/EditForm/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
-import { message } from "@/utils/message";
+import { message, showMessageBox } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 
 /** 获取产品分类管理列表 */
@@ -37,11 +37,6 @@ export const useConfig = () => {
   const currentRow: any = ref({});
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49);
 
-  const formRules = reactive<FormRules>({
-    categoryName: [{ required: true, message: "产品分类名称为必填项", trigger: "submit" }],
-    categoryNo: [{ required: true, message: "产品分类编码为必填项", trigger: "submit" }]
-  });
-
   let formData: any = reactive({
     categoryName: "",
     categoryNo: "",
@@ -50,23 +45,6 @@ export const useConfig = () => {
   });
 
   const searchOptions = reactive<SearchOptionType[]>([{ label: "产品分类名称", value: "categoryName" }]);
-
-  const formConfigs = () => [
-    {
-      label: "产品分类编码",
-      prop: "categoryNo",
-      render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入产品分类编码" clearable />;
-      }
-    },
-    {
-      label: "产品分类名称",
-      prop: "categoryName",
-      render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入账户名称" clearable />;
-      }
-    }
-  ];
 
   onMounted(() => {
     getColumnConfig(buttonList);
@@ -165,33 +143,30 @@ export const useConfig = () => {
     addDialog({
       title: `${title}`,
       props: {
-        loading: formLoading,
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs()
+        params: { groupCode: "1" },
+        formConfig: [
+          {
+            formData: _formData
+          }
+        ]
       },
       width: "400px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
+      beforeSure: (done) => {
+        formRef.value.getRef().then(({ valid }) => {
           if (valid) {
-            ElMessageBox.confirm(`确认要${title}吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitChange(type, title, _formData, () => {
-                done();
-                const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
-                onSearch(_rowIndex);
-              });
-            });
+            showMessageBox(`确认要${title}吗?`)
+              .then(() => {
+                onSubmitChange(type, title, _formData, () => {
+                  done();
+                  const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
+                  onSearch(_rowIndex);
+                });
+              })
+              .catch(console.log);
           }
         });
       }

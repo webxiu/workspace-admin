@@ -53,7 +53,7 @@ export const useConfig = () => {
     if (data2?.length) columnData2 = data2;
     if (groupArrs?.length) groupArrsList.value = groupArrs;
     columns.value = setColumn({ columnData, operationColumn: false });
-    columns2.value = setColumn({ columnData: columnData2, selectionColumn: { hide: false }, operationColumn: { minWidth: 80 } });
+    columns2.value = setColumn({ columnData: columnData2, selectionColumn: { hide: false } });
   };
 
   const onRefresh = () => getTableList();

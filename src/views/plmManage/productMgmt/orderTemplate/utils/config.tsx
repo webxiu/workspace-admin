@@ -3,7 +3,6 @@ import { Ref, reactive, ref } from "vue";
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import HxModalInput from "@/components/HxModalInput/index.vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 
 export const formRules = reactive<FormRules>({
   productCode: [{ required: true, message: "请选择产品型号", trigger: "blur" }]
@@ -23,15 +22,7 @@ export const formConfigs = ({ type }): Ref<FormConfigItemType[]> => {
           v-model={formModel[row.prop]}
           readonly={true}
           onSelect={(val) => (formModel["productModelId"] = val.id)}
-          componentProp={{
-            maxHeight: 520,
-            api: fetchProductStoreList,
-            searchConfig: [{ label: "产品型号", value: "productCode" }],
-            columns: [
-              { label: "产品型号", prop: "productCode" },
-              { label: "产品类别", prop: "productType" }
-            ]
-          }}
+          showModel="product"
         />
       )
     },

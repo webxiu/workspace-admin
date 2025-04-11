@@ -625,15 +625,13 @@ const rowClassName = ({ row }) => {
 };
 
 const fetchOpts = () => {
-  getEnumDictList(["ProjectTaskStatus"]).then((res: any) => {
-    if (res["ProjectTaskStatus"]) {
-      taskStatusOpts.value = res["ProjectTaskStatus"].map((item) => {
-        if (!["STATUS_ACTIVE", "STATUS_WAITING"].includes(item.optionValue)) {
-          item.disabled = true;
-        }
-        return item;
-      });
-    }
+  getEnumDictList(["ProjectTaskStatus"]).then(({ ProjectTaskStatus }) => {
+    taskStatusOpts.value = ProjectTaskStatus.map((item) => {
+      if (!["STATUS_ACTIVE", "STATUS_WAITING"].includes(item.optionValue as string)) {
+        item.disabled = true;
+      }
+      return item;
+    });
   });
 
   getRightFreeDayList({}).then((res: any) => {

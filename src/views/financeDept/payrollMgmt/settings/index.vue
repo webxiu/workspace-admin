@@ -5,6 +5,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "FinanceDeptPayrollMgmtSettings" });
 
 const {
+  columnDefs,
+  isAgTable,
   moneyRef,
   loading,
   columns,
@@ -17,28 +19,39 @@ const {
   onRefresh,
   handleSizeChange,
   handleCurrentChange,
-  onChangeFileInput,
-  handleTagSearch,
+  onTagSearch,
   rowDbClick,
-  rowClick
+  rowClick,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
-    <PureTableBar :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
+    <AgGridTable
+      v-if="isAgTable"
+      rowKey="staffId"
+      :rowData="dataList"
+      :loading="loading"
+      :columnDefs="columnDefs"
+      :height="maxHeight + 15"
+      :paginations="pagination"
+      :openSideBar="true"
+      @refresh="onRefresh"
+      @switch="onSwitchTable"
+      @cellClicked="rowClick"
+      @cellDoubleClicked="rowDbClick"
+      @sizeChange="handleSizeChange"
+      @currentChange="handleCurrentChange"
+      :headButtons="{ buttonList, autoLayout: false }"
+      :blendedSearch="{ onTagSearch, queryParams, searchOptions, searchField: 'staffName', placeholder: '请输入姓名' }"
+    />
+    <PureTableBar v-else :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
       <template #title>
-        <BlendedSearch
-          @tagSearch="handleTagSearch"
-          :searchOptions="searchOptions"
-          :queryParams="queryParams"
-          placeholder="请输入姓名"
-          searchField="staffName"
-        />
+        <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" :queryParams="queryParams" placeholder="请输入姓名" searchField="staffName" />
       </template>
       <template #buttons>
         <ButtonList moreActionText="业务操作" :buttonList="buttonList" :auto-layout="false" />
-        <input style="display: none" type="file" accept=".xls,.xlsx" id="imporMoneyInputSettings" @change="onChangeFileInput" />
       </template>
       <template v-slot="{ size, dynamicColumns }">
         <pure-table

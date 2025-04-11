@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-03-15 16:49:20
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-13 14:48:58
+ * @Last Modified time: 2024-12-20 18:02:04
  */
 
 import { FormatKey, OptionsType } from "@/utils/table";
@@ -12,6 +12,7 @@ import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
 import { Plus } from "@element-plus/icons-vue";
 import { Question } from "@/config/elements";
+import { enumDictionaryList } from "@/api/systemManage";
 import regExp from "@/utils/regExp";
 
 //======================= 表格配置 =======================
@@ -28,11 +29,7 @@ export const sortList: OptionsType[] = [
   { optionName: "显示", optionValue: true },
   { optionName: "不显示", optionValue: false }
 ];
-// 隐藏
-export const hideList: OptionsType[] = [
-  { optionName: "是", optionValue: true },
-  { optionName: "否", optionValue: false }
-];
+
 // Excel隐藏
 export const excelHideList: OptionsType[] = [
   { optionName: "是", optionValue: 1 },
@@ -61,19 +58,6 @@ export const getSlot = (data) => {
 
 /** 分割符(默认使用#号) */
 export const SplitChar = "#";
-
-//======================= 添加弹窗 =======================
-
-export const formRules = (name): FormRules => ({
-  columns: [
-    { required: true, message: "输入内容不能为空", trigger: "blur" },
-    {
-      message: "输入格式错误",
-      trigger: "blur",
-      pattern: { name: regExp.nameMap2, table: regExp.nameMap2 }[name]
-    }
-  ]
-});
 
 //======================= 添加分组弹窗 =======================
 
@@ -120,7 +104,7 @@ export const formGroupConfigs = (): FormConfigItemType[] => {
       label: "分组编号",
       prop: "groupCode",
       colProp: { span: 12 },
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="分组编号最小的为主表格(默认表格), 其余表格按顺序对应" />
       },
       render: ({ formModel, row }) => (
@@ -136,10 +120,23 @@ export const formGroupConfigs = (): FormConfigItemType[] => {
   ];
 };
 
+//======================= 添加弹窗 =======================
+
+export const formRules = (name): FormRules => ({
+  columns: [
+    { required: true, message: "输入内容不能为空", trigger: "blur" },
+    {
+      message: "输入格式错误",
+      trigger: "blur",
+      pattern: { name: regExp.nameMap2, table: regExp.nameMap2 }[name]
+    }
+  ]
+});
+
 export const formConfigs = (type = "table"): FormConfigItemType[] => {
   const name = type === "table" ? `表名${SplitChar}字段` : `名称${SplitChar}字段`;
   const label = type === "table" ? `(表名${SplitChar}字段)` : `(名称${SplitChar}字段)`;
-  const placeholder = `输入格式使用${SplitChar}号隔开:
+  const placeholder = `输入格式使用${SplitChar}号隔开 (表名不填默认从左侧获取):
 ${name}
 ${name}
 ${name}.子字段
@@ -180,7 +177,7 @@ export const typeOptions = [
   { optionName: "数字", optionValue: FormatKey.number },
   { optionName: "日期", optionValue: FormatKey.date },
   { optionName: "标签", optionValue: FormatKey.tag },
-  { optionName: "单据状态", optionValue: FormatKey.bill }
+  { optionName: "枚举字典", optionValue: FormatKey.enum }
 ];
 /** 日期类型 */
 export const dateOptions = [
@@ -191,17 +188,57 @@ export const dateOptions = [
 
 // 表单配置
 export const formConfigs2 = ({ formData, addSpecs, onChangeType }): Ref<FormConfigItemType[]> => {
+  const sLoading = ref(false);
+  const enumList = ref([]);
+  // 获取枚举字典下拉列表
+  enumDictionaryList({ page: 1, limit: 10000 }, { headers: { hideLoading: true } })
+    .then(({ data }) => {
+      const arr = data.records || [];
+      const index = arr.findIndex((item) => item.optionCode === "BillStatus");
+      if (index !== -1) {
+        const [movedItem] = arr.splice(index, 1);
+        arr.unshift(movedItem);
+      }
+      enumList.value = arr;
+    })
+    .finally(() => (sLoading.value = false));
+
   const configFn = (): FormConfigItemType[] => [
     {
       label: "格式化类型",
       prop: "type",
       colProp: { span: 8 },
-      slots: { label: ({ label }) => <Question label={label} tipMsg="单据状态数值来自枚举字典(BillStatus)配置" /> },
+      slot: { label: ({ label }) => <Question label={label} tipMsg="单据状态数值来自枚举字典(BillStatus)配置" /> },
       render: ({ formModel, row }) => {
         return (
           <el-select v-model={formModel[row.prop]} class="ui-w-100" placeholder="请选择" onChange={onChange}>
             {typeOptions.map((item) => (
               <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+            ))}
+          </el-select>
+        );
+      }
+    },
+    {
+      label: "枚举字典",
+      prop: "enum",
+      hide: formData.type !== FormatKey.enum,
+      slot: {
+        label: ({ label }) => <Question label={label} tipMsg="从枚举字典中获取标签(默认添加10条配色)" />
+      },
+      colProp: { span: 12 },
+      render: ({ formModel, row }) => {
+        return (
+          <el-select v-model={formModel[row.prop]} filterable placeholder="请选择" clearable onChange={onChangeType}>
+            {enumList.value.map((item) => (
+              <el-option key={item.optionCode} label={item.optionName} value={item.optionCode}>
+                <div class="flex">
+                  <span class="ellipsis" style="width: 120px; margin-right: 10px">
+                    {item.optionName}
+                  </span>
+                  <span class="ellipsis">{item.optionCode}</span>
+                </div>
+              </el-option>
             ))}
           </el-select>
         );
@@ -216,7 +253,7 @@ export const formConfigs2 = ({ formData, addSpecs, onChangeType }): Ref<FormConf
       prop: "date",
       hide: formData.type !== FormatKey.date,
       colProp: { span: 18 },
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="数据必须是时间格式(时间戳、日期字符串)" />
       },
       render: ({ formModel, row }) => (
@@ -270,7 +307,7 @@ export const formConfigs2 = ({ formData, addSpecs, onChangeType }): Ref<FormConf
     {
       label: "上下边距",
       prop: "paddingV",
-      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
+      hide: ![FormatKey.tag, FormatKey.enum].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "100px",
       render: ({ formModel, row }) => (
@@ -280,7 +317,7 @@ export const formConfigs2 = ({ formData, addSpecs, onChangeType }): Ref<FormConf
     {
       label: "左右边距",
       prop: "paddingH",
-      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
+      hide: ![FormatKey.tag, FormatKey.enum].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "80px",
       render: ({ formModel, row }) => (
@@ -290,7 +327,7 @@ export const formConfigs2 = ({ formData, addSpecs, onChangeType }): Ref<FormConf
     {
       label: "圆角",
       prop: "borderRadius",
-      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
+      hide: ![FormatKey.tag, FormatKey.enum].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "60px",
       render: ({ formModel, row }) => (
@@ -300,22 +337,22 @@ export const formConfigs2 = ({ formData, addSpecs, onChangeType }): Ref<FormConf
     {
       label: "样式",
       prop: "style",
-      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
+      hide: ![FormatKey.tag, FormatKey.enum].includes(formData.type),
       colProp: { span: 6 },
       labelWidth: "60px",
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="扩展CSS原生样式(如: font-size: 14px; margin: 0px), 多个样式使用分号(;)隔开" />
       },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入(选填)" style="width: 120px" controls-position="right" />
     },
     // 换行
     { label: "", prop: "", colProp: { span: 24 }, labelWidth: "0px", style: { margin: "0" }, render: () => null },
-    { label: "标签状态", prop: "specs", hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type), colProp: { span: 24 }, render: () => null },
+    { label: "标签状态", prop: "specs", hide: ![FormatKey.tag, FormatKey.enum].includes(formData.type), colProp: { span: 24 }, render: () => null },
     {
       label: "",
       prop: "",
       colProp: { span: 24 },
-      hide: ![FormatKey.tag, FormatKey.bill].includes(formData.type),
+      hide: ![FormatKey.tag, FormatKey.enum].includes(formData.type),
       render: () => (
         <el-button onClick={addSpecs} type="primary" icon={Plus}>
           新增一条
@@ -338,6 +375,7 @@ export const pasteConfigs = ({ type, formData, onCopy, onCreate, onPreview, onPa
       label: "",
       prop: "",
       colProp: { span: 24 },
+      labelWidth: "0px",
       render: ({ formModel, row }) => {
         return {
           copy: (

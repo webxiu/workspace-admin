@@ -85,7 +85,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>缺陷图片</span> },
+      slot: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>缺陷图片</span> },
       prop: "badPhoto",
       colProp: { span: 6 },
       render: ({ formModel, row }) => {
@@ -106,7 +106,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>分析图片</span> },
+      slot: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>分析图片</span> },
       prop: "thinkPhoto",
       colProp: { span: 6 },
       render: ({ formModel, row }) => {
@@ -135,7 +135,7 @@ export const formConfigs = (): FormConfigItemType[] => {
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>改善效果</span> },
+      slot: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>改善效果</span> },
       prop: "finishRes",
       colProp: { span: 6 },
       render: ({ formModel, row }) => {

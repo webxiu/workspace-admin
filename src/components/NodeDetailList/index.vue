@@ -39,7 +39,7 @@ const fetchDataList = (billNo, billType) => {
     overTime: "10002",
     SQLFlow: "10035",
     productDevApply: "10031",
-    signBack: "10029", // TODO
+    signBack: "10029",
     customerComplaint: "10013",
     projectInfo: "10014",
     visitor: "10043",
@@ -52,7 +52,12 @@ const fetchDataList = (billNo, billType) => {
     operateBook: "10053",
     openModeApply: "10061",
     dr0DevApply: "10012",
-    palmApply: "10062"
+    palmApply: "10062",
+    performance: "10073",
+    commission: "10074",
+    otherMoney: "10075",
+    salaryCalc: "10076",
+    hrChange: "10060"
   };
   getNodeDetailList({ billId: reqType[billType], billNo, searchType: 2 })
     .then((res: any) => {

@@ -3,7 +3,7 @@
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
       <PureTableBar :columns="columns" @refresh="onFresh" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="姓名" searchField="staffName" />
+          <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="请输入姓名" searchField="staffName" />
         </template>
         <template #buttons>
           <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="业务操作" />

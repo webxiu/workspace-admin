@@ -1,4 +1,3 @@
-import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import {
   delAttendanceRecord,
   exportAttendanceRecord,
@@ -7,25 +6,28 @@ import {
   revertAttendanceRecord,
   updateAttendanceRecord
 } from "@/api/oaManage/humanResources";
+import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { formConfigs, formRules } from "./configs";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
-import { utils, write } from "xlsx";
 
-import EditForm from "@/components/EditForm/index.vue";
+import type { ColDef } from "ag-grid-community";
+import { FormItemConfigType } from "@/utils/form";
+import HxModalInput from "@/components/HxModalInput/index.vue";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import SelectUserModal from "../mapping/selectUserModal/modal.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
-import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { getDeptOptions } from "@/utils/requestApi";
-import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
 
 export const useMachine = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const dataList = ref([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref(false);
@@ -97,6 +99,7 @@ export const useMachine = () => {
     if (menuCols?.length) columnData = menuCols;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
     return columnData;
   };
 
@@ -109,12 +112,12 @@ export const useMachine = () => {
     });
   };
 
-  const onFresh = () => {
+  const onReFresh = () => {
     getColumnConfig();
     onSearch();
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     onSearch();
   };
@@ -131,8 +134,6 @@ export const useMachine = () => {
   const openDialog = async (type: "add" | "view" | "edit", row) => {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const modalRow = ref();
-    const formLoading = ref(false);
     const _formData = reactive({
       id: row?.id ?? "",
       sn: row?.sn ?? "",
@@ -148,36 +149,37 @@ export const useMachine = () => {
       attMachineName: row?.attMachineName ?? ""
     });
 
-    const handleAddUserNames = () => {
-      const setA = (v) => (modalRow.value = v);
-      addDialog({
-        title: "选择人员",
-        width: "950px",
-        draggable: true,
-        fullscreenIcon: true,
-        closeOnClickModal: false,
-        contentRenderer: () => h(SelectUserModal, { setA, curRows: curRow }),
-        beforeSure: (done) => {
-          if (!modalRow.value) {
-            message.warning("未选定人员");
-            return;
-          } else {
-            _formData.deptId = modalRow.value.deptId + "";
-            _formData.staffCode = modalRow.value.userCode;
-            _formData.staffName = modalRow.value.userName;
-            done();
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        customElement: {
+          staffCode: ({ formModel, row }) => {
+            return (
+              <HxModalInput
+                title="选择工号"
+                placeholder="请选择工号"
+                valueKey={row.prop}
+                v-model={formModel[row.prop]}
+                readonly={true}
+                showButton={true}
+                showModel="user"
+                onSelect={(row) => {
+                  _formData.deptId = row.deptId + "";
+                  _formData.staffCode = row.userCode;
+                  _formData.staffName = row.userName;
+                }}
+              />
+            );
           }
-        }
-      });
-    };
-
+        },
+        formProps: { labelWidth: "100px" }
+      }
+    ];
     addDialog({
       title: `${title}`,
       props: {
-        loading: formLoading,
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ treeSelectData, formData: _formData, handleAddUserNames })
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "700px",
       draggable: true,
@@ -185,10 +187,9 @@ export const useMachine = () => {
       okButtonText: "保存",
       closeOnClickModal: false,
       hideFooter: type === "view",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done) => {
-        const formIns = formRef.value.getRef();
-        formIns?.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`)
               .then(() => {
@@ -250,13 +251,6 @@ export const useMachine = () => {
       .catch(console.log);
   };
 
-  const buttonList = ref([
-    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
-    { clickHandler: onDel, type: "danger", text: "删除", isDropDown: false },
-    { clickHandler: restore, type: "danger", text: "恢复", isDropDown: false },
-    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
-  ]);
-
   // 分页相关
   function onSizeChange(val: number) {
     formData.limit = val;
@@ -276,21 +270,34 @@ export const useMachine = () => {
     curRow.value = row;
     onEdit();
   };
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    curRow.value = undefined;
+  }
+  const buttonList = ref([
+    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
+    { clickHandler: onDel, type: "danger", text: "删除", isDropDown: false },
+    { clickHandler: restore, type: "danger", text: "恢复", isDropDown: false },
+    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
+  ]);
 
   return {
-    columns,
-    onFresh,
-    queryParams,
-    rowClick,
-    handleTagSearch,
-    searchOptions,
-    buttonList,
-    maxHeight,
+    columnDefs,
+    isAgTable,
     loading,
+    columns,
     dataList,
+    maxHeight,
+    buttonList,
     pagination,
+    queryParams,
+    searchOptions,
+    rowClick,
     rowDbClick,
+    onReFresh,
+    onTagSearch,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

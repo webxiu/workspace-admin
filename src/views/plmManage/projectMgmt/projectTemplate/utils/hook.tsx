@@ -3,7 +3,7 @@ import { type PaginationProps } from "@pureadmin/table";
 
 import { ElMessage, ElMessageBox } from "element-plus";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
-import EditForm from "@/components/EditForm/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 
 import { useEleHeight } from "@/hooks";
 import {
@@ -15,11 +15,11 @@ import {
   insertProjectTemplateList
 } from "@/api/plmManage";
 import { addDialog } from "@/components/ReDialog";
-import { formConfigs, formRules } from "./config";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
 import { PAGE_CONFIG } from "@/config/constant";
 import { getProductClassifyList } from "@/views/plmManage/productMgmt/classify/utils/hook";
+import { showMessageBox } from "@/utils/message";
 
 export const useConfig = () => {
   const columns = ref<TableColumnList[]>([]);
@@ -202,9 +202,13 @@ export const useConfig = () => {
     addDialog({
       title: `${title}项目模板`,
       props: {
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs({ selectOpts: projectSelectOpts, classList })
+        params: { groupCode: "1" },
+        formConfig: [
+          {
+            formData: _formData,
+            formProps: { labelWidth: "95px" }
+          }
+        ]
       },
       width: "400px",
       draggable: true,
@@ -212,23 +216,18 @@ export const useConfig = () => {
       okButtonText: "保存",
       cancelButtonText: "关闭",
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid }) => {
           if (valid) {
-            ElMessageBox.confirm(`确认要${title}吗?`, "系统提示", {
-              type: "warning",
-              draggable: true,
-              cancelButtonText: "取消",
-              confirmButtonText: "确定",
-              dangerouslyUseHTMLString: true
-            }).then(() => {
-              onSubmitChange(type, title, _formData, () => {
-                done();
-                onSearch();
-              });
-            });
+            showMessageBox(`确认要${title}吗?`)
+              .then(() => {
+                onSubmitChange(type, title, _formData, () => {
+                  done();
+                  onSearch();
+                });
+              })
+              .catch(console.log);
           }
         });
       }

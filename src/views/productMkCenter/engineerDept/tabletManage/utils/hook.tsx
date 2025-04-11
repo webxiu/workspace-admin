@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-06-17 17:26:03
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-07 17:48:49
+ * @Last Modified time: 2025-03-14 15:28:08
  */
 
 import { useEleHeight } from "@/hooks";
@@ -26,8 +26,12 @@ import {
   TabletManageItemType
 } from "@/api/oaManage/productMkCenter";
 import { Question } from "@/config/elements";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<TabletManageItemType[]>([]);
   const rowData = ref<TabletManageItemType>();
@@ -35,7 +39,7 @@ export const useConfig = () => {
   const positionOption = ref<OptionItemType[]>([]);
   const loading = ref<boolean>(false);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 48 + 48);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const formData = reactive({
     productionLine: "",
     tabletsName: "",
@@ -61,12 +65,9 @@ export const useConfig = () => {
   const getOptions = () => {
     getEnumDictList(["ProductionLine", "TabletsPosition"])
       .then(({ ProductionLine, TabletsPosition }) => {
-        const states = ProductionLine.map(({ optionName, optionValue }) => {
-          return { label: optionName, value: optionValue };
-        });
         productLineOption.value = ProductionLine;
         positionOption.value = TabletsPosition;
-        searchOptions[2].children = states;
+        searchOptions[2].children = ProductionLine;
       })
       .catch(console.log);
   };
@@ -102,6 +103,7 @@ export const useConfig = () => {
     });
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, formData, operationColumn: false });
   };
 
   const onRefresh = () => {
@@ -228,6 +230,11 @@ export const useConfig = () => {
     getTableList();
   }
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onEdit, type: "success", text: "修改", isDropDown: false },
     { clickHandler: onDelete, type: "danger", text: "删除", isDropDown: true },
@@ -235,6 +242,8 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     loading,
     columns,
     dataList,
@@ -247,6 +256,7 @@ export const useConfig = () => {
     onDbClick,
     onRowClick,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    onSwitchTable
   };
 };

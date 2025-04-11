@@ -20,14 +20,7 @@ const { chartRef1, columns, dataList, loading, maxHeight, buttonList, searchOpti
     <Col>
       <PureTableBar :columns="columns" class="flex-1" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch
-            @tagSearch="onTagSearch"
-            :searchOptions="searchOptions"
-            :queryParams="queryParams"
-            :immediate="false"
-            placeholder="请选择日期"
-            searchField="date"
-          />
+          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" :queryParams="queryParams" :immediate="false" placeholder="请选择日期" />
         </template>
         <template #buttons>
           <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="业务操作" />

@@ -10,11 +10,7 @@ import { showMessageBox } from "@/utils/message";
 
 export const formRules = reactive<FormRules>({
   systemName: [{ required: true, message: "系统为必填项", trigger: "submit" }],
-  // taskName: [{ required: true, message: "功能菜单为必填项", trigger: "submit" }],
-  // taskTypeCode: [{ required: true, message: "类型为必填项", trigger: "submit" }],
-  // expectDate: [{ required: true, message: "预计完成日期为必填项", trigger: "submit" }],
   taskContent: [{ required: true, message: "需求描述为必填项", trigger: "submit" }]
-  // attr: [{ required: true, message: "附件为必填项", trigger: "submit" }]
 });
 
 export const formConfigs = ({ fileList, formData, type, taskType, sysTypeOpts }): FormConfigItemType[] => {
@@ -101,7 +97,7 @@ export const formConfigs = ({ fileList, formData, type, taskType, sysTypeOpts })
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>附件</span> },
+      slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>附件</span> },
       prop: "attr",
       labelWidth: 80,
       colProp: { span: 24 },

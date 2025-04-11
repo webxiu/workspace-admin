@@ -2,12 +2,21 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-12 11:08:00
+ * @Last Modified time: 2025-02-22 14:48:58
  */
 
-import { FormColumnItemType, FormGroupItemType, FormTypeItemType, addFormGroup, deleteFormGroup, formGroupList } from "@/api/systemManage";
+import {
+  FormColumnItemType,
+  FormGroupItemType,
+  FormTypeItemType,
+  MenuButtonItemType,
+  addFormGroup,
+  deleteFormGroup,
+  formGroupList,
+  menuButtonVirtualList
+} from "@/api/systemManage";
+import { LayoutType, formConfigs, formRules, formTypeOptions } from "./config";
 import { computed, h, nextTick, onMounted, reactive, ref } from "vue";
-import { formConfigs, formRules, formTypeOptions } from "./config";
 import { message, showMessageBox } from "@/utils/message";
 import { useRoute, useRouter } from "vue-router";
 
@@ -39,66 +48,8 @@ export const useConfig = () => {
     formGroupList({ menuId: route.query.itemId })
       .then(({ data }) => {
         loading.value = false;
-        // data = [
-        //   {
-        //     id: "185c799fe21311ee9687ec2a721046a8",
-        //     page: null,
-        //     limit: null,
-        //     createDate: null,
-        //     createUserId: null,
-        //     createUserName: null,
-        //     modifyDate: null,
-        //     modifyUserId: null,
-        //     modifyUserName: null,
-        //     menuId: "64",
-        //     groupName: "主表格",
-        //     remark: "批量生成",
-        //     groupCode: "1",
-        //     groupType: "1",
-        //     formGroupList: [
-        //       {
-        //         page: 1,
-        //         limit: 50,
-        //         id: "f400832caafc11ef9e1cec2a721046a8",
-        //         menuId: 64,
-        //         tableName: "sys_menulist",
-        //         menuName: "菜单管理",
-        //         groupName: "菜单管理主信息",
-        //         groupType: "1",
-        //         createUserId: null,
-        //         createDate: "2024-11-25",
-        //         modifyUserId: null,
-        //         columnGroupName: null,
-        //         columnGroupId: "185c799fe21311ee9687ec2a721046a8",
-        //         modifyDate: null,
-        //         deleteIds: null,
-        //         createUserName: "原侃",
-        //         modifyUserName: null
-        //       },
-        //       {
-        //         page: 1,
-        //         limit: 50,
-        //         id: "f400832caafc11ef9e1cec2a721046a8",
-        //         menuId: 64,
-        //         tableName: "sys_menulist",
-        //         menuName: "菜单管理",
-        //         groupName: "测试2",
-        //         groupType: "2",
-        //         createUserId: null,
-        //         createDate: "2024-11-25",
-        //         modifyUserId: null,
-        //         columnGroupName: null,
-        //         columnGroupId: "185c799fe21311ee9687ec2a721046a8",
-        //         modifyDate: null,
-        //         deleteIds: null,
-        //         createUserName: "原侃",
-        //         modifyUserName: null
-        //       }
-        //     ]
-        //   }
-        // ];
         treeOptions.value = data || [];
-        // 默认获取第一个分组下的第一个表单名称
+        // 右侧列表默认获取第一个分组下的第一个表单名称
         if (data?.[0] && data[0].formGroupList && isReload) {
           const activeRow = selectNode.value || data[0].formGroupList[0];
           if (activeRow) onNodeClick(activeRow);
@@ -128,15 +79,18 @@ export const useConfig = () => {
   function openGroupDialog(type: "add" | "edit", row: Partial<FormTypeItemType | FormGroupItemType>) {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const formData = reactive({ ...row });
-    const name = type === "add" ? "" : `【${row.groupName}】`;
+    const formData = reactive({ layoutPattern: LayoutType.List, ...row });
+    const buttonList = ref<MenuButtonItemType[]>([]);
+    menuButtonVirtualList({ menuId: route.query.itemId }).then(({ data }) => {
+      buttonList.value = data || [];
+    });
     addDialog({
-      title: `${title}表单名称${name}`,
+      title: `${title}表单配置`,
       props: {
         formInline: formData,
         formRules: formRules,
-        formConfigs: formConfigs(),
-        formProps: { labelWidth: "60px" }
+        formConfigs: formConfigs({ buttonList }),
+        formProps: { labelWidth: "80px" }
       },
       width: "460px",
       draggable: true,
@@ -149,6 +103,7 @@ export const useConfig = () => {
         if (result) return message.error(`表单名称【${formData.groupName}】已存在`);
         FormRef.validate((valid) => {
           if (!valid) return;
+          console.log("formData", formData);
           showMessageBox(`确定要提交吗?`).then(() => {
             addFormGroup(formData)
               .then(({ data }) => {

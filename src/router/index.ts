@@ -126,12 +126,12 @@ router.beforeEach(async (to: ToRouteType, _from, next) => {
   }
   /** 如果已经登录并存在登录信息后不能跳转到路由白名单，而是继续保持在当前页面 */
   function toCorrectRoute() {
-    whiteList.includes(to.fullPath) ? next(_from.fullPath) : next();
+    whiteList.includes(to.path) ? next(_from.fullPath) : next();
   }
 
   if (hasToken && userInfo.userCode) {
     if (to.path === "/login") {
-      return next(false);
+      return next("/workbench/home");
     } else if (_from?.name) {
       // name为超链接
       if (externalLink) {
@@ -143,7 +143,7 @@ router.beforeEach(async (to: ToRouteType, _from, next) => {
     } else {
       // 刷新
       if (usePermissionStoreHook().wholeMenus.length === 0 && to.path !== "/login") {
-        initRouter().then((router: Router) => {
+        initRouter().then(({ router }) => {
           if (!useMultiTagsStoreHook().getMultiTagsCache) {
             const { path } = to;
             const route = findRouteByPath(path, router.options.routes[0].children);

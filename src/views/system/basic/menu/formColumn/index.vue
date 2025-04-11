@@ -15,7 +15,6 @@ import PreviewTable from "./component/PreviewTable.vue";
 import FormConfigList from "./component/FormConfigList/index.vue";
 import TableConfigList from "./component/TableConfigList/index.vue";
 import ColumnMenuList from "../tableColumn/component/ColumnMenuList.vue";
-import { formTypeOptions } from "./utils/config";
 
 defineOptions({ name: "SystemBasicMenuFormColumn" });
 
@@ -25,7 +24,7 @@ const { formRef, loading, dataList, maxHeight, currentKey, showType, treeOptions
 
 <template>
   <div class="ui-h-100 flex flex-1 main main-content">
-    <div class="flex-col pt-10 info-left-tree border-line">
+    <div class="flex-col pt-10 border-line">
       <div class="flex-col just-between border-line-bottom p-10" style="padding-top: 0">
         <div class="flex just-between align-center">
           <div class="label-colon fz-14">配置菜单</div>
@@ -34,7 +33,7 @@ const { formRef, loading, dataList, maxHeight, currentKey, showType, treeOptions
         <div class="flex align-center mt-10">
           <el-button @click="onBack" :icon="Back" size="small" type="danger">返回</el-button>
           <HxIcon icon="SetUp" @click="onGoTo" size="20" color="#409eff" class="ml-10 pointer" title="表格配置" />
-          <Question tipMsg="主表格的修改配置, 默认获取第一个分组下的第一个配置列表" :size="18" style="margin-left: auto" />
+          <Question tipMsg="按分组添加表单头或表单明细" :size="18" style="margin-left: auto" />
         </div>
       </div>
       <div style="padding: 8px 10px" v-loading="loading">

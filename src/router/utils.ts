@@ -1,4 +1,4 @@
-import { RouteComponent, RouteRecordRaw, RouterHistory, createWebHashHistory, createWebHistory } from "vue-router";
+import { RouteComponent, RouteRecordRaw, Router, RouterHistory, createWebHashHistory, createWebHistory } from "vue-router";
 import { cloneDeep, intersection, isAllEmpty, isIncludeAllChildren, isString, storageSession } from "@pureadmin/utils";
 import { isProxy, toRaw } from "vue";
 
@@ -186,15 +186,15 @@ function initRouter() {
   const cachingEnabled = getConfig()?.CachingAsyncRoutes;
   const cacheRouteList: RouteRecordRaw[] = storageSession().getItem(key);
   const asyncRouteList = cachingEnabled ? cacheRouteList : null;
-  return new Promise((resolve) => {
+  return new Promise<{ router: Router; routes: RouteRecordRaw[] }>((resolve) => {
     if (asyncRouteList && asyncRouteList.length > 0) {
       handleAsyncRoutes(asyncRouteList);
-      resolve(router);
+      resolve({ router, routes: asyncRouteList });
     } else {
       getAsyncRouter().then((data) => {
         handleAsyncRoutes(cloneDeep(data));
         if (cachingEnabled) storageSession().setItem(key, data);
-        resolve(router);
+        resolve({ router, routes: data });
       });
     }
   });

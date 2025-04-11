@@ -5,8 +5,10 @@ import editForm, { FormDataItem } from "./form.vue";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, ref } from "vue";
 
+import type { ColDef } from "ag-grid-community";
 import { addDialog } from "@/components/ReDialog";
 import { delEmptyQueryNodes } from "@/utils/common";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { message } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 
@@ -17,6 +19,8 @@ const columns = ref<TableColumnList[]>([]);
 const qhUserRef = ref();
 
 export function useTable() {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const formRef = ref();
   const dataList: any = ref([]);
   const userCurrentGroup = ref([]);
@@ -46,6 +50,7 @@ export function useTable() {
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
   };
 
   const onSearch = (idx?) => {
@@ -257,6 +262,11 @@ export function useTable() {
     onEdit();
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRowData.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus },
     { clickHandler: onEdit, type: "warning", text: "修改", icon: Edit },
@@ -265,15 +275,5 @@ export function useTable() {
     { clickHandler: exportExcel, type: "primary", text: "导出", icon: Download, isDropDown: true }
   ]);
 
-  return {
-    loading,
-    columns,
-    dataList,
-    qhUserRef,
-    maxHeight,
-    buttonList,
-    rowClick,
-    rowDbClick,
-    onRefresh
-  };
+  return { columnDefs, isAgTable, loading, columns, dataList, qhUserRef, maxHeight, buttonList, rowClick, rowDbClick, onRefresh, onSwitchTable };
 }

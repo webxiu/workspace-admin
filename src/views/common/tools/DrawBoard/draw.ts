@@ -6,6 +6,7 @@ interface OptionsType {
   lineStyle: string;
   fillStyle: string;
   lineCap: CanvasLineCap;
+  brushSize: number;
 }
 
 // 路径类型
@@ -13,11 +14,13 @@ interface PathType {
   lineWidth: number;
   lineStyle: string;
   move: number[];
+  eraseMode: boolean;
   line: {
     x: number;
     y: number;
     lineWidth: number;
     lineStyle: string;
+    eraseMode: boolean;
   }[];
 }
 
@@ -28,7 +31,8 @@ const defaultOption: OptionsType = {
   lineWidth: 3,
   lineStyle: "#000000",
   fillStyle: "#ffffff",
-  lineCap: "round"
+  lineCap: "round",
+  brushSize: 10
 };
 
 class DrawBoard {
@@ -41,46 +45,52 @@ class DrawBoard {
   historyList: PathType[] = [];
   recoverList: PathType[] = [];
   options: OptionsType = { ...defaultOption };
+  optionsTemp: OptionsType = { ...defaultOption };
   ratio = 1;
+  eraseMode: boolean = false;
+  wrapDom: HTMLDivElement;
 
-  constructor(selector, options: Partial<OptionsType>) {
+  constructor(selector, options: Partial<OptionsType> = {}) {
+    this.wrapDom = document.querySelector(selector);
+    if (!this.wrapDom) return;
+    const { width, height } = this.wrapDom.getBoundingClientRect();
     this.updateOption(options);
-    const wrapDom: HTMLDivElement = document.querySelector(selector);
-    // const { width, height } = wrapDom.getBoundingClientRect();
-    const { width, height } = this.getContentDimensions(wrapDom);
     this.canvas = document.createElement("canvas");
-    wrapDom.appendChild(this.canvas);
+    this.wrapDom.appendChild(this.canvas);
     this.ratio = window.devicePixelRatio;
-
+    this.setCanvasSize({ width, height });
     this.ctx = this.canvas.getContext("2d")!;
-    this.canvas.width = width * this.ratio;
-    this.canvas.height = this.options.height * this.ratio;
-    // this.canvas.style.width = width + "px";
-    // this.canvas.style.height = this.options.height + "px";
     this.ctx.fillStyle = this.options.fillStyle;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.create(this.canvas);
-    console.log("this.options", this.options);
+    this.bindEvent(this.canvas);
   }
 
-  getContentDimensions = (element: HTMLElement) => {
-    const style = window.getComputedStyle(element);
-    const paddingTop = parseInt(style.paddingTop, 10);
-    const paddingRight = parseInt(style.paddingRight, 10);
-    const paddingBottom = parseInt(style.paddingBottom, 10);
-    const paddingLeft = parseInt(style.paddingLeft, 10);
-    const borderTop = parseInt(style.borderTopWidth, 10);
-    const borderRight = parseInt(style.borderRightWidth, 10);
-    const borderBottom = parseInt(style.borderBottomWidth, 10);
-    const borderLeft = parseInt(style.borderLeftWidth, 10);
-
-    const contentWidth = element.offsetWidth - (paddingLeft + paddingRight + borderLeft + borderRight);
-    const contentHeight = element.offsetHeight - (paddingTop + paddingBottom + borderTop + borderBottom);
-    return {
-      width: contentWidth,
-      height: contentHeight
-    };
+  bindEvent = (dom: HTMLCanvasElement) => {
+    this.addEvent(dom, "mousedown", (ev: MouseEvent) => this.onTouchstart(ev));
+    this.addEvent(dom, "mousemove", (ev: MouseEvent) => this.onTouchmove(ev));
+    this.addEvent(dom, "mouseup", (ev: MouseEvent) => this.onTouchend(ev));
   };
+
+  // 窗口尺寸变化
+  resize = debounce(() => {
+    const { width, height } = this.wrapDom.getBoundingClientRect();
+    const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height); // 保存当前画布内容
+    this.setCanvasSize({ width, height });
+    this.ctx.putImageData(imageData, 0, 0); // 恢复画布内容
+    this.ctx.fillStyle = this.options.fillStyle;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.onRestore();
+  });
+
+  // 设置canvas宽高
+  setCanvasSize({ width, height }) {
+    this.options.width = width;
+    this.options.height = height;
+    this.canvas.width = width * this.ratio;
+    this.canvas.height = height * this.ratio;
+    this.canvas.style.width = width + "px";
+    this.canvas.style.height = height + "px";
+  }
 
   // 移动端和PC端事件
   private addEvent = (el: Element, eventName, cb: Function) => {
@@ -93,6 +103,7 @@ class DrawBoard {
 
     const fn = (ev: TouchEvent) => {
       ev.preventDefault();
+      ev.stopPropagation();
       if (isMobile) cb(ev.touches[0]);
       else cb(ev);
     };
@@ -105,24 +116,20 @@ class DrawBoard {
     return () => el.removeEventListener(eventObj[eventName], fn);
   };
 
-  create = (dom: HTMLCanvasElement) => {
-    this.addEvent(dom, "mousedown", (ev: MouseEvent) => this.onTouchstart(ev));
-    this.addEvent(dom, "mousemove", (ev: MouseEvent) => this.onTouchmove(ev));
-    this.addEvent(dom, "mouseup", (ev: MouseEvent) => this.onTouchend(ev));
-  };
-
   private onTouchstart = (ev: MouseEvent) => {
     this.isDrawing = true;
     const rect = this.canvas.getBoundingClientRect();
     const x = ev.clientX - rect.left;
     const y = ev.clientY - rect.top;
+    this.setErase(this.eraseMode);
     this.drawLine(x, y, false);
     this.recoverList = [];
     this.historyList.push({
       lineWidth: this.options.lineWidth,
       lineStyle: this.options.lineStyle,
       move: [x, y],
-      line: []
+      line: [],
+      eraseMode: this.eraseMode
     });
   };
 
@@ -136,7 +143,8 @@ class DrawBoard {
         x: mx,
         y: my,
         lineWidth: this.options.lineWidth,
-        lineStyle: this.options.lineStyle
+        lineStyle: this.options.lineStyle,
+        eraseMode: this.eraseMode
       });
     }
   };
@@ -165,11 +173,15 @@ class DrawBoard {
     Object.keys(options).forEach((key) => {
       if (options[key]) this.options[key] = options[key];
     });
+    this.optionsTemp = { ...this.options };
+    this.onSetLine();
   };
 
-  onRestore = (type?: "revoke" | "recover") => {
+  /* 重绘所有历史记录 */
+  onRestore = (type?: "revoke" | "recover" | "edit", item?: { historyList: PathType[]; fillStyle: string }) => {
     const { width, height } = this.canvas;
     const { fillStyle } = this.options;
+    const oTemp = this.optionsTemp;
     if (type === "revoke") {
       const history = this.historyList.pop();
       history && this.recoverList.push(history);
@@ -178,15 +190,18 @@ class DrawBoard {
       recover && this.historyList.push(recover);
     }
     this.ctx.clearRect(0, 0, width * this.ratio, height * this.ratio);
-    this.ctx.fillStyle = fillStyle;
+    this.ctx.fillStyle = item?.fillStyle || fillStyle;
     this.ctx.fillRect(0, 0, width * this.ratio, height * this.ratio);
-    this.historyList.forEach((m) => {
+
+    const _historyList = item?.historyList || this.historyList;
+    _historyList.forEach((m) => {
       this.ctx.beginPath();
-      this.ctx.strokeStyle = m.lineStyle;
+      this.ctx.strokeStyle = m.eraseMode ? oTemp.fillStyle : m.lineStyle;
       this.ctx.lineWidth = m.lineWidth * this.ratio;
+      this.setErase(m.eraseMode);
       this.ctx.moveTo(m.move[0] * this.ratio, m.move[1] * this.ratio);
       m.line.forEach((v) => {
-        this.ctx.strokeStyle = v.lineStyle;
+        this.ctx.strokeStyle = v.eraseMode ? oTemp.fillStyle : v.lineStyle;
         this.ctx.lineWidth = v.lineWidth * this.ratio;
         this.ctx.lineTo(v.x * this.ratio, v.y * this.ratio);
       });
@@ -204,13 +219,38 @@ class DrawBoard {
     this.options = { ...defaultOption };
   };
 
+  // 设置擦除颜色
+  setErase = (eraseMode) => {
+    this.options.lineStyle = eraseMode ? this.options.fillStyle : this.optionsTemp.lineStyle;
+  };
+
+  // 设置线大小颜色
+  onSetLine = () => {
+    this.options.lineWidth = this.eraseMode ? this.options.brushSize : this.optionsTemp.lineWidth;
+  };
+
+  onEraser = () => {
+    this.eraseMode = !this.eraseMode;
+    this.onSetLine();
+    return this.eraseMode;
+  };
+
   onExport = (mime = "image/png") => {
     const imgData = this.canvas.toDataURL(mime);
-    return imgData;
+    return { imgData, mime, fillStyle: this.options.fillStyle, historyList: [...this.historyList] };
   };
 
   getHistory = () => {
     return this.historyList;
+  };
+}
+
+/* 防抖 */
+function debounce(fn: Function, wait = 300) {
+  let timeout: NodeJS.Timeout;
+  return (...arg) => {
+    if (timeout !== null) clearTimeout(timeout);
+    timeout = setTimeout(fn.bind(null, ...arg), wait);
   };
 }
 

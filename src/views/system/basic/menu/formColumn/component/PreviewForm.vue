@@ -1,38 +1,53 @@
 <script setup lang="ts">
 import { ref, watch, reactive } from "vue";
-import { getFormConfigs } from "@/utils/form";
+import { ItemKey, getFormConfigs } from "@/utils/form";
 import { Finished } from "@element-plus/icons-vue";
 import { FormColumnItemType } from "@/api/systemManage";
 import { ElNotification, type FormProps, type FormRules } from "element-plus";
-import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
+import EditForm, { FormConfigItemListType } from "@/components/EditForm/index.vue";
 
 const props = defineProps<{ height: number; columnList: FormColumnItemType[] }>();
 const formProps = reactive<Partial<FormProps>>({ labelWidth: "100px", requireAsteriskPosition: "right", inlineMessage: true });
 const formData = ref<Record<string, any>>({ id: "" });
-const formConfigs = ref<FormConfigItemType[]>([]);
-const loading = ref<boolean>(false);
+const formConfigs = ref<FormConfigItemListType>([]);
 const formRules = ref<FormRules>({});
 const formRef = ref();
 
-watch(
-  props,
-  (value) => {
-    // 获取表单配置项、校验规则、默认值
-    const result = getFormConfigs({ loading, columnList: value.columnList });
-    formData.value = result.formData;
-    formConfigs.value = result.formColumns;
-    formRules.value = result.formRules;
-  },
-  { immediate: true }
-);
-
+watch(props, () => loadData(), { immediate: true });
 watch(
   formData,
   (value) => {
-    console.log("提交数据:", value);
+    console.log("表单数据:", value);
   },
   { deep: true }
 );
+
+function loadData() {
+  // 需要渲染option数据项的表单
+  const inputs = [ItemKey.select, ItemKey.treeSelect, ItemKey.radio, ItemKey.checkbox];
+  // 移除className字段, 为null时绑定表单会把样式清除
+  const columnList = props.columnList.map(({ className, ...rest }) => {
+    if (inputs.includes(rest.itemType as ItemKey)) {
+      const { optionName, optionValue, method, apiURL, enumKey } = JSON.parse(rest.formatType || "{}");
+      if (!apiURL && method === "custom" && !enumKey) {
+        const label = optionName || "optionName";
+        const value = optionValue || "optionValue";
+        rest.dataOption = [
+          { [label]: "选项一", [value]: "1" },
+          { [label]: "选项二", [value]: 2 },
+          { [label]: "选项三", [value]: "3" }
+        ];
+      }
+    }
+    return rest;
+  });
+  const result = getFormConfigs(columnList);
+  console.log("表单配置项(原始):", props.columnList);
+  console.log("表单配置项(结果):", result);
+  formData.value = result.formData;
+  formConfigs.value = result.formColumns;
+  formRules.value = result.formRules;
+}
 
 function onTestSubmit() {
   const FormRef = formRef.value.getRef();

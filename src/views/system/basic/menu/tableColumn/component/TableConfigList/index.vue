@@ -32,6 +32,7 @@
           :paginationSmall="size === 'small'"
           highlight-current-row
           :show-overflow-tooltip="false"
+          :row-style="rowStyle"
           @row-click="onRowClick"
           @selection-change="handleSelectionChange"
         >
@@ -51,6 +52,8 @@
 <script setup lang="ts">
 import "vue-json-pretty/lib/styles.css";
 import { useConfig } from "./utils/hook";
+import { rowStyle } from "@/views/system/basic/menu/formColumn/component/TableConfigList/utils/hook";
+
 defineProps<{ height: number }>();
 const { tableRef, columns, dataList, loading, buttonList2, loadingStatus, onSearch, onRefresh, onDelete, onRowClick, onCopyColumn, handleSelectionChange } =
   useConfig();

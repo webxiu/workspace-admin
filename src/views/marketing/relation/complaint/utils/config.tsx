@@ -37,7 +37,7 @@ export const detailFormRules = reactive<FormRules>({
 });
 
 const layout = { span: 12 };
-const baseApi = import.meta.env.VITE_BASE_API;
+export const baseApi = import.meta.env.VITE_BASE_API;
 
 /** 审核状态 */
 export enum AuditState {
@@ -63,9 +63,27 @@ export const AuditStateName = {
 };
 
 // 上传客诉文件
-const accept = [".gif", ".jfif", ".pjpeg", ".jpeg", ".pjp", ".jpg", ".png", ".xls", ".xlsx", ".dot", ".doc", ".docx", ".pdf", ".m4v", ".mp4", ".wmv", ".avi"];
+export const accept = [
+  ".gif",
+  ".jfif",
+  ".pjpeg",
+  ".jpeg",
+  ".pjp",
+  ".jpg",
+  ".png",
+  ".xls",
+  ".xlsx",
+  ".dot",
+  ".doc",
+  ".docx",
+  ".pdf",
+  ".m4v",
+  ".mp4",
+  ".wmv",
+  ".avi"
+];
 
-const replyAccept = [".ppt", ".pptx", ".xls", ".xlsx", ".dot", ".doc", ".docx", ".pdf", ".zip"];
+export const replyAccept = [".ppt", ".pptx", ".xls", ".xlsx", ".dot", ".doc", ".docx", ".pdf", ".zip"];
 
 // 新增表单
 export const formConfigs = ({ detailData, onDownload }: DetailType): FormConfigItemType[] => {

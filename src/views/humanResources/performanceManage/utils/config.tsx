@@ -6,6 +6,10 @@ const formRules = reactive<FormRules>({
   money: [{ required: true, message: "金额为必填项", trigger: "change" }]
 });
 
+const formImportRules = reactive<FormRules>({
+  userCode: [{ required: true, message: "工号为必填项", trigger: "change" }]
+});
+
 const formRules1 = reactive<FormRules>({
   row: [{ required: true, message: "数据起始行必填", trigger: "change" }],
   deptId: [{ required: true, message: "部门必填", trigger: "change" }],
@@ -124,11 +128,41 @@ const formConfigs1 = (treeData) => [
     label: "文件",
     labelWidth: 100,
     prop: "file",
-    slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+    slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
     render: ({ formModel, row }) => {
       return <ImportUpload v-model={formModel[row.prop]} />;
     }
   }
 ];
 
-export { formConfigs, formRules, formRules1, formConfigs1 };
+const formImportConfigs = () => [
+  {
+    label: "部门",
+    prop: "deptName",
+    labelWidth: 60,
+    colProp: { span: 8 },
+    render: ({ formModel, row }) => {
+      return <el-input v-model={formModel[row.prop]} disabled />;
+    }
+  },
+  {
+    label: "工号",
+    prop: "userCode",
+    labelWidth: 60,
+    colProp: { span: 8 },
+    render: ({ formModel, row }) => {
+      return <el-input v-model={formModel[row.prop]} disabled />;
+    }
+  },
+  {
+    label: "姓名",
+    prop: "staffName",
+    labelWidth: 60,
+    colProp: { span: 8 },
+    render: ({ formModel, row }) => {
+      return <el-input v-model={formModel[row.prop]} disabled />;
+    }
+  }
+];
+
+export { formConfigs, formRules, formRules1, formConfigs1, formImportRules, formImportConfigs };

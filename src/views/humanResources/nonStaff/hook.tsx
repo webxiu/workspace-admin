@@ -9,32 +9,33 @@ import {
   manySyncMachineData,
   updateNoStaffUser
 } from "@/api/oaManage/humanResources";
+import { PAGE_CONFIG, boolOptions, genderOptions, numberOptions } from "@/config/constant";
+import { downloadDataToExcel, getMenuColumns, setColumn, updateButtonList, usePageSelect } from "@/utils/table";
 import { formConfigs, formRules } from "./config";
-import { getMenuColumns, setColumn, updateButtonList, usePageSelect } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
-import { utils, write } from "xlsx";
 
+import type { ColDef } from "ag-grid-community";
+import { FormItemConfigType } from "@/utils/form";
 import MachineUserModal from "../staffInfo/utils/machineUserModal/index.vue";
-import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
-import { cloneDeep } from "@pureadmin/utils";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
-import { getDeptOptions } from "@/utils/requestApi";
-import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
 
-export const useMachine = () => {
+export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
+  const tableRef = ref();
   const loading = ref(false);
-  const treeSelectData = ref([]);
   const currentRow = ref<NoStaffItemType>();
   const columns = ref<TableColumnList[]>([]);
   const rowsData = ref([]);
   const dataList = ref<NoStaffItemType[]>([]);
-  const noTableRef = ref();
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 55 + 40);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const formData = reactive({
     page: 1,
@@ -49,19 +50,11 @@ export const useMachine = () => {
     // { label: "公司", value: "laborServiceCompany" }
   ]);
 
-  const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef: noTableRef, dataList, rowsData, uniId: "id" });
-
+  const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData, uniId: "id" });
   onMounted(() => {
     getColumnConfig();
     onSearch();
-    fetchOpts();
   });
-
-  const fetchOpts = () => {
-    getDeptOptions().then((data: any) => {
-      treeSelectData.value = data;
-    });
-  };
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
@@ -86,6 +79,7 @@ export const useMachine = () => {
     if (menuCols?.length) columnData = menuCols;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, selectionColumn: { hide: false }, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, formData, selectionColumn: { hide: false }, operationColumn: false });
     return columnData;
   };
 
@@ -104,31 +98,20 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     onSearch();
   };
 
   const onExport = () => {
-    const timeStep = Date.now();
-    const workbook = utils.table_to_book(document.querySelector("#mappingTableId"), {
-      raw: true //有的是日期、小数等格式，直接乱码#。所以这里直接保留原始字符串
-    });
-    workbook.Sheets.Sheet1["!cols"][0] = { hidden: true };
-    const wbout = write(workbook, {
-      bookType: "xlsx",
-      bookSST: true,
-      type: "array"
-    });
-    saveAs(new Blob([wbout], { type: "application/octet-stream" }), `编外人员${timeStep}.xlsx`);
+    downloadDataToExcel([{ dataList: dataList.value, columns: columns.value, sheetName: "编外人员" }]);
   };
 
   const openDialog = async (type: "add" | "view" | "edit", row?) => {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const formLoading = ref(false);
     const flag = ref(false);
-    const _formData: any = ref({});
+    const _formData = ref<any>({});
 
     await fetchNoStaffUser({ page: 1, limit: 30, staffId: row?.staffId }).then((res: any) => {
       if (res.data) {
@@ -142,7 +125,7 @@ export const useMachine = () => {
         _formData.value.startDate = result?.startDate;
         _formData.value.phone = result?.phone ?? "";
         _formData.value.staffId = result?.staffId ?? "";
-        _formData.value.deptId = type === "add" ? undefined : result.deptId + "";
+        _formData.value.deptId = type === "add" ? undefined : result.deptId;
         _formData.value.roleId = type === "add" ? undefined : result.roleId;
         _formData.value.isCreateQYWechat = result?.wxOpenId ? true : false;
         _formData.value.laborServiceCompany = result?.laborServiceCompany ?? "";
@@ -153,26 +136,47 @@ export const useMachine = () => {
       }
     });
 
-    const changeQYWX = (val) => (flag.value = val);
+    if (typeof row?.isSalary === "boolean") {
+      _formData.value.isSalary = row?.isSalary + "";
+    } else {
+      _formData.value.isSalary = "true";
+    }
 
-    const calcConfigArr = formConfigs({ treeSelectData, _formData, changeQYWX });
-    // type === "add"
-    //   ? formConfigs({ treeSelectData, _formData, changeQYWX })
-    //   : formConfigs({ treeSelectData, _formData, changeQYWX }).filter((item) => {
-    //       if (!row?.wxOpenId) {
-    //         return item;
-    //       }
-    //       return !["isCreateQYWechat"].includes(item.prop);
-    //     });
+    if (typeof row?.isSeniorityCalc === "boolean") {
+      _formData.value.isSeniorityCalc = row?.isSeniorityCalc + "";
+    } else {
+      _formData.value.isSeniorityCalc = "true";
+    }
+
+    const mapSalary = { true: true, false: false };
+
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData.value,
+        formRules: formRules(flag),
+        customColumn: {},
+        customProps: {
+          isCreateQYWechat: { onChange: (val) => (flag.value = val) },
+          isSalary: { onChange: (val) => (_formData.value.isSeniorityCalc = val) },
+          deptId: { apiFields: ["roleId"] },
+          roleId: { apiParams: { deptId: _formData.value.deptId } }
+        },
+        customElement: {},
+        dataOption: {
+          sex: genderOptions,
+          isCreateQYWechat: boolOptions,
+          isPoorPeople: numberOptions,
+          exmpetAttendance: boolOptions
+        },
+        formProps: { labelWidth: "120px", labelPosition: "top" }
+      }
+    ];
 
     addDialog({
       title: `${title}`,
       props: {
-        loading: formLoading,
-        formInline: _formData,
-        formRules: formRules(flag),
-        formConfigs: calcConfigArr,
-        labelWidth: 110
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "1000px",
       draggable: true,
@@ -180,14 +184,19 @@ export const useMachine = () => {
       okButtonText: "保存",
       closeOnClickModal: false,
       hideFooter: type === "view",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done) => {
-        const formIns = formRef.value.getRef();
-        formIns?.validate(async (valid) => {
+        formRef.value.getRef().then(async ({ valid, data }) => {
+          const paramsData = { ..._formData.value };
+          paramsData["isSalary"] = mapSalary[_formData.value["isSalary"] as string];
+          paramsData["isSeniorityCalc"] = mapSalary[_formData.value["isSeniorityCalc"] as string];
+
           if (valid) {
             showMessageBox(`确认要${title}吗?`)
               .then(() => {
-                onSubmitChange(type, title, _formData, () => {
+                onSubmitChange(type, title, paramsData, () => {
                   done();
                   onSearch();
                 });
@@ -201,7 +210,7 @@ export const useMachine = () => {
 
   const onSubmitChange = (type: string, title: string, data, callback) => {
     const typeApi = { add: addNoStaffUser, edit: updateNoStaffUser };
-    typeApi[type](data.value).then((res) => {
+    typeApi[type](data).then((res) => {
       if (res.data || res.status === 200) {
         message.success(title + "成功");
         callback();
@@ -354,14 +363,6 @@ export const useMachine = () => {
     });
   };
 
-  const buttonList = ref<ButtonItemType[]>([
-    { clickHandler: onAdd, type: "primary", text: "新增" },
-    { clickHandler: onEdit, type: "warning", text: "修改" },
-    { clickHandler: onDel, type: "danger", text: "离职" },
-    { clickHandler: onSyncMachine, type: "default", text: "同步考勤机", isDropDown: true },
-    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
-  ]);
-
   // 分页相关
   function onSizeChange(val: number) {
     formData.limit = val;
@@ -389,7 +390,24 @@ export const useMachine = () => {
     setSelectAllChange(rows);
   }
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+    rowsData.value = [];
+  }
+
+  const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onAdd, type: "primary", text: "新增" },
+    { clickHandler: onEdit, type: "warning", text: "修改" },
+    { clickHandler: onDel, type: "danger", text: "离职" },
+    { clickHandler: onSyncMachine, type: "default", text: "同步考勤机", isDropDown: true },
+    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
+  ]);
+
   return {
+    columnDefs,
+    isAgTable,
+    tableRef,
     columns,
     loading,
     dataList,
@@ -400,11 +418,11 @@ export const useMachine = () => {
     onFresh,
     rowClick,
     rowDbclick,
-    onSizeChange,
     onSelect,
     onSelectAll,
-    noTableRef,
-    handleTagSearch,
-    onCurrentChange
+    onSizeChange,
+    onTagSearch,
+    onCurrentChange,
+    onSwitchTable
   };
 };

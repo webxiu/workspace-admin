@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-02 17:47:52
+ * @Last Modified time: 2025-03-17 14:58:12
  */
 
 import { Ref, onMounted, h, reactive, ref } from "vue";
@@ -14,6 +14,7 @@ import AddModal from "../addModal.vue";
 import { type PaginationProps } from "@pureadmin/table";
 import { formConfigs, formRules } from "./config";
 import { addDialog } from "@/components/ReDialog";
+import TableEditList from "@/components/TableEditList/index.vue";
 
 import { Plus, Delete } from "@element-plus/icons-vue";
 
@@ -35,13 +36,18 @@ import {
 } from "@/api/systemManage";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { PAGE_CONFIG } from "@/config/constant";
+import { RendererType } from "@/utils/table";
 import { ElMessage } from "element-plus";
 import Cron from "../cron/index.vue";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import type { ColDef } from "ag-grid-community";
 
 /** 添加类型 */
 type AddType = "role" | "user";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const columns2 = ref<TableColumnList[]>([]);
   const columns3 = ref<TableColumnList[]>([]);
@@ -73,6 +79,9 @@ export const useConfig = () => {
   });
 
   const getColumnConfig = async () => {
+    const limitedWorkingDay: RendererType = ({ row }) => {
+      return { true: "是", false: "否" }[row.limitedWorkingDay];
+    };
     let columnData: TableColumnList[] = [
       { label: "任务ID", prop: "id", align: "right" },
       { label: "任务标题", prop: "taskName", minWidth: 280, sortable: true },
@@ -104,7 +113,13 @@ export const useConfig = () => {
     updateButtonList(buttonList2, buttonArrs[1]);
     updateButtonList(buttonList3, buttonArrs[2]);
 
-    columns.value = setColumn({ columnData, dragSelector: ".data-base", operationColumn: false });
+    columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({
+      columnData,
+      formData,
+      operationColumn: false,
+      columnsRender: { limitedWorkingDay }
+    });
     columns2.value = setColumn({
       columnData: columnData2,
       operationColumn: { minWidth: 80 },
@@ -200,11 +215,6 @@ export const useConfig = () => {
     const titleObj = { add: "新增", edit: "修改" };
     const title = titleObj[type];
     const formRef = ref();
-    const sLoading = ref(true);
-    const statusOptions = ref([]);
-    const dataSourceOptions = ref([]);
-    const pushTypeOptions = ref([]);
-    const taskTypeOption = ref([]);
 
     const formData = reactive({
       jobName: row?.jobName ?? "",
@@ -227,26 +237,6 @@ export const useConfig = () => {
       emailAdviceWay: row?.emailAdviceWay ?? undefined
     });
 
-    const findItemInfo = (key, list = []) => {
-      return list.find((item) => item.optionCode === key)?.optionList || [];
-    };
-
-    getBOMTableRowSelectOptions({ optioncode: "SchedulingDataSource,SchedulingSendType,SchedulingStatus,SchedulingTaskType" })
-      .then((res: any) => {
-        if (res.data) {
-          const schedulingDataSource = findItemInfo("SchedulingDataSource", res.data);
-          const schedulingSendType = findItemInfo("SchedulingSendType", res.data);
-          const schedulingStatus = findItemInfo("SchedulingStatus", res.data);
-          const schedulingTaskType = findItemInfo("SchedulingTaskType", res.data);
-
-          statusOptions.value = schedulingStatus;
-          dataSourceOptions.value = schedulingDataSource;
-          pushTypeOptions.value = schedulingSendType;
-          taskTypeOption.value = schedulingTaskType;
-        }
-      })
-      .finally(() => (sLoading.value = false));
-
     const onSetCronSchedule = () => {
       const modalIns = addDialog({
         title: `设置cron表达式`,
@@ -261,28 +251,58 @@ export const useConfig = () => {
       });
     };
 
+    const customProps = reactive({
+      adviceByEmail: {
+        onChange: (val, columns) => {
+          columns.value.forEach((col) => col.prop === "emailAdviceWay" && (col.hide = !val));
+        }
+      }
+    });
+
+    const customElement = {
+      cronSchedule: ({ formModel, row }) => {
+        return (
+          <el-input v-model={formModel[row.prop]} placeholder="请输入定时表达式" clearable>
+            {{ append: () => <el-button onClick={onSetCronSchedule}>设置</el-button> }}
+          </el-input>
+        );
+      },
+      emailAdviceWay: ({ formModel, row }) => {
+        return (
+          <el-radio-group v-model={formModel[row.prop]}>
+            <el-radio label={1} border>
+              文本
+            </el-radio>
+            <el-radio label={2} border>
+              附件
+            </el-radio>
+          </el-radio-group>
+        );
+      }
+    };
+
     addDialog({
       title: `${title}定时任务`,
       props: {
-        loading: sLoading,
-        formInline: formData,
-        formRules: formRules(formData),
-        formConfigs: formConfigs({ statusOptions, dataSourceOptions, onSetCronSchedule, pushTypeOptions, taskTypeOption, formData }),
-        formProps: { labelWidth: "100px" }
+        params: { groupCode: "1" },
+        formConfig: [
+          {
+            formData: formData,
+            customProps: customProps,
+            customElement: customElement,
+            formProps: { labelWidth: "100px" }
+          }
+        ]
       },
       width: "860px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`)
               .then(() => {
@@ -534,6 +554,11 @@ export const useConfig = () => {
     });
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
     { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
@@ -552,6 +577,8 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     loading,
     loading2,
     loading3,
@@ -583,6 +610,7 @@ export const useConfig = () => {
     onSelectionChange2,
     onSelectionChange3,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

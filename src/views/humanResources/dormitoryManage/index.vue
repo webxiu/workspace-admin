@@ -307,8 +307,8 @@ const handleTagSearch = (values) => {
 };
 
 const fetchOpts = () => {
-  getEnumDictList(["EmployeeStatus"]).then((res) => {
-    searchOptions[3].children = res.EmployeeStatus?.map((item) => ({ label: item.optionName, value: item.optionValue }));
+  getEnumDictList(["EmployeeStatus"]).then(({ EmployeeStatus }) => {
+    searchOptions[3].children = EmployeeStatus;
   });
 
   getDeptOptions().then((data) => {

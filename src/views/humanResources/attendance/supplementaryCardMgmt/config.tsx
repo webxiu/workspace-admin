@@ -5,7 +5,7 @@ import DetailTable from "./detailTable.vue";
 
 export const formRules = reactive<FormRules>({});
 
-export const formConfigs = ({ searchOptions, loadTableData, _formData, updateLineTime }): FormConfigItemType[] => {
+export const formConfigs = ({ searchOptions, loadTableData, _formData, updateLineTime, changeDept, curDeptOptions }): FormConfigItemType[] => {
   return [
     {
       label: "单据编号",
@@ -25,7 +25,7 @@ export const formConfigs = ({ searchOptions, loadTableData, _formData, updateLin
         return (
           <el-select size="small" v-model={formModel[row.prop]} placeholder="请选择单据状态" class="ui-w-100" disabled>
             {searchOptions[1].children.map((item) => (
-              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
+              <el-option key={item.value} label={item.label} value={item.value} />
             ))}
           </el-select>
         );
@@ -38,17 +38,23 @@ export const formConfigs = ({ searchOptions, loadTableData, _formData, updateLin
       labelWidth: 98,
       render: ({ formModel, row }) => {
         return (
-          <el-tree-select
-            size="small"
-            v-model={formModel[row.prop]}
-            data={searchOptions[2].children[0].children}
-            filterable
-            check-strictly
-            default-expanded-keys={[0]}
-            node-key="value"
-            render-after-expand={false}
-            class="ui-w-100"
-          />
+          // <el-tree-select
+          //   size="small"
+          //   v-model={formModel[row.prop]}
+          //   data={searchOptions[2].children}
+          //   filterable
+          //   onChange={changeDept}
+          //   check-strictly
+          //   default-expanded-keys={[0]}
+          //   node-key="value"
+          //   render-after-expand={false}
+          //   class="ui-w-100"
+          // />
+          <el-select size="small" v-model={formModel[row.prop]} class="ui-w-100" filterable onChange={changeDept}>
+            {curDeptOptions.value.map((item) => (
+              <el-option key={item.deptId} label={item.deptName} value={item.deptId} />
+            ))}
+          </el-select>
         );
       }
     },

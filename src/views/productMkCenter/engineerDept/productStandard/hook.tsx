@@ -4,6 +4,7 @@ import { formConfigs, formRules } from "./config";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 
+import type { ColDef } from "ag-grid-community";
 import EditForm from "@/components/EditForm/index.vue";
 import { ElMessageBox } from "element-plus";
 import { PAGE_CONFIG } from "@/config/constant";
@@ -11,17 +12,20 @@ import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import axios from "axios";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { message } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 
 export const useMachine = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const dataList = ref([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref(false);
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const currentRow = ref();
-  const formData: any = reactive({
+  const formData = reactive({
     productCode: "",
     page: 1,
     limit: PAGE_CONFIG.pageSize
@@ -50,7 +54,7 @@ export const useMachine = () => {
     if (menuCols?.length) columnData = menuCols;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
-    return columnData;
+    columnDefs.value = getAgGridColumns({ columnData, formData, operationColumn: false });
   };
 
   const onSearch = () => {
@@ -62,12 +66,12 @@ export const useMachine = () => {
     });
   };
 
-  const onFresh = () => {
+  const onRefresh = () => {
     getColumnConfig();
     onSearch();
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     onSearch();
   };
@@ -175,13 +179,6 @@ export const useMachine = () => {
       .catch(() => {});
   };
 
-  const buttonList = ref([
-    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
-    { clickHandler: onDownloadTemplate, type: "warning", text: "下载模板", isDropDown: true },
-    { clickHandler: onImportAction, type: "warning", text: "导入", isDropDown: true },
-    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
-  ]);
-
   // 分页相关
   function onSizeChange(val: number) {
     formData.limit = val;
@@ -199,20 +196,35 @@ export const useMachine = () => {
     openDialog("edit", row);
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+  }
+
+  const buttonList = ref([
+    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
+    { clickHandler: onDownloadTemplate, type: "warning", text: "下载模板", isDropDown: true },
+    { clickHandler: onImportAction, type: "warning", text: "导入", isDropDown: true },
+    { clickHandler: onExport, type: "info", text: "导出", isDropDown: true }
+  ]);
+
   return {
+    columnDefs,
+    isAgTable,
     columns,
-    rowClick,
-    rowDbClick,
-    onFresh,
-    handleTagSearch,
-    onChangeFileInput,
     searchOptions,
     buttonList,
     maxHeight,
     loading,
     dataList,
     pagination,
+    onRefresh,
+    rowClick,
+    rowDbClick,
+    onTagSearch,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onChangeFileInput,
+    onSwitchTable
   };
 };

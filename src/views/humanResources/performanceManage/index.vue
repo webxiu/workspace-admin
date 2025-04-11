@@ -14,8 +14,6 @@ const {
   buttonList,
   searchOptions,
   queryParams,
-  onEdit,
-  onDelete,
   onSearch,
   handleTagSearch,
   onCurrentChange,
@@ -24,7 +22,6 @@ const {
   onSelectAll,
   rowClick,
   onDbClick,
-  onSummaryMethod,
   handleCurrentChange
 } = useConfig();
 </script>
@@ -38,8 +35,8 @@ const {
           :searchOptions="searchOptions"
           :queryParams="queryParams"
           :immediate="false"
-          placeholder="请输入姓名"
-          searchField="userName"
+          placeholder="单据编号"
+          searchField="billNo"
         />
       </template>
       <template #buttons>
@@ -50,7 +47,6 @@ const {
           <div>
             <pure-table
               id="performanceTableId"
-              show-summary
               border
               :height="maxHeight"
               :max-height="maxHeight"
@@ -75,21 +71,19 @@ const {
               @select-all="onSelectAll"
               @page-size-change="handleSizeChange"
               @page-current-change="handleCurrentChange"
-              :summary-method="onSummaryMethod"
               @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-            >
-              <template #operation="{ row }">
-                <el-button size="small" type="default" @click="onEdit(row)">修改</el-button>
-                <el-popconfirm :width="280" :title="`确认删除\n【${row.staffName}】的记录吗?`" @confirm="onDelete([row])">
-                  <template #reference>
-                    <el-button size="small" type="danger" @click.stop>删除</el-button>
-                  </template>
-                </el-popconfirm>
-              </template>
-            </pure-table>
+            />
           </div>
         </div>
       </template>
     </PureTableBar>
   </div>
 </template>
+
+<style lang="scss">
+.performance-modal {
+  .el-form-item--small {
+    margin-bottom: 8px !important;
+  }
+}
+</style>

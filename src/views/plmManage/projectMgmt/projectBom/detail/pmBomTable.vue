@@ -281,10 +281,8 @@ const handleSetDataList = (data) => {
 onMounted(() => {
   columns.value = setColumn({ columnData, operationColumn: false });
 
-  getEnumDictList(["MaterialUnits"]).then((res) => {
-    if (res) {
-      materialUnitOpts.value = res["MaterialUnits"].map((item) => ({ optionName: item.optionName, optionValue: item.optionName }));
-    }
+  getEnumDictList(["MaterialUnits"]).then(({ MaterialUnits }) => {
+    materialUnitOpts.value = MaterialUnits;
   });
 });
 </script>

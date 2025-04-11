@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:37:16
+ * @Last Modified time: 2025-01-09 15:03:07
  */
 
 import { dayjs } from "element-plus";
@@ -18,19 +18,24 @@ import { h, onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
 import EditForm from "@/components/EditForm/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
-
+import TableEditList from "@/components/TableEditList/index.vue";
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
-import { setColumn, getMenuColumns, updateButtonList, usePageSelect } from "@/utils/table";
+import { setColumn, getMenuColumns, updateButtonList, usePageSelect, getEnumDictList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { formRules, formConfigs, TemporaryFlag } from "./config";
-import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { getDeptTreeData } from "@/api/systemManage";
 import { PAGE_CONFIG, BillState, BillState_Color } from "@/config/constant";
 import { Delete, SetUp, Tickets, CircleClose } from "@element-plus/icons-vue";
+import { FormItemConfigType } from "@/utils/form";
+import { boolOptions } from "@/config/constant";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const tableRef = ref();
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<InductionAuditItemType[]>([]);
@@ -49,6 +54,7 @@ export const useConfig = () => {
     temporaryFlag: ""
   });
 
+  const queryParams = reactive<QueryParamsType>({ state: { value: "1", valueLabel: "审核中" } });
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "姓名", value: "staffName" },
     { label: "审核状态", value: "state", children: [] },
@@ -61,9 +67,6 @@ export const useConfig = () => {
       ]
     }
   ]);
-  const queryParams = reactive<QueryParamsType>({
-    state: { value: "1", valueLabel: "审核中" }
-  });
   const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData, uniId: "id" });
 
   onMounted(() => {
@@ -71,14 +74,10 @@ export const useConfig = () => {
     getColumnConfig();
   });
 
-  const findItemInfo = (key, list = []) => {
-    return list.find((item) => item.optionCode === key)?.optionList || [];
-  };
-
   const getOptionList = () => {
     getDeptTreeData().then((res) => {
       if (res.data) {
-        const data = JSON.parse(res.data);
+        const data = res.data;
         optionDatas.value.deptInfoTree = data[0]?.children || [];
       }
     });
@@ -97,24 +96,15 @@ export const useConfig = () => {
       }
     });
 
-    getBOMTableRowSelectOptions({ optioncode: "BillStatus,EmployeeLevel,EmployeeType,DormitoryType" }).then((res: any) => {
-      if (res.data) {
-        const BillStatus = findItemInfo("BillStatus", res.data);
-        const EmployeeLevel = findItemInfo("EmployeeLevel", res.data);
-        const EmployeeType = findItemInfo("EmployeeType", res.data);
-        const YesOrNo = findItemInfo("DormitoryType", res.data);
-
-        optionDatas.value = {
-          ...optionDatas.value,
-          BillStatus,
-          EmployeeLevel,
-          EmployeeType,
-          YesOrNo
-        };
-
-        const calcStatus = BillStatus?.map((item) => ({ label: item.optionName, value: item.optionValue }));
-        searchOptions[1].children = [{ label: "全部", value: "-1" }, ...calcStatus];
-      }
+    getEnumDictList(["BillStatus", "EmployeeLevel", "EmployeeType", "DormitoryType"]).then((res) => {
+      optionDatas.value = {
+        ...optionDatas.value,
+        BillStatus: res.BillStatus,
+        EmployeeLevel: res.EmployeeLevel,
+        EmployeeType: res.EmployeeType,
+        YesOrNo: res.DormitoryType
+      };
+      searchOptions[1].children = [{ label: "全部", value: "-1" }, ...res.BillStatus];
     });
   };
 
@@ -154,7 +144,8 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, selectionColumn: { hide: false }, formData, operationColumn: { hide: true } });
+    columns.value = setColumn({ columnData, formData, selectionColumn: { hide: false }, operationColumn: { hide: true } });
+    columnDefs.value = getAgGridColumns({ columnData, formData, selectionColumn: { hide: false }, operationColumn: { hide: true } });
   };
 
   const getTableList = () => {
@@ -165,8 +156,15 @@ export const useConfig = () => {
         dataList.value = data.records || [];
         pagination.total = data.total;
         if (formData.page === 1) {
-          rowData.value = data.records[0];
-          tableRef.value?.getTableRef().setCurrentRow(rowData.value);
+          if (tableRef.value?.getTableRef) {
+            rowData.value = data.records[0];
+            tableRef.value?.getTableRef().setCurrentRow(rowData.value);
+          } else {
+            if (!rowsData.value?.length) {
+              rowData.value = data.records[0];
+              rowsData.value = [rowData.value]; //默认选中第一行
+            }
+          }
         }
         setSelectCheckbox();
       })
@@ -205,23 +203,42 @@ export const useConfig = () => {
       machineId: row?.machineId ?? "",
       id: row?.id ?? ""
     });
+
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: formData,
+        customColumn: {
+          // empty: { labelWidth: "0px" },
+        },
+        customProps: {
+          deptId: {
+            apiParams: { deptId: row.deptId },
+            formatAPI: (data) => data.deptInfoTree,
+            apiFields: ["groupId", "roleId"]
+          },
+          groupId: { apiParams: { deptId: row.deptId } },
+          roleId: { apiParams: { deptId: row.deptId } }
+        },
+        customElement: {},
+        dataOption: { isPoorPeople: boolOptions },
+        formProps: { labelWidth: "120px" }
+      }
+    ];
+
     addDialog({
       title: `审核-登记人：${row.staffName}`,
       props: {
-        formInline: formData,
-        formRules: formRules,
-        formProps: { labelWidth: "120px" },
-        formConfigs: formConfigs({ formData, auditOptionData: optionDatas, row })
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "960px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef?.validate((valid) => {
+        formRef.value.getRef().then(async ({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(() => {
               submitInductionAudit(formData)
@@ -243,13 +260,7 @@ export const useConfig = () => {
   });
 
   // 批量删除
-  const onDeleteAll = wrapFn(
-    rowsData,
-    () => {
-      onDelete(rowsData.value);
-    },
-    "请勾选需要删除的记录"
-  );
+  const onDeleteAll = wrapFn(rowsData, () => onDelete(rowsData.value), "请勾选需要删除的记录");
 
   // 单个删除
   const onDelete = wrapFn(rowData, () => {
@@ -312,6 +323,12 @@ export const useConfig = () => {
     });
   });
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+    rowsData.value = [];
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAudit, type: "primary", text: "审核", icon: SetUp, isDropDown: false },
     { clickHandler: onAuditDetail, type: "success", text: "审核详情", icon: Tickets, isDropDown: false },
@@ -320,6 +337,8 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     tableRef,
     loading,
     rowData,
@@ -336,6 +355,7 @@ export const useConfig = () => {
     onSelectAll,
     onRowClick,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

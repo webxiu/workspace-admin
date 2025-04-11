@@ -300,7 +300,7 @@ export const commonDeliverChangeAction = (
         }
       },
       {
-        slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>变更附件</span> },
+        slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>变更附件</span> },
         colProp: { span: 24 },
         labelWidth: 95,
         prop: "files",

@@ -28,7 +28,7 @@ export function useTable() {
   const loading = ref<boolean>(false);
   const dataList = ref([]);
   const dataList2 = ref([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 40);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 60);
   const selectOptionValue = ref([]);
   const selectEnumOptsValue = ref([]);
   const columns = ref<TableColumnList[]>([]);
@@ -37,6 +37,7 @@ export function useTable() {
   const isEditTable2 = ref(false);
   const isEditTable1 = ref(false);
   const optionId = ref();
+  const rowsData = ref([]);
 
   const categoryTreeData = ref([]);
   const searchOptions = reactive<SearchOptionType[]>([
@@ -143,7 +144,7 @@ export function useTable() {
       buttonArrs[0].filter((el) => ["newEdit", "export", "import"].includes(el.btnKey))
     );
 
-    columns.value = setColumn({ columnData, operationColumn: false });
+    columns.value = setColumn({ columnData, operationColumn: false, radioColumn: false, selectionColumn: { hide: false } });
     return columns.value;
   };
 
@@ -221,6 +222,11 @@ export function useTable() {
   };
 
   const onSearch2 = () => {
+    if (!currentRow.value?.enumCode) {
+      dataList2.value = [];
+      return;
+    }
+
     loading2.value = true;
     getBOMTableRowSelectOptions({ optioncode: currentRow.value.enumCode })
       .then((res) => {
@@ -294,11 +300,15 @@ export function useTable() {
     );
   };
   const onDelete = () => {
-    if (!currentRow.value) return message.warning("请选择行记录");
-    if (currentRow.value?.id) {
-      showMessageBox(`确认要删除名称为【${currentRow.value.propertyName}】的属性吗?`)
+    if (!rowsData.value.length) return message.warning("请选择行记录");
+    console.log(rowsData.value, "rowsData.value");
+    // if (!currentRow.value) return message.warning("请选择行记录");
+    const ids = rowsData.value.map((el) => el.id);
+    const names = rowsData.value.map((el) => el.propertyName);
+    if (ids.length) {
+      showMessageBox(`确认要删除名称为【${names}】的属性吗?`)
         .then(() => {
-          deleteMaterialGroupAttr([currentRow.value?.id]).then((res) => {
+          deleteMaterialGroupAttr(ids).then((res) => {
             if (res.data || res.status === 200) {
               ElMessage({ message: "删除成功", type: "success" });
               onSearch();
@@ -307,8 +317,9 @@ export function useTable() {
         })
         .catch(console.log);
     } else {
-      dataList.value.splice(currentRow.value.index, 1);
-      currentRow.value = null;
+      // dataList.value.splice(currentRow.value.index, 1);
+      dataList.value = dataList.value.filter((el) => names.includes(el.propertyName));
+      // currentRow.value = null;
     }
   };
 
@@ -487,6 +498,16 @@ export function useTable() {
     }
   };
 
+  const rowClassName = ({ row, rowIndex }) => {
+    row.index = rowIndex;
+    row.displaySeq = rowIndex + 1;
+    return "";
+  };
+
+  const changeSelection = (rows) => {
+    rowsData.value = rows;
+  };
+
   const onEidtNew = () => {
     isEditTable2.value = true;
     buttonList2.value = editButtons;
@@ -495,6 +516,7 @@ export function useTable() {
   const onCancel2 = () => {
     isEditTable2.value = false;
     buttonList2.value = initButtons;
+    onSearch2();
   };
 
   const onEditAction = () => {
@@ -505,6 +527,7 @@ export function useTable() {
   const onCancelAction = () => {
     isEditTable1.value = false;
     buttonList.value = initButtons1;
+    onSearch();
   };
 
   const editButtons1 = [
@@ -525,42 +548,36 @@ export function useTable() {
   const buttonList = ref(initButtons1);
 
   const editButtons = [
-    { clickHandler: onSave2, type: "warning", text: "保存", size: "small", isDropDown: false },
-    { clickHandler: onCancel2, type: "default", text: "取消", size: "small", isDropDown: false },
-    { clickHandler: onAdd2, type: "primary", text: "增行", size: "small", isDropDown: false },
-    { clickHandler: onDelete2, type: "danger", text: "删行", size: "small", isDropDown: false }
+    { clickHandler: onSave2, type: "warning", text: "保存", isDropDown: false },
+    { clickHandler: onCancel2, type: "default", text: "取消", isDropDown: false },
+    { clickHandler: onAdd2, type: "primary", text: "增行", isDropDown: false },
+    { clickHandler: onDelete2, type: "danger", text: "删行", isDropDown: false }
   ];
 
-  const initButtons = [{ clickHandler: onEidtNew, type: "warning", text: "编辑", size: "small", isDropDown: false }];
+  const initButtons = [{ clickHandler: onEidtNew, type: "warning", text: "编辑", isDropDown: false }];
 
   const buttonList2 = ref<ButtonItemType[]>(initButtons);
-
-  const rowClassName = ({ row, rowIndex }) => {
-    row.index = rowIndex;
-    row.displaySeq = rowIndex + 1;
-    return "";
-  };
 
   return {
     loading,
     dataList,
     columns,
-    dataList2,
-    columns2,
-    rowClick2,
     maxHeight,
     loading2,
-    onFresh,
-    onFresh2,
-    onChangeFileInput,
-    rowClick,
-    rowClassName,
     buttonList,
-    buttonList2,
     categoryTreeData,
     searchOptions,
-    handleTagSearch,
+    buttonList2,
+    dataList2,
+    columns2,
+    curNodeName,
+    onFresh,
+    rowClick,
+    rowClick2,
+    rowClassName,
+    changeSelection,
+    onChangeFileInput,
     handleNodeClick,
-    curNodeName
+    handleTagSearch
   };
 }

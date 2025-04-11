@@ -24,15 +24,7 @@
                 readonly
                 showButton
                 @select="onSelect"
-                :componentProp="{
-                  searchConfig: [{ label: '产品型号', value: 'productCode' }],
-                  maxHeight: 520,
-                  columns: [
-                    { label: '产品型号', prop: 'productCode', headerAlign: 'center' },
-                    { label: '产品类别', prop: 'productType', headerAlign: 'center' }
-                  ],
-                  api: fetchProductStoreList
-                }"
+                showModel="product"
               />
             </div>
             <div style="margin-left: 16px">生产数量：</div>
@@ -148,7 +140,6 @@
 
 <script setup lang="tsx">
 import { h, onMounted, reactive, ref } from "vue";
-import { fetchProductStoreList } from "@/api/plmManage";
 import { getEnumDictList } from "@/utils/table";
 import { Upload, Edit, Plus } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
@@ -663,10 +654,8 @@ const changeGroup = (val, idx) => {
 };
 
 onMounted(() => {
-  getEnumDictList(["ProjectStage"]).then((res) => {
-    if (res) {
-      pmStageOpts.value = res["ProjectStage"];
-    }
+  getEnumDictList(["ProjectStage"]).then(({ ProjectStage }) => {
+    pmStageOpts.value = ProjectStage;
   });
 });
 

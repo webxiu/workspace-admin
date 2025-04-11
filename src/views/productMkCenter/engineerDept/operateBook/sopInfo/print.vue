@@ -1,98 +1,101 @@
 <template>
   <div>
     <div class="print-content" ref="printRef">
-      <div v-for="(item, index) in printList?.workStationVOS" :key="item.id">
-        <div class="sop-title block-quote-tip">
-          <el-tag type="success" effect="dark" round> {{ index + 1 }}/{{ printList?.workStationVOS?.length }}、{{ item.workContent }}</el-tag>
-        </div>
-        <div class="page line-a">
-          <div class="b1 sop-header">
-            <div class="header-left">
-              <div class="top">
-                <img :src="logo" width="80" height="80" alt="" />
-                <div class="name">
-                  <span class="mr-6">{{ printList.productCode }}</span
-                  ><span>{{ printList.manualName }}</span>
+      <el-empty v-if="!printList?.workStationVOS?.length" description="暂无排位表数据" />
+      <template v-else>
+        <div v-for="(item, index) in printList?.workStationVOS" :key="item.id">
+          <div class="sop-title block-quote-tip">
+            <el-tag type="success" effect="dark" round> {{ index + 1 }}/{{ printList?.workStationVOS?.length }}、{{ item.workContent }}</el-tag>
+          </div>
+          <div class="page line-a">
+            <div class="b1 sop-header">
+              <div class="header-left">
+                <div class="top">
+                  <img :src="logo" width="80" height="80" alt="" />
+                  <div class="name">
+                    <span class="mr-6">{{ printList.productCode }}</span
+                    ><span>{{ printList.manualName }}</span>
+                  </div>
                 </div>
+                <div class="bottom">
+                  <!-- <div>MES:xx_Mex</div> -->
+                  <div>制作日期:{{ formatDate(printList.createDate, "YYYY年MM月DD日") }}</div>
+                  <div>页次: {{ getPageCount(index, printList?.workStationVOS) }}</div>
+                  <div>版本：{{ printList.ver }}</div>
+                </div>
+                <img src="@/assets/images/controlled_document.png" alt="受控文件" class="control-img" />
               </div>
-              <div class="bottom">
-                <!-- <div>MES:xx_Mex</div> -->
-                <div>制作日期:{{ formatDate(printList.createDate, "YYYY年MM月DD日") }}</div>
-                <div>页次: {{ getPageCount(index, printList?.workStationVOS) }}</div>
-                <div>版本：{{ printList.ver }}</div>
-              </div>
-              <img src="@/assets/images/controlled_document.png" alt="受控文件" class="control-img" />
-            </div>
-            <div class="header-right line-r">
-              <div class="create-info line-a">
-                <div class="item1 text-center vertical-text line-r line-b text-space">决裁</div>
-                <div class="item2 line-r text-center">日期</div>
-                <div class="item3 text-center line-r line-b text-space">制作</div>
-                <div class="item4 text-center line-r line-b text-space">审核</div>
-                <div class="item5 text-center line-r line-b text-space">批准</div>
-                <div class="item4 text-center line-r line-b text-space">审核</div>
-                <div class="item6 text-center line-b text-space">受控</div>
-                <div class="item7 text-center line-r line-b">{{ printList.createUserName }}</div>
-                <div class="item8 text-center line-r line-b">{{ printList.auditing }}</div>
-                <div class="item9 text-center line-r line-b">{{ printList.approveName }}</div>
-                <div class="item10 text-center line-b">{{ printList.controlledName }}</div>
+              <div class="header-right line-r">
+                <div class="create-info line-a">
+                  <div class="item1 text-center vertical-text line-r line-b text-space">决裁</div>
+                  <div class="item2 line-r text-center">日期</div>
+                  <div class="item3 text-center line-r line-b text-space">制作</div>
+                  <div class="item4 text-center line-r line-b text-space">审核</div>
+                  <div class="item5 text-center line-r line-b text-space">批准</div>
+                  <div class="item4 text-center line-r line-b text-space">审核</div>
+                  <div class="item6 text-center line-b text-space">受控</div>
+                  <div class="item7 text-center line-r line-b">{{ printList.createUserName }}</div>
+                  <div class="item8 text-center line-r line-b">{{ printList.auditing }}</div>
+                  <div class="item9 text-center line-r line-b">{{ printList.approveName }}</div>
+                  <div class="item10 text-center line-b">{{ printList.controlledName }}</div>
 
-                <div class="item11 text-center line-r">{{ formatDate(printList.createDate, "YYYY-MM-DD") }}</div>
-                <div class="item12 text-center line-r">{{ formatDate(printList?.auditingDate, "YYYY-MM-DD") }}</div>
-                <div class="item13 text-center line-r">{{ formatDate(printList?.approveDate, "YYYY-MM-DD") }}</div>
-                <div class="item14 text-center">{{ formatDate(printList?.controlledDate, "YYYY-MM-DD") }}</div>
+                  <div class="item11 text-center line-r">{{ formatDate(printList.createDate, "YYYY-MM-DD") }}</div>
+                  <div class="item12 text-center line-r">{{ formatDate(printList?.auditingDate, "YYYY-MM-DD") }}</div>
+                  <div class="item13 text-center line-r">{{ formatDate(printList?.approveDate, "YYYY-MM-DD") }}</div>
+                  <div class="item14 text-center">{{ formatDate(printList?.controlledDate, "YYYY-MM-DD") }}</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="sop-desc b1 line-a">
-            <div class="desc-item line-r">生产机型/国家:</div>
-            <div class="desc-item line-r fw-700">{{ printList?.productCode }}{{ printList.country ? `（${printList.country}）` : "" }}</div>
-            <div class="desc-item line-r">工位名称:</div>
-            <div class="desc-item line-r fw-700">{{ item.workContent }}（{{ getPageCount(index, printList?.workStationVOS) }}）</div>
-            <div class="desc-item line-r">文件编号:</div>
-            <div class="desc-item line-r fw-700">{{ printList.fileNumber }}</div>
-            <div class="desc-item line-r">S/T:</div>
-            <div class="desc-item fw-700">{{ item.manHour }}</div>
-          </div>
-          <div class="sop-content b1 line-r">
-            <div class="content-box line-a">
-              <div class="content-layout line-b">
-                <div class="cate-title line-r ml-4">使用物料:</div>
-                <div class="cate-title project-name">— 作 业 工 程 —</div>
-              </div>
-              <div class="content-layout">
-                <div class="operate-cate flex ui-w-100 line-r">
-                  <div class="materiel">
-                    <HailenTable :columns="columns" :dataList="item.materialVOS" />
+            <div class="sop-desc b1 line-a">
+              <div class="desc-item line-r">生产机型/国家:</div>
+              <div class="desc-item line-r fw-700">{{ printList?.productCode }}{{ printList.country ? `（${printList.country}）` : "" }}</div>
+              <div class="desc-item line-r">工位名称:</div>
+              <div class="desc-item line-r fw-700">{{ item.workContent }}（{{ getPageCount(index, printList?.workStationVOS) }}）</div>
+              <div class="desc-item line-r">文件编号:</div>
+              <div class="desc-item line-r fw-700">{{ printList.fileNumber }}</div>
+              <div class="desc-item line-r">S/T:</div>
+              <div class="desc-item fw-700">{{ item.manHour }}</div>
+            </div>
+            <div class="sop-content b1 line-r">
+              <div class="content-box line-a">
+                <div class="content-layout line-b">
+                  <div class="cate-title line-r ml-4">使用物料:</div>
+                  <div class="cate-title project-name">— 作 业 工 程 —</div>
+                </div>
+                <div class="content-layout">
+                  <div class="operate-cate flex ui-w-100 line-r">
+                    <div class="materiel">
+                      <HailenTable :columns="columns" :dataList="item.materialVOS" />
+                    </div>
+                    <div class="tool ml-4">
+                      <div class="cate-title">使用工具及治具:</div>
+                      <div class="cate-content" v-html="item.contentVO?.withToolFixture" />
+                    </div>
+                    <div class="content ml-4">
+                      <div class="cate-title">作业内容:</div>
+                      <div class="cate-content" v-html="item.contentVO?.jobContent" />
+                    </div>
+                    <div class="note ml-4 color-f00">
+                      <div class="cate-title">注意事项:</div>
+                      <div class="cate-content" v-html="item.contentVO?.precautions" />
+                    </div>
                   </div>
-                  <div class="tool ml-4">
-                    <div class="cate-title">使用工具及治具:</div>
-                    <div class="cate-content" v-html="item.contentVO?.withToolFixture" />
-                  </div>
-                  <div class="content ml-4">
-                    <div class="cate-title">作业内容:</div>
-                    <div class="cate-content" v-html="item.contentVO?.jobContent" />
-                  </div>
-                  <div class="note ml-4 color-f00">
-                    <div class="cate-title">注意事项:</div>
-                    <div class="cate-content" v-html="item.contentVO?.precautions" />
+                  <div class="p-4">
+                    <ReferImage :imgList="item.jobEngineeringVOS" />
                   </div>
                 </div>
-                <div class="p-4">
-                  <ReferImage :imgList="item.jobEngineeringVOS" />
-                </div>
-              </div>
-              <div class="param">
-                <HailenTable class="left" :columns="columns2" :dataList="getCheckItem(item.checkRuleVOS)" />
-                <div class="flex">
-                  <HailenTable class="left" :columns="columns3" :dataList="getToolItem(item.checkRuleVOS, 0)" />
-                  <HailenTable class="right" :columns="columns3" :dataList="getToolItem(item.checkRuleVOS, 1)" />
+                <div class="param">
+                  <HailenTable class="left" :columns="columns2" :dataList="getCheckItem(item.checkRuleVOS)" />
+                  <div class="flex">
+                    <HailenTable class="left" :columns="columns3" :dataList="getToolItem(item.checkRuleVOS, 0)" />
+                    <HailenTable class="right" :columns="columns3" :dataList="getToolItem(item.checkRuleVOS, 1)" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>

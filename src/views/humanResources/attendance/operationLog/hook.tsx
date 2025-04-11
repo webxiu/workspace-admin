@@ -4,31 +4,26 @@ import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { onMounted, reactive, ref } from "vue";
 import { utils, write } from "xlsx";
 
+import type { ColDef } from "ag-grid-community";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import { cloneDeep } from "@pureadmin/utils";
 import dayjs from "dayjs";
-import { getDeptOptions } from "@/utils/requestApi";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { saveAs } from "file-saver";
 import { useEleHeight } from "@/hooks";
 
 export const useMachine = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
+  const loading = ref(false);
   const dataList = ref([]);
   const columns = ref<TableColumnList[]>([]);
-  const loading = ref(false);
-
+  const nowDate = dayjs().add(1, "day").format("YYYY-MM-DD");
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-
-  const formData = reactive({
-    page: 1,
-    limit: PAGE_CONFIG.pageSize
-  });
-
+  const formData = reactive({ page: 1, limit: PAGE_CONFIG.pageSize });
   const theFirstDayOfMonth = dayjs().startOf("month").format("YYYY-MM-DD");
-  const nowDate = dayjs().add(1, "day").format("YYYY-MM-DD");
-
   const queryParams = reactive({ date: `${theFirstDayOfMonth} ~ ${nowDate}` });
 
   const searchOptions = reactive<SearchOptionType[]>([
@@ -64,6 +59,7 @@ export const useMachine = () => {
     if (menuCols?.length) columnData = menuCols;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
     return columnData;
   };
 
@@ -71,16 +67,17 @@ export const useMachine = () => {
     fetchAttendanceLog(formData).then((res: any) => {
       if (res.data) {
         dataList.value = res.data.records || [];
+        pagination.total = res.data.total;
       }
     });
   };
 
-  const onFresh = () => {
+  const onRefresh = () => {
     getColumnConfig();
     onSearch();
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     onSearch();
   };
@@ -104,8 +101,6 @@ export const useMachine = () => {
     );
   };
 
-  const buttonList = ref([{ clickHandler: onExport, type: "info", text: "导出", isDropDown: true }]);
-
   // 分页相关
   function onSizeChange(val: number) {
     formData.limit = val;
@@ -117,5 +112,27 @@ export const useMachine = () => {
     onSearch();
   }
 
-  return { columns, onFresh, queryParams, handleTagSearch, searchOptions, buttonList, maxHeight, loading, dataList, pagination, onSizeChange, onCurrentChange };
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+  }
+
+  const buttonList = ref([{ clickHandler: onExport, type: "info", text: "导出", isDropDown: true }]);
+
+  return {
+    columnDefs,
+    isAgTable,
+    loading,
+    dataList,
+    columns,
+    maxHeight,
+    buttonList,
+    searchOptions,
+    queryParams,
+    pagination,
+    onRefresh,
+    onTagSearch,
+    onSizeChange,
+    onCurrentChange,
+    onSwitchTable
+  };
 };

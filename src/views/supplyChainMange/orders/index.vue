@@ -2,6 +2,7 @@
 import { useConfig } from "./utils/hook";
 import Modal from "./modal.vue";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
+import { ArrowDown } from "@element-plus/icons-vue";
 
 defineOptions({ name: "SupplyChainMangeOrdersIndex" });
 
@@ -10,9 +11,14 @@ const {
   columns2,
   dataList,
   dataList2,
+  columns3,
+  dataList3,
+  loading3,
+  rowLeftClick,
   loading,
   loading2,
   maxHeight,
+  handleCommand,
   pagination,
   searchOptions,
   modalRef,
@@ -65,7 +71,6 @@ const {
           class="bill-manage"
           :adaptive="true"
           align-whole="left"
-          :loading="loading"
           :size="size"
           :data="dataList"
           :columns="dynamicColumns"
@@ -82,35 +87,77 @@ const {
           @row-click="rowClickSelected"
           @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
         >
-          <template #fclosestatus="{ row }">
+          <!-- <template #fclosestatus="{ row }">
             <span>{{ row.fclosestatus === "A" ? "未关闭" : "已关闭" }}</span>
-          </template>
-          <template #billState="{ row }">
+          </template> -->
+          <!-- <template #billState="{ row }">
             <span>{{ signBackStatus.find((item) => item.optionValue == row.billState + "")?.optionName }}</span>
-          </template>
+          </template> -->
         </pure-table>
       </template>
     </PureTableBar>
-    <div style="margin-top: 50px">
-      <pure-table
-        border
-        :height="maxHeight / 2"
-        :max-height="maxHeight / 2"
-        row-key="id"
-        class="bill-manage"
-        :adaptive="true"
-        size="small"
-        align-whole="left"
-        :loading="loading2"
-        :data="dataList2"
-        :columns="columns2"
-        highlight-current-row
-        :show-overflow-tooltip="true"
-      >
-        <template #fmrpclosestatus="{ row }">
-          <span>{{ row.fmrpclosestatus === "A" ? "正常" : "业务关闭" }}</span>
-        </template>
-      </pure-table>
+    <div style="margin-top: 10px; display: flex; justify-content: space-between">
+      <div style="width: calc(100vw - 700px)">
+        <pure-table
+          border
+          :height="maxHeight / 2"
+          :max-height="maxHeight / 2"
+          row-key="id"
+          class="bill-manage"
+          :adaptive="true"
+          size="small"
+          align-whole="left"
+          :loading="loading2"
+          :data="dataList2"
+          :columns="columns2"
+          @row-click="rowLeftClick"
+          highlight-current-row
+          :show-overflow-tooltip="true"
+        >
+          <template #fmrpclosestatus="{ row }">
+            <span>{{ row.fmrpclosestatus === "A" ? "正常" : "业务关闭" }}</span>
+          </template>
+        </pure-table>
+      </div>
+      <div style="width: 16px" />
+      <div style="width: 655px">
+        <pure-table
+          border
+          :height="maxHeight / 2"
+          :max-height="maxHeight / 2"
+          row-key="id"
+          class="bill-manage-date"
+          :adaptive="true"
+          size="small"
+          align-whole="left"
+          :loading="loading3"
+          :data="dataList3"
+          :columns="columns3"
+          highlight-current-row
+          :show-overflow-tooltip="true"
+        >
+          <template #operation="{ row, index }">
+            <div>
+              <el-dropdown trigger="click" @command="(v) => handleCommand(v, row, index)">
+                <el-button type="primary" size="small">
+                  更 多<el-icon style="margin-left: 6px"><ArrowDown /></el-icon>
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="amountSplit">数量拆分</el-dropdown-item>
+                    <!-- <el-dropdown-item command="replyDelivery">交期回复</el-dropdown-item> -->
+                    <el-dropdown-item command="delete" :disabled="row.uuid">删除</el-dropdown-item>
+                    <el-dropdown-item command="save">保存</el-dropdown-item>
+                    <el-dropdown-item command="submit">提交</el-dropdown-item>
+                    <el-dropdown-item command="back">撤销</el-dropdown-item>
+                    <el-dropdown-item command="nodeDetail">审核详情</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </template>
+        </pure-table>
+      </div>
     </div>
     <el-dialog draggable v-model="dialogVisible" title="查看附件" width="800px">
       <div><Modal ref="modalRef" @fresh="fresh" /></div>
@@ -124,11 +171,13 @@ const {
 </template>
 
 <style scoped>
-:deep(.el-table tbody tr:hover > td) {
+/* :deep(.el-table tbody tr:hover > td) {
   background: transparent !important;
-}
+  color: #056608;
+  border-color: #8b0000;
+} */
 
-:deep(.el-table__body tr.current-row > td.el-table__cell) {
+/* :deep(.el-table__body tr.current-row > td.el-table__cell) {
   background: transparent !important;
-}
+} */
 </style>

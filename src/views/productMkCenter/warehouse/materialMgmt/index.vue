@@ -1,7 +1,8 @@
 <template>
-  <div class="main flex ui-h-100">
-    <div class="info-left-tree border-line">
+  <Row :gutter="8">
+    <Col :xs="24" :sm="24" :md="4" :lg="4" :xl="4">
       <el-tree
+        class="ui-ovy-a border-line mobile-tree mb-10"
         :data="categoryTreeData"
         node-key="id"
         :default-expanded-keys="['0']"
@@ -9,38 +10,52 @@
         accordion
         :expand-on-click-node="false"
         highlight-current
-        :props="{
-          children: 'children',
-          label: 'title'
-        }"
+        :props="{ children: 'children', label: 'title' }"
+        :style="{ height: `${maxHeight + 50}px` }"
         @node-click="handleNodeClick"
       />
-    </div>
-    <div class="flex-1 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onFresh" style="padding-top: 0" @change-column="setUserMenuColumns">
+    </Col>
+    <Col :xs="24" :sm="24" :md="20" :lg="20" :xl="20">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :loading="loading"
+        :rowData="dataList"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 12"
+        :paginations="pagination"
+        @switch="onSwitchTable"
+        @refresh="onRefresh"
+        @cellClicked="rowClick"
+        @cellDoubleClicked="dbClick"
+        @sizeChange="handleSizeChange"
+        @currentChange="handleCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, searchOptions, placeholder: '物料编号', searchField: 'number' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="物料编号" searchField="number" />
+          <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="物料编号" searchField="number" />
         </template>
         <template #buttons>
-          <div>
-            <ButtonList moreActionText="更多操作" :buttonList="buttonList" :auto-layout="false" />
-          </div>
+          <ButtonList moreActionText="更多操作" :buttonList="buttonList" :auto-layout="false" />
         </template>
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
-            ref="materialMainTable"
+            ref="tableRef"
             border
             :height="maxHeight"
             :max-height="maxHeight"
             row-key="id"
-            class="team-member"
             :adaptive="true"
             align-whole="left"
+            :loading="loading"
             :size="size"
             :data="dataList"
             :columns="dynamicColumns"
             :pagination="pagination"
-            :paginationSmall="size === 'small' ? true : false"
+            :paginationSmall="size === 'small'"
             show-overflow-tooltip
             highlight-current-row
             @row-click="rowClick"
@@ -58,15 +73,14 @@
             <template #isfrozen="{ row }">
               {{ row.isfrozen == 1 ? "是" : "否" }}
             </template>
-
             <template #miniQuantity="{ row }">
               {{ row.materialOtherVO?.fMinIssueQty ?? "" }}
             </template>
           </pure-table>
         </template>
       </PureTableBar>
-    </div>
-  </div>
+    </Col>
+  </Row>
 </template>
 <script setup lang="ts">
 import { useTable } from "./hooks";
@@ -75,33 +89,31 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "ProductMkCenterWarehouseMaterialMgmtIndex" });
 
 const {
-  dataList,
+  columnDefs,
+  isAgTable,
+  tableRef,
   columns,
-  searchOptions,
+  dataList,
+  loading,
   pagination,
   maxHeight,
   buttonList,
   curNodeName,
-  materialMainTable,
-  onFresh,
-  dbClick,
+  searchOptions,
   categoryTreeData,
+  onRefresh,
+  dbClick,
   rowClick,
+  onTagSearch,
+  handleNodeClick,
   handleSizeChange,
   handleCurrentChange,
-  handleNodeClick,
-  handleTagSearch
+  onSwitchTable
 } = useTable();
 </script>
 
 <style lang="scss">
 .modal-class .el-form-item {
   margin-bottom: 0 !important;
-}
-
-.info-left-tree {
-  width: 250px;
-  padding: 10px 15px;
-  overflow-y: auto;
 }
 </style>

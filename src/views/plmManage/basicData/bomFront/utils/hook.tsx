@@ -127,7 +127,16 @@ export const useConfig = () => {
   // 双击单元格
   const cellDblclick = (row, column) => {
     if (column.property === "number" && row.bomId) {
-      router.push(`/plmManage/basicData/bomMgmt/view?id=${row.bomId}&type=view&isNewTag=yes&menuId=${route.query.menuId}`);
+      router.push({
+        path: `/plmManage/basicData/bomMgmt/view`,
+        query: {
+          id: row.bomId,
+          type: "view",
+          isNewTag: "yes",
+          menuId: route.query.menuId,
+          title: row.number
+        }
+      });
     }
   };
 

@@ -133,6 +133,7 @@ function onReset() {
 
 function getRef(callback) {
   const tabetList = [...dataList.value, ...dataList2.value];
+  if (!keyword.value) return message.warning("请选择指导书");
   if (!tabetList.length) return message.warning("没有可分发的工位");
   const filterList = tabetList.filter((m) => m.workStationId);
   const len = tabetList.length - filterList.length;

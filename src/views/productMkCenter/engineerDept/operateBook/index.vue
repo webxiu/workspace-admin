@@ -12,13 +12,44 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
 defineOptions({ name: "ProductMkCenterEngineerDeptOperateBookIndex" });
 
-const { loading, columns, dataList, maxHeight, buttonList, pagination, searchOptions, onTagSearch, onRefresh, onRowClick, onDistribute, onCurrentChange } =
-  useConfig();
+const {
+  columnDefs,
+  isAgTable,
+  loading,
+  columns,
+  dataList,
+  maxHeight,
+  buttonList,
+  pagination,
+  searchOptions,
+  onTagSearch,
+  onRefresh,
+  onRowClick,
+  onDistribute,
+  onCurrentChange,
+  onSwitchTable
+} = useConfig();
 </script>
 
 <template>
   <Content direction="row">
-    <PureTableBar :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
+    <AgGridTable
+      v-if="isAgTable"
+      ref="tableRef"
+      rowKey="itemId"
+      :loading="loading"
+      :rowData="dataList"
+      :columnDefs="columnDefs"
+      :height="maxHeight + 12"
+      :paginations="pagination"
+      @switch="onSwitchTable"
+      @refresh="onRefresh"
+      @cellClicked="onCurrentChange"
+      @cellDoubleClicked="onRowClick"
+      :headButtons="{ buttonList, autoLayout: false }"
+      :blendedSearch="{ onTagSearch, searchOptions, placeholder: '请输入指导书名称', searchField: 'manualName' }"
+    />
+    <PureTableBar v-else :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
       <template #title>
         <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入指导书名称" searchField="manualName" />
       </template>

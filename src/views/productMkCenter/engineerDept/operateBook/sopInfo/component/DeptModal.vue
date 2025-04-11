@@ -10,12 +10,12 @@ import { h, ref, reactive, onMounted } from "vue";
 import { addDialog } from "@/components/ReDialog";
 import { showMessageBox } from "@/utils/message";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { getDeptTreeData, DetartMenttemType } from "@/api/systemManage";
+import { getDeptTreeData, DetartMenttemType, DeptTreeItemType } from "@/api/systemManage";
 
 const rowData = ref();
 const loading = ref(false);
 const formData = reactive({ deptName: "" });
-const treeOptions = ref<DetartMenttemType[]>([]);
+const treeOptions = ref<DeptTreeItemType[]>([]);
 const formRules = reactive({ deptName: [{ required: true, message: "请选择部门", trigger: "blur" }] });
 const emits = defineEmits(["update:modelValue", "change", "blur"]);
 
@@ -32,7 +32,7 @@ const getOptionList = () => {
   getDeptTreeData()
     .then((res) => {
       loading.value = false;
-      treeOptions.value = JSON.parse(res.data) || [];
+      treeOptions.value = res.data || [];
     })
     .catch(() => (loading.value = false));
 };

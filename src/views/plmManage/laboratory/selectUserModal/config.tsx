@@ -60,14 +60,6 @@ export function useUserTable() {
   };
 
   const handleTagSearch = (values = {}) => {
-    // const { page, limit } = formData;
-    // Object.keys(values)?.forEach((key) => {
-    //   formData[key] = values[key];
-    // });
-    // formData = { ...values };
-
-    // formData.page = page;
-    // formData.limit = limit;
     onSearch({ deptId: "0", userCode: "", userName: "", ...values });
   };
 

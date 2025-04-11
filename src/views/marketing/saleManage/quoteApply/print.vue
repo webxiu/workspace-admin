@@ -61,7 +61,7 @@ $size: 16px;
     color: $color;
   }
 
-  .dynamic-form-item > .el-form-item__content {
+  .merge-item > .el-form-item__content {
     overflow: hidden;
   }
 

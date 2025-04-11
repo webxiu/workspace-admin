@@ -5,41 +5,40 @@
  * @Last Modified time: 2024-08-19 16:34:12
  */
 
-import { computed, onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { type PaginationProps } from "@pureadmin/table";
-import { PAGE_CONFIG } from "@/config/constant";
-
+import { PAGE_CONFIG, numberOptions } from "@/config/constant";
 import { useEleHeight } from "@/hooks";
-import { handleTree } from "@/utils/tree";
-import { Download } from "@element-plus/icons-vue";
 import regExp from "@/utils/regExp";
 import { setColumn, downloadDataToExcel, getMenuColumns, getEnumDictList, updateButtonList } from "@/utils/table";
 import { OptionItemType } from "@/api/plmManage";
+import { handleTree } from "@/utils/tree";
 
 import { standardCostList, StandardCostItemType, materialManageList, MaterialManageItemType } from "@/api/oaManage/financeDept";
 import { message } from "@/utils/message";
 import { debounce } from "@/utils/common";
+import dayjs from "dayjs";
 
 export const useConfig = () => {
   const tempCode = ref<string>("");
   const loading = ref<boolean>(false);
   const sLoading = ref<boolean>(false);
   const columns = ref<TableColumnList[]>([]);
+  const columns2 = ref<TableColumnList[]>([]);
   const unitPriceList = ref<OptionItemType[]>();
   const dataList = ref<StandardCostItemType[]>([]);
+  const dataList2 = ref([]);
   const materialList = ref<MaterialManageItemType[]>([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 66);
-  const includeLossList = ref<{ optionName: string; optionValue: number }[]>([
-    { optionName: "否", optionValue: 0 },
-    { optionName: "是", optionValue: 1 }
-  ]);
+  const activeName = ref("detail");
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 108);
   const formData = reactive({
     page: 1,
     number: "",
-    measuredQuantity: "1",
-    priceValue: "1",
+    measuredQuantity: 1,
+    priceValue: "3",
     includeAttritionRate: 1,
+    purchaseDate: dayjs().format("YYYY-MM"),
     limit: PAGE_CONFIG.pageSize
   });
 
@@ -76,6 +75,7 @@ export const useConfig = () => {
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
+      { label: "物料分类", prop: "groupName", minWidth: 200, fixed: "left" },
       { label: "物料编码", prop: "number", minWidth: 200, fixed: "left" },
       { label: "名称", prop: "name", minWidth: 180, fixed: "left" },
       { label: "物料序号", prop: "fseq", minWidth: 80, align: "right" },
@@ -99,14 +99,28 @@ export const useConfig = () => {
       { label: "标准机器准备工时", prop: "fstdmachinepreparetime", align: "right" },
       { label: "标准机器实作工时", prop: "fstdmachineprocesstime", align: "right" }
     ];
+    let columnData2: TableColumnList[] = [
+      { label: "物料分类", prop: "groupName" },
+      { label: "成品物料编码", prop: "number" },
+      { label: "成品物料名称", prop: "name" },
+      { label: "成品规格型号", prop: "specification" },
+      { label: "不含税金额合计", prop: "money" },
+      { label: "含税金额合计", prop: "taxMoney" }
+    ];
     const { columnArrs, buttonArrs } = await getMenuColumns();
-    const [data] = columnArrs;
+    const [data, data2] = columnArrs;
     if (data?.length) columnData = data;
+    if (data2?.length) columnData2 = data2;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({
       columnData,
       isCustomExpend: true,
       indexColumn: { fixed: "left" },
+      radioColumn: { hide: true },
+      operationColumn: { hide: true }
+    });
+    columns2.value = setColumn({
+      columnData: columnData2,
       radioColumn: { hide: true },
       operationColumn: { hide: true }
     });
@@ -120,19 +134,27 @@ export const useConfig = () => {
   const oSearch = () => {
     if (!formData.number) {
       return message.warning("请选择物料编码");
-    } else if (!regExp.number.test(formData.measuredQuantity)) {
+    } else if (!regExp.number.test(formData.measuredQuantity as unknown as string)) {
       return message.warning("测算数量输入错误");
     }
     loading.value = true;
     dataList.value = [];
-    standardCostList(formData)
+    dataList2.value = [];
+
+    let reqData = { ...formData };
+    if (formData.priceValue != "3") {
+      reqData = { ...formData, purchaseDate: undefined };
+    }
+    standardCostList(reqData)
       .then(({ data }) => {
         loading.value = false;
-        const result = handleTree(data || [], "childId", "parentId", "children");
+        const result = handleTree(data.list || [], "childId", "parentId", "children");
         dataList.value = result;
+        dataList2.value = data.mapList || [];
       })
       .catch((err) => {
         dataList.value = [];
+        dataList2.value = [];
         loading.value = false;
       });
   };
@@ -152,12 +174,20 @@ export const useConfig = () => {
   };
 
   const onExport = () => {
-    if (!dataList.value?.length) return message.warning("没有可导出的数据");
+    const mapData = {
+      detail: { title: "明细", list: dataList, cols: columns },
+      total: { title: "分类汇总", list: dataList2, cols: columns2 }
+    };
+
+    const exportList = mapData[activeName.value].list;
+    const exportCols = mapData[activeName.value].cols;
+    const exportTitle = mapData[activeName.value].title;
+    if (!exportList.value?.length) return message.warning("没有可导出的数据");
     downloadDataToExcel([
       {
-        dataList: dataList.value,
-        columns: columns.value,
-        sheetName: "标准成本"
+        dataList: exportList.value,
+        columns: exportCols.value,
+        sheetName: `标准成本-${exportTitle}`
       }
     ]);
   };
@@ -168,13 +198,16 @@ export const useConfig = () => {
     formData,
     loading,
     sLoading,
+    activeName,
     columns,
     dataList,
+    columns2,
+    dataList2,
     maxHeight,
     buttonList,
     materialList,
     unitPriceList,
-    includeLossList,
+    numberOptions,
     oSearch,
     onRefresh,
     onKeyDown,

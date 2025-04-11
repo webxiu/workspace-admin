@@ -1,8 +1,8 @@
 <!-- /*
- * @Author: Hailen 
- * @Date: 2023-09-05 08:52:07 
- * @Last Modified by:   Hailen 
- * @Last Modified time: 2023-09-05 08:52:07 
+ * @Author: Hailen
+ * @Date: 2023-09-05 08:52:07
+ * @Last Modified by:   Hailen
+ * @Last Modified time: 2023-09-05 08:52:07
  */ -->
 
 <script setup lang="ts">
@@ -18,11 +18,14 @@ const {
   sLoading,
   columns,
   dataList,
+  columns2,
+  dataList2,
   maxHeight,
+  activeName,
   buttonList,
   materialList,
   unitPriceList,
-  includeLossList,
+  numberOptions,
   oSearch,
   onRefresh,
   onKeyDown,
@@ -69,16 +72,27 @@ const {
             </el-form-item>
             <el-form-item label="包含损耗" class="mb-4">
               <el-select v-model.trim="formData.includeAttritionRate" placeholder="请选择" style="width: 100px">
-                <el-option v-for="item in includeLossList" :key="item.optionValue" :label="item.optionName" :value="item.optionValue" />
+                <el-option v-for="item in numberOptions" :key="item.optionValue" :label="item.optionName" :value="item.optionValue" />
               </el-select>
             </el-form-item>
             <el-form-item label="测算数量" class="mb-4">
-              <el-input v-model.trim="formData.measuredQuantity" placeholder="请输入" @keyup.enter="oSearch" style="width: 100px" clearable />
+              <el-input-number
+                v-model.trim="formData.measuredQuantity"
+                :min="0"
+                placeholder="请输入"
+                controls-position="right"
+                @keyup.enter="oSearch"
+                style="width: 100px"
+                clearable
+              />
             </el-form-item>
             <el-form-item label="单价取值" class="mb-4">
               <el-select v-model.trim="formData.priceValue" placeholder="请选择" style="width: 130px">
                 <el-option v-for="item in unitPriceList" :key="item.optionValue" :label="item.optionName" :value="item.optionValue" />
               </el-select>
+            </el-form-item>
+            <el-form-item label="采购年月" class="mb-4" v-if="formData.priceValue == '3'">
+              <el-date-picker v-model="formData.purchaseDate" type="month" placeholder="选择年月" format="YYYY-MM" value-format="YYYY-MM" />
             </el-form-item>
             <el-form-item class="mb-4">
               <el-button type="primary" :icon="Search" @click="oSearch">查询</el-button>
@@ -90,25 +104,46 @@ const {
         <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="业务操作" />
       </template>
       <template v-slot="{ size, dynamicColumns }">
-        <pure-table
-          border
-          :height="maxHeight"
-          :max-height="maxHeight"
-          row-key="childId"
-          class="standard-cost"
-          :adaptive="true"
-          align-whole="center"
-          :loading="loading"
-          :size="size"
-          :data="dataList"
-          :columns="dynamicColumns"
-          :paginationSmall="size === 'small'"
-          highlight-current-row
-          :default-expand-all="true"
-          :show-overflow-tooltip="true"
-          :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-          @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
-        />
+        <el-tabs v-model="activeName">
+          <el-tab-pane label="明细" name="detail">
+            <pure-table
+              border
+              :height="maxHeight"
+              :max-height="maxHeight"
+              row-key="childId"
+              class="standard-cost"
+              :adaptive="true"
+              align-whole="center"
+              :loading="loading"
+              :size="size"
+              :data="dataList"
+              :columns="dynamicColumns"
+              :paginationSmall="size === 'small'"
+              highlight-current-row
+              :default-expand-all="true"
+              :show-overflow-tooltip="true"
+              :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+              @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
+            />
+          </el-tab-pane>
+          <el-tab-pane label="分类汇总" name="total">
+            <pure-table
+              border
+              :height="maxHeight"
+              :max-height="maxHeight"
+              row-key="id"
+              :adaptive="true"
+              align-whole="center"
+              :size="size"
+              :data="dataList2"
+              :columns="columns2"
+              :paginationSmall="size === 'small'"
+              highlight-current-row
+              :show-overflow-tooltip="true"
+              @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
+            />
+          </el-tab-pane>
+        </el-tabs>
       </template>
     </PureTableBar>
   </div>

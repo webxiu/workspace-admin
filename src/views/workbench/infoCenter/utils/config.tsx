@@ -64,18 +64,23 @@ export const infoTreeData: TreeDataTtype[] = [
 export const getTableConfig = (taskType: string) => {
   // 我发起
   const columns1: TableColumnList[] = [
+    { label: "流程名称", prop: "flowName", sortable: true, minWidth: 160 },
     { label: "业务单号", prop: "billNo", sortable: true, minWidth: 160 },
     { label: "流程ID", prop: "processDefId", sortable: true, minWidth: 220 },
     { label: "流程实例ID", prop: "processInstId", sortable: true },
     { label: "发起时间", prop: "startTime", sortable: true, minWidth: 160 },
-    { label: "结束时间", prop: "endTime", sortable: true, minWidth: 160 }
+    { label: "流程状态", prop: "endTime", sortable: true, minWidth: 160 },
+    { label: "结束时间", prop: "processStatus", sortable: true, minWidth: 140 },
+    { label: "耗时", prop: "duration", sortable: true, minWidth: 140 },
+    { label: "表单地址", prop: "formUrl", sortable: true, minWidth: 140 }
   ];
   // 待审批
   const columns2: TableColumnList[] = [
-    { label: "发起人", prop: "sendName", sortable: true },
     { label: "流程名称", prop: "flowName", sortable: true, minWidth: 160 },
     { label: "业务单号", prop: "billNo", sortable: true, minWidth: 160 },
-    { label: "发起时间", prop: "sendTime", sortable: true, minWidth: 140 }
+    { label: "发起人", prop: "sendName", sortable: true },
+    { label: "发起时间", prop: "sendTime", sortable: true, minWidth: 140 },
+    { label: "表单地址", prop: "formUrl", sortable: true, minWidth: 140 }
   ];
   // 已审批
   const columns3: TableColumnList[] = [

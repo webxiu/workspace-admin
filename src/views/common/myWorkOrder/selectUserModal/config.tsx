@@ -1,12 +1,11 @@
 import { onMounted, reactive, ref } from "vue";
 
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import { fetchDormitoryAllBuliding } from "@/api/oaManage/humanResources";
 import { handleTree } from "@/utils/tree";
 import { menuList } from "@/api/systemManage";
 import { setColumn } from "@/utils/table";
 
-export function useUserTable(props) {
+export function useUserTable() {
   const columns = ref<TableColumnList[]>([]);
   const dataList: any = ref([]);
   const modalTableRef = ref();
@@ -84,7 +83,6 @@ export function useUserTable(props) {
   // 点击行
   const rowClick = (row, column, event, setA) => {
     curSingleRow.value = row;
-    // modalTableRef.value?.getTableRef()?.toggleRowSelection(row);
     setA(curSingleRow.value);
   };
 

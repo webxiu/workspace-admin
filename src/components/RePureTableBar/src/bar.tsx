@@ -15,7 +15,7 @@ const props = {
   /** 对于树形表格，如果想启用展开和折叠功能，传入当前表格的ref即可 */
   tableRef: { type: Object as PropType<any> },
   /** 需要展示的列 */
-  columns: { type: Array as PropType<TableColumnList>, default: () => [] },
+  columns: { type: Array as PropType<TableColumnList[]>, default: () => [] },
   /** 是否显示刷新和设置图标(默认显示) */
   showIcon: { type: Boolean, default: true }
 };

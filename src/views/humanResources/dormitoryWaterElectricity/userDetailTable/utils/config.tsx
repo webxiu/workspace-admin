@@ -64,7 +64,7 @@ const formConfigs1 = () => [
     label: "文件",
     labelWidth: 100,
     prop: "file",
-    slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+    slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
     render: ({ formModel, row }) => {
       return <ImportUpload v-model={formModel[row.prop]} />;
     }
@@ -129,7 +129,7 @@ const formDetailConfigs = () => [
     }
   },
   {
-    slots: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
+    slot: { label: () => <span style={{ fontSize: "14px", color: "#606266", fontWeight: "700" }}>文件</span> },
     labelWidth: 100,
     prop: "file",
     render: ({ formModel, row }) => {

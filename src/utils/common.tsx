@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 14:34:48
+ * @Last Modified time: 2025-03-26 18:31:55
  */
 
 import { ElMessage, ElMessageBox, FormRules, dayjs } from "element-plus";
@@ -11,10 +11,12 @@ import { h, reactive, ref } from "vue";
 
 import EditForm from "@/components/EditForm/index.vue";
 import { addDialog } from "@/components/ReDialog";
+import { cloneDeep } from "@pureadmin/utils";
 import { commonBack } from "@/api/systemManage";
 import { findTreeNodes } from "@/utils/tree";
 import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import { useAppStoreHook } from "@/store/modules/app";
 
 /** JSON字符串转换对象 */
 export function toParse(str) {
@@ -26,8 +28,10 @@ export function toParse(str) {
   }
 }
 
+export type PrimitiveType = "number" | "string" | "boolean" | "object" | "array" | "undefined" | "null" | "function" | "date";
+
 /** 获取数据类型 */
-export function getType(data) {
+export function getType(data): PrimitiveType {
   return Object.prototype.toString.call(data).slice(8, -1).toLowerCase();
 }
 
@@ -45,6 +49,14 @@ export function formatDate(date: string | number, fmt = "YYYY-MM-DD HH:mm:ss") {
   return date ? dayjs(date).format(fmt) : "";
 }
 
+/** 将为null数据改为undefined */
+export const nullToUdefined = (obj) => {
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] === null) obj[key] = undefined;
+  });
+  return obj;
+};
+
 /** 递归删除对象内的空值 */
 export const delEmptyQueryNodes = (obj = {}) => {
   Object.keys(obj).forEach((key) => {
@@ -53,6 +65,18 @@ export const delEmptyQueryNodes = (obj = {}) => {
     (value === "" || value === null || value === undefined || value.length === 0 || Object.keys(value).length === 0) && delete obj[key];
   });
   return obj;
+};
+
+/** 重置数据(按原来类型重置) */
+export const resetData = <T, K extends keyof T>(formData: T, prop: K): T => {
+  const dataType = getType(formData[prop]);
+  if (dataType === "array") formData[prop] = [] as T[K];
+  if (dataType === "object") formData[prop] = {} as T[K];
+  if (dataType === "string") formData[prop] = undefined as T[K];
+  if (dataType === "number") formData[prop] = undefined as T[K];
+  if (dataType === "boolean") formData[prop] = false as T[K];
+  if (dataType === "function") formData[prop] = (() => {}) as T[K];
+  return formData;
 };
 
 /**
@@ -90,13 +114,23 @@ export const throttle = (fn: Function, delay = 300) => {
  * @param fileName 文件名(可带后缀)
  * @param NoNeedTimeNow 是否添加时间戳(可选)
  */
-export const downloadFile = (url: string, fileName: string, NoNeedTimeNow = false) => {
-  // 给文件名添加时间戳, 判断文件名是否存在后缀名
-  // fileName待后缀名就使用fileName后缀, 否则获取url文件后缀
-  const urlSuffix = url.split(".")[1] ?? "txt";
-  const names = fileName.split(".");
-  const name = names[0] ?? fileName;
-  const suffix = names[1] || urlSuffix;
+export const downloadFile = (url: string, fileName?: string, NoNeedTimeNow = false) => {
+  if (!url) return message.error("地址不存在!");
+  url = url.startsWith("/api") ? url.replace("/api", "") : url;
+  const urlName = url.split("/").pop();
+
+  // fileName存在就使用fileName后缀, 否则获取url文件后缀
+  function getFileName(fileName = "") {
+    const lastDotIndex = fileName.lastIndexOf(".");
+    const name = lastDotIndex > -1 ? fileName.slice(0, lastDotIndex) : fileName;
+    const suffix = lastDotIndex > -1 ? fileName.slice(lastDotIndex + 1) : "";
+    return { name, suffix };
+  }
+
+  const f1 = getFileName(urlName);
+  const f2 = getFileName(fileName);
+  const name = f2.name || f1.name;
+  const suffix = f2.suffix || f1.suffix || "txt";
 
   http
     .get<object, Blob>(url, { responseType: "blob" })
@@ -260,6 +294,22 @@ export const getChildIDs = <T extends Record<string, any>, R>(arr: T[], field: s
   fn(arr);
   return ids;
 };
+
+// 根据某个id查找树节点顶级节点
+export function findTopLevelNode<T extends Record<string, any>>(tree: T[], field: string, targetId: string | number): T | null {
+  for (const node of tree) {
+    if (node[field] === targetId) return node;
+    if (node.children?.length > 0) {
+      const stack = [...node.children];
+      while (stack.length) {
+        const current = stack.pop()!;
+        if (current[field] === targetId) return node;
+        if (current.children) stack.push(...current.children);
+      }
+    }
+  }
+  return {} as T;
+}
 
 /** 复制文本 */
 export function copyText(text: string, msg?: string) {

@@ -1,28 +1,10 @@
 <template>
   <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" class="demo-dynamic">
-    <el-form-item prop="customerName" label="客户名称">
-      <el-input v-model="formData.customerName" placeholder="请输入客户名称" clearable />
-    </el-form-item>
-    <el-form-item prop="customerAreaId" label="客户区域">
-      <el-select v-model="formData.customerAreaId" placeholder="请输入客户区域" clearable class="ui-w-100">
-        <el-option v-for="item in optionInfo.customerAreaResult" :key="item.optionValue" :value="item.optionValue" :label="item.optionKey" />
-      </el-select>
-    </el-form-item>
-    <el-form-item prop="customerOANumber" label="客户编码">
-      <el-input v-model="formData.customerOANumber" placeholder="请输入客户编码" clearable />
-    </el-form-item>
-    <el-form-item prop="customerCountryEntryId" label="国家">
-      <el-select v-model="formData.customerCountryEntryId" placeholder="请输入国家" clearable class="ui-w-100">
-        <el-option v-for="item in optionInfo.countryMessage" :key="item.optionValue" :value="item.optionValue" :label="item.optionKey" />
-      </el-select>
-    </el-form-item>
-    <el-form-item prop="customerLocation" label="地址">
-      <el-input v-model="formData.customerLocation" placeholder="请输入地址" clearable />
-    </el-form-item>
     <el-row v-for="(domain, index) in formData?.mkCustomerLinkmanList" :key="domain.id">
       <el-col :span="7">
         <el-form-item
           label="联系人姓名"
+          label-width="85px"
           :prop="'mkCustomerLinkmanList.' + index + '.fname'"
           :rules="{ required: true, message: '联系人姓名不能为空', trigger: 'blur' }"
         >
@@ -45,29 +27,12 @@
       </el-col>
       <el-col :span="3">
         <el-form-item label="" label-width="10px" class="form-delete">
-          <el-button @click.prevent="removeDomain(domain)" type="danger" :icon="Delete">删除</el-button>
+          <el-button size="small" @click.prevent="removeDomain(domain)" type="danger" :icon="Delete">删除</el-button>
         </el-form-item>
       </el-col>
     </el-row>
     <el-form-item>
       <el-button @click="addDomain" type="primary" :icon="Plus">新增一条联系人信息</el-button>
-    </el-form-item>
-    <el-form-item>
-      <el-upload
-        drag
-        class="avatar-logo"
-        accept=".jpg,.png,.jpeg,.bmp,.gif"
-        :action="`${baseApi}/oa/mk/customermanager/uploadmultifile`"
-        :show-file-list="false"
-        :on-success="handleAvatarSuccess"
-        :before-upload="beforeAvatarUpload"
-      >
-        <img v-if="formData.customerLogo" :src="`${baseApi}/oa/mk/customermanager/down?resource=${formData.customerLogo}`" />
-        <template v-else>
-          <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
-          <div class="el-upload__text">上传Logo</div>
-        </template>
-      </el-upload>
     </el-form-item>
   </el-form>
 </template>
@@ -81,17 +46,18 @@ import { message } from "@/utils/message";
 import { CustomerOptionDataType } from "@/api/oaManage/marketing";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { fetchCountryList } from "@/api/supplyChain";
+import { v4 as uuidv4 } from "uuid";
 
 export interface FormDataType {
   mkCustomerLinkmanList: { id: number; fname: string; phone: string; email: string }[];
-  customerName: string;
+  customerName?: string;
   customerAreaId: string | number;
   customerOANumber: string;
   customerCountryEntryId: string;
   customerLocation: string;
-  file: string;
+  file?: string;
   customerArea: string;
-  customerCountryName: string;
+  customerCountryName?: string;
   customerLogo: string;
   id?: number;
 }
@@ -158,7 +124,7 @@ const removeDomain = (item: DomainItem) => {
 };
 
 const addDomain = () => {
-  formData.mkCustomerLinkmanList.push({ id: Date.now(), fname: "", phone: "", email: "" });
+  formData.mkCustomerLinkmanList.push({ id: uuidv4(), fname: "", phone: "", email: "" });
 };
 
 const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {

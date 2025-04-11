@@ -18,7 +18,6 @@ const props = defineProps({
   row: { type: Object as PropType<StaffInfoItemType>, default: () => ({}) },
   temporaryFlag: { type: Number, default: 0 }
 });
-
 const formRef = ref();
 const loading = ref<boolean>(false);
 const formData = ref({

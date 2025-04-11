@@ -4,14 +4,12 @@ import { type PaginationProps } from "@pureadmin/table";
 import { downloadDataToExcel, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-
+import { FormItemConfigType } from "@/utils/form";
 import dayjs from "dayjs";
-import EditForm from "@/components/EditForm/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { message } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
-import { cloneDeep } from "@pureadmin/utils";
-import { formConfigs, formRules } from "./config";
 import { PAGE_CONFIG } from "@/config/constant";
 import {
   deleteControllFileList,
@@ -21,16 +19,20 @@ import {
   updateControllFileList
 } from "@/api/oaManage/humanResources";
 import { getDeptOptions } from "@/utils/requestApi";
+import type { ColDef } from "ag-grid-community";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 
 export const useTestReportConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref([]);
   const rowData = ref();
-  const currentRow: any = ref({});
   const currentViewRow: any = ref({});
   const dialogVisible = ref(false);
   const modalRef = ref();
+  const baseApi = import.meta.env.VITE_BASE_API;
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 49 + 46);
   const backRows: any = ref([]);
   const fileList: any = ref([]);
@@ -98,6 +100,7 @@ export const useTestReportConfig = () => {
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
     return columnData;
   };
 
@@ -116,9 +119,9 @@ export const useTestReportConfig = () => {
         pagination.total = data.total;
 
         if (typeof _rowIndex === "number" && _rowIndex >= 0) {
-          currentRow.value = dataList.value[_rowIndex];
+          rowData.value = dataList.value[_rowIndex];
         } else {
-          currentRow.value = {};
+          rowData.value = {};
         }
       })
       .catch((err) => (loading.value = false));
@@ -131,7 +134,7 @@ export const useTestReportConfig = () => {
     });
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     onSearch();
   };
@@ -147,8 +150,7 @@ export const useTestReportConfig = () => {
     onSearch();
   }
 
-  const onCurrentChange = (row) => {
-    if (!row) return;
+  const rowClick = (row) => {
     rowData.value = row;
   };
 
@@ -169,38 +171,24 @@ export const useTestReportConfig = () => {
   };
 
   const onEdit = () => {
-    const row = currentRow.value;
+    const row = rowData.value;
     curType.value = "edit";
-    console.log(row, "edit row");
     openDialog("edit", row);
-  };
-
-  const fetchRowData = (_formData, formLoading) => {
-    fetchControllFileList({
-      page: formData.page,
-      id: currentRow.value.id,
-      limit: formData.limit
-    })
-      .then((res: any) => {
-        if (res.data && Array.isArray(res.data.records) && res.data.records.length === 1) {
-          const rowData = res.data.records[0] || {};
-          const keys = Object.keys(_formData);
-          keys.forEach((item) => (_formData[item] = rowData[item]));
-          _formData["deptId"] = rowData.deptId ? +rowData.deptId + "" : undefined;
-        }
-      })
-      .finally(() => (formLoading.value = false));
   };
 
   const openDialog = async (type: string, row?) => {
     const titleObj = { add: "新增", edit: "修改", view: "查看" };
     const title = titleObj[type];
     const formRef = ref();
-    const formLoading = ref(true);
+    const formLoading = ref(false);
+    const _file = row?.controllerDocumentFilesVOS?.map((m) => {
+      const name = m.filePath?.split("/").at(-1);
+      return { name: name, url: baseApi + m.filePath, id: m.id };
+    });
 
     const _formData = reactive({
       fileCode: row?.fileCode ?? "",
-      file: null,
+      file: _file ?? [],
       fileName: row?.fileName ?? "",
       pageNumber: row?.pageNumber ?? undefined,
       lastVersion: row?.lastVersion ?? "",
@@ -210,34 +198,18 @@ export const useTestReportConfig = () => {
       id: row?.id
     });
 
-    if (type === "edit") {
-      fileList.value = row.controllerDocumentFilesVOS;
-    }
-
-    const configList = formConfigs({ treeData: deptTreeData.value, type, formData: _formData, fileList: fileList.value, rowFileName: row?.fileName });
-
-    const filterConfigs = configList.filter((item) => {
-      if (type === "add") {
-        formLoading.value = false;
-        return !["billStateName", "applyUserName", "billNo"].includes(item.prop);
+    const formConfig: FormItemConfigType[] = [
+      {
+        formData: _formData,
+        formProps: { labelWidth: "120px" }
       }
-      if (type === "edit" || type === "view") {
-        return item;
-      }
-    });
-
-    if (type === "edit") {
-      fetchRowData(_formData, formLoading);
-      delete formRules.file;
-    }
-
+    ];
     addDialog({
       title: `${title}`,
       props: {
         loading: formLoading,
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: filterConfigs
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "800px",
       draggable: true,
@@ -245,11 +217,9 @@ export const useTestReportConfig = () => {
       hideFooter: curType.value === "view",
       closeOnClickModal: false,
       okButtonText: "保存",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           const msgTextObj = {
             0: `确认要${title}吗?`,
             1: `当前后缀重复，确认添加吗?`,
@@ -267,7 +237,7 @@ export const useTestReportConfig = () => {
             }).then(() => {
               onSubmitChange(type, title, _formData, () => {
                 done();
-                const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
+                const _rowIndex = dataList.value.findIndex((item) => item.id === rowData.value.id);
                 onSearch(_rowIndex);
               });
             });
@@ -278,17 +248,11 @@ export const useTestReportConfig = () => {
   };
 
   const onSubmitChange = (type: string, title: string, data, callback) => {
+    const { file, ...reset } = data;
     const apiType = { add: insertControllFileList, edit: updateControllFileList };
-
     const formDataParams = new FormData();
-    const keys = Object.keys(data).filter((item) => item && item !== "file" && data[item]);
-    keys.forEach((key) => {
-      formDataParams.append(key, data[key]);
-    });
-
-    if (fileList.value.at(0).name) {
-      formDataParams.append("file", fileList.value.at(0));
-    }
+    Object.keys(reset).forEach((key) => formDataParams.append(key, reset[key]));
+    file?.forEach((item) => item.raw && formDataParams.append("file", item.raw));
     apiType[type](formDataParams).then((res) => {
       if (res.data) {
         ElMessage({ message: "保存成功", type: "success" });
@@ -298,8 +262,8 @@ export const useTestReportConfig = () => {
   };
 
   const onEnable = () => {
-    if (currentRow.value.disableState) {
-      ElMessageBox.confirm(`确认要启用名称为【${currentRow.value.fileName}】的文件吗?`, "系统提示", {
+    if (rowData.value.disableState) {
+      ElMessageBox.confirm(`确认要启用名称为【${rowData.value.fileName}】的文件吗?`, "系统提示", {
         type: "warning",
         draggable: true,
         cancelButtonText: "取消",
@@ -307,7 +271,7 @@ export const useTestReportConfig = () => {
         dangerouslyUseHTMLString: true
       })
         .then(() => {
-          enableOrDisableFile(currentRow.value.id).then((res) => {
+          enableOrDisableFile(rowData.value.id).then((res) => {
             if (res.data || res.status === 200) {
               ElMessage({ message: "启用成功!", type: "success" });
               onSearch();
@@ -321,8 +285,8 @@ export const useTestReportConfig = () => {
   };
 
   const onDisable = () => {
-    if (!currentRow.value.disableState) {
-      ElMessageBox.confirm(`确认要禁用名称为【${currentRow.value.fileName}】的文件吗?`, "系统提示", {
+    if (!rowData.value.disableState) {
+      ElMessageBox.confirm(`确认要禁用名称为【${rowData.value.fileName}】的文件吗?`, "系统提示", {
         type: "warning",
         draggable: true,
         cancelButtonText: "取消",
@@ -330,7 +294,7 @@ export const useTestReportConfig = () => {
         dangerouslyUseHTMLString: true
       })
         .then(() => {
-          enableOrDisableFile(currentRow.value.id).then((res) => {
+          enableOrDisableFile(rowData.value.id).then((res) => {
             if (res.data || res.status === 200) {
               ElMessage({ message: "禁用成功!", type: "success" });
               onSearch();
@@ -352,7 +316,7 @@ export const useTestReportConfig = () => {
     }
 
     if (text === "修改") {
-      if (JSON.stringify(currentRow.value) === "{}") {
+      if (JSON.stringify(rowData.value) === "{}") {
         ElMessage({ message: "请选择记录", type: "warning" });
         return;
       }
@@ -364,12 +328,12 @@ export const useTestReportConfig = () => {
     }
 
     if (text === "删除") {
-      if (JSON.stringify(currentRow.value) === "{}") {
+      if (JSON.stringify(rowData.value) === "{}") {
         ElMessage({ message: "请选择记录", type: "warning" });
         return;
       }
 
-      ElMessageBox.confirm(`确认要删除名称为【${currentRow.value.fileName}】的记录吗?`, "系统提示", {
+      ElMessageBox.confirm(`确认要删除名称为【${rowData.value.fileName}】的记录吗?`, "系统提示", {
         type: "warning",
         draggable: true,
         cancelButtonText: "取消",
@@ -377,7 +341,7 @@ export const useTestReportConfig = () => {
         dangerouslyUseHTMLString: true
       })
         .then(() => {
-          deleteControllFileList({ id: currentRow.value.id }).then((res) => {
+          deleteControllFileList({ id: rowData.value.id }).then((res) => {
             if (res.data) {
               message.success(`删除成功`);
               onSearch();
@@ -388,7 +352,7 @@ export const useTestReportConfig = () => {
     }
 
     if (text === "查看") {
-      if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      if (JSON.stringify(rowData.value) == "{}" || !rowData.value) {
         ElMessage({ message: "请选择一条记录", type: "warning" });
         return;
       } else {
@@ -397,7 +361,7 @@ export const useTestReportConfig = () => {
     }
 
     if (text === "启用") {
-      if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      if (JSON.stringify(rowData.value) == "{}" || !rowData.value) {
         ElMessage({ message: "请选择一条记录", type: "warning" });
         return;
       } else {
@@ -406,7 +370,7 @@ export const useTestReportConfig = () => {
     }
 
     if (text === "禁用") {
-      if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      if (JSON.stringify(rowData.value) == "{}" || !rowData.value) {
         ElMessage({ message: "请选择一条记录", type: "warning" });
         return;
       } else {
@@ -415,17 +379,13 @@ export const useTestReportConfig = () => {
     }
 
     if (text === "提交") {
-      if (JSON.stringify(currentRow.value) == "{}" || !currentRow.value) {
+      if (JSON.stringify(rowData.value) == "{}" || !rowData.value) {
         ElMessage({ message: "请选择一条记录", type: "warning" });
         return;
       } else {
         onSubmitAction();
       }
     }
-  };
-
-  const rowClick = (row) => {
-    currentRow.value = row;
   };
 
   // 查看
@@ -447,7 +407,7 @@ export const useTestReportConfig = () => {
   };
 
   const onSubmitAction = () => {
-    const row = currentRow.value;
+    const row = rowData.value;
     ElMessageBox.confirm(`确认要提交名称为【${row.applyName}】的申请吗?`, "系统提示", {
       type: "warning",
       draggable: true,
@@ -459,13 +419,18 @@ export const useTestReportConfig = () => {
         // submitTestApply({ id: row.id }).then((res) => {
         //   if (res.data) {
         //     message.success(`提交成功`);
-        //     const _rowIndex = dataList.value.findIndex((item) => item.id === currentRow.value.id);
+        //     const _rowIndex = dataList.value.findIndex((item) => item.id === rowData.value.id);
         //     onSearch(_rowIndex);
         //   }
         // });
       })
       .catch(() => {});
   };
+
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
 
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler, type: "primary", text: "新增", isDropDown: false },
@@ -477,23 +442,25 @@ export const useTestReportConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     columns,
     dataList,
     loading,
     maxHeight,
     pagination,
-    searchOptions,
-    disableInfoConst,
     buttonList,
-    dialogVisible,
+    searchOptions,
     modalRef,
-    onRefresh,
-    handleTagSearch,
-    onCurrentChange,
-    handleSizeChange,
+    dialogVisible,
+    disableInfoConst,
     onEdit,
     rowClick,
     fresh,
-    handleCurrentChange
+    onRefresh,
+    onTagSearch,
+    handleSizeChange,
+    handleCurrentChange,
+    onSwitchTable
   };
 };

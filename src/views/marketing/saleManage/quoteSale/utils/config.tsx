@@ -143,10 +143,10 @@ export const formConfigs = ({ currencyList }): FormConfigItemType[] => {
     {
       label: "报价数量/币种/单价",
       prop: "quoteList",
-      class: "center-label dynamic-form-item",
+      class: "center-label merge-item",
       colProp: { span: 24 },
       style: { ...styleItem, height: "auto" },
-      slots: { label: ({ label }) => <span class="fz-16 color-111">{label}</span> },
+      slot: { label: ({ label }) => <span class="fz-16 color-111">{label}</span> },
       render: ({ formModel, row }) => (
         <QuoteItem v-model={formModel[row.prop]} disabled={true} disableCount={true} currencyList={currencyList} disableCurrency={true} />
       )

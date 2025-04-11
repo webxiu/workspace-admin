@@ -181,6 +181,10 @@ export interface PrintOperateBookStationResType {
   fileNumber: string;
   country: string;
   productCode: string;
+  currentPage: string;
+  totalPage: number;
+  peuserId: number;
+  peuserName: string;
 
   workStationVOS: {
     id: string;

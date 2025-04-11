@@ -183,7 +183,16 @@ export function useConfig(emits) {
   };
 
   const onRowDblclick = (row) => {
-    router.push(`/plmManage/basicData/bomMgmt/view?id=${row.childBomId}&type=view&isNewTag=yes&menuId=${route.query.menuId}`);
+    router.push({
+      path: `/plmManage/basicData/bomMgmt/view`,
+      query: {
+        id: row.childBomId,
+        type: "view",
+        isNewTag: "yes",
+        menuId: route.query.menuId,
+        title: row.number
+      }
+    });
   };
   const onAdd = () => {
     handleSelectAction("multiple", (rowArr) => {
@@ -322,7 +331,7 @@ export function useConfig(emits) {
           if (workbook.Sheets[sheet][title[i]]["v"] == "序号" && startRow == -1) {
             startRow = parseInt(title[i].slice(1)) + 1; //截取开始循环位置
           }
-          if (workbook.Sheets[sheet][title[i]]["v"] == "制表：" && endRow == -1) {
+          if (workbook.Sheets[sheet][title[i]]["v"] == "变更履历表" && endRow == -1) {
             endRow = parseInt(title[i].slice(1)); //截取结束循环位置
           }
           if (startRow > 0 && endRow > 0) {
@@ -366,7 +375,7 @@ export function useConfig(emits) {
           }
           outdate.push(obj);
         }
-        handleOpenDialog(outdate);
+        handleOpenDialog(outdate.filter((el) => el["物料编码"]));
       }
     };
     fileReader.readAsBinaryString(files[0]);

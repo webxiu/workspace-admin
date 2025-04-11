@@ -8,6 +8,7 @@ export interface TimeSettingItemType {
   id: number;
   ruleNo: string;
   forenoonStart: string;
+  workingHours?: number;
   forenoonEnd: string;
   afternoonStart: string;
   afternoonEnd: string;
@@ -21,6 +22,8 @@ export interface TimeSettingItemType {
   minAfternoonEnd: string;
   maxAfternoonEnd: string;
   worktime: string;
+  minLeaveDuration: number;
+  leaveDurationMultiple: number;
 }
 
 /** 考勤汇总响应类型 */
@@ -73,6 +76,7 @@ export interface AttendanceMachineItemType {
 export interface AttendanceSummaryItemType {
   id: number;
   userCode: string;
+  staffCode: string;
   productionGroup: string;
   status: string;
   employeKind: string;
@@ -119,8 +123,8 @@ export interface GoodsManageItemType {
   totalStock: number;
   commodityDescription: string;
   state: number;
-  images: [{ id: number; commodityid: number; imagefilename: string; sort: number }];
-  specs: [{ id: number; commodityid: number; spec: string; officialPrice: number; discountPrice: number; stock: number; createId: string; createDate: string }];
+  images: { id: number; commodityid: number; imagefilename: string; sort: number; fileName?: string; filePath?: string }[];
+  specs: { id: number; commodityid: number; spec: string; officialPrice: number; discountPrice: number; stock: number; createId: string; createDate: string }[];
 }
 /** 商品管理列表类型 */
 export interface GoodsManageOptionType {
@@ -196,6 +200,8 @@ export interface StaffInfoItemType {
   position: string;
   roleId: string;
   isPoorPeople: number;
+  isSalary?: string | boolean;
+  isSeniorityCalc?: string | boolean;
   sex: string;
   education: string;
   marital: string;
@@ -375,6 +381,26 @@ export interface StaffDeptRoleInfoItemType {
   mnemonics: string;
   staffingPeopleCount: string;
   rolePeopleCount: number;
+  deptPath: string;
+}
+/** 人事档案: 角色(岗位)职级信息 */
+export interface RoleLevelInfoType {
+  id: number;
+  roleCode: string;
+  roleName: string;
+  k3RoleId: number;
+  k3RoleCode: string;
+  remark: string;
+  deptId: number;
+  deptName: string;
+  itemId: string;
+  tagid: number;
+  parentId: string;
+  parentName: string;
+  mnemonics: string;
+  level: string;
+  staffingPeopleCount: number;
+  rolePeopleCount: string;
   deptPath: string;
 }
 /** 人事档案: 新增修改下拉框数据类型 */
@@ -659,6 +685,7 @@ export interface StaffAnalysisType {
 export interface PerformanceManageItemType {
   id: string;
   userCode: string;
+  billState?: string;
   money: string;
   orgId: string;
   yearAndMonth: string;
@@ -858,7 +885,7 @@ export interface LeaveApplyEditOptionItemType {
   optionList: {
     id: number;
     optionId: number;
-    optionValue: string;
+    optionValue: string | number;
     optionName: string;
     reserve1: string;
     reserve2: string;
@@ -1142,6 +1169,8 @@ export interface StaffChangeItemType {
 /** 工号获取人员信息列表类型 */
 export interface UserBasicInfoItemType {
   deptName: string;
+  transferDeptName?: string;
+  transferRoleName?: string;
   staffCode: string;
   staffName: string;
   roleName: string;
@@ -1170,6 +1199,7 @@ export interface ResignApplyItemType {
   modifyUserId: number;
   modifyDate: string;
   orgId: string;
+  other?: string;
 }
 /** 职员离职申请列表类型 */
 export interface ResignApplyApproveNodeItemType {

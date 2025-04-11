@@ -40,11 +40,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
 import { useUserTable } from "./config";
 
-const props = defineProps(["setA", "curBuildingsId"]);
-const { columns, dataList, loading, onSearch, rowClick, selectMultipeChange, handleTagSearch, searchOptions, modalTableRef } = useUserTable(props);
+defineProps(["setA", "curBuildingsId"]);
+const { columns, dataList, loading, rowClick, handleTagSearch, searchOptions, modalTableRef } = useUserTable();
 </script>
 
 <style scoped lang="scss">

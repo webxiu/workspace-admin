@@ -759,6 +759,22 @@ export const useFlow = (props, cbs?) => {
         // 模具验收报告
         cbs.moldCheckReport(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
         return;
+      case "49":
+        // 项目工程测试评估表
+        cbs.pmTestAuditSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "50":
+        // 安全部品确认清单
+        cbs.safePartConfirmList(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "51":
+        // 量具（仪器）定期检查记录表
+        cbs.measuringCheckRecordSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
+      case "52":
+        // 仪器设备使用记录表
+        cbs.deviceUseRecordSheet(row, fetchDetailFormData, refresh, flowTableRef, currentTreeRow, resourceAuthDeptIds);
+        return;
       default:
         break;
     }
@@ -1011,7 +1027,11 @@ export const useFlow = (props, cbs?) => {
         "45",
         "46",
         "47",
-        "48"
+        "48",
+        "49",
+        "50",
+        "51",
+        "52"
       ].includes(item.deliverableTemplateId)
     ) {
       // 手板制作模版、产品设计输入表

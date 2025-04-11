@@ -227,7 +227,7 @@ export const formConfigs = ({ categoryOpts, projectModelOpts, deptSelectData, _f
       }
     },
     {
-      slots: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>附件</span> },
+      slot: { label: () => <span style={{ fontSize: "12px", color: "#606266", fontWeight: "700" }}>附件</span> },
       colProp: { span: 24 },
       labelWidth: 80,
       prop: "files",

@@ -39,6 +39,6 @@ watch(
     oLoading.value = loading.value;
     oTitle.value = title;
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 </script>

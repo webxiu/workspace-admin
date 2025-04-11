@@ -9,14 +9,40 @@
 import { useConfig } from "./utils/hook";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 
-defineOptions({ name: "SystemDevelopLog" });
-
-const { loading, columns, dataList, maxHeight, searchOptions, buttonList, pagination, onRefresh, onTagSearch, onSizeChange, onCurrentChange } = useConfig();
+const {
+  loading,
+  columns,
+  dataList,
+  maxHeight,
+  searchOptions,
+  pagination,
+  buttonList,
+  columnDefs,
+  isAgTable,
+  onRefresh,
+  onTagSearch,
+  onSizeChange,
+  onCurrentChange,
+  onSwitchTable
+} = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
-    <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
+    <AgGridTable
+      v-if="isAgTable"
+      :rowData="dataList"
+      :columnDefs="columnDefs"
+      :height="maxHeight + 12"
+      :paginations="pagination"
+      @refresh="onRefresh"
+      @switch="onSwitchTable"
+      @sizeChange="onSizeChange"
+      @currentChange="onCurrentChange"
+      :headButtons="{ buttonList, autoLayout: false }"
+      :blendedSearch="{ onTagSearch, searchOptions, searchField: 'userName', placeholder: '请输入员工姓名' }"
+    />
+    <div v-else class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
       <PureTableBar :columns="columns" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入员工姓名" searchField="userName" />
@@ -50,3 +76,23 @@ const { loading, columns, dataList, maxHeight, searchOptions, buttonList, pagina
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.ag-grid-table {
+  height: 100%;
+  width: 100%;
+}
+
+$just-map: (
+  left: flex-start,
+  right: flex-end,
+  center: center
+);
+@each $key, $value in $just-map {
+  :deep(.ag-header-cell.#{$key} .ag-header-cell-label) {
+    display: flex;
+    align-items: center;
+    justify-content: $value;
+  }
+}
+</style>

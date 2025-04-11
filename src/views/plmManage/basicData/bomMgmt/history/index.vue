@@ -128,9 +128,17 @@ const addMaterial = () => {
             })
               .then(() => {
                 if (route.query.type !== "edit") {
-                  router.push(
-                    `/plm/bd/materialAdd?id=${res.data}&type=view&number=${route.query.number}&code=${route.query.code}&isNewTag=yes&menuId=${route.query.menuId}`
-                  );
+                  router.push({
+                    path: "/plm/bd/materialAdd",
+                    query: {
+                      id: res.data,
+                      type: "view",
+                      isNewTag: "yes",
+                      number: route.query.number,
+                      code: route.query.code,
+                      menuId: route.query.menuId
+                    }
+                  });
                 }
               })
               .catch(() => {

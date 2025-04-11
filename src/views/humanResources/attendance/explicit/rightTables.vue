@@ -204,6 +204,7 @@ const handleCommand3 = (command, rightRow) => {
 
 const getConfig = () => {
   const columns1Data = [
+    { label: "请假类型", prop: "holidayType", width: 90 },
     { label: "请假时长", prop: "hours", width: 90 },
     { label: "开始日期", prop: "startDate" },
     { label: "开始时间", prop: "startTime" },

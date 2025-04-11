@@ -66,6 +66,31 @@ export function fetchStaffMoneyCheckList(data) {
   return http.request("post", "/oa/fin/wageaccounting/getStaffSalaryCalculate", { data });
 }
 
+/** 工资核算 — 主列表查询 */
+export function fetchMainStaffMoneyCheckList(data) {
+  return http.request("post", "/oa/fin/wageaccounting/getPage", { data });
+}
+
+/** 工资核算 — 部门汇总查询 */
+export function fetchDeptTotalMoneyCheckList(data) {
+  return http.request("get", "/oa/fin/wageaccounting/getPayrollSummary", { params: data });
+}
+
+/** 工资核算 — 明细查询 */
+export function fetchDetailStaffMoneyCheckList(data) {
+  return http.request("post", "/oa/fin/wageaccounting/getPageDetail", { data });
+}
+
+/** 工资核算 — 明细单条查询 */
+export function queryDetailStaffMoneyCheckList(data) {
+  return http.request("get", "/oa/fin/wageaccounting/getDetail", { params: data });
+}
+
+/** 工资核算 — 抄送 */
+export function makeCopyStaffMoneyCheckList(data) {
+  return http.request("post", "/oa/fin/wageaccounting/carbonCopy", { data });
+}
+
 /** 工资核算 — 修改 */
 export function updateClerkMoneyCheckList(data) {
   return http.request("post", "/oa/fin/wageaccounting/updatestaffsalarycalculate", { data });
@@ -139,7 +164,7 @@ interface PayslipItemType {
 
 /** 获取工资模板 */
 export function fetchMoneyTemplateList(data) {
-  return http.request<PayslipItemType[]>("post", "/oa/fin/payslipmanage/getpaysliptemplatedata", { data });
+  return http.request<PayslipItemType[]>("post", "/oa/fin/payslipmanage/getpaysliptemplatedataall", { data });
 }
 /** 工资条模板查询(企业微信) */
 export function qywxFetchMoneyTemplateList(data) {
@@ -148,75 +173,90 @@ export function qywxFetchMoneyTemplateList(data) {
 
 /** 工资条列表查询 */
 export function fetchPayslipDataList(data) {
-  return http.request<PayslipDataItemType[]>("post", "/oa/fin/payslipmanage/getpayslipdata", { data });
+  return http.request<PayslipDataItemType[]>("post", "/oa/fin/payslipmanage/getpayslipdataall", { data });
+}
+
+/** 工资条单条查询 */
+export function queryPayslipData(data) {
+  return http.request<PayslipDataItemType>("post", "/oa/fin/payslipmanage/getpayslipdata", { data });
+}
+
+/** 工资条帮助文档地址查询 */
+export function queryPayslipUrlData(data) {
+  return http.request<string>("post", "/oa/fin/payslipmanage/getpayslipdata", { data });
 }
 
 /** 工资条管理 — 工资分发 */
 export function dispatchPayslipDataInfo(data) {
-  return http.request("post", "/oa/fin/payslipmanage/payoutdata", { data });
+  return http.request("post", "/oa/fin/payslipmanage/payoutdataall", { data });
+}
+
+/** 工资条管理 — 工资撤销分发 */
+export function revokeDispatchPayslipDataInfo(data) {
+  return http.request("post", "/oa/fin/payslipmanage/delpayslipoutrecord", { data });
 }
 
 /** 工资条管理 — 导入 */
 export function importPayslipDataInfo(data) {
   return http.request("post", "/oa/fin/payslipmanage/importpayslipdata", { data });
 }
-/** 工资条管理 — 导入(工资条导入改造测试) */
-export function importPayslipDataInfo2(data, onUploadProgress) {
-  return http.request<boolean>(
+/** 工资条管理 — 导入(后台解析) */
+export function importPayslip(data, onUploadProgress) {
+  return http.request<string[]>(
     "post",
-    "/oa/fin/payslipmanage/importpayslipdata2",
+    "/oa/fin/payslipmanage/importpayslipfile",
     { data },
     {
       headers: { "Content-Type": "multipart/form-data", hideLoading: true },
       onUploadProgress,
-      cancelToken: InjectCancel(importPayslipDataInfo2)
+      cancelToken: InjectCancel(importPayslip)
     }
   );
 }
 
 /** 工资条管理 — 撤销导入 */
 export function cancelImportPayslipDataInfo(data) {
-  return http.request("post", "/oa/fin/payslipmanage/cancelpayslipdata", { data });
+  return http.request("post", "/oa/fin/payslipmanage/cancelpayslipdataall", { data });
 }
 
 /** 工资条导出 */
 export function exportPayslipDataList(data) {
-  return http.request<string>("post", "/oa/fin/payslipmanage/export", { data });
+  return http.request<string>("post", "/oa/fin/payslipmanage/exportall", { data });
 }
 
 /** 获取工资签名 */
 export function getMoneySignImages(data) {
-  return http.request("post", "/oa/fin/payslipmanage/getpayslipsignaturebyid", { data });
+  return http.request("post", "/oa/fin/payslipmanage/getpayslipsignaturebyidall", { data });
 }
 
 /** 获取异常反馈列表 */
 export function getFeedBackList(data) {
-  return http.request("post", "/oa/fin/payslipmanage/getpayslipexceptionbyid", { data });
+  return http.request("post", "/oa/fin/payslipmanage/getpayslipexceptionbyidall", { data });
 }
 
 /** 获取分发记录列表 */
 export function getDispatchList(data) {
-  return http.request("post", "/oa/fin/payslipmanage/getpayslipoutrecordbyid", { data });
+  return http.request("post", "/oa/fin/payslipmanage/getpayslipoutrecordbyidall", { data });
 }
 
 /** 工资单状态更新 - 撤销 */
 export function revokeMoneyList(data) {
-  return http.request("post", "/oa/fin/payslipmanage/chexiaopayslipbyid", { data });
+  return http.request("post", "/oa/fin/payslipmanage/chexiaopayslipbyidall", { data });
 }
 
 /** 工资单状态获取 */
 export function getMoneyListStatus(data) {
-  return http.request("post", "/oa/fin/payslipmanage/getpayslipstatusbyid", { data });
+  return http.request("post", "/oa/fin/payslipmanage/getpayslipstatusbyidall", { data });
 }
 
 /** 工资单修改 */
 export function updateMoneyDataInfo(data) {
-  return http.request("post", "/oa/fin/payslipmanage/updatepayslipdatabyid", { data });
+  return http.request("post", "/oa/fin/payslipmanage/updatepayslipdatabyidall", { data });
 }
 
 /** 工资归档 */
 export function docMoneyDataInfo(data) {
-  return http.request("post", "/oa/fin/payslipmanage/updatepayslipstatusbyids", { data });
+  return http.request("post", "/oa/fin/payslipmanage/updatepayslipstatusbyidsall", { data });
 }
 
 /** 工资获取盐值 */
@@ -226,7 +266,7 @@ export function getMoneySaltDataInfo(data) {
 
 /** 保存工资模板 */
 export function saveMoneyTemplateConfig(data) {
-  return http.request("post", "/oa/fin/paysliptemplate/savepaysliptemplatedata", { data });
+  return http.request("post", "/oa/fin/paysliptemplate/savepaysliptemplatedataall", { data });
 }
 
 /** 获取利润表 */
@@ -241,7 +281,7 @@ export function getBalancesheet(data) {
 
 /** 获取工资条处理列表 */
 export function getPaySlipHandleList(data) {
-  return http.request("post", "/oa/fin/payslipmanage/getpaysliphandledata", { data });
+  return http.request("post", "/oa/fin/payslipmanage/getpaysliphandledataall", { data });
 }
 
 /** 获取财务分析图表数据 */
@@ -287,9 +327,30 @@ export function getCostCompareOptionData(data) {
 /** ========================= 财务报表(标准成本) ========================= */
 /** 标准成本 - 列表 */
 export function standardCostList(data) {
-  return http.request<StandardCostItemType[]>("post", "/oa/fin/standardcost/selectstandardcost", { data });
+  return http.request<{ list: StandardCostItemType[]; mapList: any[] }>("post", "/oa/fin/standardcost/selectstandardcost", { data });
 }
 
 export function materialManageList(data) {
   return http.request<TablePagingResType<MaterialManageItemType>>("post", "/plm/bd/material/select", { data }, { headers: { hideLoading: true } });
+}
+
+/** 基础信息 - 币种列表 */
+export function fetchMoneyClassList(data) {
+  return http.request("post", "/oa/fin/currencyManagement/selectCurrency", { data });
+}
+/** 基础信息 - 新增币种列表 */
+export function insertMoneyClassList(data) {
+  return http.request("post", "/oa/fin/currencyManagement/insertCurrency", { data });
+}
+/** 基础信息 - 修改币种列表 */
+export function updateMoneyClassList(data) {
+  return http.request("put", "/oa/fin/currencyManagement/updateCurrency", { data });
+}
+/** 基础信息 - 删除币种列表 */
+export function deleteMoneyClassList(data) {
+  return http.request("delete", "/oa/fin/currencyManagement/deleteCurrency", { params: data });
+}
+/** 基础信息 - 导出币种列表 */
+export function exportMoneyClassList(data) {
+  return http.request("post", "/oa/fin/currencyManagement/export", { data });
 }

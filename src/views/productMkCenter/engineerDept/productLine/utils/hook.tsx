@@ -2,25 +2,29 @@
  * @Author: Hailen
  * @Date: 2024-06-17 17:26:03
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-07-18 14:45:12
+ * @Last Modified time: 2025-03-14 15:42:18
  */
 
 import { ProductLineItemType, productLineList } from "@/api/oaManage/productMkCenter";
 import { getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { h, onMounted, ref } from "vue";
 
+import type { ColDef } from "ag-grid-community";
 import DistributeModal from "../DistributeModal.vue";
 import { Position } from "@element-plus/icons-vue";
 import { addDialog } from "@/components/ReDialog";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { message } from "@/utils/message";
 import { useEleHeight } from "@/hooks";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const loading = ref<boolean>(false);
   const rowData = ref<ProductLineItemType>();
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<ProductLineItemType[]>([]);
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 56);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 58);
 
   onMounted(() => {
     getColumnConfig();
@@ -45,6 +49,11 @@ export const useConfig = () => {
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: { width: 120 } });
+    columnDefs.value = getAgGridColumns<ProductLineItemType>({
+      columnData,
+      operationColumn: { width: 120 },
+      renderButtons: () => [{ name: "分发", type: "primary", onClick: (row) => onDistribute(row) }]
+    });
   };
 
   const onRefresh = () => {
@@ -89,9 +98,16 @@ export const useConfig = () => {
     onDistribute(row);
   }
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([{ clickHandler: onOpenDialog, type: "primary", icon: Position, text: "分发", isDropDown: false }]);
 
   return {
+    columnDefs,
+    isAgTable,
     loading,
     columns,
     dataList,
@@ -100,6 +116,7 @@ export const useConfig = () => {
     onRefresh,
     onDbClick,
     onRowClick,
-    onDistribute
+    onDistribute,
+    onSwitchTable
   };
 };

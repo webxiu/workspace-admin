@@ -2,7 +2,9 @@
   <div v-loading="loading" style="min-width: 960px; height: 100%">
     <div class="flex" v-if="taskOptions">
       <EditForm
+        ref="formRef"
         :formInline="formInline"
+        :formRules="formTaskRules"
         :formConfigs="formConfigs({ onUploadChange, taskOptions, type })"
         :formProps="{ labelWidth: '80px' }"
         style="flex: 1; min-width: 460px"
@@ -41,13 +43,15 @@
         </PureTableBar>
       </div>
     </div>
-    <el-form ref="overTimeFormRef" :model="formData" class="flex-1 ml-2" label-width="120px">
+    <el-form ref="overTimeFormRef" :model="formData" class="flex-1" label-width="90px">
       <el-form-item label="任务描述" prop="responsibleUserName">
-        <!-- <el-input style="display: none" /> -->
+        <template #label="{ label }">
+          <span class="fw-700">{{ label }}</span>
+        </template>
         <div class="ui-w-100">
           <!-- <a-button @click="toggleTheme" class="mb-2" type="primary"> 黑暗主题 </a-button>
             <a-button @click="clearValue" class="mb-2" type="default"> 清空内容 </a-button> -->
-          <MarkDown v-model:value="valueRef" @change="handleChange" @setFileItem="setFileItem" ref="markDownRef" placeholder="这是占位文本" />
+          <MarkDown v-model:value="valueRef" :height="666" @change="handleChange" @setFileItem="setFileItem" ref="markDownRef" placeholder="请输入任务描述" />
         </div>
       </el-form-item>
     </el-form>
@@ -56,7 +60,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from "vue";
-import { formConfigs } from "./config";
+import { formTaskRules, formConfigs } from "./config";
 import { downloadFile } from "@/utils/common";
 import { setColumn } from "@/utils/table";
 import EditForm from "@/components/EditForm/index.vue";
@@ -66,10 +70,18 @@ import { getkkViewUrl } from "@/utils/storage";
 import type { UploadFiles, UploadFile } from "element-plus";
 import { message } from "@/utils/message";
 
-const props = defineProps<{ loading?: boolean; formData?: TaskManageItemType; taskOptions?: TaskMangeOptionType; type?: string }>();
-const formInline = reactive(props.formData);
+interface Props {
+  loading?: boolean;
+  formData?: TaskManageItemType;
+  taskOptions?: TaskMangeOptionType;
+  type?: string;
+}
+
+const props = defineProps<Props>();
 
 const maxHeight = 240;
+const formRef = ref();
+const formInline = reactive(props.formData);
 const columns = ref<TableColumnList[]>([]);
 const dataList = ref<Array<Partial<TaskFileItemType>>>([]);
 // const fileList = new Map();
@@ -150,7 +162,11 @@ function getRef() {
   const fd = new FormData();
   fileList.forEach((file) => fd.append("files", file));
   fd.append("file", fileList as any);
-  return { fd, formInline: { ...formInline, taskContent: valueRef.value } };
+  return {
+    fd,
+    getRef: formRef.value?.getRef(),
+    formInline: { ...formInline, taskContent: valueRef.value }
+  };
 }
 
 defineExpose({ getRef, fileNameList });

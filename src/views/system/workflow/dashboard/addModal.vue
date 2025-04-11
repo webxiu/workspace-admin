@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { getDeptTreeData, DetartMenttemType, DeptUserItemType, getDeptUserList, queryUserDeptList } from "@/api/systemManage";
+import { getDeptTreeData, DetartMenttemType, DeptUserItemType, getDeptUserList, queryUserDeptList, DeptTreeItemType } from "@/api/systemManage";
 import { setColumn } from "@/utils/table";
 
 const props = defineProps({
@@ -21,7 +21,7 @@ const curNodeKey = ref("0");
 const treeLoading = ref<boolean>(false);
 const tableLoading = ref<boolean>(false);
 const dataList = ref<DeptUserItemType[]>([]);
-const treeOptions = ref<DetartMenttemType[]>([]);
+const treeOptions = ref<DeptTreeItemType[]>([]);
 const rowData = ref<Array<DeptUserItemType> | DeptUserItemType>([]);
 const formData = reactive({ userName: "", deptId: "", userCode: "", userState: props.userState });
 const tableRef = ref();
@@ -67,7 +67,7 @@ const getDeptList = () => {
     .then((res) => {
       initChooseUserInfo();
       treeLoading.value = false;
-      const data = JSON.parse(res.data);
+      const data = res.data;
       treeOptions.value = data;
     })
     .catch(() => (treeLoading.value = false));

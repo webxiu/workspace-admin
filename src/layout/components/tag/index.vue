@@ -489,7 +489,7 @@ onBeforeUnmount(() => {
           @click="tagOnClick(item)"
         >
           <router-link :to="{ path: item.path, query: item.query }" class="dark:!text-text_color_primary dark:hover:!text-primary">
-            {{ transformI18n(item.meta.title) }}{{ item?.query?.title ? `【${item.query?.title}】` : "" }}
+            {{ transformI18n(item.meta.title) }}{{ item.query?.title ? `【${item.query.title}】` : "" }}
           </router-link>
           <span v-if="iconIsActive(item, index) || (index === activeIndex && index !== 0)" class="el-icon-close" @click.stop="deleteMenu(item)">
             <IconifyIconOffline :icon="CloseBold" />

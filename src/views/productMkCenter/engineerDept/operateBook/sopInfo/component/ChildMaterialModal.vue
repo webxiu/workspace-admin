@@ -12,6 +12,8 @@ import { addDialog } from "@/components/ReDialog";
 import { h, ref, reactive, onMounted, computed } from "vue";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { getMaterialChildList, MaterialChildItemType } from "@/api/oaManage/productMkCenter";
+import HxSearchHighlight from "@/components/HxSearchHighlight/index.vue";
+import { PureTableBar } from "@/components/RePureTableBar";
 
 const props = defineProps({
   id: { type: [String], default: "" },
@@ -70,9 +72,14 @@ const formConfigs = (): FormConfigItemType[] => {
           <PureTableBar columns={columns} show-icon={false}>
             {{
               title: () => (
-                <SearchList v-model={dataList.value} bright={true} placeholder="请输入物料编号、名称、规格" propKeys={["number", "name", "specification"]}>
+                <HxSearchHighlight
+                  v-model={dataList.value}
+                  bright={true}
+                  placeholder="请输入物料编号、名称、规格"
+                  propKeys={["number", "name", "specification"]}
+                >
                   {{ prepend: () => <span>搜索物料</span> }}
-                </SearchList>
+                </HxSearchHighlight>
               ),
               default: (props) => {
                 return (

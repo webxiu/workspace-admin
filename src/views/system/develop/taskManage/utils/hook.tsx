@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-12 10:08:42
+ * @Last Modified time: 2025-03-13 09:33:46
  */
 
 import { LoadingType } from "@/components/ButtonList/index.vue";
@@ -26,7 +26,6 @@ import { getUserInfo } from "@/utils/storage";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 
 import AddModel from "../component/AddModel.vue";
-import { MarkdownViewer } from "../component/Markdown";
 import { PAGE_CONFIG } from "@/config/constant";
 import { addDialog } from "@/components/ReDialog";
 import { dayjs } from "element-plus";
@@ -36,6 +35,7 @@ import { useEleHeight } from "@/hooks";
 import { useUserStore } from "@/store/modules/user";
 import { type PaginationProps } from "@pureadmin/table";
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
+import { useRouter } from "vue-router";
 
 /** 任务状态 */
 export enum TaskStatus {
@@ -53,32 +53,27 @@ export enum TaskStatus {
   back = "6"
 }
 
-export const useConfig = () => {
+export const useConfig = (props) => {
   const userInfo = getUserInfo();
   const columns = ref<TableColumnList[]>([]);
   const dataList = ref<TaskManageItemType[]>([]);
   const loading = ref<boolean>(false);
   const oLoading = ref<boolean>(false);
   const rowData = ref<TaskManageItemType>();
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 64 + 40);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 64 + 116);
   const taskManageOptions = ref<Partial<TaskMangeOptionType>>({ userinfoList: [] });
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
   const taskLogList = ref<TaskLogItemType[]>([]);
   const tableRef = ref();
+  const router = useRouter();
   const curDate = dayjs().format("YYYY-MM-DD");
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const userStore = useUserStore();
   const billStateList = ref([]);
+  const taskView = ref("");
+  const activeView = ref<"task" | "log">("task");
 
-  const formData = reactive<Record<string, any>>({
-    page: 1,
-    limit: PAGE_CONFIG.pageSize,
-    responsibleUserName: "",
-    startTime: "",
-    endTime: "",
-    select: [TaskStatus.pending, TaskStatus.start, TaskStatus.confirm, TaskStatus.back],
-    hideChildDone: true
-  });
+  const formData = reactive<Record<string, any>>(props.formData);
 
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "任务名称", value: "taskName" },
@@ -185,43 +180,6 @@ export const useConfig = () => {
     getTableList();
   };
 
-  function rowClick(row: TaskManageItemType) {
-    // tableRef.value?.getTableRef()?.toggleRowSelection(row);
-    rowData.value = row;
-    oLoading.value = true;
-    const timer = setTimeout(() => {
-      getTaskLog({ Id: row.id })
-        .then(({ data }) => {
-          oLoading.value = false;
-          taskLogList.value = data || [];
-        })
-        .catch(() => (oLoading.value = false));
-      clearTimeout(timer);
-    }, 300);
-  }
-  function onRowDBClick(row: TaskManageItemType) {
-    rowData.value = row;
-    onView();
-  }
-
-  // 表格行样式
-  const rowStyle = ({ row }) => {
-    if (row.priority === "紧急" && row.parentId === 0) {
-      return { background: "#FF0000", color: "#fff" };
-    } else if (row.endTime <= curDate && row.parentId === 0) {
-      return { background: "#8B0000", color: "#fff" };
-    } else if (row.billState === 0) {
-      return { background: "#61719FFF", color: "#fff" }; // 待提交
-    } else if (row.billState === 1) {
-      return { background: "#004e9f", color: "#fff" }; // 审核中
-    } else if (row.billState === 2) {
-      return { background: "#227700", color: "#fff" }; // 已审核
-    } else if (row.billState === 3) {
-      return { background: "#F1108CBF", color: "#fff" }; // 重新审核
-    }
-    return {};
-  };
-
   // 新增
   const onAdd = () => {
     openDepDialog("add", {});
@@ -267,48 +225,64 @@ export const useConfig = () => {
       score: row.score ?? 0
     });
     if (isAdd && rowData.value) formData.billNo = undefined;
-
     const billName = row.billNo ? `: ${row.billNo}` : "";
+
+    /** 1.获取提交参数 */
+    function getParams(callback) {
+      const { fd, getRef, formInline } = formRef.value.getRef();
+      getRef.validate((valid) => {
+        if (!valid) return;
+        const fileList = formRef.value.fileNameList;
+        const userList = taskManageOptions.value.userinfoList;
+        const userInfo = userList.find((f) => f.userCode == formInline.responsibleUserCode);
+
+        if (fileList?.length) formInline.descFileNameList = fileList;
+        if (userInfo) formInline["responsibleUserName"] = userInfo.userName;
+        // 新增:存在上级任务, 在上级任务下新增子任务, 没有上级任务, 新增主任务
+        if (isAdd) formInline.billNo = undefined;
+        // 修改:不存在上级任务处理
+        // else if (!formInline.parentId) formInline.parentBillNo = undefined;
+
+        fd.append("param", JSON.stringify(formInline));
+        callback(fd);
+      });
+    }
+
+    /** 2.提交到接口 */
+    function submitAPI(fd, msg) {
+      return new Promise<any>((resolve) => {
+        // 未填写上级任务, 按照主任务新增
+        const API = isAdd ? addMainTask : editTask;
+        API(fd)
+          .then(({ data }) => {
+            if (!data) return message.error(`${msg}失败`);
+            message.success(`${msg}成功`);
+            resolve(data);
+          })
+          .catch(() => resolve(null));
+      });
+    }
+
     addDialog({
       title: `${title}任务${billName}`,
       props: { loading: loading, formData, taskOptions: taskManageOptions },
-      width: "80%",
+      width: "88%",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       closeOnPressEscape: false,
-      okButtonText: "保存",
+      okButtonText: "提交",
+      customButtonText: "保存",
       contentRenderer: () => h(AddModel, { ref: formRef, type }),
-      beforeSure: (done, { options }) => {
-        const { fd, formInline } = formRef.value.getRef();
-        const fileNameList = formRef.value.fileNameList;
-        if (fileNameList && fileNameList.length) {
-          formInline.descFileNameList = fileNameList;
-        }
-
-        const findUserInfo = taskManageOptions.value.userinfoList.find((el) => el.userCode == formInline.responsibleUserCode);
-        if (findUserInfo) formInline["responsibleUserName"] = findUserInfo.userName;
-        if (isAdd) {
-          // 新增:存在上级任务, 在上级任务下新增子任务, 没有上级任务, 新增主任务
-          formInline.billNo = undefined;
-        } else {
-          // 修改:不存在上级任务处理
-          // if (!formInline.parentId) {
-          // formInline.parentBillNo = undefined;
-          // }
-        }
-        fd.append("param", JSON.stringify(formInline));
-        showMessageBox(`确认要提交吗?`).then(async () => {
-          try {
-            const API = isAdd ? addMainTask : editTask; // 未填写上级任务, 按照主任务新增
-            const result = await API(fd);
-            if (!result.data) return message.error(`${title}任务失败`);
+      beforeCustom: () => getParams((fd) => submitAPI(fd, "保存")),
+      beforeSure: (done) => {
+        showMessageBox(`确认要提交吗?`).then(() => {
+          getParams(async (fd) => {
+            const data = await submitAPI(fd, `${title}任务`);
+            if (!data) return;
             done();
             getTableList();
-            message.success(`${title}任务成功`);
-          } catch (error) {
-            console.log("error", error);
-          }
+          });
         });
       }
     });
@@ -334,33 +308,9 @@ export const useConfig = () => {
 
   // 预览md
   const onView = wrapFn(rowData, () => {
-    const sLoading = ref(false);
-    const row = rowData.value;
-    const mdContent = ref(`# ${row.taskName}\n${row.taskContent}`);
-    if (!row.parentId) {
-      sLoading.value = true;
-      viewTask({ ids: row.id })
-        .then(({ data }) => {
-          if (!data?.markdown_content) return;
-          mdContent.value = data?.markdown_content;
-        })
-        .finally(() => (sLoading.value = false));
-    }
-
-    addDialog({
-      title: "操作说明",
-      width: "100%",
-      props: { value: mdContent, loading: sLoading },
-      draggable: true,
-      fullscreen: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      closeOnPressEscape: true,
-      okButtonText: "关闭",
-      appendToBody: true,
-      hideItem: ["cancel"],
-      contentRenderer: () => h(MarkdownViewer, { id: "preview-md" }),
-      beforeSure: (done, { options }) => done()
+    router.push({
+      path: "/system/develop/taskManage/preview",
+      query: { isNewTag: "yes", id: rowData.value.id, title: rowData.value.billNo }
     });
   });
 
@@ -450,6 +400,56 @@ export const useConfig = () => {
     formData.hideChildDone = val;
   };
 
+  // 表格行样式
+  const rowStyle = ({ row }) => {
+    if (row.priority === "紧急" && row.parentId === 0) {
+      return { background: "#FF0000", color: "#fff" };
+    } else if (row.endTime <= curDate && row.parentId === 0) {
+      return { background: "#8B0000", color: "#fff" };
+    } else if (row.billState === 0) {
+      return { background: "#61719FFF", color: "#fff" }; // 待提交
+    } else if (row.billState === 1) {
+      return { background: "#004e9f", color: "#fff" }; // 审核中
+    } else if (row.billState === 2) {
+      return { background: "#227700", color: "#fff" }; // 已审核
+    } else if (row.billState === 3) {
+      return { background: "#F1108CBF", color: "#fff" }; // 重新审核
+    }
+    return {};
+  };
+
+  async function onRowDBClick(row: TaskManageItemType) {
+    openDepDialog("edit", row);
+  }
+
+  const rowClick = (row: TaskManageItemType) => {
+    rowData.value = row;
+    taskView.value = "";
+    const cLen = row.children?.length;
+    if (cLen || activeView.value === "log") oLoading.value = true;
+    const apiList: Array<Promise<any>> = [getTaskLog({ Id: row.id })];
+
+    if (cLen) {
+      // 预览主任务下所有任务
+      apiList.push(viewTask({ ids: row.id }));
+    } else {
+      // 预览当前选中任务
+      taskView.value = `# ${row.taskName}\n${row.taskContent}`;
+    }
+
+    Promise.all(apiList)
+      .then((data) => {
+        oLoading.value = false;
+        const res1 = data[0];
+        const res2 = data[1];
+        taskLogList.value = res1.data || [];
+        if (res2.data?.markdown_content) {
+          taskView.value = res2.data.markdown_content;
+        }
+      })
+      .catch(() => (oLoading.value = false));
+  };
+
   // 分页相关
   function onPageCurrentChange(val: number) {
     formData.page = val;
@@ -483,11 +483,13 @@ export const useConfig = () => {
     columns,
     dataList,
     maxHeight,
+    taskView,
     loadingStatus,
     buttonList,
     pagination,
     taskLogList,
     queryParams,
+    activeView,
     searchOptions,
     taskManageOptions,
     rowStyle,
@@ -498,6 +500,7 @@ export const useConfig = () => {
     onFinish,
     onHideDone,
     onRowDBClick,
+    getTableList,
     handleTagSearch,
     onPageSizeChange,
     onPageCurrentChange

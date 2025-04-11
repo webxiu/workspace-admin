@@ -1,5 +1,6 @@
 import { LOGIN_INFO, setCookie, setKkViewInfo, useLocalStorage } from "@/utils/storage";
 import { LoginAppInfoType, fetchkkViewIpUrl, getCode, queryLoginParamsInfo, submitResetPassword } from "@/api/user/user";
+import { debounce, getUrlParameters } from "@/utils/common";
 import { formConfigs, formRules } from "./config";
 import { getTopMenu, initRouter } from "@/router/utils";
 import { h, onMounted, reactive, ref } from "vue";
@@ -8,7 +9,6 @@ import EditForm from "@/components/EditForm/index.vue";
 import { ElMessageBox } from "element-plus";
 import type { FormInstance } from "element-plus";
 import { addDialog } from "@/components/ReDialog";
-import { debounce } from "@/utils/common";
 import md5 from "md5";
 import { message } from "@/utils/message";
 import { orgHostMap } from "@/config";
@@ -99,30 +99,22 @@ export const useConfig = () => {
         useUserStoreHook()
           .login(params)
           .then(async (res) => {
-            // 获取后端路由
-            await initRouter();
             //获取全局kkview预览地址
             getKkViewUrl();
             onSaveLoginInfo();
-            const redirect = decodeURIComponent(location.href.split("redirect=")[1]);
-            const isToMenu = redirect?.indexOf("/menuPanel") > -1;
-            const isToHome = redirect?.indexOf("/login") > -1 || redirect?.indexOf("/404") > -1;
-            const redirectPath = decodeURIComponent(isToMenu || isToHome ? "/workbench/home" : redirect);
-            // if (redirectPath) {
-            //   // 跳转到上次退出地址
-            //   const urlQuery = isToHome ? {} : getUrlParameters(redirect);
-            //   router.push({ path: redirectPath, query: { ...urlQuery, redirect: "true" } });
-            // } else {
-            //   router.push(getTopMenu(true).path);
-            // }
-            // todo 待优化:退出登录移除动态路由会保留上个用户路由, 导致无权限用户也能进入上次路由, 改为跳转首页
-            router.push("/workbench/home");
-            setCookie(Date.now().toString());
+            const { routes } = await initRouter(); // 需要调用此方法初始化路由
+            const linkPath = location.href.split("redirect=")[1];
+            const redirect = linkPath ? decodeURIComponent(linkPath) : linkPath;
+            const menuPath = redirect.split("?")[0]; // 检测是否有权限跳转
+            const hasAuth = routes.find((item) => item.path === menuPath);
+            if (hasAuth) {
+              const query = getUrlParameters(redirect);
+              router.push({ path: menuPath, query: { ...query, redirect: true } });
+            } else {
+              router.push(getTopMenu(true).path);
+            }
             message.success("登录成功");
-            const timer = setTimeout(() => {
-              loading.value = false;
-              clearTimeout(timer);
-            }, 2000);
+            loading.value = false;
           })
           .catch((err) => (loading.value = false));
       } else {
@@ -178,10 +170,7 @@ export const useConfig = () => {
       closeOnClickModal: false,
       showResetButton: true,
       contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.getRef().resetFields(),
       beforeSure: (done, { options }) => {
         const FormRef = formRef.value.getRef();
         FormRef.validate((valid) => {

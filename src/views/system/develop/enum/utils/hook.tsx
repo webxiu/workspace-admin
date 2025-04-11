@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:20:48
+ * @Last Modified time: 2025-03-12 15:38:32
  */
 
 import { Delete, Plus } from "@element-plus/icons-vue";
@@ -31,8 +31,13 @@ import { addDialog } from "@/components/ReDialog";
 import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import { useEleHeight } from "@/hooks";
 import { PAGE_CONFIG } from "@/config/constant";
+import TableEditList from "@/components/TableEditList/index.vue";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import type { ColDef } from "ag-grid-community";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const columns2 = ref<TableColumnList[]>([]);
   const dataList = ref<EnumDictionaryItemType[]>([]);
@@ -87,7 +92,16 @@ export const useConfig = () => {
     if (groupArrs?.length) groupArrsList.value = groupArrs;
     updateButtonList(buttonList, buttonArrs[0]);
     updateButtonList(buttonList2, buttonArrs[1]);
-    columns.value = setColumn({ columnData: columnData, dragSelector: ".enum-dict" });
+    columns.value = setColumn({ columnData: columnData });
+    columnDefs.value = getAgGridColumns<EnumDictionaryItemType>({
+      columnData,
+      formData,
+      renderButtons: () => [
+        { name: "修改", type: "default", onClick: (row) => onEdit(row) },
+        { name: "删除", type: "danger", onClick: (row) => onDelete(row), confirm: (row) => `确认删除\n【${row.optionName}】?` }
+      ]
+    });
+
     columns2.value = setColumn({
       columnData: columnData2,
       dragSelector: ".enum-dict-option",
@@ -141,7 +155,6 @@ export const useConfig = () => {
       })
       .catch(console.log);
   };
-  const onCurrentChange = (row: EnumDictionaryItemType) => {};
 
   const rowClick = (row: EnumDictionaryItemType) => {
     if (!row) return;
@@ -163,23 +176,18 @@ export const useConfig = () => {
     addDialog({
       title: title,
       props: {
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfig1()
+        params: { groupCode: "1" },
+        formConfig: [{ formData: _formData, formProps: { labelWidth: "100px" } }]
       },
       width: "460px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`)
               .then(() => {
@@ -292,25 +300,24 @@ export const useConfig = () => {
     addDialog({
       title: title,
       props: {
-        formInline: _formData,
-        formRules: formRules2,
-        loading: addLoading,
-        formConfigs: formConfig2(),
-        formProps: { labelWidth: "80px" }
+        params: { groupCode: "2" },
+        formConfig: [
+          {
+            loading: addLoading,
+            formData: _formData,
+            formProps: { labelWidth: "100px" }
+          }
+        ]
       },
       width: "460px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要提交吗?`)
               .then(() => {
@@ -339,12 +346,6 @@ export const useConfig = () => {
       .catch(console.log);
   };
 
-  const buttonList = ref<ButtonItemType[]>([{ clickHandler: onAdd, type: "primary", text: "新增", icon: Plus, isDropDown: false }]);
-  const buttonList2 = ref<ButtonItemType[]>([
-    { clickHandler: onAdd2, type: "primary", text: "新增", icon: Plus, isDropDown: false },
-    { clickHandler: onDeleteAll2, type: "danger", text: "批量删除", icon: Delete, isDropDown: false }
-  ]);
-
   // 分页相关
   function handleSizeChange(val: number) {
     formData.limit = val;
@@ -357,7 +358,20 @@ export const useConfig = () => {
     dataList2.value = [];
   }
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
+
+  const buttonList = ref<ButtonItemType[]>([{ clickHandler: onAdd, type: "primary", text: "新增", icon: Plus, isDropDown: false }]);
+  const buttonList2 = ref<ButtonItemType[]>([
+    { clickHandler: onAdd2, type: "primary", text: "新增", icon: Plus, isDropDown: false },
+    { clickHandler: onDeleteAll2, type: "danger", text: "批量删除", icon: Delete, isDropDown: false }
+  ]);
+
   return {
+    columnDefs,
+    isAgTable,
     tableRef2,
     loading,
     loading2,
@@ -366,6 +380,7 @@ export const useConfig = () => {
     dataList,
     dataList2,
     maxHeight,
+    pagination,
     searchOptions,
     buttonList,
     buttonList2,
@@ -377,12 +392,11 @@ export const useConfig = () => {
     onRefresh,
     onRefresh2,
     onRowClick2,
-    onTagSearch,
     rowClick,
-    pagination,
+    onTagSearch,
     handleSizeChange,
     handleCurrentChange,
-    onCurrentChange,
-    handleSelectionChange2
+    handleSelectionChange2,
+    onSwitchTable
   };
 };

@@ -33,7 +33,7 @@ const {
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
+      <PureTableBar :columns="columns" style="width: 40%" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入角色名称" searchField="roleName" />
         </template>
@@ -42,8 +42,7 @@ const {
             border
             :height="maxHeight"
             :max-height="maxHeight"
-            row-key="id"
-            class="data-auth"
+            row-key="itemId"
             :adaptive="true"
             align-whole="center"
             :loading="loading"
@@ -52,13 +51,15 @@ const {
             :columns="dynamicColumns"
             :paginationSmall="size === 'small'"
             highlight-current-row
+            :default-expand-all="false"
             :show-overflow-tooltip="true"
+            :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
             @current-change="onCurrentChange"
             @header-dragend="(newWidth, _, column) => onHeaderDragend(newWidth, column, columns)"
           />
         </template>
       </PureTableBar>
-      <PureTableBar :columns="columns2" style="width: 50%" @refresh="onRefresh2" @change-column="setUserMenuColumns">
+      <PureTableBar :columns="columns2" style="width: 60%" @refresh="onRefresh2" @change-column="setUserMenuColumns">
         <template #title>
           <BlendedSearch @tagSearch="onTagSearch2" :searchOptions="searchOptions2" placeholder="请输入菜单名称" searchField="menuNameParam" />
         </template>

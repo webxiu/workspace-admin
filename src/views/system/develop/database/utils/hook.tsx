@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-09 14:32:07
+ * @Last Modified time: 2025-03-12 15:37:38
  */
 import { onMounted, h, reactive, ref } from "vue";
 
@@ -27,12 +27,16 @@ import {
 } from "@/api/systemManage";
 
 import { Plus, Edit, Delete, Position, Pointer, Warning, View } from "@element-plus/icons-vue";
-import { BillState, PAGE_CONFIG, BillState_Color } from "@/config/constant";
+import { BillState, PAGE_CONFIG, BillState_Color, PageUrl } from "@/config/constant";
 import Detail from "../Detail.vue";
 import { ElMessage } from "element-plus";
 import { commonBackLogic } from "@/utils/common";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import type { ColDef } from "ag-grid-community";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const rowData = ref<DbMaintenanceItemType>();
   const dataList = ref<DbMaintenanceItemType[]>([]);
@@ -101,6 +105,15 @@ export const useConfig = () => {
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, formData, operationColumn: { minWidth: 160 } });
+    columnDefs.value = getAgGridColumns<DbMaintenanceItemType>({
+      columnData,
+      formData,
+      operationColumn: { minWidth: 160 },
+      renderButtons: () => [
+        { name: "查看", onClick: (row) => onProview(row) },
+        { name: "节点详情", onClick: (row) => onNodeDetail(row) }
+      ]
+    });
   };
 
   const getTableList = () => {
@@ -138,56 +151,30 @@ export const useConfig = () => {
   });
 
   function openDialog(type: string, row?: Partial<DbMaintenanceItemType>) {
-    const titleObj = { add: "新增", edit: "修改" };
-    const title = titleObj[type];
+    const title = { add: "新增", edit: "修改", view: "查看" }[type];
     const formRef = ref();
-    const _formData = reactive({
-      id: row?.id ?? undefined,
-      billNo: row?.billNo ?? undefined,
-      title: row?.title ?? "",
-      content: row?.content ?? "",
-      reason: row?.reason ?? "",
-      isExecute: row?.isExecute ?? undefined,
-      dbKey: row?.dbKey ?? "",
-      isNeedFinishExecute: row?.isNeedFinishExecute ?? 0,
-      billState: row?.billState ?? undefined,
-      userId: row?.userId ?? undefined,
-      userName: row?.userName ?? undefined,
-      createDate: row?.createDate ?? undefined,
-      modifyDate: row?.modifyDate ?? undefined
-    });
 
     addDialog({
-      title: `${title}SQL审批申请`,
-      props: {
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs(),
-        formProps: { labelWidth: "180px" }
-      },
+      title: `${title}SQL审批`,
+      props: { type, id: row?.id, pageUrl: PageUrl.database },
       width: "640px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      showResetButton: type !== "view",
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(Detail, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
-          if (valid) {
-            showMessageBox(`确认要提交吗?`)
-              .then(() => {
-                onSubmitChange(type, title, _formData, () => {
-                  done();
-                  getTableList();
-                });
-              })
-              .catch(console.log);
-          }
+        if (type === "view") return done();
+        formRef.value.getRef().then(({ formData, data }) => {
+          showMessageBox(`确认要提交吗?`)
+            .then(() => {
+              onSubmitChange(type, title, formData, () => {
+                done();
+                getTableList();
+              });
+            })
+            .catch(console.log);
         });
       }
     });
@@ -247,15 +234,16 @@ export const useConfig = () => {
   });
 
   const onProview = (row: DbMaintenanceItemType) => {
-    addDialog({
-      title: `查看单据【${row.title}】`,
-      props: { id: row.id },
-      width: "720px",
-      draggable: true,
-      fullscreenIcon: true,
-      closeOnClickModal: false,
-      contentRenderer: () => h(Detail)
-    });
+    openDialog("view", row);
+    // addDialog({
+    //   title: `查看单据【${row.title}】`,
+    //   props: { id: row.id, type: "view" },
+    //   width: "720px",
+    //   draggable: true,
+    //   fullscreenIcon: true,
+    //   closeOnClickModal: false,
+    //   contentRenderer: () => h(Detail)
+    // });
   };
 
   const onDelete = wrapFn(rowData, () => {
@@ -316,6 +304,11 @@ export const useConfig = () => {
     commonBackLogic(rowData.value.billNo, getTableList, { dbKey: "sysmaster" });
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus, isDropDown: false },
     { clickHandler: onEdit, type: "success", text: "修改", icon: Edit, isDropDown: false },
@@ -326,6 +319,8 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     loading,
     columns,
     dataList,
@@ -339,6 +334,7 @@ export const useConfig = () => {
     onTagSearch,
     onNodeDetail,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    onSwitchTable
   };
 };

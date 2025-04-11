@@ -61,7 +61,6 @@ export const useConfig = () => {
         return { field: item.prop, title: item.label, width: 160, key: `0-${index}`, hide: false, colspan: 1, rowspan: 1, type: "normal", colGroup: false };
       })
       .filter((item) => item.field && item.field !== "index");
-    // console.log(formData, "formdata");
 
     const headConfig = {
       excel: {

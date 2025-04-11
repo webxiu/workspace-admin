@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-11 13:45:18
+ * @Last Modified time: 2025-03-17 17:52:37
  */
 
 import dayjs from "dayjs";
@@ -12,7 +12,7 @@ import { IconConf } from "@/config/elements";
 import Expand from "@iconify-icons/ep/expand";
 import Sortable, { MoveEvent } from "sortablejs";
 import RegInput from "@/components/RegInput.vue";
-import { getTreeArrItem, getUrlParameters, onDownload } from "@/utils/common";
+import { getTreeArrItem, getUrlParameters, nullToUdefined, onDownload, getChildIDs } from "@/utils/common";
 import PriceTag from "@iconify-icons/ep/price-tag";
 import { clone, cloneDeep, deviceDetection } from "@pureadmin/utils";
 import { TableColumnRenderer } from "@pureadmin/table";
@@ -21,10 +21,8 @@ import { getRouterInfo, removeRouterInfo } from "@/utils/storage";
 import IconifyIconOffline from "@/components/ReIcon/src/iconifyIconOffline";
 import type { DatePickerProps, TableColumnCtx, TableRefs, InputProps, colProps } from "element-plus";
 import { getBOMTableRowSelectOptions, OptionItemType, OptionResType } from "@/api/plmManage";
-import { CSSProperties, Ref, nextTick, reactive, ref, withModifiers, type VNode } from "vue";
+import { CSSProperties, Ref, isRef, nextTick, reactive, ref, withModifiers, type VNode } from "vue";
 import {
-  menuColumnList,
-  MenuColumnItemType,
   userMenuColumnList,
   updateUserMenuColumn,
   tableGroupList,
@@ -33,6 +31,7 @@ import {
   MenuButtonItemType,
   menuButtonVirtualList
 } from "@/api/systemManage";
+import { getMenuIdByURL } from "@/api/routes";
 
 export interface SortableCallbackType {
   type: "row" | "column";
@@ -44,7 +43,7 @@ export interface SortableCallbackType {
 }
 
 /** 表格配置列自定函数类型 */
-export type RendererType = (data: TableColumnRenderer) => VNode;
+export type RendererType = (data: TableColumnRenderer) => VNode | JSXElement;
 
 const moveRowName = reactive({ fromName: "", toName: "" });
 const isMobile = deviceDetection();
@@ -150,11 +149,13 @@ export interface ColumnOptionType {
   isDragColumn?: boolean;
   /** 是否拖拽行(设置此项`dataList`与`dragSelector`必传) */
   isDragRow?: boolean;
+  /** 是否清除固定列(默认`不清除`) */
+  clearFixed?: boolean;
 }
 
 /** 表格列配置(嵌套表格不支持拖拽) callback:拖拽行列交换索引回调 */
 export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCallbackType) => void) => {
-  const {
+  let {
     dataList,
     formData,
     dragSelector,
@@ -164,8 +165,10 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
     selectionColumn = {},
     isDragRow = false,
     isDragColumn = false,
-    isCustomExpend = false
+    isCustomExpend = false,
+    clearFixed = false
   } = options;
+  dataList = isRef(dataList) ? dataList : ref(dataList);
   const columnsDrag = ref<TableColumnList[]>([]);
   const columnData: TableColumnList[] = cloneDeep(options.columnData || []);
   const expendRow = columnData.splice(0, 1)[0]; // 取出第一列添加折叠按钮
@@ -259,9 +262,12 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
   );
   // 配置拖拽必须添加表格选择器
   if (dragSelector) {
-    if (isDragColumn) columnDrop(columnsDrag, dragSelector, callback);
-    if (isDragRow) rowDrop(dataList, dragSelector, callback);
+    requestAnimationFrame(() => {
+      if (isDragColumn) columnDrop(columnsDrag, dragSelector, callback);
+      if (isDragRow) rowDrop(dataList, dragSelector, callback);
+    });
   }
+  if (clearFixed) columnList.forEach((item) => (item.fixed = undefined));
   return clone(columnList);
 };
 
@@ -560,24 +566,40 @@ export type SelectRowType<T> = {
 export const usePageSelect = <T extends Record<string, any>>({ tableRef, dataList, rowsData, uniId = "id" }: PageSelectType<T>) => {
   /** 设置回显(在获取到数据时调用) */
   const setSelectCheckbox = () => {
-    nextTick(() => {
-      rowsData.value.forEach((item) => {
-        const row = dataList.value.find((f) => f[uniId] === item[uniId]);
-        if (row) {
-          tableRef.value?.getTableRef()?.toggleRowSelection(row, true);
-        }
-      });
-    });
+    (function () {
+      const timer = setTimeout(() => {
+        rowsData.value.forEach((item) => {
+          const row = dataList.value.find((f) => f[uniId] === item[uniId]);
+          if (row) {
+            if (tableRef.value?.getTableRef) {
+              // 1.设置通用表格多选回显
+              const tableApi = tableRef.value.getTableRef();
+              if (tableApi) tableApi.toggleRowSelection(row, true);
+            } else {
+              // 2.设置AgGrid表格多选回显
+              tableRef.value?.setRowSelected(row[uniId]);
+            }
+          }
+        });
+        clearTimeout(timer);
+      }, 100);
+    })();
   };
 
   /** 设置选中与取消(在表格的@select事件中调用) */
   const setSelectChange = ({ rows, row }: SelectRowType<T>) => {
-    const result = rowsData.value.filter((f) => rows.find((s) => s[uniId] === f[uniId]));
-    if (result.length < rows.length) {
-      rowsData.value.push(row);
+    // 1.设置通用表格多选选中
+    if (tableRef.value?.getTableRef) {
+      const result = rowsData.value.filter((f) => rows.find((s) => s[uniId] === f[uniId]));
+      if (result.length < rows.length) {
+        rowsData.value.push(row);
+      } else {
+        const index = rowsData.value.findIndex((f) => row[uniId] && f[uniId] === row[uniId]);
+        rowsData.value.splice(index, 1);
+      }
     } else {
-      const index = rowsData.value.findIndex((f) => f[uniId] === row[uniId]);
-      rowsData.value.splice(index, 1);
+      // 2.设置通用表格多选选中
+      setAgGridSelect({ rows, row });
     }
   };
   /** 表头多选框(在表格的@select-all事件中调用) */
@@ -589,7 +611,20 @@ export const usePageSelect = <T extends Record<string, any>>({ tableRef, dataLis
       rowsData.value = result;
     }
   };
-  return { setSelectCheckbox, setSelectChange, setSelectAllChange };
+
+  /** AgGrid表格设置选中与取消(在表格的@select事件中调用) */
+  function setAgGridSelect({ rows, row }: SelectRowType<T>) {
+    const _sIndex = rowsData.value.findIndex((f) => f[uniId] === row[uniId]);
+    const _dIndex = dataList.value.findIndex((f) => f[uniId] === row[uniId]);
+    if (rows.length) {
+      if (_dIndex > -1 && _sIndex === -1) rowsData.value.push(row);
+      const checkIndex = rows.findIndex((f) => row[uniId] && f[uniId] === row[uniId]);
+      if (checkIndex === -1) rowsData.value.splice(_sIndex, 1);
+    } else {
+      if (_dIndex > -1) rowsData.value.splice(_sIndex, 1);
+    }
+  }
+  return { setSelectCheckbox, setSelectChange, setSelectAllChange, setAgGridSelect };
 };
 
 export type CellOptionType = {
@@ -604,7 +639,7 @@ export interface CellRenderType {
   data: TableColumnRenderer;
   /** 仅在下拉框使用 */
   options?: CellOptionType[];
-  /** 是否可以编辑列(默认可编辑) */
+  /** 是否可以编辑列(默认:true 可编辑) */
   isEdit?: boolean;
   /** 单元格样式 */
   cellStyle?: CSSProperties;
@@ -664,7 +699,7 @@ export function tableEditRender(options: TableEditOptionType = {}) {
   };
 
   // 编辑渲染函数
-  function editCellRender({ type = "input", data, isEdit = true, options, cellStyle, eleProps }: CellRenderType) {
+  function editCellRender({ type = "input", data, isEdit = true, options = [], cellStyle, eleProps }: CellRenderType) {
     const { row, index, column } = data;
     const prop = column["property"];
     const isEditable = editMap.value[index]?.editable;
@@ -752,7 +787,7 @@ export function tableEditRender(options: TableEditOptionType = {}) {
     const boxStyle = { height: "24px", lineHeight: "24px", ...cellStyle };
     if (["treeSelect", "select"].includes(type)) {
       boxStyle.textAlign = cellStyle?.textAlign || "center";
-      if (row[prop]) {
+      if (![null, undefined].includes(row[prop])) {
         const result = getTreeArrItem(options, props?.value || "optionValue", row[prop]); // 获取选中项
         cellValue = props?.label ? result?.[props?.label] : result?.optionName;
       }
@@ -865,8 +900,8 @@ export enum FormatKey {
   date = "date",
   /** 标签 */
   tag = "tag",
-  /** 单据状态 */
-  bill = "bill"
+  /** 枚举字典 */
+  enum = "enum"
 }
 
 /**
@@ -883,7 +918,7 @@ export const getFormatType = (item: TableColumnList, value) => {
   } else if (type === FormatKey.date && dayjs(value).isValid()) {
     // 日期
     return dayjs(value).format(date);
-  } else if ([FormatKey.tag, FormatKey.bill].includes(type as FormatKey) && !value?.__v_isVNode) {
+  } else if ([FormatKey.tag, FormatKey.enum].includes(type as FormatKey) && !value?.__v_isVNode) {
     // 标签
     const result = specs?.find((item) => item.value === `${value}`);
     const { label, color = "inherit", background = "inherit" } = result || ({} as any);
@@ -942,7 +977,7 @@ export const getColumnData = (columnList: TableColumnList[], dataList?: Ref<Arra
             const { column, row } = data;
             const prop = column["property"];
             const deepValue = getValue(row, prop); // 多层属性取值
-            if (item.formatType && ![undefined, null].includes(deepValue)) {
+            if (item.formatType && ![undefined].includes(deepValue)) {
               return getFormatType(item, deepValue);
             }
             return deepValue;
@@ -986,13 +1021,14 @@ export const getMenuColumns = async (renderConfig: Array<Record<string, Renderer
   let columnArrs: TableColumnList[][] = [];
   let groupArrs: TableGroupItemType[] = [];
   let buttonArrs: MenuButtonItemType[][] = [];
-  // 如果存在弹窗中引入了其路由页面作为组件使用, 需要获取对应的菜单id
-  const routeId = getRouterInfo().id;
   try {
     let { menuId } = getUrlParameters();
-    if (routeId) menuId = routeId;
+    const pageUrl = getRouterInfo(); // pageUrl存在时, 引入其他页面作为组件使用
+    if (pageUrl) {
+      const result = await getMenuIdByURL({ webRouter: pageUrl });
+      if (result.data) menuId = result.data;
+    }
     if (!menuId) throw new Error("菜单id不存在");
-    // const { data } = await menuColumnList({ menuId });
     const { data } = await userMenuColumnList({ menuId });
     const { data: data2 } = await tableGroupList({ menuId });
     const { data: data3 } = await menuButtonVirtualList({ menuId });
@@ -1000,13 +1036,11 @@ export const getMenuColumns = async (renderConfig: Array<Record<string, Renderer
     buttonArrs = getArrayAlassify<MenuButtonItemType>(data3, "groupCode");
     removeRouterInfo(); // 移除本地路由存储信息
     if (data?.length) {
-      const columnsCate = getArrayAlassify(data, "groupCode");
+      const _filterData = data.filter((item) => !item.hide);
+      const columnsCate = getArrayAlassify(_filterData, "groupCode");
       columnArrs = columnsCate.map((list, index) => {
         const columnList = list.map((item) => {
-          // 将为null数据改为undefined
-          Object.keys(item).forEach((key) => {
-            if (item[key] === null) item[key] = undefined;
-          });
+          nullToUdefined(item); // 表格不支持null,将null数据改为undefined
           if (renderConfig[index]?.[item.prop]) item.cellRenderer = renderConfig[index][item.prop];
           return item;
         });
@@ -1074,6 +1108,7 @@ export const updateButtonList = (buttonList: Ref<ButtonItemType[]>, buttons: Men
     const listItem = buttonList.value.find((f) => f.text.trim() === btnName.trim()) || {};
     return {
       ...listItem,
+      btnKey,
       type: btnType,
       text: btnName,
       size: btnSize,
@@ -1342,6 +1377,32 @@ interface OptionKey {
   Currency: "Currency";
   /** 税率 */
   TaxRate: "TaxRate";
+  /** 供应商分类 */
+  SupplierClassify: "SupplierClassify";
+  /** 供应商类别 */
+  SupplierOtherClass: "SupplierOtherClass";
+  /** 供应商等级 */
+  SupplierLevel: "SupplierLevel";
+  /** 付款条件 */
+  PaymentTerms: "PaymentTerms";
+  /** 付款方式 */
+  SettlementMode: "SettlementMode";
+  /** 税分类 */
+  TaxClassification: "TaxClassification";
+  /** 税率 */
+  CustomerTaxRate: "CustomerTaxRate";
+  /** 经营类型 */
+  BusinessType: "BusinessType";
+  /** 发票类型 */
+  InvoiceType: "InvoiceType";
+  /** 银行类型 */
+  BankType: "BankType";
+  /** 汇率类型 */
+  RateType: "RateType";
+  /** 汇率数据来源 */
+  RateDataSource: "RateDataSource";
+  /** 工龄薪资职级 */
+  SeniorityRanks: "SeniorityRanks";
 }
 
 export type OptionKeys = ValueOf<OptionKey>;
@@ -1355,11 +1416,20 @@ export const getEnumDictList = <T extends OptionKeys[]>(keys: T): Promise<DictRe
       .then(({ data }) => {
         const result = keys.reduce((cur, prev) => {
           const result = data.find(({ optionCode }) => optionCode === prev);
-          cur[prev] = result?.optionList || [];
+          const _list = result?.optionList.map((m) => ({ ...m, label: m.optionName, value: m.optionValue }));
+          cur[prev] = _list || [];
           return cur;
         }, {}) as DictResultType<T>;
         resolve(result);
       })
       .catch(reject);
   });
+};
+
+/** 获取某个部门下子部门所有ID(包括自己) */
+export const getChildDeptIds = (treeData: any[], deptId) => {
+  if (!deptId || !treeData) return [];
+  const result = getTreeArrItem(treeData, "value", deptId);
+  const childIDs = getChildIDs([result], "value");
+  return childIDs;
 };

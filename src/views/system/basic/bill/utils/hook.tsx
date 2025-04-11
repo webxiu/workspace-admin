@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:03:35
+ * @Last Modified time: 2025-03-12 15:35:47
  */
 
 import {
@@ -27,6 +27,7 @@ import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
 import { setColumn, getExportConfig, getMenuColumns, updateButtonList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
 
 import SelectMenu from "../component/SelectMenu.vue";
 import { PAGE_CONFIG } from "@/config/constant";
@@ -34,8 +35,12 @@ import { Plus } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { getFormColumns } from "@/utils/form";
 import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import type { ColDef } from "ag-grid-community";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref<boolean>(false);
   const dataList = ref<BillNumberItemType[]>([]);
@@ -81,7 +86,8 @@ export const useConfig = () => {
     const [data] = columnArrs;
     if (data?.length) columnData = data;
     updateButtonList(buttonList, buttonArrs[0]);
-    columns.value = setColumn({ columnData, dragSelector: ".bill-manage", operationColumn: false, formData });
+    columns.value = setColumn({ columnData, formData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, formData, operationColumn: false });
   };
 
   const onRefresh = () => {
@@ -195,37 +201,22 @@ export const useConfig = () => {
       }
     };
 
-    getFormColumns({ loading, customElement, groupCode: "1" })
-      .then((data) => {
-        loading.value = false;
-        if (!data.formColumns.length) return;
-        myFormConfig.value = data.formColumns;
-      })
-      .catch(() => (loading.value = false));
-
     addDialog({
       title: `${title}单据编号规则`,
       props: {
-        loading: loading,
-        formInline: _formData,
-        formRules: formRules,
-        // formConfigs: formConfigs({ projectsList, onSelectMenu }),
-        formConfigs: myFormConfig,
-        formProps: { labelWidth: "120px" }
+        params: { groupCode: "1" },
+        formConfig: [{ formData: _formData, customElement, formProps: { labelWidth: "120px" } }]
       },
       width: "60%",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate(async (valid) => {
+        formRef.value.getRef().then(async ({ valid, data }) => {
+          // const _formData = data.forms[0];
           const msgTextObj = {
             0: `确认要${title}吗?`,
             1: `当前后缀重复，确认添加吗?`,
@@ -299,7 +290,10 @@ export const useConfig = () => {
     if (!rowData.value) return ElMessage({ message: "请选择记录", type: "warning" });
     onDelete(rowData.value);
   };
-
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", isDropDown: false },
     { clickHandler: onEditAction, type: "warning", text: "修改", isDropDown: false },
@@ -308,6 +302,8 @@ export const useConfig = () => {
   ]);
 
   return {
+    columnDefs,
+    isAgTable,
     columns,
     dataList,
     loading,
@@ -321,6 +317,7 @@ export const useConfig = () => {
     onTagSearch,
     onCurrentChange,
     handleSizeChange,
-    handleCurrentChange
+    handleCurrentChange,
+    onSwitchTable
   };
 };

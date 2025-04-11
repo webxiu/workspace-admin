@@ -1,6 +1,5 @@
 <template>
   <div style="margin: 0 10px 0 15px">
-    <el-divider><h2>操作日志</h2></el-divider>
     <el-timeline v-if="taskLogList?.length > 0">
       <el-timeline-item v-for="(item, index) in taskLogList" :key="index" type="primary" size="large" :hollow="true">
         <el-card body-style="padding:8px 10px">

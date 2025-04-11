@@ -1,8 +1,9 @@
+import { reactive, ref } from "vue";
+
 import { FormConfigItemType } from "@/components/EditForm/index.vue";
 import { FormRules } from "element-plus";
-import { reactive, ref } from "vue";
-import regExp from "@/utils/regExp";
 import { getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
+import regExp from "@/utils/regExp";
 
 const GridSpan = 12;
 const layout = { span: GridSpan, xs: 24, sm: 12, md: 12, lg: 12, xl: 12 };
@@ -49,9 +50,7 @@ export const formConfigs = ({ type, stateOptions, deptOptions, _formData }): For
       label: "员工姓名",
       prop: "userName",
       colProp: layout,
-      render: ({ formModel, row }) => {
-        return <el-input v-model={formModel[row.prop]} placeholder="请输入员工姓名" clearable />;
-      }
+      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入员工姓名" clearable />
     },
     {
       label: "部门",

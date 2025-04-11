@@ -56,7 +56,7 @@ export const formGroupConfigs = (): FormConfigItemType[] => {
       label: "分组编号",
       prop: "groupCode",
       colProp: { span: 12 },
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="分组编号最小的为主表格(默认表格), 其余表格按顺序对应" />
       },
       render: ({ formModel, row }) => (

@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-11-29 16:49:00
+ * @Last Modified time: 2024-12-25 16:32:32
  */
 
 import { CustomPropsType, getFormColumns } from "@/utils/form";
@@ -41,6 +41,7 @@ import Bpmn from "../bpmn.vue";
 import BpmnModeler from "bpmn-js/lib/Modeler";
 import { LoadingType } from "@/components/ButtonList/index.vue";
 import { OptionItemType } from "@/api/plmManage";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import { useBpmnFlowStore } from "@/store/modules/bpmn";
 import { useBpmnStore } from "@/components/BpmnFlow/hooks";
@@ -177,8 +178,6 @@ export const useConfig = () => {
   const openDialog = (type: "add" | "edit", row?: FlowManageItemType) => {
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const loading = ref<boolean>(true);
-    const myFormConfig = ref<FormConfigItemType[]>([]);
     const _formData = reactive({
       id: row?.id,
       billList: row?.billId ?? "",
@@ -205,32 +204,22 @@ export const useConfig = () => {
       }
     });
 
-    getFormColumns({ customProps, groupCode: "1" })
-      .then((data) => {
-        loading.value = false;
-        if (!data.formColumns.length) return;
-        myFormConfig.value = data.formColumns;
-      })
-      .catch(() => (loading.value = false));
-
     addDialog({
       title: `${title}模板配置`,
       props: {
-        formInline: _formData,
-        formRules: templateFormRules,
-        loading: loading,
-        // formConfigs: templateFormConfigs({ billOptions, formUrlList, onBillChange }),
-        formConfigs: myFormConfig,
-        formProps: { labelWidth: "160px" }
+        params: { groupCode: "1" },
+        formConfig: [{ formData: _formData, customProps, formProps: { labelWidth: "160px" } }]
       },
       width: "640px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      showResetButton: true,
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          // const _formData = data.forms[0];
           if (!valid) return;
           const { billList, ...params } = _formData;
           showMessageBox("确认提交吗")

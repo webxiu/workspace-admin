@@ -1,12 +1,14 @@
 <template>
-  <div class="flex-1 m-8 pt-10 br-4 ui-ovy-a border-line" style="max-height: calc(100vh - 173px)">
+  <div class="flex-1 m-8 pt-10 br-4 ui-ovy-a border-line" style="height: calc(100vh - 173px)">
     <EditForm
+      v-if="row?.id"
       :formConfigs="formConfig"
       :formRules="formRules"
       :formInline="formData"
       :formProps="{ labelWidth: '110px', labelPosition: 'top' }"
       @submit="onSubmit"
     />
+    <el-empty v-else description="暂无数据" />
   </div>
 </template>
 
@@ -25,13 +27,13 @@ export interface ImageItemType {
   imgList: DomainItem[];
 }
 
-const props = defineProps<{ row: OperateBookStationItemType }>();
+const props = defineProps<{ row: OperateBookStationItemType; isEdit?: boolean }>();
 const emits = defineEmits(["change", "handleImg"]);
 
 const baseApi = import.meta.env.VITE_BASE_API;
 const formConfig = ref(
   formConfigs({
-    disabled: props.row?.id,
+    disabled: !props.isEdit,
     onHandleImg: (arg) => emits("handleImg", ...arg)
   })
 );
@@ -55,7 +57,7 @@ async function getBase64Image(data: ImageItemType) {
 function getImageList(row: OperateBookStationItemType) {
   if (!row) return;
   formConfig.value = formConfigs({
-    disabled: !row?.id,
+    disabled: !props.isEdit,
     onHandleImg: (...arg) => emits("handleImg", ...arg)
   });
   // 图片回显

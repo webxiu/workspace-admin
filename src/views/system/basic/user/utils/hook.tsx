@@ -2,11 +2,10 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-10-16 10:05:03
+ * @Last Modified time: 2025-03-12 15:36:59
  */
 
 import {
-  UserInfoReqType,
   UserInfoItemType,
   userRoleDelete,
   userInfoAdd,
@@ -46,15 +45,19 @@ import AddModal from "../addModal.vue";
 import AddDeptModal from "../addDeptModal.vue";
 import OnlineModal from "../onlineModal.vue";
 import MoveModal from "../moveModal.vue";
-import { downloadFile, getChildIDs, getTreeArrItem, getFileNameOnUrlPath } from "@/utils/common";
-import { getExportConfig, setColumn, getMenuColumns, getEnumDictList, updateButtonList } from "@/utils/table";
+import { downloadFile, getFileNameOnUrlPath } from "@/utils/common";
+import { getExportConfig, setColumn, getMenuColumns, getEnumDictList, updateButtonList, getChildDeptIds } from "@/utils/table";
 import { PAGE_CONFIG } from "@/config/constant";
 import { getDeptOptions } from "@/utils/requestApi";
-import { getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
-import { getFormColumns, CustomPropsType } from "@/utils/form";
+import { CustomPropsType } from "@/utils/form";
 import { FormRules } from "element-plus";
+import TableEditList from "@/components/TableEditList/index.vue";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import type { ColDef } from "ag-grid-community";
 
 export const useConfig = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const tableRef2 = ref();
   const stateOptions = ref([]);
   const rowData = ref<UserInfoItemType>();
@@ -72,10 +75,11 @@ export const useConfig = () => {
   const loadingStatus = ref<LoadingType>({ loading: false, text: "" });
   const groupArrsList = ref<TableGroupItemType[]>([]);
   const userTableRef = ref();
+  const loading = ref<boolean>(false);
   const loading2 = ref<boolean>(false);
   const loading3 = ref<boolean>(false);
 
-  const formData = reactive<UserInfoReqType>({
+  const formData = reactive({
     page: 1,
     limit: PAGE_CONFIG.pageSize,
     userName: "",
@@ -136,29 +140,28 @@ export const useConfig = () => {
     if (groupArrs?.length) groupArrsList.value = groupArrs;
     updateButtonList(buttonList, buttonArrs[0]);
     updateButtonList(buttonList2, buttonArrs[1]);
-    columns.value = setColumn({ columnData, dragSelector: ".user-manage", operationColumn: false });
+    columns.value = setColumn({ columnData, operationColumn: false });
+    columnDefs.value = getAgGridColumns({ columnData, operationColumn: false });
+
     columns2.value = setColumn({
       columnData: columnData2,
       operationColumn: { width: 180 },
       selectionColumn: { hide: false },
-      radioColumn: false,
-      dragSelector: ".user-manage-role"
+      radioColumn: false
     });
     columns3.value = setColumn({
       columnData: columnData3,
       operationColumn: { width: 130 },
       selectionColumn: { hide: false },
-      radioColumn: false,
-      dragSelector: ".user-manage-dept"
+      radioColumn: false
     });
   };
 
   const getOptions = () => {
     getEnumDictList(["UserStatus"])
-      .then((res) => {
-        const states = res.UserStatus.map(({ optionName, optionValue }) => ({ label: optionName, value: optionValue }));
-        stateOptions.value = res.UserStatus;
-        searchOptions[2].children = states;
+      .then(({ UserStatus }) => {
+        stateOptions.value = UserStatus;
+        searchOptions[2].children = UserStatus;
       })
       .catch(console.log);
 
@@ -189,25 +192,22 @@ export const useConfig = () => {
 
   const onTagSearch = (values) => {
     Object.assign(formData, values);
-    formData.deptIdList = [];
-    if (values.deptId) {
-      const result = getTreeArrItem(deptOptions.value, "value", values.deptId);
-      formData.deptIdList = getChildIDs([result], "value");
-    }
+    formData.deptIdList = getChildDeptIds(deptOptions.value, values.deptId);
     getTableList();
   };
 
   const getTableList = () => {
-    userInfoList(formData).then(({ data }) => {
-      dataList.value = data.records || [];
-      pagination.total = data.total;
-
-      const _rowIndex = dataList.value.findIndex((item) => item.id === rowData.value?.id);
-
-      if (_rowIndex > -1) {
-        userTableRef.value?.getTableRef().setCurrentRow(dataList.value[_rowIndex]);
-      }
-    });
+    loading.value = true;
+    userInfoList(formData)
+      .then(({ data }) => {
+        dataList.value = data.records || [];
+        pagination.total = data.total;
+        const _rowIndex = dataList.value.findIndex((item) => item.id === rowData.value?.id);
+        if (_rowIndex > -1) {
+          userTableRef.value?.getTableRef().setCurrentRow(dataList.value[_rowIndex]);
+        }
+      })
+      .finally(() => (loading.value = false));
   };
 
   const onAdd = () => openDialog("add");
@@ -218,15 +218,12 @@ export const useConfig = () => {
     const titleObj = { add: "新增", edit: "修改" };
     const title = titleObj[type];
     const formRef = ref();
-    const loading = ref(false);
-    const myFormConfig = ref<FormConfigItemType[]>([]);
-    const formRules2 = ref<FormRules>({});
 
     const _formData = reactive({
       userCode: row?.userCode ?? "",
       userName: row?.userName ?? "",
       deptId: row?.deptId ? `${row?.deptId}` : "",
-      roleName: row?.roleName ?? "",
+      roleId: row?.roleId ?? "",
       mobile: row?.mobile ?? "",
       wxOpenid: row?.wxOpenid ?? "",
       qunhuiAccount: row?.qunhuiAccount ?? "",
@@ -240,43 +237,26 @@ export const useConfig = () => {
     const customProps = reactive<{ [key: string]: CustomPropsType }>({
       userCode: { disabled: type === "edit" },
       k3UserAccount: { disabled: true },
-      deptId: { formatAPI: (data) => data.deptInfoTree }
+      deptId: { formatAPI: (data) => data.deptInfoTree, apiFields: ["roleId"] },
+      roleId: { apiParams: { deptId: row?.deptId } }
     });
-
-    getFormColumns({ loading, customProps, groupCode: "1" })
-      .then((data) => {
-        loading.value = false;
-        if (!data.formColumns.length) return;
-        myFormConfig.value = data.formColumns.filter((item) => {
-          if (type === "add") return item.prop !== "k3UserAccount";
-          return true;
-        });
-        formRules2.value = data.formRules;
-      })
-      .catch(() => (loading.value = false));
 
     addDialog({
       title: `${title}用户`,
       props: {
-        formInline: _formData,
-        formRules: formRules2,
-        formConfigs: myFormConfig,
-        // formConfigs: myFormConfig,
-        formProps: { labelWidth: "140px" }
+        params: { groupCode: "1" },
+        formConfig: [{ formData: _formData, customProps, formProps: { labelWidth: "140px" } }]
       },
       width: "860px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          // const _formData = data.forms[0];
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(() => {
               onSubmitChange(type, title, _formData, () => {
@@ -315,7 +295,6 @@ export const useConfig = () => {
 
   // 获取右侧分组列表
   const onRowClick = (row: UserInfoItemType) => {
-    if (!row) return;
     rowData.value = row;
     getRoleList(row);
     getRightDeptList(row);
@@ -323,8 +302,6 @@ export const useConfig = () => {
 
   // 获取右侧分组列表
   const onRowClick3 = (row: UserInfoItemType) => {
-    if (!row) return;
-    rowData.value = row;
     getDeptList(row);
   };
 
@@ -586,22 +563,6 @@ export const useConfig = () => {
     getTableList();
   }
 
-  const buttonList = ref<ButtonItemType[]>([
-    { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus },
-    { clickHandler: onDorpEdit, type: "warning", text: "修改", icon: Edit },
-    { clickHandler: onDetail, type: "danger", text: "在线人员明细", icon: User, isDropDown: true },
-    { clickHandler: onResetPassword, type: "info", text: "重置密码", icon: RefreshLeft, isDropDown: true },
-    { clickHandler: onMoveUser, type: "default", text: "用户迁移", icon: Position, isDropDown: true },
-    { clickHandler: onExport, type: "default", text: "导出", icon: Download, isDropDown: true },
-    { clickHandler: onCreateDBAccount, type: "warning", text: "创建数据库帐号", icon: Plus, isDropDown: true },
-    { clickHandler: onCreateKingdeeAccount, type: "warning", text: "创建金蝶帐号", icon: Plus, isDropDown: true },
-    { clickHandler: onDeleteDBAccount, type: "warning", text: "删除数据库帐号", icon: Delete, isDropDown: true }
-  ]);
-  const buttonList2 = ref<ButtonItemType[]>([
-    { clickHandler: onAdd2, type: "primary", text: "新增", icon: Plus },
-    { clickHandler: onDeleteAll2, type: "danger", text: "删除", icon: Delete }
-  ]);
-
   const onAdd3 = () => {
     if (!rowData.value) {
       return message.error("请选择要修改的用户");
@@ -623,11 +584,6 @@ export const useConfig = () => {
       })
       .catch(console.log);
   };
-
-  const buttonList3 = ref<ButtonItemType[]>([
-    { clickHandler: onAdd3, type: "primary", text: "新增" },
-    { clickHandler: onDeleteAll3, type: "danger", text: "删除" }
-  ]);
 
   const onSetMainRole = (row) => {
     setMainRole({ id: row.id, isPrimarily: true }).then((res) => {
@@ -654,8 +610,37 @@ export const useConfig = () => {
       .catch(console.log);
   };
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    rowData.value = undefined;
+  }
+
+  const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus },
+    { clickHandler: onDorpEdit, type: "warning", text: "修改", icon: Edit },
+    { clickHandler: onDetail, type: "danger", text: "在线人员明细", icon: User, isDropDown: true },
+    { clickHandler: onResetPassword, type: "info", text: "重置密码", icon: RefreshLeft, isDropDown: true },
+    { clickHandler: onMoveUser, type: "default", text: "用户迁移", icon: Position, isDropDown: true },
+    { clickHandler: onExport, type: "default", text: "导出", icon: Download, isDropDown: true },
+    { clickHandler: onCreateDBAccount, type: "warning", text: "创建数据库帐号", icon: Plus, isDropDown: true },
+    { clickHandler: onCreateKingdeeAccount, type: "warning", text: "创建金蝶帐号", icon: Plus, isDropDown: true },
+    { clickHandler: onDeleteDBAccount, type: "warning", text: "删除数据库帐号", icon: Delete, isDropDown: true }
+  ]);
+  const buttonList2 = ref<ButtonItemType[]>([
+    { clickHandler: onAdd2, type: "primary", text: "新增", icon: Plus },
+    { clickHandler: onDeleteAll2, type: "danger", text: "删除", icon: Delete }
+  ]);
+
+  const buttonList3 = ref<ButtonItemType[]>([
+    { clickHandler: onAdd3, type: "primary", text: "新增" },
+    { clickHandler: onDeleteAll3, type: "danger", text: "删除" }
+  ]);
+
   return {
+    columnDefs,
+    isAgTable,
     tableRef2,
+    loading,
     loading2,
     loading3,
     columns,
@@ -688,6 +673,7 @@ export const useConfig = () => {
     onSetMainDept,
     onCurrentChange,
     handleSelectionChange3,
-    handleSelectionChange2
+    handleSelectionChange2,
+    onSwitchTable
   };
 };

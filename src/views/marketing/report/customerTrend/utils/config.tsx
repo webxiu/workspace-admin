@@ -17,7 +17,7 @@ export const formConfigs = ({ onOpenChange, onEnter }): FormConfigItemType[] => 
       label: "年份范围",
       prop: "date",
       style: { marginBottom: "8px", marginRight: "15px" },
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => (
         <RangePickerYear picker="year" v-model:value={formModel[row.prop]} onOpenChange={onOpenChange} allowClear={false} style="width:190px" />
       )

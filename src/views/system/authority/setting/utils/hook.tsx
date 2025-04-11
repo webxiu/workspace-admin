@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-02-27 10:47:11
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-02 17:48:13
+ * @Last Modified time: 2024-12-25 16:32:39
  */
 
 import {
@@ -21,18 +21,19 @@ import {
   setKingdeeRole,
   setQYWXTag
 } from "@/api/systemManage";
+import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
+import { ElMessage, FormRules } from "element-plus";
 import { downloadDataToExcel, getMenuColumns, setColumn, updateButtonList } from "@/utils/table";
 import { formConfigs, formRules } from "./config";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox, wrapFn } from "@/utils/message";
 
-import EditForm, { FormConfigItemType } from "@/components/EditForm/index.vue";
-import { ElMessage, FormRules } from "element-plus";
+import TableEditList from "@/components/TableEditList/index.vue";
 import { addDialog } from "@/components/ReDialog";
 import addModal from "../addModal.vue";
+import { getFormColumns } from "@/utils/form";
 import { getInductionAuditRoleInfoByDeptId } from "@/api/oaManage/humanResources";
 import { useEleHeight } from "@/hooks";
-import { getFormColumns } from "@/utils/form";
 
 export const useConfig = () => {
   const tableRef2 = ref();
@@ -149,9 +150,8 @@ export const useConfig = () => {
     const title = { add: "新增", edit: "修改" }[type];
     const loading = ref<boolean>(false);
     const formRef = ref();
-    const formConfigs2 = ref<FormConfigItemType[]>([]);
-    const formRules2 = ref<FormRules>({});
     const _formData = reactive({
+      ...row,
       deptId: row?.deptId ?? +curNodeKey.value > 0 ? curNodeKey.value : undefined,
       roleCode: type === "add" ? "" : row?.roleCode ?? "",
       tagid: type === "add" ? "" : row?.tagid ?? "",
@@ -163,18 +163,6 @@ export const useConfig = () => {
       id: type === "add" ? "" : row?.id ?? ""
     });
 
-    const customProps = reactive({
-      deptId: { formatAPI: (data) => data.deptInfoTree }
-    });
-    getFormColumns({ customProps, loading, groupCode: "1" })
-      .then((data) => {
-        const { formRules, formColumns } = data;
-        loading.value = false;
-        formRules2.value = formRules;
-        if (formColumns.length) formConfigs2.value = formColumns;
-      })
-      .catch(() => (loading.value = false));
-
     //新增分组时调用
     if (type === "add") {
       loading.value = true;
@@ -185,29 +173,25 @@ export const useConfig = () => {
         })
         .catch(() => (loading.value = false));
     }
-
+    const customProps = reactive({
+      deptId: { formatAPI: (data) => data.deptInfoTree }
+    });
     addDialog({
       title: `${title}角色`,
       props: {
-        loading: loading,
-        formInline: _formData,
-        formRules: formRules2,
-        formConfigs: formConfigs2,
-        formProps: { labelWidth: "140px" }
+        params: { groupCode: "1" },
+        formConfig: [{ formData: _formData, customProps, formProps: { labelWidth: "140px" } }]
       },
       width: "60%",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,
       showResetButton: true,
-      contentRenderer: () => h(EditForm, { ref: formRef }),
-      beforeReset: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.resetFields();
-      },
+      beforeReset: () => formRef.value.resetRef(),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done, { options }) => {
-        const FormRef = formRef.value.getRef();
-        FormRef.validate((valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
+          // const _formData = data.forms[0];
           if (valid) {
             showMessageBox(`确认要提交吗?`).then(() => {
               onSubmitChange(type, title, _formData, () => {

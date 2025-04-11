@@ -1,19 +1,24 @@
-import { dayjs } from "element-plus";
-import { formConfigs, formRules } from "./config";
+import { fetchArrangeMgmtRecord, queryArrangeMgmtRecord, updateArrangeMgmtRecord } from "@/api/oaManage/humanResources";
 import { getMenuColumns, setColumn, updateButtonList, usePageSelect } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
 
-import EditForm from "@/components/EditForm/index.vue";
+import type { ColDef } from "ag-grid-community";
+import { FormItemConfigType } from "@/utils/form";
 import { LoadingType } from "@/components/ButtonList/index.vue";
-import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
-import { addDialog } from "@/components/ReDialog";
-import { useEleHeight } from "@/hooks";
-import { getDeptOptions } from "@/utils/requestApi";
 import { PAGE_CONFIG } from "@/config/constant";
 import { PaginationProps } from "@pureadmin/table";
+import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import TableEditList from "@/components/TableEditList/index.vue";
+import { addDialog } from "@/components/ReDialog";
+import { dayjs } from "element-plus";
+import { getAgGridColumns } from "@/components/AgGridTable/config";
+import { getDeptOptions } from "@/utils/requestApi";
+import { useEleHeight } from "@/hooks";
 
 export const useMachine = () => {
+  const isAgTable = ref(true);
+  const columnDefs = ref<ColDef[]>([]);
   const dataList = ref([]);
   const columns = ref<TableColumnList[]>([]);
   const loading = ref(false);
@@ -25,14 +30,14 @@ export const useMachine = () => {
   const rowsData = ref([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
   const searchOptions = reactive<SearchOptionType[]>([
-    { label: "工号", value: "userCode" },
+    { label: "工号", value: "staffCode" },
     { label: "部门", value: "deptId", children: [] },
-    { label: "排班日期", value: "arrangeDate", type: "date", format: "YYYY-MM-DD" }
+    { label: "排班日期", value: "schedulingDate", type: "date", format: "YYYY-MM-DD" }
   ]);
 
   const nowDate = dayjs().format("YYYY-MM-DD");
 
-  const queryParams = reactive({ arrangeDate: nowDate });
+  const queryParams = reactive({ schedulingDate: nowDate });
 
   const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData, uniId: "id" });
 
@@ -43,14 +48,14 @@ export const useMachine = () => {
 
   const getColumnConfig = async () => {
     let columnData: TableColumnList[] = [
-      { label: "工号", prop: "userCode" },
-      { label: "姓名", prop: "userName" },
+      { label: "工号", prop: "staffCode" },
+      { label: "姓名", prop: "staffName" },
       { label: "部门", prop: "deptName" },
-      { label: "排班日期", prop: "arrangeDate" },
-      { label: "上午上班", prop: "morningStartTime" },
-      { label: "上午下班", prop: "morningEndTime" },
-      { label: "下午上班", prop: "afternoonStartTime" },
-      { label: "下午下班", prop: "afternoonEndTime" }
+      { label: "排班日期", prop: "schedulingDate" },
+      { label: "上午上班", prop: "morningWorkTime" },
+      { label: "上午下班", prop: "morningDownWorkTime" },
+      { label: "下午上班", prop: "afternoonWorkTime" },
+      { label: "下午下班", prop: "afternoonDownWorkTime" }
     ];
 
     const { columnArrs, buttonArrs } = await getMenuColumns();
@@ -58,6 +63,8 @@ export const useMachine = () => {
     if (menuCols?.length) columnData = menuCols;
     updateButtonList(buttonList, buttonArrs[0]);
     columns.value = setColumn({ columnData, operationColumn: false, selectionColumn: { hide: false }, radioColumn: { hide: true } });
+    columnDefs.value = getAgGridColumns({ formData, columnData, operationColumn: false, selectionColumn: { hide: false }, radioColumn: { hide: true } });
+
     return columnData;
   };
 
@@ -68,14 +75,13 @@ export const useMachine = () => {
   };
 
   const getTableList = () => {
-    console.log(formData, "formData===");
-    // fetchAttendanceRecord(formData).then((res: any) => {
-    //   if (res.data) {
-    //     dataList.value = res.data.records || [];
-    //     pagination.total = res.data.total;
-    //     setSelectCheckbox();
-    //   }
-    // });
+    fetchArrangeMgmtRecord(formData).then((res: any) => {
+      if (res.data) {
+        dataList.value = res.data.records || [];
+        pagination.total = res.data.total;
+        setSelectCheckbox();
+      }
+    });
   };
 
   const onFresh = () => {
@@ -83,7 +89,7 @@ export const useMachine = () => {
     getTableList();
   };
 
-  const handleTagSearch = (values) => {
+  const onTagSearch = (values) => {
     Object.assign(formData, values);
     getTableList();
   };
@@ -93,19 +99,30 @@ export const useMachine = () => {
   };
 
   const openDialog = async (type: "add" | "view" | "edit", rows?) => {
+    const rowObj = rows.at(-1);
     const title = { add: "新增", edit: "修改" }[type];
     const formRef = ref();
-    const formLoading = ref(false);
     const _formData = reactive({});
+
+    queryArrangeMgmtRecord({ id: rowObj.id }).then((res) => {
+      if (res.data) {
+        Object.keys(rowObj).forEach((el) => {
+          if (el === "deptId") {
+            _formData[el] = res.data[el] + "";
+          } else {
+            _formData[el] = res.data[el];
+          }
+        });
+      }
+    });
+
+    const formConfig: FormItemConfigType[] = [{ formData: _formData, formProps: { labelWidth: "80px" } }];
 
     addDialog({
       title: `${title}`,
       props: {
-        loading: formLoading,
-        formInline: _formData,
-        formRules: formRules,
-        formConfigs: formConfigs()
-        // formProps: { "label-position": "top" }
+        params: { groupCode: "1" },
+        formConfig: formConfig
       },
       width: "400px",
       draggable: true,
@@ -113,20 +130,16 @@ export const useMachine = () => {
       okButtonText: "保存",
       closeOnClickModal: false,
       hideFooter: type === "view",
-      contentRenderer: () => h(EditForm, { ref: formRef }),
+      contentRenderer: () => h(TableEditList, { ref: formRef }),
       beforeSure: (done) => {
-        const formIns = formRef.value.getRef();
-        formIns?.validate(async (valid) => {
+        formRef.value.getRef().then(({ valid, data }) => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`)
               .then(() => {
-                // onSubmitChange(type, title, _formData, () => {
-                //   done();
-                //   getTableList();
-                // });
-                console.log(_formData, "fd===");
-                message.warning("接口未开发");
-                done();
+                onSubmitChange(type, title, _formData, () => {
+                  done();
+                  getTableList();
+                });
               })
               .catch(console.log);
           }
@@ -136,35 +149,40 @@ export const useMachine = () => {
   };
 
   const onSubmitChange = (type: string, title: string, data, callback) => {
-    // console.log(type, data);
-    // const apiType = { edit: updateMachine };
-    // apiType[type](data).then((res) => {
-    //   if (res.data) {
-    //     message.success(`${title}成功`);
-    //     callback();
-    //   }
-    // });
+    const apiType = { edit: updateArrangeMgmtRecord };
+    const reqParams = rowsData.value
+      .map((item) => ({
+        ...item,
+        afternoonDownWorkTime: data.afternoonDownWorkTime,
+        afternoonWorkTime: data.afternoonWorkTime,
+        morningDownWorkTime: data.morningDownWorkTime,
+        morningWorkTime: data.morningWorkTime
+      }))
+      .at(-1);
+    if (!rowsData.value.length) return message.warning("请选择记录");
+    apiType[type](reqParams).then((res) => {
+      if (res.data) {
+        message.success(`${title}成功`);
+        callback();
+      }
+    });
   };
 
   const onEdit = () => {
-    // if (!rowsData.value.length) {
-    //   message.warning("请选择一条记录");
-    //   return;
-    // }
+    if (!rowsData.value.length) {
+      message.warning("请选择一条记录");
+      return;
+    }
     openDialog("edit", rowsData.value);
   };
 
   const rowDbclick = (row) => {
     onEdit();
+    onSelectAll([row]);
   };
   const rowClick = (row) => {
     currentRow.value = row;
   };
-
-  const buttonList = ref<ButtonItemType[]>([
-    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
-    { clickHandler: onExport, type: "primary", text: "导出", isDropDown: false }
-  ]);
 
   function onSelect(rows, row) {
     setSelectChange({ rows, row });
@@ -185,24 +203,37 @@ export const useMachine = () => {
     getTableList();
   }
 
+  function onSwitchTable() {
+    isAgTable.value = !isAgTable.value;
+    currentRow.value = undefined;
+    rowsData.value = [];
+  }
+
+  const buttonList = ref<ButtonItemType[]>([
+    { clickHandler: onEdit, type: "warning", text: "修改", isDropDown: false },
+    { clickHandler: onExport, type: "primary", text: "导出", isDropDown: false }
+  ]);
   return {
+    columnDefs,
+    isAgTable,
+    tableRef,
     loading,
-    onSizeChange,
-    onCurrentChange,
-    pagination,
-    dataList,
     columns,
-    queryParams,
+    dataList,
     maxHeight,
+    pagination,
+    queryParams,
     buttonList,
     searchOptions,
     loadingStatus,
     onFresh,
-    onSelect,
-    onSelectAll,
-    tableRef,
     rowClick,
     rowDbclick,
-    handleTagSearch
+    onSelect,
+    onSelectAll,
+    onTagSearch,
+    onSizeChange,
+    onCurrentChange,
+    onSwitchTable
   };
 };

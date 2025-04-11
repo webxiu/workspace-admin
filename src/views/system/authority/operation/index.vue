@@ -34,7 +34,7 @@ const {
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
       <PureTableBar :columns="columns" style="width: 50%" @refresh="onRefresh" @change-column="setUserMenuColumns">
         <template #title>
-          <SearchList v-model="dataList" :bright="false" style="width: 30%" placeholder="查询项目名称" :propKeys="['menuName']" />
+          <HxSearchHighlight v-model="dataList" :bright="false" style="width: 30%" placeholder="查询项目名称" :propKeys="['menuName']" />
         </template>
         <template v-slot="{ size, dynamicColumns }">
           <pure-table
@@ -61,7 +61,7 @@ const {
       </PureTableBar>
       <PureTableBar :columns="columns2" style="width: 50%" @refresh="onRefresh2" @change-column="setUserMenuColumns">
         <template #title>
-          <SearchList
+          <HxSearchHighlight
             v-model="dataList2"
             :bright="false"
             style="width: 30%"

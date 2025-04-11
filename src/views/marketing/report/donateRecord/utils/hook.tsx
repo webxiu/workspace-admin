@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-04-09 16:39:26
+ * @Last Modified time: 2025-02-27 15:35:52
  */
 
 import { DonateRecordItemType, donateRecordList, donateRecordOptionList, exportDonateRecord } from "@/api/oaManage/marketing";
@@ -22,7 +22,7 @@ export const useConfig = () => {
   const loading = ref<boolean>(false);
   const dataList = ref<DonateRecordItemType[]>([]);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
-  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 58 + 48);
+  const maxHeight = useEleHeight(".app-main > .el-scrollbar", 40 + 45);
 
   const formData = reactive({
     page: 1,

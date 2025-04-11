@@ -23,7 +23,7 @@ export const formConfigs = ({ onChange }): FormConfigItemType[] => {
       label: "年份",
       prop: "year",
       style: { marginBottom: "8px", marginRight: 0 },
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => (
         <el-date-picker
           v-model={formModel[row.prop]}
@@ -41,7 +41,7 @@ export const formConfigs = ({ onChange }): FormConfigItemType[] => {
       prop: "type",
       style: { marginBottom: "8px" },
       labelWidth: 0,
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => (
         <ButtonGroup v-model={formModel[row.prop]} buttonsConfig={buttonsConfig} onChange={onChange} color={"#009688"} style="width: 200px" />
       )

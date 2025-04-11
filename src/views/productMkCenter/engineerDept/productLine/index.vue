@@ -10,13 +10,30 @@ import { useConfig } from "./utils/hook";
 
 defineOptions({ name: "ProductMkCenterEngineerDeptProductLineIndex" });
 
-const { loading, columns, dataList, maxHeight, buttonList, onRefresh, onDbClick, onRowClick, onDistribute } = useConfig();
+const { columnDefs, isAgTable, loading, columns, dataList, maxHeight, buttonList, onRefresh, onDbClick, onRowClick, onDistribute, onSwitchTable } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onRefresh">
+      <AgGridTable
+        v-if="isAgTable"
+        rowKey="id"
+        :loading="loading"
+        :rowData="dataList"
+        :columnDefs="columnDefs"
+        :height="maxHeight"
+        @switch="onSwitchTable"
+        @refresh="onRefresh"
+        @cellClicked="onRowClick"
+        @cellDoubleClicked="onDbClick"
+        :headButtons="{ buttonList, autoLayout: false }"
+      >
+        <template #title>
+          <div class="no-wrap block-quote-tip ui-w-100 mr-50">按生产线分发指导书</div>
+        </template>
+      </AgGridTable>
+      <PureTableBar v-else :columns="columns" @refresh="onRefresh">
         <template #title>
           <div class="no-wrap block-quote-tip ui-w-100 mr-50">按生产线分发指导书</div>
         </template>

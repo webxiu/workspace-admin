@@ -51,7 +51,7 @@ export const formConfigs = ({ timeTypeList }): FormConfigItemType[] => {
       label: "发布版本",
       prop: "version",
       colProp: layout,
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="新版本号必须大于已发布版本号, App端才能检测到软件更新" />
       },
       render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="版本格式: 1.0.0" clearable />
@@ -72,7 +72,7 @@ export const formConfigs = ({ timeTypeList }): FormConfigItemType[] => {
       label: "最小时间",
       prop: "minTime",
       colProp: layout,
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="设置为0不提醒更新" />
       },
       render: ({ formModel, row }) => (
@@ -83,7 +83,7 @@ export const formConfigs = ({ timeTypeList }): FormConfigItemType[] => {
       label: "最大时间",
       prop: "maxTime",
       colProp: layout,
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="设置为0不提醒更新" />
       },
       render: ({ formModel, row }) => (
@@ -94,7 +94,7 @@ export const formConfigs = ({ timeTypeList }): FormConfigItemType[] => {
       label: "提醒周期",
       prop: "timeType",
       colProp: layout,
-      slots: {
+      slot: {
         label: ({ label }) => <Question label={label} tipMsg="在最大时间和最小时间范围内随机提醒(如: 3-8小时内随机提醒)" />
       },
       render: ({ formModel, row }) => (
@@ -109,7 +109,7 @@ export const formConfigs = ({ timeTypeList }): FormConfigItemType[] => {
       label: "上传安装包",
       prop: "downloadUrl",
       colProp: layout,
-      slots: { label: ({ label }) => <span class="fw-700">{label}</span> },
+      slot: { label: ({ label }) => <span class="fw-700">{label}</span> },
       render: ({ formModel, row }) => <HxUploadButton v-model:fileList={formModel[row.prop]} limit={1} accept={".apk"} />
     },
     {

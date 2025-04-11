@@ -29,10 +29,8 @@ export const useConfig = () => {
   });
 
   const getOpts = () => {
-    getEnumDictList(["DR0ProductLevel"]).then((res) => {
-      if (res) {
-        searchOptions[1].children = res["DR0ProductLevel"].map((el) => ({ label: el.optionName, value: el.optionValue }));
-      }
+    getEnumDictList(["DR0ProductLevel"]).then(({ DR0ProductLevel }) => {
+      searchOptions[1].children = DR0ProductLevel;
     });
   };
 

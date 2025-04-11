@@ -1,6 +1,6 @@
 <template>
   <div class="page" ref="printRef" v-loading="loading">
-    <div class="item-info" v-for="item in dataList" :key="item.Id">
+    <div class="item-info" v-for="item in dataList" :key="item.id">
       <h3 class="pay-info-title">{{ fmtDate(gzDate, "dateMonth") }}{{ getUserName(item) }}工资条明细</h3>
       <el-table :data="templateList" style="width: 100%" size="small" class="payslip-table">
         <el-table-column type="index" label="序号" align="center" width="120" />
@@ -8,7 +8,7 @@
         <el-table-column prop="result" label="项目结果">
           <template #default="{ row }">
             <span v-if="['RZRQ'].includes(row.fieldName)">{{ fmtDate(item[row.fieldName], "date") }} </span>
-            <span v-else-if="['signTime'].includes(row.fieldName)">{{ fmtDate(item.InDate || item[row.fieldName]) }} </span>
+            <span v-else-if="['signTime'].includes(row.fieldName)">{{ item[row.fieldName] ? fmtDate(item.InDate || item[row.fieldName]) : "" }} </span>
             <span v-else>{{ item[row.fieldName] }}</span>
           </template>
         </el-table-column>
@@ -25,17 +25,18 @@
 </template>
 
 <script setup lang="tsx">
-import { ref, watch, reactive } from "vue";
+import { ref, watch } from "vue";
 import dayjs from "dayjs";
 import Print from "@/utils/print";
-import { getFormatDate_XLSX } from "@/utils/common";
-import { getMoneySignImages, qywxFetchMoneyTemplateList, fetchPayslipDataList, PayslipDataItemType } from "@/api/oaManage/financeDept";
+import { fetchPayslipDataList, PayslipDataItemType, fetchMoneyTemplateList } from "@/api/oaManage/financeDept";
 
 interface Props {
   payslipIdList: string[];
   gzmbNo: string;
   gzmbb: string;
   gzDate: string;
+  year: string;
+  month: string;
 }
 const props = defineProps<Partial<Props>>();
 const baseApi = import.meta.env.VITE_BASE_API;
@@ -50,7 +51,7 @@ watch(props, () => getTemplateList(), { immediate: true });
 // 获取模板
 function getTemplateList() {
   loading.value = true;
-  qywxFetchMoneyTemplateList({ isApp: true, templateNo: props.gzmbNo }).then(({ data }) => {
+  fetchMoneyTemplateList({ templateNo: props.gzmbNo }).then(({ data }) => {
     if (data) {
       templateList.value = data.filter((item) => item.appShow === "是");
       getMoneyInfo();
@@ -60,10 +61,10 @@ function getTemplateList() {
 
 // 获取值数据
 function getMoneyInfo() {
-  const { gzDate, gzmbNo, gzmbb, payslipIdList } = props;
-  fetchPayslipDataList({ gzDate, gzmbNo, gzmbb, payslipIdList, needGetId: false })
+  const { gzmbNo, year, month, payslipIdList } = props;
+  fetchPayslipDataList({ gzmbNo, payslipIdList, page: 1, limit: 10000, year, month })
     .then(({ data }) => {
-      dataList.value = data || [];
+      dataList.value = data.records || [];
       loading.value = false;
     })
     .catch(() => (loading.value = false));
@@ -77,9 +78,6 @@ function getUserName(item) {
 
 // 组合签名图片url
 function getImageUrl(item) {
-  // const hasDot = item.Image1?.includes(",");
-  // return hasDot ? item.Image1 + item?.Image2 : item.Image1 + "," + item?.Image2;
-
   return baseApi + item.signatureFilePath;
 }
 // 组合签名图片url

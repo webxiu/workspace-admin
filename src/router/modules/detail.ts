@@ -1,7 +1,7 @@
 const Layout = () => import("@/layout/index.vue");
 
 export default {
-  path: "/",
+  path: "/detail",
   name: "DetailPage",
   component: Layout,
   meta: { title: "", icon: "", showLink: false },
@@ -145,10 +145,10 @@ export default {
       component: () => import("@/views/system/basic/menu/tableColumn/index.vue")
     },
     {
-      path: "/humanResources/businessRecord/print",
-      name: "PrintBusinessRecord",
+      path: "/humanResources/carAllocate/print",
+      name: "PrintCarAllocate",
       meta: { title: "打印外出申请", keepAlive: true },
-      component: () => import("@/views/humanResources/businessRecord/print.vue")
+      component: () => import("@/views/humanResources/carAllocate/print.vue")
     },
     {
       path: "/productMkCenter/engineerDept/operateBook/sopInfo",
@@ -179,6 +179,12 @@ export default {
       name: "OaMarketingHandleMakePrintIndex",
       meta: { title: "手板制作申请单-打印", keepAlive: true },
       component: () => import("@/views/marketing/saleManage/handleMake/print/index.vue")
+    },
+    {
+      path: "/system/develop/taskManage/preview",
+      name: "SystemDevelopTaskManagePreview",
+      meta: { title: "任务预览", keepAlive: true },
+      component: () => import("@/views/system/develop/taskManage/preview.vue")
     }
   ]
 } as RouteConfigsTable;

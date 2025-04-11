@@ -12,6 +12,8 @@ import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 defineOptions({ name: "HumanResourcesOvertimeOrderIndex" });
 
 const {
+  columnDefs,
+  isAgTable,
   loading,
   columns,
   dataList,
@@ -22,30 +24,41 @@ const {
   searchOptions,
   onSearch,
   rowClick,
-  onAdd,
   onEdit,
   onDelete,
   onSubmit,
-  onExport,
-  onSizeChange,
   rowDbClick,
-  handleTagSearch,
-  onCurrentChange
+  onTagSearch,
+  onSizeChange,
+  onCurrentChange,
+  onSwitchTable
 } = useConfig();
 </script>
 
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div class="flex flex-1 ui-h-100 ui-w-100 ui-ov-h">
-      <PureTableBar :columns="columns" @refresh="onSearch" @change-column="setUserMenuColumns">
+      <AgGridTable
+        v-if="isAgTable"
+        ref="tableRef"
+        rowKey="id"
+        :rowData="dataList"
+        :loading="loading"
+        :columnDefs="columnDefs"
+        :height="maxHeight + 15"
+        :paginations="pagination"
+        @refresh="onSearch"
+        @switch="onSwitchTable"
+        @cellClicked="rowClick"
+        @cellDoubleClicked="rowDbClick"
+        @sizeChange="onSizeChange"
+        @currentChange="onCurrentChange"
+        :headButtons="{ buttonList, autoLayout: false }"
+        :blendedSearch="{ onTagSearch, queryParams, searchOptions, searchField: 'staffName', placeholder: '请输入姓名' }"
+      />
+      <PureTableBar v-else :columns="columns" @refresh="onSearch" @change-column="setUserMenuColumns">
         <template #title>
-          <BlendedSearch
-            :queryParams="queryParams"
-            @tagSearch="handleTagSearch"
-            :searchOptions="searchOptions"
-            placeholder="请输入姓名"
-            searchField="staffName"
-          />
+          <BlendedSearch :queryParams="queryParams" @tagSearch="onTagSearch" :searchOptions="searchOptions" placeholder="请输入姓名" searchField="staffName" />
         </template>
         <template #buttons>
           <ButtonList :buttonList="buttonList" :autoLayout="false" more-action-text="业务操作" />
@@ -59,7 +72,6 @@ const {
             class="overtime-order"
             :adaptive="true"
             align-whole="center"
-            @row-click="rowClick"
             :loading="loading"
             :size="size"
             :data="dataList"
@@ -68,6 +80,7 @@ const {
             :paginationSmall="size === 'small'"
             highlight-current-row
             :show-overflow-tooltip="true"
+            @row-click="rowClick"
             @row-dblclick="rowDbClick"
             @page-size-change="onSizeChange"
             @page-current-change="onCurrentChange"

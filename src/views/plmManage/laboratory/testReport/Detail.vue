@@ -1,69 +1,59 @@
 <template>
-  <EditForm v-loading="loading" ref="formRef" :formInline="formData" :formConfigs="filterConfigs" :formProps="{ labelWidth: '180px' }" />
+  <TableEditList :loading="loading" ref="formRef" :params="{ groupCode: '1', pageUrl: pageUrl }" :formConfig="formConfig" />
 </template>
 
-<script setup lang="ts">
-import EditForm from "@/components/EditForm/index.vue";
-import { formConfigs } from "./utils/config";
-import { onMounted, ref, reactive, computed, watch } from "vue";
+<script setup lang="tsx">
+import { onMounted, ref, reactive } from "vue";
 import { fetchTestReportInfo } from "@/api/plmManage";
 import { dayjs } from "element-plus";
+import { FormItemConfigType } from "@/utils/form";
+import SelectUserList from "./SelectUserList.vue";
+import UploadFileList from "./UploadFileList.vue";
+
+interface Props {
+  id?: string;
+  pageUrl?: string;
+  type?: "add" | "edit" | "view";
+}
 
 /** 信息中心的查看单据id */
-const props = withDefaults(
-  defineProps<{
-    id?: string;
-    type?: "add" | "edit" | "view";
-    backRows: any[];
-    fileList: any[];
-    handleDown?: Function;
-    handleAdd?: Function;
-    handleUp?: Function;
-    formInline?: Record<string, any>;
-  }>(),
-  {
-    id: "",
-    type: "add",
-    fileList: () => [],
-    backRows: () => [],
-    handleDown: () => {},
-    handleAdd: () => {},
-    handleUp: () => {},
-    formInline: () => ({})
-  }
-);
+const props = defineProps<Props>();
 const loading = ref(false);
 const formRef = ref();
-const _backRows = ref([]);
-const _fileList = ref([]);
-const formData = reactive(props.formInline);
-const emits = defineEmits(["change"]);
+const formData = reactive({
+  id: "",
+  approval: [],
+  fileList: [],
+  reportName: "",
+  remark: "",
+  billNo: "",
+  createUserName: "",
+  createDate: ""
+});
+const isView = props.type === "view";
+const formConfig: FormItemConfigType[] = [
+  {
+    formData: formData,
+    formProps: { labelWidth: "140px" },
+    customElement: {
+      approval: ({ formModel, row }) => <SelectUserList v-model={formModel[row.prop]} type={props.type} />,
+      fileList: ({ formModel, row }) => <UploadFileList v-model={formModel[row.prop]} type={props.type} />
+    },
+    customProps: {
+      reportName: { disabled: isView },
+      remark: { disabled: isView },
+      approval: { disabled: isView }
+    },
+    customColumn: {
+      billNo: { hide: props.type === "add" },
+      createUserName: { hide: props.type === "add" },
+      createDate: { hide: props.type === "add" }
+    }
+  }
+];
 
 onMounted(() => {
   getDetail();
-});
-
-watch(props, watchUpdata, { deep: true });
-
-function watchUpdata(value) {
-  _backRows.value = value.backRows;
-  _fileList.value = value.fileList;
-  Object.keys(value.formInline)?.forEach((key) => {
-    formData[key] = value.formInline[key];
-  });
-}
-
-const filterConfigs = computed(() => {
-  const configList = formConfigs({ ...props, backRows: _backRows, fileList: _fileList, formData });
-  const _list = configList.filter((item) => {
-    if (props.type === "add") {
-      return !["createUserName", "createDate", "billNo"].includes(item.prop);
-    }
-    if (props.type === "edit" || props.type === "view") {
-      return item;
-    }
-  });
-  return _list;
 });
 
 function getDetail() {
@@ -79,9 +69,8 @@ function getDetail() {
           formData.billNo = row.billNo;
           formData.createUserName = row.createUserName;
           formData.createDate = dayjs(row?.createDate).format("YYYY-MM-DD HH:mm:ss");
-          _backRows.value = row.userList;
-          _fileList.value = row.fileList.map((item) => ({ ...item, name: item.resourceName, lastModified: item.id }));
-          emits("change", { backRows: _backRows.value, fileList: _fileList.value });
+          formData.approval = row.userList;
+          formData.fileList = row.fileList.map((item) => ({ ...item, name: item.resourceName, lastModified: item.id }));
         }
       })
       .finally(() => (loading.value = false));
@@ -89,8 +78,12 @@ function getDetail() {
 }
 
 function getRef() {
-  return formRef.value.getRef();
+  return new Promise((resolve) => {
+    formRef.value.getRef().then(({ valid, data }) => {
+      if (!valid) return;
+      resolve({ formData, data });
+    });
+  });
 }
-
 defineExpose({ getRef });
 </script>

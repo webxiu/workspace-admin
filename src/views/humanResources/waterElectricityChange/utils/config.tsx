@@ -13,13 +13,18 @@ export const formRules = reactive<FormRules>({
   newElectricity: [{ required: true, message: "新电表数为必填项", trigger: "submit" }]
 });
 
-export const formConfigs = ({ handleAddOtherUserNames, type, optionListInfo, changeBuilding, buildings = [] }): FormConfigItemType[] => {
+export const meterTypeOpts = [
+  { optionName: "水表", optionValue: "水表" },
+  { optionName: "电表", optionValue: "电表" }
+];
+
+export const formConfigs = ({ handleAddOtherUserNames, type, changeBuilding, buildings = [] }): FormConfigItemType[] => {
   console.log(buildings, "buildings");
   const isView = type === "view";
   let confArr: FormConfigItemType[] = [
     {
       label: "更换日期",
-      prop: "yearAndMonth",
+      prop: "replaceDate",
       labelWidth: 92,
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
@@ -34,7 +39,7 @@ export const formConfigs = ({ handleAddOtherUserNames, type, optionListInfo, cha
       render: ({ formModel, row }) => {
         return (
           <el-select v-model={formModel[row.prop]} placeholder="选择宿舍楼栋" style={{ width: "100%" }} onChange={changeBuilding}>
-            {buildings.value.map((item) => (
+            {buildings.map((item) => (
               <el-option key={item.id} label={item.name} value={item.id} />
             ))}
           </el-select>
@@ -64,14 +69,10 @@ export const formConfigs = ({ handleAddOtherUserNames, type, optionListInfo, cha
       labelWidth: 92,
       colProp: { span: 12 },
       render: ({ formModel, row }) => {
-        const meterTypeOpts = [
-          { label: "水表", value: "水表" },
-          { label: "电表", value: "电表" }
-        ];
         return (
           <el-select v-model={formModel[row.prop]} placeholder="选择更换表类型" style={{ width: "100%" }}>
             {meterTypeOpts.map((item) => (
-              <el-option key={item.value} label={item.label} value={item.value} />
+              <el-option key={item.optionValue} label={item.optionName} value={item.optionValue} />
             ))}
           </el-select>
         );

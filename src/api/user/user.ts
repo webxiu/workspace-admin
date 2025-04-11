@@ -128,7 +128,7 @@ export function deleteMenuFavorite(params) {
 
 /** 获取全局kkview预览地址 */
 export function fetchkkViewIpUrl(params) {
-  return http.request<string>("get", "/sys/system/getPrevewDomain", { params });
+  return http.request<string>("get", "/sys/system/getPreviewDomain", { params });
 }
 
 /** 查询个人所有密钥信息 */
