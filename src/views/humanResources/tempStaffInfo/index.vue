@@ -71,6 +71,7 @@ const {
         @switch="onSwitchTable"
         @cellClicked="onRowClick"
         @cellDoubleClicked="onEdit"
+        @rowSelected="onSelect"
         @sizeChange="onSizeChange"
         @currentChange="onCurrentChange"
         :headButtons="{ buttonList, autoLayout: false }"
