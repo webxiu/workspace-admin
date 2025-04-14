@@ -2,11 +2,12 @@
  * @Author: Hailen
  * @Date: 2023-07-13 10:10:59
  * @Last Modified by: Hailen
- * @Last Modified time: 2025-04-10 17:33:42
+ * @Last Modified time: 2025-04-14 09:44:43
  */
 
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken, CustomParamsSerializer } from "axios";
 import { PureHttpError, PureHttpRequestConfig, PureHttpResponse, RequestMethods } from "./types.d";
+import { getCookie, setCookie } from "@/utils/storage";
 
 import NProgress from "../progress";
 import { getUrlParameters } from "../common";
@@ -71,6 +72,7 @@ class PureHttp {
       async (config: PureHttpRequestConfig): Promise<any> => {
         this.removeBlank(config.data); // 移除请求参数前后空格
         config.hideMessage = config.headers.hideMessage;
+        if (!getCookie()) setCookie(Date.now().toString());
 
         // 是否隐藏Loading
         if (!config.headers.hideLoading) {

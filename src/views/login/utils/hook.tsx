@@ -1,4 +1,4 @@
-import { LOGIN_INFO, setCookie, setKkViewInfo, useLocalStorage } from "@/utils/storage";
+import { LOGIN_INFO, setKkViewInfo, useLocalStorage } from "@/utils/storage";
 import { LoginAppInfoType, fetchkkViewIpUrl, getCode, queryLoginParamsInfo, submitResetPassword } from "@/api/user/user";
 import { debounce, getUrlParameters } from "@/utils/common";
 import { formConfigs, formRules } from "./config";
