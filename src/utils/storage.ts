@@ -107,7 +107,7 @@ export function useLocalStorage<T>(key: string, isObj = true) {
    */
   function getItem(isStr = false): T {
     const emptyStr = isObj ? "{}" : "[]";
-    const data = localStorage.getItem(key);
+    const data = localStorage.getItem(key) as T;
     return isStr ? data : toParse(data || emptyStr);
   }
 

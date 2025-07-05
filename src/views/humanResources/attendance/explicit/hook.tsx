@@ -43,6 +43,7 @@ export const useMachine = () => {
   const currentRow = ref();
 
   const maxHeight = useEleHeight(".app-main > .el-scrollbar", 95);
+  const tableLogHeight = ref(150);
   const pagination = reactive<PaginationProps>({ ...PAGE_CONFIG });
 
   const formData: any = reactive({
@@ -58,7 +59,9 @@ export const useMachine = () => {
     { label: "工号", value: "staffCode" },
     { label: "部门", value: "deptId", children: [] },
     { label: "考勤时间", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" },
-    { label: "异常出勤", value: "abnormalAtt", children: [] }
+    { label: "异常出勤", value: "abnormalAtt", children: [] },
+    { label: "雇员种类", value: "wageAccountingType", children: [] },
+    { label: "人员状态", value: "state", children: [] },
   ]);
 
   const fetchOptions = () => {
@@ -67,6 +70,14 @@ export const useMachine = () => {
     });
     getEnumDictList(["AnomalousAttendance"]).then((res) => {
       searchOptions[3].children = res.AnomalousAttendance;
+    });
+    getEnumDictList(["EmployeeType"]).then((res) => {
+      console.log(res);
+      searchOptions[4].children = res.EmployeeType;
+    });
+    getEnumDictList(["EmployeeStatus"]).then((res) => {
+      console.log(res);
+      searchOptions[5].children = res.EmployeeStatus;
     });
   };
 
@@ -101,7 +112,8 @@ export const useMachine = () => {
       { label: "备注", prop: "remark" }
     ];
 
-    const calcTypeHandler = (row, flagKey) => ([2, 5].includes(row[`${flagKey}Flag`]) ? "primary" : "success");
+    // 缺卡补卡显示红色，非缺卡补卡显示蓝色
+    const calcTypeHandler = (row, flagKey) => ([2,4,5].includes(row[`${flagKey}Flag`]) ? "primary" : "danger");
 
     const morningWorkTimeRender = (data) => {
       return data.row.morningWorkTimeFlag !== 0 ? (
@@ -113,7 +125,7 @@ export const useMachine = () => {
                 onClick={() => {
                   data.row.morningWorkTime = null;
                   data.row.morningWorkTimeFlag = 1;
-                  saveRow(data.row);
+                  saveRow(data.row, 0, 1);
                 }}
                 size="small"
                 type={calcTypeHandler(data.row, "morningWorkTime")}
@@ -126,9 +138,21 @@ export const useMachine = () => {
           <div>
             {data.row.morningWorkTimeFlag === 1 && !data.row.morningWorkTime && (
               <el-button
-                onClick={(e) => onSetTimeValueBefore(data.row, "morningWorkTime", e)}
+                onClick={(e) => onSetTimeValueBefore(data.row, 2, 1, e)}
                 size="small"
                 type="success"
+                style={{ width: "10px", height: "20px" }}
+                icon={<Setting />}
+              />
+            )}
+          </div>
+
+          <div>
+            {data.row.morningWorkTimeFlag === 1 && !data.row.morningWorkTime && (
+              <el-button
+                onClick={(e) => onSetTimeValueBefore(data.row, 6, 1, e)}
+                size="small"
+                type="danger"
                 style={{ width: "10px", height: "20px" }}
                 icon={<Setting />}
               />
@@ -150,7 +174,7 @@ export const useMachine = () => {
                 onClick={() => {
                   data.row.morningDownWorkTime = null;
                   data.row.morningDownWorkTimeFlag = 1;
-                  saveRow(data.row);
+                  saveRow(data.row, 0, 2);
                 }}
                 size="small"
                 type={calcTypeHandler(data.row, "morningDownWorkTime")}
@@ -163,9 +187,21 @@ export const useMachine = () => {
           <div>
             {data.row.morningDownWorkTimeFlag === 1 && !data.row.morningDownWorkTime && (
               <el-button
-                onClick={(e) => onSetTimeValueBefore(data.row, "morningDownWorkTime", e)}
+                onClick={(e) => onSetTimeValueBefore(data.row, 2, 2, e)}
                 size="small"
                 type="success"
+                style={{ width: "10px", height: "20px" }}
+                icon={<Setting />}
+              />
+            )}
+          </div>
+
+          <div>
+            {data.row.morningDownWorkTimeFlag === 1 && !data.row.morningDownWorkTime && (
+              <el-button
+                onClick={(e) => onSetTimeValueBefore(data.row, 6, 2, e)}
+                size="small"
+                type="danger"
                 style={{ width: "10px", height: "20px" }}
                 icon={<Setting />}
               />
@@ -187,7 +223,7 @@ export const useMachine = () => {
                 onClick={() => {
                   data.row.afternoonWorkTime = null;
                   data.row.afternoonWorkTimeFlag = 1;
-                  saveRow(data.row);
+                  saveRow(data.row, 0, 3);
                 }}
                 size="small"
                 type={calcTypeHandler(data.row, "afternoonWorkTime")}
@@ -200,9 +236,21 @@ export const useMachine = () => {
           <div>
             {data.row.afternoonWorkTimeFlag === 1 && !data.row.afternoonWorkTime && (
               <el-button
-                onClick={(e) => onSetTimeValueBefore(data.row, "afternoonWorkTime", e)}
+                onClick={(e) => onSetTimeValueBefore(data.row, 2, 3, e)}
                 size="small"
                 type="success"
+                style={{ width: "10px", height: "20px" }}
+                icon={<Setting />}
+              />
+            )}
+          </div>
+
+          <div>
+            {data.row.afternoonWorkTimeFlag === 1 && !data.row.afternoonWorkTime && (
+              <el-button
+                onClick={(e) => onSetTimeValueBefore(data.row, 6, 3, e)}
+                size="small"
+                type="danger"
                 style={{ width: "10px", height: "20px" }}
                 icon={<Setting />}
               />
@@ -224,7 +272,7 @@ export const useMachine = () => {
                 onClick={() => {
                   data.row.afternoonDownWorkTime = null;
                   data.row.afternoonDownWorkTimeFlag = 1;
-                  saveRow(data.row);
+                  saveRow(data.row, 0, 4);
                 }}
                 size="small"
                 type={calcTypeHandler(data.row, "afternoonDownWorkTime")}
@@ -237,9 +285,21 @@ export const useMachine = () => {
           <div>
             {data.row.afternoonDownWorkTimeFlag === 1 && !data.row.afternoonDownWorkTime && (
               <el-button
-                onClick={(e) => onSetTimeValueBefore(data.row, "afternoonDownWorkTime", e)}
+                onClick={(e) => onSetTimeValueBefore(data.row, 2, 4, e)}
                 size="small"
                 type="success"
+                style={{ width: "10px", height: "20px" }}
+                icon={<Setting />}
+              />
+            )}
+          </div>
+
+          <div>
+            {data.row.afternoonDownWorkTimeFlag === 1 && !data.row.afternoonDownWorkTime && (
+              <el-button
+                onClick={(e) => onSetTimeValueBefore(data.row, 6, 4, e)}
+                size="small"
+                type="danger"
                 style={{ width: "10px", height: "20px" }}
                 icon={<Setting />}
               />
@@ -261,7 +321,7 @@ export const useMachine = () => {
                 onClick={() => {
                   data.row.eveningWorkTime = null;
                   data.row.eveningWorkTimeFlag = 1;
-                  saveRow(data.row);
+                  saveRow(data.row, 0, 5);
                 }}
                 size="small"
                 type={calcTypeHandler(data.row, "eveningWorkTime")}
@@ -274,9 +334,21 @@ export const useMachine = () => {
           <div>
             {data.row.eveningWorkTimeFlag === 1 && !data.row.eveningWorkTime && (
               <el-button
-                onClick={(e) => onSetTimeValueBefore(data.row, "eveningWorkTime", e)}
+                onClick={(e) => onSetTimeValueBefore(data.row, 2, 5, e)}
                 size="small"
                 type="success"
+                style={{ width: "10px", height: "20px" }}
+                icon={<Setting />}
+              />
+            )}
+          </div>
+
+          <div>
+            {data.row.eveningWorkTimeFlag === 1 && !data.row.eveningWorkTime && (
+              <el-button
+                onClick={(e) => onSetTimeValueBefore(data.row, 6, 5, e)}
+                size="small"
+                type="danger"
                 style={{ width: "10px", height: "20px" }}
                 icon={<Setting />}
               />
@@ -298,7 +370,7 @@ export const useMachine = () => {
                 onClick={() => {
                   data.row.eveningDownWorkTime = null;
                   data.row.eveningDownWorkTimeFlag = 1;
-                  saveRow(data.row);
+                  saveRow(data.row, 0, 6);
                 }}
                 size="small"
                 type={calcTypeHandler(data.row, "eveningDownWorkTime")}
@@ -311,9 +383,21 @@ export const useMachine = () => {
           <div>
             {data.row.eveningDownWorkTimeFlag === 1 && !data.row.eveningDownWorkTime && (
               <el-button
-                onClick={(e) => onSetTimeValueBefore(data.row, "eveningDownWorkTime", e)}
+                onClick={(e) => onSetTimeValueBefore(data.row, 2, 6, e)}
                 size="small"
                 type="success"
+                style={{ width: "10px", height: "20px" }}
+                icon={<Setting />}
+              />
+            )}
+          </div>
+
+          <div>
+            {data.row.eveningDownWorkTimeFlag === 1 && !data.row.eveningDownWorkTime && (
+              <el-button
+                onClick={(e) => onSetTimeValueBefore(data.row, 6, 6, e)}
+                size="small"
+                type="danger"
                 style={{ width: "10px", height: "20px" }}
                 icon={<Setting />}
               />
@@ -376,18 +460,11 @@ export const useMachine = () => {
     onSearch();
   };
 
-  const saveRow = (row, remarkText?, extraFlag?) => {
-    const operationTypeDict = {
-      3: 2,
-      4: 4,
-      5: 3
-    };
-    let operationType = 1;
-    if (extraFlag) {
-      operationType = operationTypeDict[extraFlag];
-    }
-    console.log("update===");
-    updateAttendancePageDetail({ attList: [row], remark: remarkText ?? "", operationType }).then((res) => {
+  const saveRow = (row, operationType, attType, remarkText?) => {
+    row.operationType = operationType;
+    row.attType = attType;
+    row.remark = remarkText;
+      updateAttendancePageDetail(row).then((res) => {
       if (res.data) {
         message.success("保存成功");
         onSearch();
@@ -463,17 +540,22 @@ export const useMachine = () => {
     });
   };
 
-  const setCurLeftRowByKey = (commandKey, data, flagVal, remark) => {
+  const setCurLeftRowByKey = (rightRow, opertaionType, attType) => {
+    console.log(rightRow);
+    console.log(opertaionType);
+    console.log(attType);
+    console.log(currentRow.value);
+
     if (currentRow.value) {
       showMessageBox(`确认设置?`)
         .then(() => {
-          onSetTimeValue(currentRow.value, commandKey, "", flagVal);
+          saveRow(currentRow.value, opertaionType, attType);
         })
         .catch(console.log);
     }
   };
 
-  const onSetTimeValueBefore = (row, actionKey, e?) => {
+  const onSetTimeValueBefore = (row, operationType, attType, e?) => {
     e?.stopPropagation();
 
     const _formData = reactive({ remark: "" });
@@ -506,7 +588,7 @@ export const useMachine = () => {
             showMessageBox(`确认设置?`)
               .then(() => {
                 done();
-                onSetTimeValue(row, actionKey, _formData.remark);
+                saveRow(row, operationType, attType, _formData.remark);
               })
               .catch(console.log);
           }
@@ -591,10 +673,9 @@ export const useMachine = () => {
 
     if (!startDate || !endDate) return message.error("日期不能为空");
 
-    if (startDate !== endDate) return message.error("开始日期和结束日期不一致");
     showMessageBox(`确定要重算【${startDate}】的考勤吗?`)
       .then(() => {
-        reCalcAttDetail({ attDate: startDate }).then((res) => {
+        reCalcAttDetail({ startDate: startDate, endDate: endDate }).then((res) => {
           if (res.status === 200 || res.data) {
             message.success("重算成功");
             onSearch();
@@ -641,6 +722,7 @@ export const useMachine = () => {
     pagination,
     onSetTimeValue,
     onSizeChange,
-    onCurrentChange
+    onCurrentChange,
+    tableLogHeight
   };
 };

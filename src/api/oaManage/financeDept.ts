@@ -1,7 +1,7 @@
 import { InjectCancel, http } from "@/utils/http";
-import { MaterialManageItemType, PayslipDataItemType, StandardCostItemType } from "./types/financeDept";
+import { MaterialManageItemType, PayslipDataItemType, StandardCostItemType, WageAccountDetailItemType } from "./types/financeDept";
 
-export type { StandardCostItemType, MaterialManageItemType, PayslipDataItemType };
+export type { StandardCostItemType, MaterialManageItemType, PayslipDataItemType, WageAccountDetailItemType };
 
 /** ========================= 财务部接口 ========================= */
 
@@ -78,7 +78,7 @@ export function fetchDeptTotalMoneyCheckList(data) {
 
 /** 工资核算 — 明细查询 */
 export function fetchDetailStaffMoneyCheckList(data) {
-  return http.request("post", "/oa/fin/wageaccounting/getPageDetail", { data });
+  return http.request<TablePagingResType<WageAccountDetailItemType>>("post", "/oa/fin/wageaccounting/getPageDetail", { data });
 }
 
 /** 工资核算 — 明细单条查询 */
@@ -89,6 +89,11 @@ export function queryDetailStaffMoneyCheckList(data) {
 /** 工资核算 — 抄送 */
 export function makeCopyStaffMoneyCheckList(data) {
   return http.request("post", "/oa/fin/wageaccounting/carbonCopy", { data });
+}
+
+/** 工资核算 — 同步工资条管理 */
+export function syncToPayslip(data) {
+  return http.request("get", "/oa/fin/wageaccounting/syncToPayslip", { params: data });
 }
 
 /** 工资核算 — 修改 */

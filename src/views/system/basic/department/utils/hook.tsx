@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2024-02-27 10:47:19
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-12-25 16:31:52
+ * @Last Modified time: 2025-04-18 16:20:34
  */
 
 import {
@@ -81,8 +81,8 @@ export const useConfig = () => {
     if (groupArrs?.length) groupArrsList.value = groupArrs;
     updateButtonList(buttonList, buttonArrs[0]);
     updateButtonList(buttonList2, buttonArrs[1]);
-    columns.value = setColumn({ columnData, isCustomExpend: true, dragSelector: ".dep-manage" });
-    columns2.value = setColumn({ columnData: columnData2, dragSelector: ".dep-manage-group" });
+    columns.value = setColumn({ columnData, isCustomExpend: true });
+    columns2.value = setColumn({ columnData: columnData2 });
   };
 
   const onRefresh = () => {

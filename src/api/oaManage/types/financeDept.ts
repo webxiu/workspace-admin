@@ -55,6 +55,66 @@ export interface PayslipDataItemType {
   JiaBanFei0: string;
   signatureFilePath?: string;
 }
+/** ========================= 工资核算 ========================= */
+
+/** 工资核算 - 列表类型 */
+export interface WageAccountDetailItemType {
+  actualpayrollresultId: string;
+  staffId: number;
+  idCard: string;
+  regularWorking: string;
+  regularSalary: number;
+  levelSalary: number;
+  positionSubsidy: number;
+  confidentialitySubsidy: number;
+  workAgeSubsidy: number;
+  bigWeekOverTime: number;
+  overTimeWorking: number;
+  overTimeSalarytohour: string;
+  overTimeSalary: number;
+  restOverTimeWorking: number;
+  restOverTimeSalarytohour: string;
+  restOverTimeSalary: string;
+  officialHolidayOverTime: number;
+  legalHolidayOvertimePay: number;
+  foodSubsidy: number;
+  rentAllowance: number;
+  pushMoney: number;
+  performance: number;
+  synthesizePerformance: number;
+  womanSubsidy: number;
+  allTheWorkSubsidy: number;
+  other: number;
+  salary: number;
+  waterAndElectricity: number;
+  food: number;
+  oldInsurance: number;
+  hospitalInsurance: number;
+  sybx: number;
+  housingProvidentFund: number;
+  tax: number;
+  paidSalary: number;
+  realSalary: number;
+  staffCode: string;
+  beOnDuty: string;
+  actualAttendance: string;
+  beAttendanceDay: string;
+  actualAttendanceDay: string;
+  endSalary: string;
+  staffName: string;
+  startDate: string;
+  deptName: string;
+  deptId: number;
+  userType: string;
+  billNo: string;
+  yearMonth: string;
+  stateName: string;
+  stateValue: number;
+  createUserName: string;
+  createUserId: string;
+  createDate: string;
+  id: string;
+}
 /** ========================= 财务报表(标准成本) ========================= */
 /** 标准成本列表类型 */
 export interface StandardCostItemType {

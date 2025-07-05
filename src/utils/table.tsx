@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2025-03-17 17:52:37
+ * @Last Modified time: 2025-04-18 16:39:02
  */
 
 import dayjs from "dayjs";
@@ -179,7 +179,7 @@ export const setColumn = (options: ColumnOptionType, callback?: (v: SortableCall
     const { row, column, store } = data;
     const renderEle = expendRow?.cellRenderer?.(data) || <span>{row[column["property"]]}</span>;
     return isCustomExpend ? (
-      <div class="flex flex-1 align-center ellipsis" style={{ transform: "translate(-6px, 0px)" }}>
+      <div class="flex align-center ellipsis" style={{ transform: "translate(-6px, 0px)" }}>
         <IconifyIconOffline
           class="mr-2 fz-16 pointer ui-d-ib ui-va-tb"
           icon={row.children?.length ? Expand : PriceTag}

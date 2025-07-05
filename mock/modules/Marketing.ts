@@ -196,4 +196,17 @@ export default [
           timestamp: 1734080838474
         };
       }
+    },
+    // 开模申请
+    { 
+      url: "/plm/plm/ModelOpening/selectModelOpening",
+      method: "post",
+      response: ({ body }) => {
+        return {
+          status: 200,
+          message: "操作成功",
+          data: {"records":[],"total":0,"size":30,"current":1,"orders":[],"optimizeCountSql":true,"searchCount":true,"countId":null,"maxLimit":null,"pages":0},
+          timestamp: 1751709575407
+        };
+      }
     }] as MockMethod[];

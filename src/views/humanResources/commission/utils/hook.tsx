@@ -36,7 +36,7 @@ import {
 } from "@/api/oaManage/humanResources";
 import TableEditList from "@/components/TableEditList/index.vue";
 import { FormTableConfigType } from "@/utils/form";
-import { commonRevoke, commonSubmit, queryUserDeptList, userInfoList } from "@/api/systemManage";
+import { commonRevoke, commonSubmit, queryUserDeptList, userInfoListIncludeChildDept } from "@/api/systemManage";
 import { useUserStore } from "@/store/modules/user";
 import { HxUploadProgress } from "@/config/elements";
 import { AuditState } from "../../leaveApply/utils/hook";
@@ -96,6 +96,7 @@ export const useConfig = () => {
       { label: "工号", prop: "userCode", minWidth: 180 },
       { label: "姓名", prop: "staffName", minWidth: 180 },
       { label: "金额", prop: "money", minWidth: 120, align: "right" },
+      { label: "备注", prop: "remark", minWidth: 120 },
       { label: "创建日期", prop: "createDate", minWidth: 160 },
       { label: "修改日期", prop: "modifyDate", minWidth: 160 }
     ];
@@ -265,17 +266,12 @@ export const useConfig = () => {
     }
 
     const initUserOpts = (deptId) => {
-      userInfoList({
-        page: 1,
-        limit: 100000,
-        userName: "",
-        userCode: "",
-        deptId,
-        userState: "A",
-        deptIdList: [deptId]
+      userInfoListIncludeChildDept({
+        deptId: deptId
       }).then((res) => {
         if (res.data) {
-          const result = res.data.records || [];
+          console.log(res.data);
+          const result = res.data || [];
           selectUserOptsValue.value = result.map((item) => ({ optionName: item.userName, optionValue: item.userName, reflectVal: item.userCode }));
           console.log(selectUserOptsValue.value, "====");
         }
@@ -327,11 +323,12 @@ export const useConfig = () => {
             cellStyle: { color: "#606266", textAlign: "left" },
             eleProps: { filterable: true }
           }),
-        commissionAmount: (data) => editCellRender({ data, isEdit })
+        commissionAmount: (data) => editCellRender({ data, isEdit }),
+        remark: (data) => editCellRender({ data, isEdit })
       };
     };
     const onAdd = () => {
-      dataImportList.value.push({ staffCode: "", staffName: "", commissionAmount: "" });
+      dataImportList.value.push({ staffCode: "", staffName: "", commissionAmount: "", remark: "" });
     };
     const onUploadCommission: UploadProps["onChange"] = (uploadFile) => {
       const rawFile = uploadFile.raw;

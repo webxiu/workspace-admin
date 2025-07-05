@@ -352,6 +352,7 @@ export const getFormConfigs = (columnList: FormColumnItemType[], options?: FormI
             const resultData = itemProp.formatAPI ? itemProp.formatAPI(data) : data;
             column.dataOption = resultData;
           })
+          .catch((error) => {})
           .finally(resultFn);
         // 3.按字段缓存接口数据(用于二次请求)
         CacheCustomAPI[column.prop] = { method, apiURL, ...itemProp };

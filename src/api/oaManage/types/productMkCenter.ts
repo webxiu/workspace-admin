@@ -46,6 +46,13 @@ export interface OperateBookItemType {
   workStationVOS: string;
   peuserId: string;
   peuserName: string;
+  oldVer: string;
+  changeContent: string;
+  controlledName: string;
+  controlledDate: string;
+  currentPage: number;
+  totalPage: number;
+  esopManualResumeList: any[];
 }
 /** 工位列表类型 */
 export interface OperateBookStationItemType {
@@ -185,6 +192,8 @@ export interface PrintOperateBookStationResType {
   totalPage: number;
   peuserId: number;
   peuserName: string;
+  oldVer: string;
+  changeContent: string;
 
   workStationVOS: {
     id: string;
@@ -235,6 +244,37 @@ export interface PrintOperateBookStationResType {
     }[];
     pid: string;
   }[];
+  esopManualResumeList: EsopManualResumeItemType[];
+}
+
+export interface EsopManualResumeItemType {
+  id: string;
+  materialId: string;
+  materialNumber: string;
+  billNo: string;
+  billId: string;
+  billState: string;
+  createUserName: string;
+  createDate: string;
+  auditing: string;
+  auditingDate: string;
+  approveName: string;
+  approveDate: string;
+  controlledName: string;
+  controlledDate: string;
+  manualName: string;
+  ver: string;
+  fileNumber: string;
+  country: string;
+  productCode: string;
+  oldVer: string;
+  changeContent: string;
+  currentPage: string;
+  totalPage: string;
+  workStationVOS: string;
+  esopManualResumeList: string;
+  peuserId: string;
+  peuserName: string;
 }
 
 /** 分发列表响应类型 */

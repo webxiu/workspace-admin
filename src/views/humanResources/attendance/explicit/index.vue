@@ -13,8 +13,8 @@
             <div style="width: 70%">
               <pure-table
                 border
-                :height="(maxHeight * 2) / 3"
-                :max-height="(maxHeight * 2) / 3"
+                :height="(maxHeight * 2) / 2.55"
+                :max-height="(maxHeight * 2) / 2.55"
                 row-key="id"
                 ref="tableRef"
                 class="machine-table"
@@ -39,8 +39,8 @@
               />
               <pure-table
                 border
-                :height="maxHeight / 3"
-                :max-height="maxHeight / 3"
+                :height="tableLogHeight"
+                :max-height="tableLogHeight"
                 row-key="id"
                 :adaptive="true"
                 align-whole="center"
@@ -63,7 +63,6 @@
 import { useMachine } from "./hook";
 import { onHeaderDragend, setUserMenuColumns } from "@/utils/table";
 import RightTables from "./rightTables.vue";
-import { Setting, Delete } from "@element-plus/icons-vue";
 
 defineOptions({ name: "HumanResourcesAttendanceExplicitIndex" });
 
@@ -75,6 +74,7 @@ const {
   rightTableRef,
   tableRef,
   onSelect,
+  tableLogHeight,
   onSelectAll,
   handleTagSearch,
   searchOptions,

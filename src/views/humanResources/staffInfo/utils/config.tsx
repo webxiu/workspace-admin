@@ -1269,3 +1269,40 @@ export const standardFormConfigs = ({ dmployeOption }): FormConfigItemType[] => 
     }
   ];
 };
+
+export const batchDeptformRules = reactive<FormRules>({
+  updateValue: [{ required: true, message: "请选择新部门", trigger: "blur" }]
+});
+// 批量修改部门
+export const batchDeptFormConfigs = ({ deptOptions, staffName }): FormConfigItemType[] => {
+  return [
+    {
+      label: "选中用户",
+      prop: "",
+      colProp: { span: 24 },
+      render: () => <el-input v-model={staffName} rows={4} disabled resize="none" type="textarea" autosize={{ maxRows: 4 }} />
+    },
+    {
+      label: "新部门",
+      prop: "updateValue",
+      colProp: { span: 24 },
+      render: ({ formModel, row }) => {
+        return (
+          <el-tree-select
+            v-model={formModel[row.prop]}
+            clearable
+            filterable
+            data={deptOptions.value}
+            check-strictly={true}
+            check-on-click-node
+            default-expanded-keys={["0"]}
+            render-after-expand={false}
+            placeholder="请选择新部门"
+            class="ui-w-100"
+            props={{ label: "name", value: "value" }}
+          />
+        );
+      }
+    }
+  ];
+};

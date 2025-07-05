@@ -32,32 +32,20 @@
     </div>
     <div class="table-item">
       <div class="label-top">外出记录</div>
-      <pure-table
-        border
-        :height="maxHeight"
-        :max-height="maxHeight"
-        row-key="id"
-        :adaptive="true"
-        align-whole="center"
-        :show-overflow-tooltip="true"
-        size="small"
-        :data="dataList3"
-        :columns="columns3"
-        highlight-current-row
-      >
+      <pure-table border :height="maxHeight" :max-height="maxHeight" row-key="id" :adaptive="true" align-whole="center" :show-overflow-tooltip="true" size="small" :data="dataList3" :columns="columns3" highlight-current-row>
         <template #operation="{ row }"
-          ><el-dropdown trigger="click" @command="(v) => handleCommand3(v, row)">
+          ><el-dropdown trigger="click" @command="(i) => handleCommand(row, 5, i)">
             <el-button type="primary" size="small">
               设 置<el-icon style="margin-left: 6px"><ArrowDown /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="morningWorkTime">上午上班</el-dropdown-item>
-                <el-dropdown-item command="morningDownWorkTime">上午下班</el-dropdown-item>
-                <el-dropdown-item command="afternoonWorkTime">下午上班</el-dropdown-item>
-                <el-dropdown-item command="afternoonDownWorkTime">下午下班</el-dropdown-item>
-                <el-dropdown-item command="eveningWorkTime">晚上上班</el-dropdown-item>
-                <el-dropdown-item command="eveningDownWorkTime">晚上下班</el-dropdown-item>
+                <el-dropdown-item command=1>上午上班</el-dropdown-item>
+                <el-dropdown-item command=2>上午下班</el-dropdown-item>
+                <el-dropdown-item command=3>下午上班</el-dropdown-item>
+                <el-dropdown-item command=4>下午下班</el-dropdown-item>
+                <el-dropdown-item command=5>晚上上班</el-dropdown-item>
+                <el-dropdown-item command=6>晚上下班</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -66,31 +54,20 @@
     </div>
     <div class="table-item">
       <div class="label-top">打卡记录</div>
-      <pure-table
-        border
-        :height="196"
-        :max-height="196"
-        row-key="id"
-        :adaptive="true"
-        align-whole="center"
-        size="small"
-        :data="dataList5"
-        :columns="columns5"
-        highlight-current-row
-      >
-        <template #operation="{ row }"
-          ><el-dropdown trigger="click" @command="(v) => handleCommand2(v, row)">
+      <pure-table border :height="196" :max-height="196" row-key="id" :adaptive="true" align-whole="center" size="small" :data="dataList5" :columns="columns5" highlight-current-row>
+        <template #operation="{ row }">
+          <el-dropdown trigger="click" @command="(i) => handleCommand(row, 4, i)">
             <el-button type="primary" size="small">
               设 置<el-icon style="margin-left: 6px"><ArrowDown /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="morningWorkTime">上午上班</el-dropdown-item>
-                <el-dropdown-item command="morningDownWorkTime">上午下班</el-dropdown-item>
-                <el-dropdown-item command="afternoonWorkTime">下午上班</el-dropdown-item>
-                <el-dropdown-item command="afternoonDownWorkTime">下午下班</el-dropdown-item>
-                <el-dropdown-item command="eveningWorkTime">晚上上班</el-dropdown-item>
-                <el-dropdown-item command="eveningDownWorkTime">晚上下班</el-dropdown-item>
+                <el-dropdown-item command=1>上午上班</el-dropdown-item>
+                <el-dropdown-item command=2>上午下班</el-dropdown-item>
+                <el-dropdown-item command=3>下午上班</el-dropdown-item>
+                <el-dropdown-item command=4>下午下班</el-dropdown-item>
+                <el-dropdown-item command=5>晚上上班</el-dropdown-item>
+                <el-dropdown-item command=6>晚上下班</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -102,24 +79,24 @@
     <div class="table-item">
       <div class="label-top">补卡记录</div>
       <pure-table border row-key="id" :adaptive="true" align-whole="center" size="small" :data="dataList4" :columns="columns4" highlight-current-row>
-        <template #operation="{ row }"
-          ><el-dropdown trigger="click" @command="(v) => handleCommand(v, row)">
+        <template #operation="{ row }">
+          <el-dropdown trigger="click" @command="(i) => handleCommand(row, 3, i)">
             <el-button type="primary" size="small">
               设 置<el-icon style="margin-left: 6px"><ArrowDown /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="morningWorkTime">上午上班</el-dropdown-item>
-                <el-dropdown-item command="morningDownWorkTime">上午下班</el-dropdown-item>
-                <el-dropdown-item command="afternoonWorkTime">下午上班</el-dropdown-item>
-                <el-dropdown-item command="afternoonDownWorkTime">下午下班</el-dropdown-item>
-                <el-dropdown-item command="eveningWorkTime">晚上上班</el-dropdown-item>
-                <el-dropdown-item command="eveningDownWorkTime">晚上下班</el-dropdown-item>
+                <el-dropdown-item command=1>上午上班</el-dropdown-item>
+                <el-dropdown-item command=2>上午下班</el-dropdown-item>
+                <el-dropdown-item command=3>下午上班</el-dropdown-item>
+                <el-dropdown-item command=4>下午下班</el-dropdown-item>
+                <el-dropdown-item command=5>晚上上班</el-dropdown-item>
+                <el-dropdown-item command=6>晚上下班</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-        </template></pure-table
-      >
+        </template>
+      </pure-table>
     </div>
   </div>
 </template>
@@ -182,25 +159,10 @@ const revertRowRecords = (row) => {
     .catch(console.log);
 };
 
-const handleCommand = (command, rightRow) => {
-  const reTime = rightRow.reissueDate?.split(" ")[1].slice(0, 5);
-  props.setCurLeftRowByKey(command, reTime, 3);
+const handleCommand = (rightRow, operationType, attType) => {
+  props.setCurLeftRowByKey(rightRow, operationType, attType);
 };
 
-const handleCommand2 = (command, rightRow) => {
-  const reTime = rightRow.attTime?.split("T")[1].slice(0, 5);
-  props.setCurLeftRowByKey(command, reTime, 4);
-};
-
-const handleCommand3 = (command, rightRow) => {
-  const reqParams = { staffId: props.currentLeftRow.staffId, attDate: props.currentLeftRow.attDate };
-  reqParams[`${command}Flag`] = props.currentLeftRow[`${command}Flag`];
-  getTimeStandardAttendancel(reqParams).then((res) => {
-    if (res.data) {
-      props.setCurLeftRowByKey(command, res.data, 5);
-    }
-  });
-};
 
 const getConfig = () => {
   const columns1Data = [

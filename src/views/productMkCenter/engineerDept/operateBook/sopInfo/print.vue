@@ -1,11 +1,23 @@
 <template>
   <div>
+    <el-form ref="formRef" inline>
+      <el-form-item label="指导书列表">
+        <el-select v-model="printItem" placeholder="打印选中指导书 (默认打印全部)" multiple collapse-tags collapse-tags-tooltip clearable style="width: 260px">
+          <el-option v-for="item in optionList" :key="item.id" :label="item.workContent" :value="item.id" />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button @click="onReset" size="small">重置</el-button>
+      </el-form-item>
+    </el-form>
     <div class="print-content" ref="printRef">
-      <el-empty v-if="!printList?.workStationVOS?.length" description="暂无排位表数据" />
+      <el-empty v-if="!printData?.workStationVOS?.length" description="暂无排位表数据" />
       <template v-else>
-        <div v-for="(item, index) in printList?.workStationVOS" :key="item.id">
+        <Appendix v-if="!printItem.length || printItem.includes('appendix')" class="page-record" :row="printData" />
+        <VersionRecord v-if="!printItem.length || printItem.includes('record')" class="page-record" :row="row" :printData="printData" />
+        <div v-for="item in printData?.workStationVOS" :key="item.id" v-show="getShowIndex(item.id)">
           <div class="sop-title block-quote-tip">
-            <el-tag type="success" effect="dark" round> {{ index + 1 }}/{{ printList?.workStationVOS?.length }}、{{ item.workContent }}</el-tag>
+            <el-tag type="primary" effect="dark" round>({{ getPageIndex(item.id) }}/{{ printData?.workStationVOS?.length }}) {{ item.workContent }}</el-tag>
           </div>
           <div class="page line-a">
             <div class="b1 sop-header">
@@ -13,46 +25,46 @@
                 <div class="top">
                   <img :src="logo" width="80" height="80" alt="" />
                   <div class="name">
-                    <span class="mr-6">{{ printList.productCode }}</span
-                    ><span>{{ printList.manualName }}</span>
+                    <span class="mr-6">{{ printData.productCode }}</span
+                    ><span>{{ printData.manualName }}</span>
                   </div>
                 </div>
                 <div class="bottom">
                   <!-- <div>MES:xx_Mex</div> -->
-                  <div>制作日期:{{ formatDate(printList.createDate, "YYYY年MM月DD日") }}</div>
-                  <div>页次: {{ getPageCount(index, printList?.workStationVOS) }}</div>
-                  <div>版本：{{ printList.ver }}</div>
+                  <div>制作日期:{{ formatDate(printData.createDate, "YYYY年MM月DD日") }}</div>
+                  <div>页次: {{ getPageCount(item.id) }}</div>
+                  <div>版本：{{ printData.ver }}</div>
                 </div>
                 <img src="@/assets/images/controlled_document.png" alt="受控文件" class="control-img" />
               </div>
               <div class="header-right line-r">
                 <div class="create-info line-a">
-                  <div class="item1 text-center vertical-text line-r line-b text-space">决裁</div>
+                  <div class="item1 text-center vertical-text line-r line-b text-space">裁决</div>
                   <div class="item2 line-r text-center">日期</div>
                   <div class="item3 text-center line-r line-b text-space">制作</div>
                   <div class="item4 text-center line-r line-b text-space">审核</div>
                   <div class="item5 text-center line-r line-b text-space">批准</div>
                   <div class="item4 text-center line-r line-b text-space">审核</div>
                   <div class="item6 text-center line-b text-space">受控</div>
-                  <div class="item7 text-center line-r line-b">{{ printList.createUserName }}</div>
-                  <div class="item8 text-center line-r line-b">{{ printList.auditing }}</div>
-                  <div class="item9 text-center line-r line-b">{{ printList.approveName }}</div>
-                  <div class="item10 text-center line-b">{{ printList.controlledName }}</div>
+                  <div class="item7 text-center line-r line-b">{{ printData.createUserName }}</div>
+                  <div class="item8 text-center line-r line-b">{{ printData.auditing }}</div>
+                  <div class="item9 text-center line-r line-b">{{ printData.approveName }}</div>
+                  <div class="item10 text-center line-b">{{ printData.controlledName }}</div>
 
-                  <div class="item11 text-center line-r">{{ formatDate(printList.createDate, "YYYY-MM-DD") }}</div>
-                  <div class="item12 text-center line-r">{{ formatDate(printList?.auditingDate, "YYYY-MM-DD") }}</div>
-                  <div class="item13 text-center line-r">{{ formatDate(printList?.approveDate, "YYYY-MM-DD") }}</div>
-                  <div class="item14 text-center">{{ formatDate(printList?.controlledDate, "YYYY-MM-DD") }}</div>
+                  <div class="item11 text-center line-r">{{ formatDate(printData.createDate, "YYYY-MM-DD") }}</div>
+                  <div class="item12 text-center line-r">{{ formatDate(printData?.auditingDate, "YYYY-MM-DD") }}</div>
+                  <div class="item13 text-center line-r">{{ formatDate(printData?.approveDate, "YYYY-MM-DD") }}</div>
+                  <div class="item14 text-center">{{ formatDate(printData?.controlledDate, "YYYY-MM-DD") }}</div>
                 </div>
               </div>
             </div>
             <div class="sop-desc b1 line-a">
               <div class="desc-item line-r">生产机型/国家:</div>
-              <div class="desc-item line-r fw-700">{{ printList?.productCode }}{{ printList.country ? `（${printList.country}）` : "" }}</div>
+              <div class="desc-item line-r fw-700">{{ printData?.productCode }}{{ printData.country ? `（${printData.country}）` : "" }}</div>
               <div class="desc-item line-r">工位名称:</div>
-              <div class="desc-item line-r fw-700">{{ item.workContent }}（{{ getPageCount(index, printList?.workStationVOS) }}）</div>
+              <div class="desc-item line-r fw-700">{{ item.workContent }}（{{ getPageCount(item.id) }}）</div>
               <div class="desc-item line-r">文件编号:</div>
-              <div class="desc-item line-r fw-700">{{ printList.fileNumber }}</div>
+              <div class="desc-item line-r fw-700">{{ printData.fileNumber }}</div>
               <div class="desc-item line-r">S/T:</div>
               <div class="desc-item fw-700">{{ item.manHour }}</div>
             </div>
@@ -65,7 +77,7 @@
                 <div class="content-layout">
                   <div class="operate-cate flex ui-w-100 line-r">
                     <div class="materiel">
-                      <HailenTable :columns="columns" :dataList="item.materialVOS" />
+                      <HailenTable :columns="columns" :dataList="item.materialVOS?.length ? item.materialVOS : [{}]" />
                     </div>
                     <div class="tool ml-4">
                       <div class="cate-title">使用工具及治具:</div>
@@ -101,25 +113,36 @@
 </template>
 
 <script setup lang="tsx">
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import Print from "@/utils/print";
 import { message } from "@/utils/message";
 import logo from "@/assets/images/logo.png";
+import Appendix from "./Appendix.vue";
+import { formatDate } from "@/utils/common";
+import VersionRecord from "./VersionRecord.vue";
 import ReferImage from "./component/ReferImage.vue";
 import HailenTable, { TableColumnType } from "./component/HailenTable.vue";
-import { printEsopStation, PrintOperateBookStationResType } from "@/api/oaManage/productMkCenter";
-import { formatDate } from "@/utils/common";
+import { printEsopStation, PrintOperateBookStationResType, OperateBookItemType } from "@/api/oaManage/productMkCenter";
 
+interface Props {
+  materialId?: string;
+  itemInfo?: any;
+  pageIndex?: number;
+  totalPage?: number;
+  row?: OperateBookItemType;
+}
+const formRef = ref();
 const printRef = ref();
-const props = defineProps<{ materialId?: string; itemInfo?: any; pageIndex?: number; totalPage?: number }>();
-const printList = ref<PrintOperateBookStationResType>();
+const printItem = ref([]);
+const props = defineProps<Props>();
+const printData = ref<PrintOperateBookStationResType>({} as PrintOperateBookStationResType);
 
 const columns: TableColumnType[] = [
   { label: "序号", prop: "", type: "index", width: 32 },
   { label: "名称", prop: "materialName", width: 80 },
   { label: "物料编号", prop: "materialNumber", width: 80 },
   { label: "物料规格描述", prop: "specification" },
-  { label: "用量", prop: "qty", width: 32, render: ({ row }) => <span>{`${row.qty}${row.unit || ""}`}</span> }
+  { label: "用量", prop: "qty", width: 32, render: ({ row }) => <span>{row.qty ? row.qty + (row.unit || "") : ""}</span> }
 ];
 const columns2: TableColumnType[] = [
   { label: "确认项目", prop: "confirm", align: "left" },
@@ -133,13 +156,40 @@ const columns3: TableColumnType[] = [
   { label: "标准设定参数", prop: "standardParam" }
 ];
 
+const optionList = computed(() => {
+  const operateList = printData.value?.workStationVOS || [];
+  if (!operateList.length) return [];
+  const _arr = operateList.map(({ id, workContent }) => ({ id, workContent }));
+  const newList = [
+    { id: "appendix", workContent: "封面" },
+    { id: "record", workContent: "变更记录表" },
+    ..._arr // 添加附录和变更记录表选项
+  ];
+  console.log("newList", newList);
+  return newList;
+});
+
 watch(props, (val) => getPrintList(val.materialId), { immediate: true });
 
+function onReset() {
+  printItem.value = [];
+}
+
+// 获取可显示页面
+function getShowIndex(id: string) {
+  return !printItem.value.length || printItem.value.includes(id);
+}
 // 获取页码
-function getPageCount(index: number, total: any[]) {
-  const { pageIndex, totalPage } = props;
-  if (pageIndex && totalPage) return `${pageIndex}/${totalPage}`;
-  return `${index + 1}/${total.length}`;
+function getPageIndex(id: string) {
+  const station = printData.value.workStationVOS;
+  const idx = station.findIndex((item) => item.id === id);
+  return idx + 1;
+}
+// 获取页次
+function getPageCount(id: string) {
+  const station = printData.value.workStationVOS;
+  const idx = station.findIndex((item) => item.id === id);
+  return `${station[idx].stationNo}/${printData.value.totalPage}`;
 }
 
 function getPrintList(id) {
@@ -147,7 +197,7 @@ function getPrintList(id) {
   printEsopStation({ id: id }).then(({ data }) => {
     if (!data) return;
     if (props.itemInfo) data.workStationVOS = [props.itemInfo];
-    printList.value = data || ({} as any);
+    printData.value = data || ({} as any);
   });
 }
 
@@ -174,6 +224,10 @@ function getToolItem(checkRuleVOS, rowIndex) {
 }
 
 function onPrint() {
+  if (!printData.value?.workStationVOS?.length) {
+    return message.error("无打印数据, 请先配置排位表");
+  }
+  message.warning("正在加载打印预览, 请等待...", { duration: 6000 });
   if (printRef.value) {
     Print(printRef.value);
   }
@@ -204,13 +258,16 @@ $small-size: 12px;
     print-color-adjust: exact;
   }
 
-  .page {
+  .page,
+  .page-record {
     page-break-after: always; /* 每个page类的元素后强制分页 */
     width: 100%; /* 使用100%的宽度 */
     margin-bottom: 10mm !important; /* 设置内容间的间隔 */
   }
+
   // 打印时隐藏指导书标题栏
-  .print-content .sop-title {
+  .print-content .sop-title,
+  :deep(.page-record .sop-title) {
     display: none !important;
   }
 }

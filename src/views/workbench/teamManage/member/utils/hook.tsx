@@ -40,6 +40,8 @@ import { CustomPropsType, FormItemConfigType } from "@/utils/form";
 import type { ColDef } from "ag-grid-community";
 import { getAgGridColumns } from "@/components/AgGridTable/config";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
+import { getDeptOptions } from "@/utils/requestApi";
+import { DetartMenttemType } from "@/api/systemManage";
 
 export interface QueryType {
   page: number;
@@ -214,27 +216,27 @@ export function useConfig() {
     const titleObj = { add: "新增", edit: "修改" };
     const title = titleObj[type];
     const userInfo = getUserInfo();
-    const deptName = GetDeptName(memberOption.value.deptGroupTree, userInfo.deptId);
     const sLoading = ref<boolean>(true);
     const leaderList = ref([]);
     const depGroupList = ref([]);
+    const deptOptions = ref<DetartMenttemType[]>([]);
     const formData = {
       parentId: row.parentId ? `${row.parentId}` : "",
       groupName: row.title ?? "",
       leaderId: row.leaderId ?? "",
-      deptName: deptName,
       groupCode: row.groupCode ?? "",
-      deptId: userInfo.deptId,
+      deptId: `${row.deptId || row.id || userInfo.deptId || ""}`,
       id: row.id ?? 0
     };
     const p1 = teamGroupLeader({ deptId: userInfo.deptId });
     const p2 = teamDepGroupList();
-    Promise.all([p1, p2])
+    const p3 = getDeptOptions();
+
+    Promise.all([p1, p2, p3])
       .then((res: any) => {
-        sLoading.value = false;
-        const res1 = res[0] as any;
-        const res2 = res[1] as any;
+        const [res1, res2, res3] = res;
         loading.value = false;
+        sLoading.value = false;
         if (res1.status === 200) {
           leaderList.value = res1.data;
         }
@@ -243,6 +245,7 @@ export function useConfig() {
           const hasPid = getGroupParentId(res2.data, row.parentId);
           if (!hasPid) formData.parentId = ""; // 找不到父级下拉框显示空
         }
+        deptOptions.value = res3 ?? [];
       })
       .finally(() => (sLoading.value = false));
 
@@ -257,7 +260,7 @@ export function useConfig() {
         loading: sLoading,
         formInline: formData,
         formRules: formRules2,
-        formConfigs: formConfigs2({ leaderList, depGroupList }),
+        formConfigs: formConfigs2({ leaderList, depGroupList, deptOptions }),
         formProps: { labelWidth: "100px" }
       },
       contentRenderer: () => h(EditForm, { ref: formRef }),

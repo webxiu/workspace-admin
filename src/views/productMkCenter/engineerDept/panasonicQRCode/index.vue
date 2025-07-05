@@ -11,6 +11,13 @@
         :formProps="{ labelWidth: '120px' }"
         class="print-form"
       />
+
+      <div>
+        <TitleCate name="打印设置" class="mb-10">
+          <span class="fz-14 color-f00">(单位: mm)</span>
+        </TitleCate>
+        <EditForm ref="offsetFormRef" :formInline="offsetData" :formConfigs="offsetFormConfigs({ onSave, onReset })" :formProps="{ labelWidth: '120px' }" />
+      </div>
     </div>
     <div class="flex-col flex-1 ui-p-r" style="min-height: 620px">
       <div class="flex just-between align-center">
@@ -20,7 +27,13 @@
         <el-button type="primary" :icon="Printer" class="print-code ml-20" @click="onPrint" :title="printTitle">打印</el-button>
       </div>
       <div class="flex flex-1 just-center align-center ui-w-100 ui-p-r">
-        <div class="print-show flex just-center align-center">
+        <div
+          class="print-show flex just-center align-center"
+          :style="{
+            zIndex: offsetData.showPrint ? 0 : 11,
+            opacity: offsetData.showPrint ? 0 : 1
+          }"
+        >
           <div class="preview-box">
             <img class="show-img" :src="clubTemplate" />
             <img class="code-img" :src="codeUrl" />
@@ -28,7 +41,7 @@
             <div class="dateTime">{{ formData.mfgModel }}</div>
           </div>
         </div>
-        <div class="print" ref="printRef">
+        <div class="print" ref="printRef" :style="offsetStyle">
           <img class="code-img" :src="codeUrl" />
           <div class="model">{{ formData.model }}</div>
           <div class="dateTime">{{ formData.mfgModel }}</div>
@@ -47,7 +60,25 @@ import clubTemplate from "@/assets/images/club_template.png";
 
 defineOptions({ name: "ProductMkCenterEngineerDeptPanasonicQRCodeIndex" });
 
-const { loading, codeUrl, formData, printRef, printTitle, qrCodeList, buttonList, formConfigs, onDateChange, onChangeModel, onPrint } = useConfig();
+const {
+  loading,
+  codeUrl,
+  formData,
+  offsetData,
+  offsetFormRef,
+  printRef,
+  printTitle,
+  qrCodeList,
+  buttonList,
+  offsetStyle,
+  formConfigs,
+  offsetFormConfigs,
+  onDateChange,
+  onChangeModel,
+  onPrint,
+  onSave,
+  onReset
+} = useConfig();
 </script>
 
 <style scoped lang="scss">
@@ -64,20 +95,21 @@ const { loading, codeUrl, formData, printRef, printTitle, qrCodeList, buttonList
 
 .print-show {
   position: absolute;
-  inset: 0;
   z-index: 11;
-  width: 101%;
+  width: 100%;
   font-weight: 700;
   background: #fff;
 
   .preview-box {
     position: relative;
-    width: 100%;
-    max-width: 400px;
-
+    width: 105mm;
+    height: 148mm;
     .show-img {
-      max-width: 100%;
-      height: auto;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
       background-color: #fff;
       box-shadow: 0 0 0 1px #000 inset;
     }
@@ -106,72 +138,47 @@ const { loading, codeUrl, formData, printRef, printTitle, qrCodeList, buttonList
     }
   }
 }
-
 .print {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 105mm;
+  height: 148mm;
   font-size: 20px;
   font-weight: 700;
+  box-shadow: 0 0 0 1px #a3a3a3;
 
   .code-img {
+    right: var(--codeRight);
+    bottom: var(--codeBottom);
     position: absolute;
-    right: -0.8mm;
-    bottom: 29mm;
     width: 20mm;
     height: 20mm;
   }
 
   .model {
+    left: var(--modelLeft);
+    bottom: var(--modelBottom);
     position: absolute;
-    bottom: 14.2mm;
-    left: 17mm;
     font-family: "Times New Roman", Arial, sans-serif;
   }
 
   .dateTime {
+    right: var(--dateTimeRight);
+    bottom: var(--dateTimeBottom);
     position: absolute;
-    right: 3mm;
-    bottom: 14.1mm;
     font-family: fangsong, Arial, sans-serif;
   }
 }
 
 @media print {
   @page {
-    size: a6;
-    margin: 8mm;
+    size: A6;
+    margin: 4mm;
   }
-
+  body {
+    zoom: 1;
+  }
   .print {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    font-size: 20px;
-    font-weight: 700;
-    box-shadow: 0 0 1px 1px #ccc;
-
-    .code-img {
-      position: absolute;
-      right: -0.8mm;
-      bottom: 29mm;
-      width: 20mm;
-      height: 20mm;
-    }
-
-    .model {
-      position: absolute;
-      bottom: 14.2mm;
-      left: 17mm;
-      font-family: "Times New Roman", Arial, sans-serif;
-    }
-
-    .dateTime {
-      position: absolute;
-      right: 3mm;
-      bottom: 14.1mm;
-      font-family: fangsong, Arial, sans-serif;
-    }
+    box-shadow: none;
   }
 }
 </style>

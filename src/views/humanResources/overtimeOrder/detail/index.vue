@@ -176,13 +176,21 @@ export default defineComponent({
                   ...item,
                   productLine: item.productLine
                 }));
-                done();
+
                 if (type === "add") {
+                  let duplicateUserName = calcDataHours.filter((item, index) => {
+                    return dataList.value.some((el, i) => el.staffId === item.staffId);
+                  });
+                  if (duplicateUserName.length) {
+                    return message.error(`存在重复的人员: ${duplicateUserName.map((item) => item.staffName).join(",")}`);
+                  }
+
                   dataList.value = [...dataList.value, ...calcDataHours];
                 } else if (type === "edit") {
                   const findId = dataList.value.find((el: any) => el.staffId === calcDataHours[0].staffId)?.id;
                   dataList.value[index] = { ...calcDataHours[0], isNew: false, id: findId };
                 }
+                done();
               });
             }
           });

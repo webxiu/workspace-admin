@@ -64,7 +64,14 @@ const formConfigs = () => [
     render: ({ formModel, row }) => {
       return <el-input v-model={formModel[row.prop]} placeholder="请输入金额" clearable />;
     }
+  },
+  {
+    label: "备注",
+    labelWidth: 100,
+    colProp: { span: 8 },
+    prop: "remark"
   }
+
 ];
 
 const formConfigs1 = (treeData) => [

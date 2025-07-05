@@ -215,9 +215,19 @@ export function queryArrangeMgmtRecord(data) {
   return http.request("get", "/oa/hr/schedulingManagement/selectById", { params: data });
 }
 
+/** 排班管理: 查询批量记录 */
+export function queryArrangeMgmtRecordBulk(data) {
+  return http.request("post", "/oa/hr/schedulingManagement/selectByIds", { params: data });
+}
+
 /** 排班管理: 修改 */
 export function updateArrangeMgmtRecord(data) {
   return http.request("put", "/oa/hr/schedulingManagement/updateSchedulingData", { data });
+}
+
+/** 排班管理: 批量修改 */
+export function updateArrangeMgmtRecordBulk(data) {
+  return http.request("put", "/oa/hr/schedulingManagement/updateSchedulingDataList", { data });
 }
 
 /** 考勤记录: 恢复 */
@@ -404,6 +414,10 @@ export function manySyncMachineData(data) {
 /** 人事档案: 打印详情数据获取 */
 export function staffInfoPrintDetail(params) {
   return http.request<StaffInfoItemType[]>("get", `oa/hr/staffinfo/selectbatchbyprint?${params}`);
+}
+/** 人事档案: 批量修改用户部门 */
+export function batchUpdateStaffDept(data) {
+  return http.request("post", "oa/hr/staffinfo/batchUpdateStaffInfo", { data });
 }
 
 /** ========================= 零时工档案 ========================= */

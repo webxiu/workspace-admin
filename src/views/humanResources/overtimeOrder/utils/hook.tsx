@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2025-03-12 15:31:09
+ * @Last Modified time: 2025-04-18 16:58:18
  */
 
 import { OvertimeOrderItemType, overtimeOrderList, deleteOvertimeOrder, exportOvertimeOrder } from "@/api/oaManage/humanResources";
@@ -75,7 +75,7 @@ export const useConfig = () => {
   });
 
   const getOptionList = () => {
-    getDeptOptions().then((data: any) => {
+    getDeptOptions().then((data) => {
       treeData.value = data;
       searchOptions[4].children = data;
     });
@@ -119,7 +119,7 @@ export const useConfig = () => {
         return [
           { name: isEditState ? "修改" : "查看", type: "default", onClick: () => onEdit(row) },
           { name: "提交", type: "default", disabled: !isEditState, onClick: () => onSubmit(row) },
-          { name: "删除", type: "danger", disabled: !isEditState, onClick: () => onDelete(row), confirm: (row) => `确认删除\n【${row.staffName}】的加班单吗?` }
+          { name: "删除", type: "danger", disabled: !isEditState, onClick: () => onDelete(row), confirm: (row) => `确认删除\n【${row.staffName}】的加班单吗?注意该删除为整单删除！` }
         ];
       }
     });

@@ -42,7 +42,7 @@ const {
 <template>
   <div class="ui-h-100 flex-col flex-1 main main-content">
     <div style="display: flex">
-      <div class="left" style="width: 23%">
+      <div class="left" style="width: 30%">
         <PureTableBar :columns="columns3" class="flex-1" @refresh="onRefresh3" @change-column="setUserMenuColumns">
           <template #title>
             <BlendedSearch
@@ -80,7 +80,7 @@ const {
           </template>
         </PureTableBar>
       </div>
-      <div class="right" style="width: 77%">
+      <div class="right" style="width: 70%">
         <PureTableBar class="flex-1" :show-icon="false">
           <template #title>
             <BlendedSearch @tagSearch="handleTagSearch" :searchOptions="searchOptions" placeholder="请输入姓名" searchField="staffName" />

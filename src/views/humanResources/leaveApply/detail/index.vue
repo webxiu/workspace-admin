@@ -212,6 +212,18 @@ export default defineComponent({
                     if (res.data) {
                       const { days, hours } = res.data[0];
                       const calcDataHours = askForLeaveDTOList.map((item) => ({ id: uuidv4(), isNew: true, ...item, days, hours }));
+                      let duplicateUserName = calcDataHours.filter((item, index) => {
+                        if (item?.userId) {
+                          return dataList.value.some((i) => i.userId === item.userId);
+                        }
+                      }).map((item, index) => {
+                        return item.userName;
+                      });
+
+                      if (duplicateUserName.length) {
+                        message.error(duplicateUserName.join(',') + "添加失败, 已存在相同的人员");
+                        return;
+                      }
                       done();
                       dataList.value = [...dataList.value, ...calcDataHours];
                     } else {

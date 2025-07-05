@@ -14,7 +14,7 @@ export const formRules = reactive<FormRules>({
 export const formRules2 = reactive<FormRules>({
   groupName: [{ required: true, message: "分组名称为必填项", trigger: "blur" }],
   groupCode: [{ required: true, message: "分组编号为必填项", trigger: "blur" }],
-  deptName: [{ required: true, message: "所属部门为必填项", trigger: "blur" }]
+  deptId: [{ required: true, message: "所属部门为必填项", trigger: "blur" }]
 });
 
 // 修改岗位
@@ -94,7 +94,7 @@ export const formConfigs = ({ roleInfoList, deptInfoTree, depGroupList }): FormC
 };
 
 // 修改部门
-export const formConfigs2 = ({ leaderList, depGroupList }): FormConfigItemType[] => {
+export const formConfigs2 = ({ leaderList, depGroupList, deptOptions }): FormConfigItemType[] => {
   return [
     {
       label: "分组名称",
@@ -130,9 +130,25 @@ export const formConfigs2 = ({ leaderList, depGroupList }): FormConfigItemType[]
     },
     {
       label: "所属部门",
-      prop: "deptName",
+      prop: "deptId",
       colProp: layout,
-      render: ({ formModel, row }) => <el-input v-model={formModel[row.prop]} placeholder="请输入所属部门" clearable />
+      render: ({ formModel, row }) => {
+        return (
+          <el-tree-select
+            v-model={formModel[row.prop]}
+            filterable
+            node-key="value"
+            data={deptOptions.value}
+            check-strictly={true}
+            check-on-click-node
+            default-expand-all={true}
+            render-after-expand={false}
+            placeholder="请选择所属部门"
+            class="ui-w-100"
+            props={{ label: "name", value: "value" }}
+          />
+        );
+      }
     },
     {
       label: "组别负责人",

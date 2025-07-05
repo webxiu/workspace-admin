@@ -309,7 +309,7 @@ export const useConfig = () => {
           }
         ]
       },
-      width: "460px",
+      width: "520px",
       draggable: true,
       fullscreenIcon: true,
       closeOnClickModal: false,

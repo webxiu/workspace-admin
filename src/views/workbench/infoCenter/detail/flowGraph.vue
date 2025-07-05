@@ -12,7 +12,7 @@ import { useLogicFlow } from "@/hooks/useLogicFlow";
 
 interface Props {
   billNo: string;
-  processInstId: string;
+  processInstId?: string;
   /** 不存在流程信息的错误回调 */
   errCallback?: (err) => void;
 }

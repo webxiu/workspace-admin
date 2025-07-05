@@ -8,7 +8,7 @@ import { PageUrl } from "@/config/constant";
 import { getEnumDictList } from "@/utils/table";
 import { message } from "@/utils/message";
 
-// 编辑SQL单据校验
+// 表单校验
 export const formRules = reactive<FormRules>({
   productCode: [{ required: true, message: "请选择产品型号", trigger: "blur" }],
   materialNumber: [{ required: true, message: "请选择物料编码", trigger: "blur" }],
@@ -16,10 +16,12 @@ export const formRules = reactive<FormRules>({
   fileNumber: [{ required: true, message: "请输入文件编号", trigger: "blur" }],
   ver: [{ required: true, message: "请输入指导书版本", trigger: "blur" }],
   country: [{ required: true, message: "请选择国家", trigger: "blur" }],
-  peuserId: [{ required: true, message: "请选择PE工程师", trigger: "blur" }]
+  peuserId: [{ required: true, message: "请选择PE工程师", trigger: "blur" }],
+  oldVer: [{ required: false, message: "旧版本号", trigger: "blur" }],
+  changeContent: [{ required: true, message: "变更内容", trigger: "blur" }]
 });
 
-// 编辑SQL单据表单
+// 表单配置
 export const formConfigs = ({ type, formData, peRoleList }): FormConfigItemType[] => {
   const countryList = ref([]);
   getEnumDictList(["CountryCode"])
@@ -121,9 +123,25 @@ export const formConfigs = ({ type, formData, peRoleList }): FormConfigItemType[
       }
     },
     {
-      label: "版本",
+      label: "旧版本",
+      prop: "oldVer",
+      colProp: { span: 12 },
+      render: ({ formModel, row }) => {
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入" disabled={true} />;
+      }
+    },
+    {
+      label: "新版本",
       prop: "ver",
       colProp: { span: 12 },
+      render: ({ formModel, row }) => {
+        return <el-input v-model={formModel[row.prop]} placeholder="请输入" disabled={isView} clearable />;
+      }
+    },
+    {
+      label: "变更内容",
+      prop: "changeContent",
+      colProp: { span: 24 },
       render: ({ formModel, row }) => {
         return <el-input v-model={formModel[row.prop]} placeholder="请输入" disabled={isView} clearable />;
       }

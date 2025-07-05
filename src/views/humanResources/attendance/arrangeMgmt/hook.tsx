@@ -1,4 +1,4 @@
-import { fetchArrangeMgmtRecord, queryArrangeMgmtRecord, updateArrangeMgmtRecord } from "@/api/oaManage/humanResources";
+import { fetchArrangeMgmtRecord, queryArrangeMgmtRecord, updateArrangeMgmtRecordBulk, updateArrangeMgmtRecord } from "@/api/oaManage/humanResources";
 import { getMenuColumns, setColumn, updateButtonList, usePageSelect } from "@/utils/table";
 import { h, onMounted, reactive, ref } from "vue";
 import { message, showMessageBox } from "@/utils/message";
@@ -32,12 +32,12 @@ export const useMachine = () => {
   const searchOptions = reactive<SearchOptionType[]>([
     { label: "工号", value: "staffCode" },
     { label: "部门", value: "deptId", children: [] },
-    { label: "排班日期", value: "schedulingDate", type: "date", format: "YYYY-MM-DD" }
+    { label: "排班日期", value: "date", type: "daterange", format: "YYYY-MM-DD", startKey: "startDate", endKey: "endDate" }
   ]);
 
   const nowDate = dayjs().format("YYYY-MM-DD");
 
-  const queryParams = reactive({ schedulingDate: nowDate });
+  const queryParams = reactive({ date: `${nowDate} ~ ${nowDate}` });
 
   const { setSelectCheckbox, setSelectChange, setSelectAllChange } = usePageSelect({ tableRef, dataList, rowsData, uniId: "id" });
 
@@ -108,6 +108,7 @@ export const useMachine = () => {
       if (res.data) {
         Object.keys(rowObj).forEach((el) => {
           if (el === "deptId") {
+            console.log(res.data[el]);
             _formData[el] = res.data[el] + "";
           } else {
             _formData[el] = res.data[el];
@@ -136,10 +137,18 @@ export const useMachine = () => {
           if (valid) {
             showMessageBox(`确认要${title}吗?`)
               .then(() => {
-                onSubmitChange(type, title, _formData, () => {
-                  done();
-                  getTableList();
-                });
+                if (rows.length > 1) {
+                  onSubmitChangeBulk(type, title, _formData, () => {
+                    done();
+                    getTableList();
+                  });
+                }
+                else{
+                  onSubmitChange(type, title, _formData, () => {
+                    done();
+                    getTableList();
+                  });
+                }
               })
               .catch(console.log);
           }
@@ -168,6 +177,29 @@ export const useMachine = () => {
     });
   };
 
+  const onSubmitChangeBulk = (type: string, title: string, data, callback) => {
+    console.log(rowsData);
+    const apiType = { edit: updateArrangeMgmtRecordBulk };
+    const reqParams = rowsData.value
+      .map((item) => ({
+        ...item,
+        afternoonDownWorkTime: data.afternoonDownWorkTime,
+        afternoonWorkTime: data.afternoonWorkTime,
+        morningDownWorkTime: data.morningDownWorkTime,
+        morningWorkTime: data.morningWorkTime
+      }));
+    
+    console.log(apiType);
+    console.log(reqParams);
+    if (!rowsData.value.length) return message.warning("请选择记录");
+    apiType[type](reqParams).then((res) => {
+      if (res.data) {
+        message.success(`${title}成功`);
+        callback();
+      }
+    });
+  };  
+
   const onEdit = () => {
     if (!rowsData.value.length) {
       message.warning("请选择一条记录");
@@ -175,6 +207,7 @@ export const useMachine = () => {
     }
     openDialog("edit", rowsData.value);
   };
+
 
   const rowDbclick = (row) => {
     onEdit();

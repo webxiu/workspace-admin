@@ -24,7 +24,9 @@ const formData = reactive({
   country: "",
   ver: "",
   peuserId: "",
-  peuserName: ""
+  peuserName: "",
+  oldVer: "",
+  changeContent: ""
 });
 
 const _formRules = computed(() => (props.type === "view" ? {} : formRules));
@@ -51,9 +53,11 @@ function getData(val) {
         manualName: row.manualName,
         fileNumber: row.fileNumber,
         country: row.country,
-        ver: row.ver ?? "A01",
+        ver: row.ver ?? "A1",
         peuserId: row.peuserId,
-        peuserName: row.peuserName
+        peuserName: row.peuserName,
+        oldVer: row.oldVer,
+        changeContent: row.changeContent
       });
     })
     .finally(() => (loading.value = false));

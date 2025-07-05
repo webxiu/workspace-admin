@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2025-01-09 15:03:07
+ * @Last Modified time: 2025-04-18 16:49:08
  */
 
 import { dayjs } from "element-plus";
@@ -207,9 +207,6 @@ export const useConfig = () => {
     const formConfig: FormItemConfigType[] = [
       {
         formData: formData,
-        customColumn: {
-          // empty: { labelWidth: "0px" },
-        },
         customProps: {
           deptId: {
             apiParams: { deptId: row.deptId },
@@ -219,7 +216,6 @@ export const useConfig = () => {
           groupId: { apiParams: { deptId: row.deptId } },
           roleId: { apiParams: { deptId: row.deptId } }
         },
-        customElement: {},
         dataOption: { isPoorPeople: boolOptions },
         formProps: { labelWidth: "120px" }
       }
@@ -227,10 +223,7 @@ export const useConfig = () => {
 
     addDialog({
       title: `审核-登记人：${row.staffName}`,
-      props: {
-        params: { groupCode: "1" },
-        formConfig: formConfig
-      },
+      props: { params: { groupCode: "1" }, formConfig: formConfig },
       width: "960px",
       draggable: true,
       fullscreenIcon: true,
@@ -269,6 +262,7 @@ export const useConfig = () => {
 
   // 提交删除
   const onSubmitDelete = (rows: InductionAuditItemType[]) => {
+    if (!rows.length) return message.error("请勾选需要删除的记录");
     showMessageBox(`确认要删除选中记录吗?`).then(() => {
       deleteInductionAudit(rows)
         .then((res) => {

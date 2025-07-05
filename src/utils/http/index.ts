@@ -7,7 +7,6 @@
 
 import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken, CustomParamsSerializer } from "axios";
 import { PureHttpError, PureHttpRequestConfig, PureHttpResponse, RequestMethods } from "./types.d";
-import { getCookie, setCookie } from "@/utils/storage";
 
 import NProgress from "../progress";
 import { getUrlParameters } from "../common";
@@ -72,7 +71,6 @@ class PureHttp {
       async (config: PureHttpRequestConfig): Promise<any> => {
         this.removeBlank(config.data); // 移除请求参数前后空格
         config.hideMessage = config.headers.hideMessage;
-        if (!getCookie()) setCookie(Date.now().toString());
 
         // 是否隐藏Loading
         if (!config.headers.hideLoading) {
@@ -114,7 +112,6 @@ class PureHttp {
           PureHttp.initConfig.beforeResponseCallback(response);
         }
 
-        // ================ 状态码判断 start ================
         if (data.status === 200) {
           return data;
         } else if (response.status === 200 && !data.status) {
@@ -133,7 +130,6 @@ class PureHttp {
           }
         }
         return Promise.reject(data);
-        // ================ 状态码判断 end ================
       },
       (error: PureHttpError) => {
         console.log("http_error:", error);

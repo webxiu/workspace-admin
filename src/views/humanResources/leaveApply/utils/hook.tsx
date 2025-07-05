@@ -2,7 +2,7 @@
  * @Author: Hailen
  * @Date: 2023-07-24 08:41:09
  * @Last Modified by: Hailen
- * @Last Modified time: 2025-03-12 15:29:45
+ * @Last Modified time: 2025-04-18 16:52:31
  */
 
 import { LeaveApplyItemType, leaveApplyList, exportLeaveApply, deleteLeaveApply } from "@/api/oaManage/humanResources";
@@ -12,8 +12,8 @@ import Detail from "../detail/index.vue";
 import NodeDetailList from "@/components/NodeDetailList/index.vue";
 import { SearchOptionType } from "@/components/BlendedSearch/index.vue";
 
-import { downloadFile, getTreeArrItem, getChildIDs, getFileNameOnUrlPath, commonBackLogic } from "@/utils/common";
-import { setColumn, getExportConfig, getMenuColumns, updateButtonList, getChildDeptIds, RendererType } from "@/utils/table";
+import { downloadFile, getFileNameOnUrlPath, commonBackLogic } from "@/utils/common";
+import { setColumn, getExportConfig, getMenuColumns, updateButtonList, getChildDeptIds, RendererType, getEnumDictList } from "@/utils/table";
 import { useEleHeight } from "@/hooks";
 import { type PaginationProps } from "@pureadmin/table";
 import { message, showMessageBox } from "@/utils/message";
@@ -21,7 +21,6 @@ import { getDeptOptions } from "@/utils/requestApi";
 import { commonSubmit } from "@/api/systemManage";
 import { PAGE_CONFIG } from "@/config/constant";
 import { ElMessage, UploadProps, dayjs } from "element-plus";
-import { getBOMTableRowSelectOptions } from "@/api/plmManage";
 import type { ColDef } from "ag-grid-community";
 import { getAgGridColumns } from "@/components/AgGridTable/config";
 
@@ -76,17 +75,12 @@ export const useConfig = () => {
   });
 
   const getOptionList = () => {
-    getDeptOptions().then((data: any) => {
+    getDeptOptions().then((data) => {
       treeData.value = data;
       searchOptions[3].children = data;
     });
-
-    getBOMTableRowSelectOptions({ optioncode: "AskForLeaveType" }).then((res) => {
-      if (res.data) {
-        searchOptions[4].children =
-          res.data.find((item) => item.optionCode === "AskForLeaveType")?.optionList?.map((item) => ({ label: item.optionName, value: item.optionValue })) ||
-          [];
-      }
+    getEnumDictList(["AskForLeaveType"]).then((res) => {
+      searchOptions[4].children = res.AskForLeaveType;
     });
   };
 
@@ -153,7 +147,7 @@ export const useConfig = () => {
         return [
           { name: isEditState ? "修改" : "查看", type: "default", onClick: () => onEdit(row) },
           { name: "提交", type: "default", disabled: !isEditState, onClick: () => onSubmit(row) },
-          { name: "删除", type: "danger", disabled: !isEditState, onClick: () => onDelete(row), confirm: (row) => `确认删除\n【${row.userName}】的请假单吗?` }
+          { name: "删除", type: "danger", disabled: !isEditState, onClick: () => onDelete(row), confirm: (row) => `确认删除\n【${row.billNo}】的请假单吗?注意该删除为整单删除！` }
         ];
       }
     });
@@ -236,7 +230,8 @@ export const useConfig = () => {
 
   // 删除
   const onDelete = (row: LeaveApplyItemType) => {
-    deleteLeaveApply({ id: row.id })
+    console.log(row);
+    deleteLeaveApply({ id: row.priId })
       .then((res) => {
         if (!res.data) return message.error("删除失败");
         message.success("删除成功");

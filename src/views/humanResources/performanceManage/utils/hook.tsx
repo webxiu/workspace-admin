@@ -39,7 +39,7 @@ import {
 } from "@/api/oaManage/humanResources";
 import TableEditList from "@/components/TableEditList/index.vue";
 import { FormTableConfigType } from "@/utils/form";
-import { commonRevoke, commonSubmit, queryUserDeptList, userInfoList } from "@/api/systemManage";
+import { commonRevoke, commonSubmit, queryUserDeptList, userInfoListIncludeChildDept } from "@/api/systemManage";
 import { useUserStore } from "@/store/modules/user";
 import { HxUploadProgress } from "@/config/elements";
 import { AuditState } from "../../leaveApply/utils/hook";
@@ -282,17 +282,11 @@ export const useConfig = () => {
     const deptId = deptOptions.value.find((item) => item.isMaster)?.deptId;
 
     const initUserOpts = (deptId) => {
-      userInfoList({
-        page: 1,
-        limit: 100000,
-        userName: "",
-        userCode: "",
-        deptId,
-        userState: "A",
-        deptIdList: [deptId]
+      userInfoListIncludeChildDept({
+        deptId: deptId
       }).then((res) => {
         if (res.data) {
-          const result = res.data.records || [];
+          const result = res.data || [];
           selectUserOptsValue.value = result.map((item) => ({ optionName: item.userName, optionValue: item.userName, reflectVal: item.userCode }));
         }
       });
@@ -345,11 +339,12 @@ export const useConfig = () => {
             cellStyle: { color: "#606266", textAlign: "left" },
             eleProps: { filterable: true }
           }),
-        performanceAmount: (data) => editCellRender({ data, isEdit })
+        performanceAmount: (data) => editCellRender({ data, isEdit }),
+        remark: (data) => editCellRender({ data, isEdit })
       };
     };
     const onAdd = () => {
-      dataImportList.value.push({ staffCode: "", staffName: "", performanceAmount: "" });
+      dataImportList.value.push({ staffCode: "", staffName: "", performanceAmount: "", remark: "" });
     };
     const onUploadPerformance: UploadProps["onChange"] = (uploadFile) => {
       const rawFile = uploadFile.raw;

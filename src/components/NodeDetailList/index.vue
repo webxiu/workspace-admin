@@ -81,9 +81,6 @@ const handleClick = (tab) => {
 watch(
   props,
   (newVal) => {
-    // if ([1, 2].includes(newVal?.billState)) {
-    //   fetchDataList(newVal?.billNo, newVal?.billType);
-    // }
     fetchDataList(newVal?.billNo, newVal?.billType);
   },
   { immediate: true }

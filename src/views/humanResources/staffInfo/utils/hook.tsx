@@ -28,7 +28,8 @@ import {
   timeSettingList,
   setKingdeeId,
   setQYWXID,
-  manySyncMachineData
+  manySyncMachineData,
+  batchUpdateStaffDept
 } from "@/api/oaManage/humanResources";
 import { onMounted, h, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -44,13 +45,22 @@ import { PAGE_CONFIG } from "@/config/constant";
 import { type PaginationProps } from "@pureadmin/table";
 import MachineUserModal from "./machineUserModal/index.vue";
 import { SearchOptionType, QueryParamsType } from "@/components/BlendedSearch/index.vue";
-import { dismissFormConfigs, dismissFformRules, standardFformRules, standardFormConfigs, SumitStaffInfoItemType } from "./config";
+import {
+  dismissFormConfigs,
+  dismissFformRules,
+  standardFformRules,
+  standardFormConfigs,
+  SumitStaffInfoItemType,
+  batchDeptFormConfigs,
+  batchDeptformRules
+} from "./config";
 import { setColumn, getMenuColumns, getEnumDictList, updateButtonList, usePageSelect } from "@/utils/table";
 import { ElMessage } from "element-plus";
 import { Plus, Edit, Printer, Right, Download } from "@element-plus/icons-vue";
 import { formatDate } from "@/utils/common";
 import type { ColDef } from "ag-grid-community";
 import { getAgGridColumns } from "@/components/AgGridTable/config";
+import { getDeptOptions } from "@/utils/requestApi";
 
 /**
  * @param temporaryFlag 是否临时工 0: 正式工  1: 零时工
@@ -681,6 +691,51 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
       .catch(console.log);
   };
 
+  const onBatchDept = wrapFn(rowsData, () => { 
+    const staffName = rowsData.value.map((item) => item.staffName).join("、");
+    const ids = rowsData.value.map((item) => item.id);
+    const formRef = ref();
+    const deptOptions = ref([]);
+    const formData = reactive({
+      updateRecordIdList: ids,
+      updateField: "deptId", // 固定值
+      updateValue: ""
+    });
+    getDeptOptions().then((data) => {
+      deptOptions.value = data;
+    });
+    addDialog({
+      title: '批量修改部门',
+      width: "460px",
+      props: {
+        formInline: formData,
+        formRules: batchDeptformRules,
+        formProps: { labelWidth: "120px" },
+        formConfigs: batchDeptFormConfigs({ deptOptions, staffName })
+      },
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      contentRenderer: () => h(EditForm, { ref: formRef }),
+      beforeSure: (done) => {
+        const FormRef = formRef.value.getRef(); 
+        FormRef.validate((valid) => {
+          if (!valid) return
+          showMessageBox('确认修改选中用户的部门吗?')
+            .then(() => {
+              batchUpdateStaffDept(formData).then((res) => {
+                if (!res.data) return message.error("修改失败");
+                message.success("修改成功");
+                done();
+                getTableList();
+              });
+            })
+            .catch(console.log);
+        });
+      }
+    });
+  });
+
   const onSyncMachine = () => {
     if (!rowsData.value.length) return message.error("请勾选人员");
     const formRef = ref();
@@ -731,6 +786,7 @@ export const useConfig = (temporaryFlag: 0 | 1) => {
     { clickHandler: onHeadEdit, type: "warning", text: "修改", icon: Edit, isDropDown: false },
     { clickHandler: onPrint, type: "default", text: "打印", icon: Printer, isDropDown: true },
     { clickHandler: onSyncMachine, type: "default", text: "同步考勤机", isDropDown: true },
+    { clickHandler: onBatchDept, type: "warning", text: "批量修改部门", icon: Edit, isDropDown: true },
     { clickHandler: onDismiss, type: "default", text: "离职", icon: Right, isDropDown: true },
     { clickHandler: onExport, type: "default", text: "导出", icon: Download, isDropDown: true }
   ]);

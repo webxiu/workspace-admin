@@ -361,6 +361,11 @@ export function detartGroupDelete(params) {
 export function userInfoList(data: Partial<UserInfoReqType>) {
   return http.request<TablePagingResType<UserInfoItemType>>("post", "/sys/sys/userinfo/select", { data });
 }
+/** 用户列表(含子部门) */
+export function userInfoListIncludeChildDept(params) {
+  return http.request<UserInfoItemType>("get", "/sys/sys/userinfo/selectIncludeChildDeptUser", { params, headers: { hideLoading: true } });
+}
+
 /** 新增角色 */
 export function userInfoAdd(data) {
   return http.request<boolean>("post", "/sys/sys/userinfo/insert", { data });

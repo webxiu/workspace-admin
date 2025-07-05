@@ -2,6 +2,7 @@ import {
   CheckRecordItemType,
   DistributeOperateBookItemType,
   DistributeOperateBookResType,
+  EsopManualResumeItemType,
   JobEngineeringItemType,
   MaterialChildItemType,
   MaterialItemType,
@@ -31,7 +32,8 @@ export type {
   TabletManageItemType,
   DistributeOperateBookResType,
   DistributeOperateBookItemType,
-  ProductLineItemType
+  ProductLineItemType,
+  EsopManualResumeItemType
 };
 
 /** ========================= 采购部 ========================= */

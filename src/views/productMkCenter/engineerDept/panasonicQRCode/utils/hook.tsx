@@ -2,10 +2,11 @@
  * @Author: Hailen
  * @Date: 2024-05-08 13:43:03
  * @Last Modified by: Hailen
- * @Last Modified time: 2024-05-14 14:22:02
+ * @Last Modified time: 2025-05-20 13:37:20
  */
 
 import { Delete, Edit, Plus } from "@element-plus/icons-vue";
+import { OffsetConfig, editFormConfigs, formConfigs, formRules, offsetFormConfigs } from "./config";
 import {
   PanasonicQrcodeItemType,
   addPanasonicQrcode,
@@ -15,21 +16,23 @@ import {
 } from "@/api/oaManage/productMkCenter";
 import QRCode, { QRCodeToDataURLOptions } from "qrcode";
 import { computed, h, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { editFormConfigs, formConfigs, formRules } from "./config";
 import { message, showMessageBox } from "@/utils/message";
 
 import EditForm from "@/components/EditForm/index.vue";
 import Print from "@/utils/print";
 import { addDialog } from "@/components/ReDialog";
 import { dayjs } from "element-plus";
+import { useLocalStorage } from "@/utils/storage";
 
 export const useConfig = () => {
   const printRef = ref();
+  const offsetFormRef = ref();
   const codeUrl = ref("");
   const loading = ref<boolean>(false);
   const initDate = dayjs().format("YYYYMMDD");
   const qrCodeList = ref<PanasonicQrcodeItemType[]>([]);
   const baseUrl = "https://club.panasonic.jp/r/?v=1&h=";
+  const { setItem, getItem, removeItem } = useLocalStorage("__code_offset_config", true);
 
   const formData = reactive({
     model: "",
@@ -37,6 +40,7 @@ export const useConfig = () => {
     mfgModel: initDate.slice(-5),
     link: ""
   });
+  const offsetData = ref({ ...OffsetConfig });
 
   const printTitle = computed(() => {
     const isMac = /Mac/.test(navigator.platform);
@@ -44,6 +48,11 @@ export const useConfig = () => {
   });
 
   onMounted(() => {
+    const _localData = getItem() as typeof OffsetConfig;
+    if (Object.keys(_localData).length) {
+      offsetData.value = { ...OffsetConfig, ..._localData };
+    }
+    console.log("_localData", _localData);
     getTableList();
     window.addEventListener("keydown", registerPrint);
   });
@@ -53,6 +62,19 @@ export const useConfig = () => {
 
   watch(formData, (val) => {
     generateQR(val.link).then((png) => (codeUrl.value = png));
+  });
+
+  console.log("offsetData", offsetData.value);
+  const offsetStyle = computed(() => {
+    const config = Object.fromEntries(Object.entries(offsetData.value).map(([k, v]) => [k, `${v}mm`]));
+    return {
+      "--codeRight": config.codeRight,
+      "--codeBottom": config.codeBottom,
+      "--modelLeft": config.modelLeft,
+      "--modelBottom": config.modelBottom,
+      "--dateTimeRight": config.dateTimeRight,
+      "--dateTimeBottom": config.dateTimeBottom
+    };
   });
 
   function getTableList() {
@@ -200,11 +222,40 @@ export const useConfig = () => {
     });
   }
 
+  function onSave(data) {
+    setItem(data);
+    message.success("配置已保存");
+  }
+  function onReset() {
+    removeItem();
+    offsetData.value = { ...OffsetConfig };
+    offsetFormRef.value.getRef()?.resetFields();
+    message.success("配置已重置");
+  }
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onAdd, type: "primary", text: "新增", icon: Plus },
     { clickHandler: onEdit, type: "warning", text: "修改", icon: Edit },
     { clickHandler: onDelete, type: "danger", text: "删除", icon: Delete }
   ]);
 
-  return { loading, codeUrl, formData, printRef, printTitle, qrCodeList, buttonList, formConfigs, onDateChange, onChangeModel, onPrint };
+  return {
+    loading,
+    codeUrl,
+    formData,
+    offsetData,
+    offsetFormRef,
+    printRef,
+    printTitle,
+    qrCodeList,
+    buttonList,
+    offsetStyle,
+    formConfigs,
+    offsetFormConfigs,
+    onDateChange,
+    onChangeModel,
+    onPrint,
+    onSave,
+    onReset
+  };
 };

@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapRef" :style="{ height: height + 'px' }" />
+  <div ref="wrapRef" :style="{ height: height + 'px', zIndex: 101 }" />
 </template>
 <script lang="ts">
 import type { Ref } from "vue";
@@ -127,3 +127,8 @@ export default defineComponent({
   }
 });
 </script>
+<style>
+.vditor.vditor-img {
+  z-index: 2136 !important;
+}
+</style>

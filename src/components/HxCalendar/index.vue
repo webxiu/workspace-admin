@@ -1,8 +1,8 @@
 <template>
   <div class="hx-calendar">
     <div class="calendar-header">
-      <el-button @click="lastYear" text size="small" :icon="DArrowLeft" title="上一年" style="margin-left: 0" />
-      <el-button @click="lastMonth" text size="small" :icon="ArrowLeft" title="上一月" style="margin-left: 0" />
+      <el-button @click="setDay('prevYear')" text size="small" :icon="DArrowLeft" title="上一年" style="margin-left: 0" />
+      <el-button @click="setDay('prevMonth')" text size="small" :icon="ArrowLeft" title="上一月" style="margin-left: 0" />
       <el-date-picker
         v-model="dateMonth"
         type="month"
@@ -15,9 +15,9 @@
         @change="onChangeDate"
       />
 
-      <el-button @click="onToday" type="primary" size="small">今天</el-button>
-      <el-button @click="nextMonth" text size="small" :icon="ArrowRight" title="下一月" style="margin-left: 0" />
-      <el-button @click="nextYear" text size="small" :icon="DArrowRight" title="下一年" style="margin-left: 0" />
+      <el-button @click="setDay('today')" type="primary" size="small">今天</el-button>
+      <el-button @click="setDay('nextMonth')" text size="small" :icon="ArrowRight" title="下一月" style="margin-left: 0" />
+      <el-button @click="setDay('nextYear')" text size="small" :icon="DArrowRight" title="下一年" style="margin-left: 0" />
     </div>
     <div class="calendar-body">
       <div class="week-item">
@@ -231,34 +231,26 @@ function isToday(date: Date) {
   return year === y && month === m && day === d;
 }
 
-// 上一月
-function lastMonth() {
-  const d = dateMonth.value; // 获取当前的年月的一个日期
-  d.setMonth(d.getMonth() - 1);
-  onChangeDate(d);
+// 创建日期
+function createDate() {
+  function setDate(type, step) {
+    const d = dateMonth.value;
+    if (type === "month") d.setMonth(d.getMonth() + step);
+    if (type === "year") d.setFullYear(d.getFullYear() + step);
+    onChangeDate(d);
+  }
+  return {
+    today: () => onChangeDate(new Date()), // 今天
+    prevYear: (step = 1) => setDate("year", -step), // 上一年
+    prevMonth: (step = 1) => setDate("month", -step), // 上一月
+    nextMonth: (step = 1) => setDate("month", step), // 下一月
+    nextYear: (step = 1) => setDate("year", step) // 下一年
+  };
 }
-// 下一月
-function nextMonth() {
-  const d = dateMonth.value;
-  d.setMonth(d.getMonth() + 1);
-  onChangeDate(d);
-}
-// 上一年
-function lastYear() {
-  const d = dateMonth.value;
-  d.setFullYear(d.getFullYear() - 1);
-  onChangeDate(d);
-}
-// 下一年
-function nextYear() {
-  const d = dateMonth.value;
-  d.setFullYear(d.getFullYear() + 1);
-  onChangeDate(d);
-}
-// 今天
-function onToday() {
-  const d = new Date();
-  onChangeDate(d);
+const dayIns = createDate();
+
+function setDay(type) {
+  dayIns[type]();
 }
 
 // 选中某天
@@ -271,7 +263,7 @@ function isSelect(date: Date) {
 // 选择当天
 function chooseDate(item: CalendarItemType) {
   const { monthType, date } = item;
-  const monthFn = { next: nextMonth, last: lastMonth };
+  const monthFn = { next: dayIns.nextMonth, last: dayIns.prevMonth };
   selectDay.value = date;
   emits("select", date);
   monthFn[monthType]?.();
@@ -399,6 +391,7 @@ $borderColor: var(--el-card-border-color);
         text-align: center;
         white-space: nowrap;
         cursor: pointer;
+        user-select: none;
         border-right: 1px solid $borderColor;
         border-bottom: 1px solid $borderColor;
 

@@ -7,6 +7,7 @@ import {
   fetchMainStaffMoneyCheckList,
   fetchDetailStaffMoneyCheckList,
   makeCopyStaffMoneyCheckList,
+  syncToPayslip,
   queryDetailStaffMoneyCheckList
 } from "@/api/oaManage/financeDept";
 import { getMenuColumns, setColumn, getExportConfig, updateButtonList, getEnumDictList, getChildDeptIds } from "@/utils/table";
@@ -28,6 +29,7 @@ import { downloadFile, getFileNameOnUrlPath, commonBackLogic } from "@/utils/com
 import { getDeptOptions } from "@/utils/requestApi";
 import { AuditState } from "@/views/humanResources/leaveApply/utils/hook";
 import { commonRevoke, commonSubmit } from "@/api/systemManage";
+import Print from "../print.vue";
 
 enum UserType {
   employee = "员工",
@@ -191,8 +193,6 @@ export const useConfig = () => {
 
   const handleTagSearch = (values) => {
     Object.assign(formData, values);
-    formData.year = +values.yearMonth?.split("-")[0];
-    formData.month = +values.yearMonth?.split("-")[1];
     formData.deptIdList = getChildDeptIds(treeData.value, values.deptId);
     onSearch();
   };
@@ -201,7 +201,11 @@ export const useConfig = () => {
     Object.assign(formData3, values);
     formData3.year = +values.yearMonth?.split("-")[0];
     formData3.month = +values.yearMonth?.split("-")[1];
+    formData.year = formData3.year;
+    formData.month = formData3.month;
+    formData.yearMonth = values.yearMonth;
     onSearch3();
+    onSearch();
   };
 
   const onSearch = (_rowIndex?) => {
@@ -586,7 +590,6 @@ export const useConfig = () => {
     }
 
     showMessageBox(`确认提交单据吗?`).then(() => {
-      // TODO: 绩效流程id
       commonSubmit({ billId: "10076", billNo: currentLeftRow.value.billNo })
         .then((res) => {
           if (!res.data) return message.error("提交失败");
@@ -659,6 +662,36 @@ export const useConfig = () => {
       .catch(console.log);
   };
 
+  const onSyncToPayslip = () => {
+    if (!currentLeftRow.value) return message.warning("请选择一条单据");
+    console.log(currentLeftRow.value);
+    showMessageBox(`确认要同步【${currentLeftRow.value.billNo}】到工资条管理吗?`)
+      .then(() => {
+        syncToPayslip({ id: currentLeftRow.value.actualpayrollresultId }).then((res) => {
+          if (res.data) {
+            message.success("同步成功！");
+          } else {
+            message.error("同步失败！");
+          }
+        });
+      })
+      .catch(console.log);
+  };
+  const onPrint = () => {
+    const formRef = ref();
+    addDialog({
+      title: "打印",
+      props: { columns: columns.value, formData },
+      width: "90%",
+      draggable: true,
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      okButtonText: "打印",
+      contentRenderer: () => h(Print, { ref: formRef }),
+      beforeSure: () => formRef.value.onPrint()
+    });
+  };
+
   const buttonList = ref<ButtonItemType[]>([
     { clickHandler: onBeforeEdit, type: "warning", text: "修改", isDropDown: false },
     { clickHandler: onCheck, type: "primary", text: "核算工资", isDropDown: true },
@@ -668,7 +701,9 @@ export const useConfig = () => {
     { clickHandler: onSubmitAct, type: "info", text: "提交", isDropDown: true },
     { clickHandler: onRevokeAct, type: "info", text: "撤销", isDropDown: true },
     { clickHandler: onBackAct, type: "info", text: "回退", isDropDown: true },
-    { clickHandler: onViewNodeDetail, type: "info", text: "审批详情", isDropDown: true }
+    { clickHandler: onViewNodeDetail, type: "info", text: "审批详情", isDropDown: true },
+    { clickHandler: onSyncToPayslip, type: "primary", text: "同步工资条", isDropDown: true },
+    { clickHandler: onPrint, type: "primary", text: "打印", isDropDown: true }
   ]);
 
   const onRefresh3 = () => {

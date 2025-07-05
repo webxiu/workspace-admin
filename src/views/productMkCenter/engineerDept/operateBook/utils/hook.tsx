@@ -192,7 +192,7 @@ export const useConfig = () => {
     const formRef = ref();
     addDialog({
       title: "打印预览",
-      props: { materialId: id },
+      props: { materialId: id, row: rowData.value },
       width: "80%",
       class: "sop-print",
       draggable: true,

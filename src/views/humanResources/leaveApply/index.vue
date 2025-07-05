@@ -94,7 +94,7 @@ const {
                 <el-button size="small" @click.stop="onSubmit(row)" :disabled="![AuditState.submit, AuditState.reAudit].includes(row.billState)">
                   提交
                 </el-button>
-                <el-popconfirm :width="280" :title="`确认删除\n【${row.userName}】的请假单吗?`" @confirm="onDelete(row)">
+                <el-popconfirm :width="280" :title="`确认删除\n【${row.billNo}】的请假单吗?注意该删除为整单删除！`" @confirm="onDelete(row)">
                   <template #reference>
                     <el-button size="small" type="danger" :disabled="![AuditState.submit, AuditState.reAudit].includes(row.billState)" @click.stop>
                       删除
