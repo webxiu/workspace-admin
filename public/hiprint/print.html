@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>打印设计</title>
+    <link href="./css/hiprint.css" rel="stylesheet" />
+    <link href="./css/print-lock.css" rel="stylesheet" />
+
+    <link href="./content/bootstrap.min.css" rel="stylesheet" />
+    <script src="./plugins/jquery@1.11.3.min.js"></script>
+    <script src="./content/bootstrap.min.js"></script>
+    <script src="./utils/config-etype-provider.js"></script>
+
+    <script src="./polyfill.min.js"></script>
+    <script src="./plugins/jquery.minicolors.min.js"></script>
+    <script src="./plugins/JsBarcode.all.min.js"></script>
+    <script src="./plugins/qrcode.js"></script>
+    <script src="./hiprint.bundle.js"></script>
+    <script src="./plugins/jquery.hiwprint.js"></script>
+
+    <script src="./plugins/jspdf/canvas2image.js"></script>
+    <script src="./plugins/jspdf/canvg.min.js"></script>
+    <script src="./plugins/jspdf/html2canvas.min.js"></script>
+    <script src="./plugins/jspdf/jspdf.min.js"></script>
+
+    <script src="/scripts/global"></script>
+    <script src="./utils/create.js"></script>
+    <script src="../js/deogra/home.js"></script>
+  </head>
+
+  <body>
+    <div class="print-container flex-col">
+      <div id="header" class="flex just-between w-100 mb-10">
+        <!-- 顶部按钮 -->
+        <div class="fz-22 color-blue">打印设计</div>
+        <span id="tipInfo" class="glyphicon glyphicon-question-sign fz-22 pointer color-f60" />
+      </div>
+      <content class="flex-col flex-1 border">
+        <div class="flex flex-1 h-100">
+          <div class="h-100 ovy-auto" style="width: 180px; padding: 10px">
+            <div class="rect-printElement-types hiprintEpContainer">
+              <ul class="hiprint-printElement-type">
+                <!-- 拖拽列表按钮 -->
+              </ul>
+            </div>
+          </div>
+          <div class="h-100 flex-1 flex-col ovy-auto border-left border-right">
+            <div id="tool-buttons" class="hiprint-toolbar" style="margin: 8px 0 8px 8px">
+              <ul>
+                <!-- 工具按钮 -->
+              </ul>
+            </div>
+            <div class="h-100 flex-1 print-wrap">
+              <div id="preview"><!-- 打印区域 --></div>
+              <div id="Label1" style="overflow: hidden; width: 100%"></div>
+            </div>
+          </div>
+          <sider class="hinnn-layout-sider" style="width: 20%; min-width: 280px; overflow-y: auto">
+            <div id="PrintElementOptionSetting"></div>
+          </sider>
+        </div>
+      </content>
+      <!-- 预览 -->
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="overflow: hidden">
+        <div class="modal-dialog modal-lg" role="document" style="width: 80%">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="myModalLabel">打印预览</h4>
+            </div>
+
+            <div class="modal-body" style="height: 80vh; overflow-y: auto">
+              <div class="prevViewDiv"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-danger" id="A4_printByHtml">打印</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var hiprintTemplate;
+      var printConfig = {
+        title: "导出文件",
+        size: "A4",
+        printType: "auto",
+        showLandscape: false,
+        showGridLine: true,
+        elements: [],
+        template: {},
+      };
+
+      var toolButtonClick = {
+        // 旋转
+        rotatePaper: function () {
+          hiprintTemplate.rotatePaper();
+        },
+        // 清空
+        clearTemplate: function () {
+          hiprintTemplate.clear();
+          hiprintTemplate.removeTempContainer();
+        },
+        // 预览
+        onPreview: function () {
+          $("#myModal .modal-body .prevViewDiv").html(hiprintTemplate.getHtml(printConfig.testData)); // printData;
+          $("#myModal").modal("show");
+        },
+        // 打印
+        onPrint: function () {
+          hiprintTemplate.print(printConfig.testData); // printData
+        },
+        // 打印PDF
+        onExportPdf: function () {
+          const panel = hiprintTemplate.getPanel();
+          hiprintTemplate.toPdf(printConfig.testData, printConfig.title); // printData
+        },
+        // 重置
+        onReset: function () {
+          $("#scaleEle").val("100%");
+          $(".hiprint-printPaper").css({ transform: `scale(1)`, transformOrigin: "0% 0%" });
+          this.clearTemplate();
+          onInitHiPrint(printConfig);
+        },
+        // 复制配置:
+        getJson: function () {
+          const jsonData = hiprintTemplate.getJson();
+          const obj = removeEmpty(jsonData, ["paperNumberLeft", "paperNumberTop"]);
+          const json = JSON.stringify(obj, null, 2);
+          const dialog = createDialog({
+            title: "配置预览",
+            okText: "复制",
+            height: "70vh",
+            content: `<code style="background: none"><pre>${json}</pre></code>`,
+            onOk: () => {
+              copyText(json, (err) => Message.success(err ? "复制失败" : "复制成功")), dialog.modal("hide");
+            },
+          });
+        },
+        // 网格线:
+        gridLine: function () {
+          $(".hiprint-printPaper.design").toggleClass("grid");
+        },
+        // 获取所有元素:
+        getPanels: function () {
+          const panel = hiprintTemplate.getPanel();
+          console.log("所有元素:", panel);
+        },
+      };
+
+      $(".hiprint-printElement-type").html(createDragElement());
+      $("#tool-buttons ul").append(creatToolButton());
+
+      /** 是否iframe加载打开 */
+      function isIframe() {
+        return window.self !== window.top;
+      }
+
+      /** 添加元素 */
+      function addElement(elements = [], panel) {
+        elements.forEach(({ method, templateType, testData, options }) => {
+          if (templateType === "table") options.content = createPrint(testData).outerHTML;
+          panel[method]({ options });
+        });
+      }
+
+      // 固定分页内容
+      function onCreateFixedPage(data) {
+        const { pages, isAllPaper, showLandscape } = data;
+        const defaultPanelHeight = 297; // mm
+        const _pages = pages.filter((f) => !(f.paperHeader || f.paperFooter));
+        const _papers = pages.filter((f) => f.paperHeader || f.paperFooter);
+
+        // 添加页眉页脚
+        function addHeaderFooter(_papers, panel, isLastPage = false) {
+          _papers.forEach((f) => {
+            if (f.paperHeader) addElement(f.elements, panel); // 页眉
+            if (f.paperFooter && isLastPage) addElement(f.elements, panel); // 页尾
+          });
+        }
+        // 遍历数据生成每一页
+        _pages.forEach((item, index) => {
+          // 添加分页
+          if (index > 0) {
+            hiprintTemplate.addPrintPanel({
+              height: showLandscape ? 210 : defaultPanelHeight,
+              width: showLandscape ? defaultPanelHeight : 210,
+              paperNumberDisabled: true,
+              paperNumberFormat: "paperNo-paperCount",
+              pageBreak: index < _pages.length - 1,
+            });
+          }
+          const panel = hiprintTemplate.getPanel(index); // 获取当前页
+          addHeaderFooter(_papers, panel, isAllPaper || index === _pages.length - 1);
+          addElement(item.elements, panel);
+        });
+        hiprintTemplate.design("#preview");
+      }
+
+      /** 初始化事件  */
+      function onInitHiPrint(data) {
+        Object.assign(printConfig, data);
+        const { size = "A4", printType = "auto", showLandscape = false, showGridLine = true, elements = [], template = {} } = printConfig;
+
+        // 1.通用打印处理
+        function nomal() {
+          const panel = hiprintTemplate.getPanel();
+          addElement(elements, panel);
+          hiprintTemplate.design("#preview");
+        }
+
+        // 2.自动分页处理
+        if (printType === "auto" && Array.isArray(template.panels)) {
+          template.panels.forEach((f) => {
+            f.printElements.forEach((el) => {
+              const footEl = el.printElementType.footerFormatter;
+              if (footEl) el.printElementType.footerFormatter = () => footEl;
+            });
+          });
+        }
+        // 3.固定分页处理
+        function fixed() {
+          onCreateFixedPage(data);
+        }
+
+        createTemplate(template)
+          .then(() => {
+            const printHander = { nomal, fixed };
+            printHander[printType]?.();
+            const { showPrint } = getQuery(location.href);
+            if (showGridLine) toolButtonClick.gridLine();
+            if (showLandscape) toolButtonClick.rotatePaper();
+            if (showPrint === "true") toolButtonClick.onPrint();
+            setPaperSize(size);
+          })
+          .catch((err) => console.error("模板初始化失败", err));
+      }
+
+      /** 创建模板 */
+      function createTemplate(template = {}) {
+        return new Promise((resolve) => {
+          $("#preview").html("");
+          //初始化打印插件
+          hiprint.init({ providers: [new customElementTypeProvider()] });
+          //设置左侧拖拽事件
+          var hiprintTemplate_bill = new hiprint.PrintTemplate({
+            // template: JSON.parse($("#textarea_bill").val()),
+            template: {},
+            settingContainer: "#PrintElementOptionSetting",
+          });
+          //设置左侧拖拽事件
+          hiprint.PrintElementTypeManager.buildByHtml($(".ep-draggable-item"));
+          hiprintTemplate = new hiprint.PrintTemplate({
+            // fontList: [{ title: "苹果黑体", value: "STHeitiSC-Light" }], // 可配置字体
+            template: template,
+            settingContainer: "#PrintElementOptionSetting",
+            paginationContainer: ".hiprint-printPagination",
+          });
+          hiprintTemplate.design("#preview"); // 渲染设计器
+          requestAnimationFrame(() => resolve());
+        });
+      }
+
+      /** 调整纸张 */
+      function setPaperSize(paperTypeOrWidth, height) {
+        if (!paperTypeOrWidth) return;
+        setActive(height ? "customSize" : paperTypeOrWidth);
+        hiprintTemplate.setPaper(paperTypeOrWidth, height);
+      }
+
+      /** 设置纸张选中 */
+      function setActive(action) {
+        $("#tool-buttons ul li a").removeClass("active");
+        $(`a[data-action="${action}"]`).addClass("active");
+      }
+
+      /** 工具按钮点击 */
+      function onToolClick(ev, item) {
+        const { action } = item;
+        // 宽高输入
+        if (["widthId", "heightId"].includes(action)) return;
+        // 设置纸张
+        if (window.papers.includes(action)) setPaperSize(action);
+        // 设置纸张宽高
+        if (["customSize"].includes(action)) setPaperSize($("#customWidth").val(), $("#customHeight").val());
+        // 缩放比例
+        if (["scaleMinus", "scalePlus"].includes(action)) setScale(action);
+        // 按钮点击时间
+        if (toolButtonClick[action]) toolButtonClick[action]();
+      }
+
+      /** 监听数据消息 */
+      const onMessageOnce = (ev) => {
+        const { type, data } = ev.data;
+        if (type !== "HiPrint") return;
+        onInitHiPrint(data);
+        window.removeEventListener("message", onMessageOnce);
+      };
+
+      if (isIframe()) {
+        window.addEventListener("message", onMessageOnce);
+      } else {
+        onInitHiPrint({});
+      }
+
+      $("#A4_printByHtml").click(function () {
+        hiprintTemplate.printByHtml($("#myModal .modal-body .prevViewDiv"));
+      });
+      $("#tipInfo").click(function () {
+        const tips = [
+          "配置数据打印需设置[字段名], 未设置则使用标题作为值",
+          "设置字段名始终使用配置数据, 修改预览打印均无效, 删除字段即可修改",
+          "导出PDF请使用base64图片",
+          "按Alt拖拽画布, 按Ctrl缩放画布",
+        ];
+        const content = tips.map((item, i) => `<p style="display: flex;color:red;"><span>${i + 1}、</span><span>${item}</span></p>`).join("");
+        const dialog = createDialog({
+          title: "说明",
+          width: "400px",
+          height: "160px",
+          content: content,
+        });
+      });
+    </script>
+  </body>
+</html>

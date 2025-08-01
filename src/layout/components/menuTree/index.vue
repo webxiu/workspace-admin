@@ -37,8 +37,11 @@ function fmtRoute(data) {
 }
 // 打开表格配置
 function onDevTable(env) {
-  const { menuId, menuName } = route.query;
-  let link = `/#${ConfUrl.table}?isNewTag=yes&itemId=${menuId}&menuName=${menuName}`;
+  const queryString = Object.entries({ isNewTag: "yes", ...route.query })
+    .filter(([_, value]) => value)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
+  let link = `/#${ConfUrl.table}?${queryString}`;
   if (env === "prod") link = "https://app.deogra.com" + link;
   window.open(link);
 }
